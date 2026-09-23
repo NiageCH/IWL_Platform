@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/*
+ * Identidad IWL · sección 8 del documento de alcance.
+ * Papel blanco, texto en zinc, acento magenta solo en filetes y elementos
+ * gráficos. Sin modo oscuro: la identidad es papel.
+ */
+@theme {
+  /* Papel y texto */
+  --color-papel: #ffffff;
+  --color-titular: #18181b;
+  --color-cuerpo: #18181b;
+  --color-secundario: #3f3f46;
+  --color-metadato: #71717a;
+  --color-filete: #e4e4e7;
+
+  /* Acento. Solo filetes y elementos gráficos */
+  --color-acento: #ff007a;
+  /* Acento para texto pequeño, con contraste suficiente sobre papel */
+  --color-acento-texto: #d6005f;
+
+  /* Tipografía */
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-papel);
+  color: var(--color-cuerpo);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Las cifras y métricas se alinean en columna */
+.cifra {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
