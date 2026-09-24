@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
+  fechaOpcional,
+  idOpcional,
   ok,
   textoObligatorio,
   textoOpcional,
@@ -61,21 +63,13 @@ const esquemaHallazgo = z.object({
   slug: textoObligatorio(),
   company_id: uuid,
   area_id: uuid,
-  dd_item_id: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : v))
-    .nullable(),
+  dd_item_id: idOpcional,
   severity: z.enum(["critico", "alto", "medio", "bajo"]),
   title: textoObligatorio(5, "Ponle un título que se entienda de un vistazo."),
   description: textoObligatorio(20, "Describe qué has encontrado."),
   impact: textoOpcional,
   resolution_plan: textoOpcional,
-  due_date: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : v))
-    .nullable(),
+  due_date: fechaOpcional,
 });
 
 export async function registrarHallazgoGeneral(formData: FormData): Promise<Resultado> {

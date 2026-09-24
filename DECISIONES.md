@@ -89,3 +89,19 @@ Se descubrió probando a guardar una puntuación desde el navegador: la acción 
 A la fundadora no se le ofrece el estado «validado» ni el formulario de puntuar. No porque eso la detenga (quien la detiene es un trigger), sino porque enseñar un control que va a fallar al pulsarlo es una mala interfaz.
 
 Las dos capas son independientes a propósito: `lib/datos/permisos.ts` decide qué se enseña, las políticas y los triggers deciden qué se puede. Si discrepan, manda la base y lo único que se ve es un botón que da error. Nunca al contrario.
+
+## 2026-09-24 · Un campo no controlado necesita `key` para seguir al servidor
+
+Los selects de estado se montan con `defaultValue`. Tras guardar, el Server Component vuelve a renderizar con el valor nuevo, pero React no actualiza un campo no controlado que ya estaba montado: se guardaba bien y la pantalla seguía enseñando el estado anterior hasta recargar.
+
+Se resuelve dando al campo una `key` con el valor que viene del servidor, de modo que React lo vuelva a montar cuando cambia. Aplicado a los estados de punto de due diligence, de punto de plan, de sección del business plan y de update mensual.
+
+Se descubrió con un test de interfaz que subía un documento y comprobaba que su punto del checklist quedaba en entregado: la base lo tenía, la pantalla no.
+
+## 2026-09-24 · El data room guarda los ficheros bajo el id de la compañía
+
+Ruta en Storage: `<company_id>/<area>/<document_id>/<fichero>`. La primera carpeta es lo que permite que las políticas de `storage.objects` apliquen a los ficheros el mismo aislamiento que a las filas, reutilizando `app.can_read_company` y `app.can_write_company`.
+
+El bucket es privado y no hay URL pública: cada consulta se sirve con un enlace firmado de un minuto y queda registrada en `document_access_log`.
+
+Al subir un documento enlazado a un punto del checklist, ese punto pasa a entregado y hereda la caducidad. Es carga única aplicada al data room: entregar un documento y decir que lo has entregado son el mismo gesto.

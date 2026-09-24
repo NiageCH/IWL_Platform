@@ -225,6 +225,9 @@ export function EstadoHallazgo({
   id: string;
   estado: string;
 }) {
+  // El estado inicial viene del servidor. Quien lo usa le pasa una `key` con
+  // el estado, de modo que al cambiar en la base este componente se vuelve a
+  // montar con el valor nuevo.
   const [elegido, setElegido] = useState(estado);
 
   return (
@@ -374,6 +377,8 @@ export function EstadoPuntoPlan({
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={id} />
           <Seleccion
+            // Ver la nota sobre `key` en el formulario de due diligence
+            key={estado}
             name="status"
             defaultValue={estado}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}

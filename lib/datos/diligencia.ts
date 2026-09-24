@@ -29,13 +29,26 @@ export async function leerDiligencia(companyId: string) {
       .eq("company_id", companyId),
     supabase
       .from("documents")
-      .select("id, name, folder, expires_on, created_at")
+      .select(
+        "id, name, folder, expires_on, created_at, document_versions ( id, file_name, size_bytes )",
+      )
       .eq("company_id", companyId)
       .order("folder"),
   ]);
 
+  // Áreas con su id, para el formulario de subida
+  const { data: areasCatalogo } = await supabase
+    .from("dd_areas")
+    .select("id, code, name, order_index")
+    .eq("is_active", true)
+    .order("order_index");
+
   const caducado = (fecha: string | null) =>
     fecha !== null && new Date(fecha).getTime() < ahora;
+
+  const areaIdPorCodigo = new Map(
+    (areasCatalogo ?? []).map((a) => [a.code, a.id] as const),
+  );
 
   const areas = new Map<
     string,
@@ -85,10 +98,17 @@ export async function leerDiligencia(companyId: string) {
 
   return {
     areas: [...areas.values()].sort((a, b) => a.orden - b.orden),
+    areasCatalogo: (areasCatalogo ?? []).map((a) => ({ id: a.id, nombre: a.name })),
+    puntos: (puntos.data ?? []).map((p) => ({
+      id: p.id,
+      titulo: p.title,
+      areaId: p.dd_areas ? areaIdPorCodigo.get(p.dd_areas.code) ?? "" : "",
+    })),
     hallazgos: hallazgos.data ?? [],
     documentos: (documentos.data ?? []).map((d) => ({
       ...d,
       caducado: caducado(d.expires_on),
+      tieneFichero: (d.document_versions ?? []).length > 0,
     })),
   };
 }

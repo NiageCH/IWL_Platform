@@ -70,12 +70,55 @@ export function traducirError(fallo: { code?: string; message: string }): Result
 export const textoObligatorio = (min = 1, mensaje = "Escribe algo aquí.") =>
   z.string().trim().min(min, mensaje);
 
-/** Campo de texto opcional que convierte la cadena vacía en null */
+/**
+ * Campo de texto opcional.
+ *
+ * Acepta las tres formas en que un formulario dice «aquí no hay nada»: la
+ * clave ausente, la cadena vacía y null. Las tres dan null.
+ *
+ * Que acepte la clave ausente no es un detalle: un formulario que no incluye
+ * el campo es lo normal (el estado de un punto se cambia desde una lista, sin
+ * tocar la nota), y si el esquema lo exigiera, esa acción fallaría entera con
+ * un «revisa los campos marcados» que no señala ningún campo.
+ */
 export const textoOpcional = z
-  .string()
-  .trim()
-  .transform((v) => (v === "" ? null : v))
-  .nullable();
+  .union([z.string(), z.null()])
+  // `.optional()` va antes del transform: es lo que marca la clave como
+  // opcional dentro del objeto. Después del transform, Zod seguiría exigiendo
+  // que la clave existiera.
+  .optional()
+  .transform((v) => {
+    const recortado = (v ?? "").trim();
+    return recortado === "" ? null : recortado;
+  });
+
+/** Identificador opcional: vacío o ausente dan null */
+export const idOpcional = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v) => {
+    const recortado = (v ?? "").trim();
+    return recortado === "" ? null : recortado;
+  })
+  .refine(
+    (v) =>
+      v === null ||
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v),
+    "Identificador no válido.",
+  );
+
+/** Fecha opcional en formato AAAA-MM-DD */
+export const fechaOpcional = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v) => {
+    const recortado = (v ?? "").trim();
+    return recortado === "" ? null : recortado;
+  })
+  .refine(
+    (v) => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v),
+    "La fecha se escribe como 2026-12-31.",
+  );
 
 /**
  * Identificador de fila.

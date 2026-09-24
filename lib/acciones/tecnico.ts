@@ -5,6 +5,8 @@ import { z } from "zod";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import {
   error,
+  fechaOpcional,
+  idOpcional,
   ok,
   textoObligatorio,
   textoOpcional,
@@ -153,27 +155,24 @@ export async function cambiarEstadoHallazgo(formData: FormData): Promise<Resulta
 const esquemaPuntoPlan = z.object({
   slug: textoObligatorio(),
   company_id: uuid,
-  finding_id: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : v))
-    .nullable(),
+  finding_id: idOpcional,
   title: textoObligatorio(5, "Ponle un título."),
   description: textoOpcional,
   owner: z.enum(["compania", "niage"]),
   effort_days: z.coerce.number().min(0).max(999).optional(),
   estimated_cost: z.coerce.number().min(0).optional(),
   quarter: z
-    .string()
-    .trim()
-    .regex(/^\d{4}-T[1-4]$/, "El trimestre se escribe como 2026-T4.")
-    .or(z.literal(""))
-    .transform((v) => (v === "" ? null : v)),
-  due_date: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : v))
-    .nullable(),
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      const t = (v ?? "").trim();
+      return t === "" ? null : t;
+    })
+    .refine(
+      (v) => v === null || /^\d{4}-T[1-4]$/.test(v),
+      "El trimestre se escribe como 2026-T4.",
+    ),
+  due_date: fechaOpcional,
 });
 
 export async function crearPuntoPlan(formData: FormData): Promise<Resultado> {

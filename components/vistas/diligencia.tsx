@@ -9,6 +9,7 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { EstadoPunto } from "@/components/formularios/diligencia";
+import { AbrirDocumento, SubirDocumento } from "@/components/formularios/documentos";
 import { fecha, numero } from "@/lib/utils";
 
 /**
@@ -32,7 +33,8 @@ export async function VistaDiligencia({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const { areas, hallazgos, documentos } = await leerDiligencia(resumen.compania.id);
+  const { areas, areasCatalogo, puntos, hallazgos, documentos } =
+    await leerDiligencia(resumen.compania.id);
   const { permisos, compania } = resumen;
 
   const scorePorArea = new Map(
@@ -151,10 +153,24 @@ export async function VistaDiligencia({
                 ) : (
                   <Metadato>Sin caducidad</Metadato>
                 )}
+                {d.tieneFichero ? (
+                  <AbrirDocumento documentId={d.id} />
+                ) : (
+                  <Metadato>Sin fichero</Metadato>
+                )}
               </li>
             ))}
           </ul>
         )}
+
+        {permisos.puedeEscribir ? (
+          <SubirDocumento
+            slug={compania.slug}
+            companyId={compania.id}
+            areas={areasCatalogo}
+            puntos={puntos}
+          />
+        ) : null}
       </Bloque>
     </div>
   );

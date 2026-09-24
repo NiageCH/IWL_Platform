@@ -270,7 +270,12 @@ export async function VistaTecnico({
                   {h.recommendation}
                 </p>
                 {permisos.puedeValidar ? (
-                  <EstadoHallazgo slug={slug} id={h.id} estado={h.status} />
+                  <EstadoHallazgo
+                    key={h.status}
+                    slug={slug}
+                    id={h.id}
+                    estado={h.status}
+                  />
                 ) : null}
               </li>
             ))}

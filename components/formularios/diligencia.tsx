@@ -28,6 +28,13 @@ export function EstadoPunto({
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={id} />
           <Seleccion
+            /*
+             * La `key` con el estado hace que React vuelva a montar el select
+             * cuando el servidor devuelve otro valor. Sin ella, un campo no
+             * controlado conserva el valor con el que se montó: se guardaría
+             * bien y la pantalla seguiría enseñando el estado anterior.
+             */
+            key={estado}
             name="status"
             defaultValue={estado}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}

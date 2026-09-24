@@ -71,7 +71,7 @@ export function EditorSeccion({
 
             <div className="flex flex-wrap items-end gap-3">
               <Campo etiqueta="Estado">
-                <Seleccion name="status" defaultValue={estado}>
+                <Seleccion key={estado} name="status" defaultValue={estado}>
                   <option value="borrador">Borrador</option>
                   <option value="en_revision">En revisión</option>
                   {puedeValidar ? (

@@ -1,5 +1,12 @@
+import { z } from "zod";
 import { describe, expect, it } from "vitest";
-import { uuid, textoObligatorio, textoOpcional } from "./resultado";
+import {
+  fechaOpcional,
+  idOpcional,
+  textoObligatorio,
+  textoOpcional,
+  uuid,
+} from "./resultado";
 
 describe("uuid", () => {
   /**
@@ -40,5 +47,49 @@ describe("textoOpcional", () => {
     expect(textoOpcional.parse("")).toBeNull();
     expect(textoOpcional.parse("   ")).toBeNull();
     expect(textoOpcional.parse(" hola ")).toBe("hola");
+  });
+
+  /**
+   * Un formulario que no incluye el campo es lo normal: el estado de un punto
+   * se cambia desde una lista, sin tocar la nota. Si el esquema exigiera la
+   * clave, esa acción fallaría entera con un «revisa los campos marcados» que
+   * no señala ningún campo.
+   */
+  it("acepta que el campo no venga en el formulario", () => {
+    expect(textoOpcional.parse(undefined)).toBeNull();
+    expect(textoOpcional.parse(null)).toBeNull();
+
+    const conCampoAusente = z
+      .object({ nota: textoOpcional, otro: textoObligatorio() })
+      .safeParse({ otro: "algo" });
+
+    expect(conCampoAusente.success).toBe(true);
+    expect(conCampoAusente.success && conCampoAusente.data.nota).toBeNull();
+  });
+});
+
+describe("idOpcional", () => {
+  it("acepta vacío, ausente y un identificador válido", () => {
+    expect(idOpcional.parse("")).toBeNull();
+    expect(idOpcional.parse(undefined)).toBeNull();
+    expect(idOpcional.parse("00000000-0000-0000-0004-000000000001")).toBe(
+      "00000000-0000-0000-0004-000000000001",
+    );
+  });
+
+  it("rechaza algo que no es un identificador", () => {
+    expect(idOpcional.safeParse("abc").success).toBe(false);
+  });
+});
+
+describe("fechaOpcional", () => {
+  it("acepta vacío, ausente y una fecha", () => {
+    expect(fechaOpcional.parse("")).toBeNull();
+    expect(fechaOpcional.parse(undefined)).toBeNull();
+    expect(fechaOpcional.parse("2026-12-31")).toBe("2026-12-31");
+  });
+
+  it("rechaza una fecha mal escrita", () => {
+    expect(fechaOpcional.safeParse("31/12/2026").success).toBe(false);
   });
 });

@@ -166,7 +166,11 @@ export function FormularioUpdate({
 
           <div className="flex flex-wrap items-end gap-3">
             <Campo etiqueta="Estado">
-              <Seleccion name="status" defaultValue={update?.status ?? "borrador"}>
+              <Seleccion
+                key={update?.status ?? "borrador"}
+                name="status"
+                defaultValue={update?.status ?? "borrador"}
+              >
                 <option value="borrador">Borrador</option>
                 <option value="entregado">Entregado</option>
                 {puedeRevisar ? <option value="revisado">Revisado por IWL</option> : null}
