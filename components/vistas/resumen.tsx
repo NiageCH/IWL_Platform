@@ -1,4 +1,6 @@
 import type { ResumenCompania } from "@/lib/datos/compania";
+import { leerMovimiento } from "@/lib/datos/movimiento";
+import { Evolucion } from "@/components/evolucion";
 import { Bloque, Cifra, Metadato, Severidad, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { euros, numero, porcentaje } from "@/lib/utils";
 
@@ -9,12 +11,13 @@ import { euros, numero, porcentaje } from "@/lib/utils";
  * Los siguientes pasos van arriba porque son lo accionable. La interfaz los
  * presenta como siguiente paso con fecha, no como lista de reproches (§8).
  */
-export function VistaResumen({
+export async function VistaResumen({
   resumen,
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
   const { invertible, kpis, hallazgos, scorePreparacion } = resumen;
+  const movimiento = await leerMovimiento(resumen.compania.id);
 
   const criticos = hallazgos.filter((h) => h.severidad === "critico");
   const altos = hallazgos.filter((h) => h.severidad === "alto");
@@ -50,6 +53,21 @@ export function VistaResumen({
             ))}
           </ol>
         )}
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque
+          accion={
+            <Metadato>
+              {movimiento.lineaBase
+                ? `Desde ${movimiento.lineaBase.fecha}`
+                : "Sin medición de partida"}
+            </Metadato>
+          }
+        >
+          Recorrido
+        </TituloBloque>
+        <Evolucion puntos={movimiento.puntos} />
       </Bloque>
 
       <div className="grid gap-6 md:grid-cols-2">

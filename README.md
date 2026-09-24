@@ -78,7 +78,11 @@ npm run test           # Vitest: cálculo de scores y métricas derivadas
 npm run test:rls       # Aislamiento entre compañías contra Supabase local
 npm run test:e2e       # Playwright
 npm run db:types       # Regenera lib/supabase/database.types.ts
+npm run snapshots      # Genera las instantáneas de preparación
+npm run alta           # Da de alta a una persona
 ```
+
+`npm run db:reset` encadena las instantáneas: tras recrear la base, el histórico de movimiento está listo.
 
 Antes de cerrar un paso: `npm run typecheck && npm run lint && npm run test && npm run test:rls`.
 
@@ -105,7 +109,9 @@ Fase 1 del documento de alcance, pasos 1 a 8:
 | Due diligence general y data room | Completo: checklist con estados, subida de documentos con caducidad y enlaces firmados |
 | Business plan | Completo: edición con versionado, estados, hipótesis y comentarios |
 | Update mensual y KPI | Completo: carga del mes, series y métricas derivadas |
-| Dashboard IWL | Cohorte, embudo a invertible y ficha por compañía |
+| Dashboard IWL | Cohorte con lectura de apertura, embudo por bandas, mapa de intervención y ficha por compañía |
+| Movimiento en el tiempo | Instantáneas congeladas, línea base, evolución de los dos scores y recorrido en la cartera |
+| Comparativa | Compañías sobre la misma vara, cada una contra el objetivo de su etapa |
 
 Quién puede escribir qué lo decide la base, no la interfaz: las políticas de Row Level Security y unos triggers que impiden que la parte evaluada se valide a sí misma. La interfaz oculta lo que la base prohíbe, nunca al revés.
 

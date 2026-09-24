@@ -118,10 +118,15 @@ describe("puntuación técnica", () => {
   });
 
   it("una puntuación necesita evidencia", async () => {
+    // Marea tiene varias evaluaciones en el histórico: la que cuenta es la
+    // última publicada
     const { data: evaluacion } = await servicio
       .from("tech_assessments")
       .select("id")
       .eq("company_id", COMPANIAS.marea)
+      .eq("status", "publicada")
+      .order("assessed_on", { ascending: false })
+      .limit(1)
       .single();
 
     const { data: dimension } = await servicio

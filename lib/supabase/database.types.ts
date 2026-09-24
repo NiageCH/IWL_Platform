@@ -1806,6 +1806,79 @@ export type Database = {
           },
         ]
       }
+      readiness_snapshots: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          investable: boolean
+          note: string | null
+          open_critical: number
+          preparation_score: number | null
+          reason: Database["public"]["Enums"]["motivo_instantanea"]
+          runway_months: number | null
+          stage: Database["public"]["Enums"]["company_stage"]
+          taken_on: string
+          tech_complete: boolean
+          tech_score: number | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          investable?: boolean
+          note?: string | null
+          open_critical?: number
+          preparation_score?: number | null
+          reason: Database["public"]["Enums"]["motivo_instantanea"]
+          runway_months?: number | null
+          stage: Database["public"]["Enums"]["company_stage"]
+          taken_on: string
+          tech_complete?: boolean
+          tech_score?: number | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          investable?: boolean
+          note?: string | null
+          open_critical?: number
+          preparation_score?: number | null
+          reason?: Database["public"]["Enums"]["motivo_instantanea"]
+          runway_months?: number | null
+          stage?: Database["public"]["Enums"]["company_stage"]
+          taken_on?: string
+          tech_complete?: boolean
+          tech_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "readiness_snapshots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           company_id: string
@@ -2572,6 +2645,38 @@ export type Database = {
           },
         ]
       }
+      readiness_movement: {
+        Row: {
+          baseline_on: string | null
+          baseline_preparation: number | null
+          baseline_tech: number | null
+          company_id: string | null
+          latest_investable: boolean | null
+          latest_on: string | null
+          latest_open_critical: number | null
+          latest_preparation: number | null
+          latest_tech: number | null
+          preparation_movement: number | null
+          snapshot_count: number | null
+          tech_movement: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+        ]
+      }
       tech_score_input: {
         Row: {
           assessed_on: string | null
@@ -2625,6 +2730,7 @@ export type Database = {
       kpi_category: "nucleo" | "sector" | "tecnico" | "propio"
       kpi_direction: "sube_mejor" | "baja_mejor" | "neutro"
       kpi_unit: "moneda" | "porcentaje" | "numero" | "meses" | "dias" | "ratio"
+      motivo_instantanea: "linea_base" | "evaluacion" | "mensual" | "manual"
       origen_puntuacion: "automatico" | "manual"
       responsable_plan: "compania" | "niage"
       severidad_hallazgo: "critico" | "alto" | "medio" | "bajo"
@@ -2798,6 +2904,7 @@ export const Constants = {
       kpi_category: ["nucleo", "sector", "tecnico", "propio"],
       kpi_direction: ["sube_mejor", "baja_mejor", "neutro"],
       kpi_unit: ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],
+      motivo_instantanea: ["linea_base", "evaluacion", "mensual", "manual"],
       origen_puntuacion: ["automatico", "manual"],
       responsable_plan: ["compania", "niage"],
       severidad_hallazgo: ["critico", "alto", "medio", "bajo"],

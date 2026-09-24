@@ -1,5 +1,12 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { leerCompania, type ResumenCompania } from "./compania";
+import { leerMovimientoCartera } from "./movimiento";
+import {
+  embudo,
+  leerBandas,
+  lecturaDeCohorte,
+  mapaIntervencion,
+} from "./cohorte";
 
 /**
  * Cartera completa para el dashboard de IWL (§4.7).
@@ -17,17 +24,35 @@ export async function leerCartera() {
     .select("slug, cohorts ( name, investable_target )")
     .order("name");
 
-  const resumenes = await Promise.all(
-    (filas ?? []).map((f) => leerCompania(f.slug)),
-  );
+  const [resumenes, movimientos, bandas] = await Promise.all([
+    Promise.all((filas ?? []).map((f) => leerCompania(f.slug))),
+    leerMovimientoCartera(),
+    leerBandas(),
+  ]);
 
   const companias = resumenes
     .filter((r): r is NonNullable<ResumenCompania> => r !== null)
-    .map((r) => ({ ...r, updateAlDia: updateAlDia(r) }));
+    .map((r) => ({
+      ...r,
+      updateAlDia: updateAlDia(r),
+      movimiento: movimientos.get(r.compania.id) ?? null,
+    }));
+
+  const cohorte = filas?.[0]?.cohorts ?? null;
+  const mapa = mapaIntervencion(companias);
 
   return {
     companias,
-    cohorte: filas?.[0]?.cohorts ?? null,
+    cohorte,
+    bandas,
+    mapa,
+    tramos: embudo(companias, bandas),
+    lectura: lecturaDeCohorte(
+      companias,
+      movimientos,
+      mapa,
+      cohorte?.investable_target ?? null,
+    ),
   };
 }
 

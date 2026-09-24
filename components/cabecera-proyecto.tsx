@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { Cifra, Metadato, Semaforo } from "@/components/ui/primitivas";
+import { Movimiento } from "@/components/evolucion";
 import { numero } from "@/lib/utils";
 
 /**
@@ -27,11 +28,14 @@ export function CabeceraProyecto({
   resumen,
   base,
   seccionActiva,
+  movimiento,
 }: {
   resumen: NonNullable<ResumenCompania>;
   /** Prefijo de las rutas: `/proyecto` para la fundadora, `/cartera/<slug>` para IWL */
   base: string;
   seccionActiva: string;
+  /** Distancia desde la línea base. Sin él, la cifra solo cuenta el presente */
+  movimiento?: { deltaTecnico: number | null; deltaPreparacion: number | null };
 }) {
   const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
 
@@ -72,15 +76,37 @@ export function CabeceraProyecto({
               etiqueta="Score técnico"
               valor={numero(scoreTecnico.valor, 1)}
               nota={
-                scoreTecnico.completo
-                  ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
-                  : `${scoreTecnico.sinEvaluar.length} sin evaluar`
+                <>
+                  {movimiento?.deltaTecnico !== undefined &&
+                  movimiento?.deltaTecnico !== null ? (
+                    <span className="block">
+                      <Movimiento delta={movimiento.deltaTecnico} />
+                    </span>
+                  ) : null}
+                  <span className="block">
+                    {scoreTecnico.completo
+                      ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
+                      : `${scoreTecnico.sinEvaluar.length} sin evaluar`}
+                  </span>
+                </>
               }
             />
             <Cifra
               etiqueta="Preparación"
               valor={numero(scorePreparacion.valor, 1)}
-              nota={`${scorePreparacion.areas.length} áreas y la técnica`}
+              nota={
+                <>
+                  {movimiento?.deltaPreparacion !== undefined &&
+                  movimiento?.deltaPreparacion !== null ? (
+                    <span className="block">
+                      <Movimiento delta={movimiento.deltaPreparacion} />
+                    </span>
+                  ) : null}
+                  <span className="block">
+                    {scorePreparacion.areas.length} áreas y la técnica
+                  </span>
+                </>
+              }
             />
             <Cifra
               etiqueta="Invertible"

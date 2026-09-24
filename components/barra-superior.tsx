@@ -30,12 +30,20 @@ export async function BarraSuperior() {
 
         <div className="flex items-center gap-4">
           {persona && esIwl(persona.role) ? (
-            <Link
-              href="/cartera"
-              className="text-sm text-secundario transition-colors hover:text-titular"
-            >
-              Cartera
-            </Link>
+            <>
+              <Link
+                href="/cartera"
+                className="text-sm text-secundario transition-colors hover:text-titular"
+              >
+                Cartera
+              </Link>
+              <Link
+                href="/comparativa"
+                className="text-sm text-secundario transition-colors hover:text-titular"
+              >
+                Comparativa
+              </Link>
+            </>
           ) : null}
           {persona ? (
             <span className="hidden text-xs text-metadato sm:inline">

@@ -88,5 +88,5 @@ test("un hallazgo crítico abierto impide el estado invertible", async ({ page }
 test("el score técnico se lee contra el objetivo de la etapa", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
 
-  await expect(page.getByText("Sobre el objetivo de semilla")).toBeVisible();
+  await expect(page.getByText("Sobre el objetivo de semilla").first()).toBeVisible();
 });

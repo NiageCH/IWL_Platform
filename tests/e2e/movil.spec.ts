@@ -13,7 +13,7 @@ test("la fundadora trabaja desde el móvil", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea);
 
   await expect(page.getByRole("heading", { name: "Marea Clínica" })).toBeVisible();
-  await expect(page.getByText("Score técnico")).toBeVisible();
+  await expect(page.getByText("Score técnico").first()).toBeVisible();
   await expect(page.getByText("Siguientes pasos")).toBeVisible();
 
   // Navegación entre módulos

@@ -118,3 +118,37 @@ Ahora mismo cualquiera que escriba un correo en `/entrar` se crea una cuenta, co
 **Cuidado con un detalle que cuesta una tarde:** poner `enable_signup = false` en `[auth.email]` **apaga el inicio de sesión por correo entero**, no solo el registro. La respuesta del servidor es `email_provider_disabled` y no entra nadie, tampoco quien ya tenía cuenta. Lo que hay que cerrar es el de `[auth]`.
 
 El alta la hace IWL con `npm run alta -- <correo> <rol> [slug] [papel]`, que crea la cuenta, fija el rol y la asigna a una compañía. Es lo que sustituye a la pantalla de administración hasta que exista.
+
+## 2026-09-24 · Movimiento: instantáneas congeladas, no recálculo
+
+Tras revisar CRRATE con Rodrigo, se añade lo que el propio documento pedía y no estaba: la evolución en el tiempo (§4.4), la comparativa entre compañías y el embudo visual (§4.7).
+
+El movimiento se apoya en `readiness_snapshots`: una fila congela los dos scores y el estado invertible en una fecha. **No se recalculan.** Si al cambiar los niveles objetivo se recalculara la historia, una compañía «mejoraría» sin haber tocado nada, y el recorrido dejaría de significar algo. La primera instantánea de cada compañía es su línea base.
+
+Las genera `npm run snapshots`, encadenado a `npm run db:reset`. El script usa el mismo `lib/scoring` que la pantalla: una función SQL habría sido más corta pero habría creado una segunda implementación del mismo score, y las dos acabarían divergiendo.
+
+El score de preparación histórico se reconstruye de `dd_item_status_history`, que ya existía. Un punto sin cambios anteriores a esa fecha cuenta como pendiente: el checklist se instancia entero al dar de alta la compañía, así que existía aunque nadie lo hubiera tocado.
+
+## 2026-09-24 · La evolución va en dos paneles, no en un gráfico de dos series
+
+La identidad de IWL tiene un solo color cromático. Una segunda serie tendría que ir en gris, y esa pareja (`#D6005F` con `#3F3F46`) no separa lo suficiente para quien no distingue el color: el validador da ΔE 7,6 en protanopia, por debajo del umbral. Dos paneles con el mismo eje de 0 a 100 resuelven la comparación sin pedir prestado un color que la identidad no tiene.
+
+La misma razón por la que en el scorecard radar el objetivo es un contorno discontinuo y no una segunda serie de color.
+
+## 2026-09-24 · Bandas de preparación
+
+Un 64 no dice nada; «en desarrollo» sí. Cuatro tramos configurables en `platform_settings`: Inicio, En desarrollo, Consolidada, Preparada.
+
+**No son el estado invertible.** Estar en la banda alta es tener buen score de preparación; ser invertible además exige cero hallazgos críticos abiertos, los hitos del Anexo y runway suficiente. La interfaz lo dice explícitamente debajo del embudo, porque confundir las dos cosas sería justo el tipo de error que esta plataforma existe para evitar.
+
+## 2026-09-24 · Mapa de intervención
+
+Idea tomada de CRRATE, que no estaba en el documento de alcance. Agrega, por dimensión técnica, el peso multiplicado por los niveles que faltan en toda la cohorte, y ordena por ese número. Responde «dónde pongo la capacidad de mentoría este trimestre», que es una pregunta que IWL se hace de verdad y que hasta ahora obligaba a abrir las tres fichas y sumar a mano.
+
+Ordena por demanda acumulada y no por número de compañías afectadas: una brecha grande donde el peso es alto rinde más que varias pequeñas donde pesa poco.
+
+## 2026-09-24 · La comparativa mide contra el objetivo de cada etapa
+
+Poner el nivel bruto de una pre-semilla al lado del de una serie A en la misma columna sería engañoso: un 2 no significa lo mismo en las dos. La tabla enseña siempre «nivel / objetivo de su etapa» y la etapa en la cabecera de cada columna.
+
+Los KPI de sector (unidades fabricadas, coste de inferencia) quedan fuera de la comparativa: no se comparan entre compañías de sectores distintos.

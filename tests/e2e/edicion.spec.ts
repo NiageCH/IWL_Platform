@@ -36,9 +36,16 @@ test("la fundadora sí responde el cuestionario técnico", async ({ page }) => {
 test("el revisor de Niage puntúa y el score se mueve", async ({ page }) => {
   await entrarComo(page, USUARIOS.revisorMarea, "/cartera/marea-clinica/tecnico");
 
-  const antes = await page.getByText("Score técnico").locator("..").innerText();
+  // La cifra de la cabecera, no la del panel de evolución
+  const cifra = page
+    .locator("header")
+    .locator("div")
+    .filter({ has: page.getByText("Score técnico", { exact: true }) })
+    .last();
 
-  // Seguridad es la dimensión con brecha en los datos semilla
+  await expect(cifra).toContainText("94,2");
+
+  // Seguridad es la única dimensión con brecha en los datos semilla
   const bloque = page
     .locator("li", { hasText: "Seguridad" })
     .filter({ hasText: "Ajustar puntuación" })
@@ -53,10 +60,22 @@ test("el revisor de Niage puntúa y el score se mueve", async ({ page }) => {
 
   await expect(page.getByText("Puntuación guardada.")).toBeVisible();
 
-  const despues = await page.getByText("Score técnico").locator("..").innerText();
-  expect(despues).not.toBe(antes);
   // Cerrada la única brecha, todas las dimensiones alcanzan su objetivo
-  expect(despues).toContain("100");
+  await expect(cifra).toContainText("100,0");
+
+  // El recorrido no se mueve: las instantáneas están congeladas y la de hoy
+  // se tomó antes de este cambio. Es lo que las hace comparables
+  await expect(cifra).toContainText("↑ 47,1 desde el inicio");
+
+  // Se deja la puntuación como estaba: los tests no ensucian la semilla
+  await bloque.locator('select[name="level"]').selectOption("2");
+  await bloque
+    .locator('textarea[name="evidence"]')
+    .fill(
+      "Sin secretos en el repositorio y dependencias al día. Falta revisión de autorización a nivel de registro de paciente.",
+    );
+  await bloque.getByRole("button", { name: /Guardar puntuación/ }).click();
+  await expect(cifra).toContainText("94,2");
 });
 
 test("una puntuación sin evidencia no se guarda", async ({ page }) => {

@@ -10,6 +10,9 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { Chispa, Movimiento } from "@/components/evolucion";
+import { Embudo, MapaIntervencion } from "@/components/cohorte";
+import { bandaDe } from "@/lib/datos/cohorte";
 import { euros, numero } from "@/lib/utils";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
@@ -31,7 +34,7 @@ export default async function Cartera() {
   if (!persona) redirect("/entrar");
   if (!esIwl(persona.role) && persona.role !== "revisor_niage") redirect("/proyecto");
 
-  const { companias, cohorte } = await leerCartera();
+  const { companias, cohorte, bandas, mapa, tramos, lectura } = await leerCartera();
 
   if (companias.length === 0) {
     return (
@@ -63,6 +66,13 @@ export default async function Cartera() {
           {companias.length === 1 ? "compañía en seguimiento" : "compañías en seguimiento"}
         </p>
       </div>
+
+      {/* La lectura de la cohorte en una frase: qué ha cambiado, dónde está el
+          hueco y cuántas están listas. Se construye con reglas, así que ante
+          los mismos datos dice siempre lo mismo. */}
+      <p className="mb-6 border-y border-filete py-4 text-base leading-relaxed text-titular">
+        {lectura}
+      </p>
 
       <div className="mb-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Bloque className="px-4 py-4">
@@ -111,6 +121,7 @@ export default async function Cartera() {
                 <th className="px-4 py-2 font-medium text-metadato">Fase</th>
                 <th className="px-4 py-2 text-right font-medium text-metadato">Técnico</th>
                 <th className="px-4 py-2 text-right font-medium text-metadato">Preparación</th>
+                <th className="px-4 py-2 font-medium text-metadato">Recorrido</th>
                 <th className="px-4 py-2 text-right font-medium text-metadato">Runway</th>
                 <th className="px-4 py-2 text-right font-medium text-metadato">MRR</th>
                 <th className="px-4 py-2 font-medium text-metadato">Último update</th>
@@ -139,6 +150,20 @@ export default async function Cartera() {
                   </td>
                   <td className="cifra px-4 py-3 text-right text-titular">
                     {numero(c.scorePreparacion.valor, 1)}
+                    <span className="block text-xs font-normal text-metadato">
+                      {bandaDe(c.scorePreparacion.valor, bandas).nombre}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="flex items-center gap-2">
+                      {c.movimiento && c.movimiento.seriePreparacion.length > 1 ? (
+                        <Chispa valores={c.movimiento.seriePreparacion} />
+                      ) : null}
+                      <Movimiento
+                        delta={c.movimiento?.deltaPreparacion ?? null}
+                        sufijo=""
+                      />
+                    </span>
                   </td>
                   <td className="cifra px-4 py-3 text-right text-secundario">
                     {c.kpis.derivados.runway_meses === null
@@ -161,43 +186,51 @@ export default async function Cartera() {
         </div>
       </Bloque>
 
-      <Bloque className="mt-6">
-        <TituloBloque accion={<Metadato>Lo que falta a cada una</Metadato>}>
-          Camino a invertible
-        </TituloBloque>
-        <ul className="divide-y divide-filete">
-          {companias.map((c) => (
-            <li key={c.compania.id} className="px-4 py-3">
-              <div className="flex flex-wrap items-baseline gap-3">
-                <Link
-                  href={`/cartera/${c.compania.slug}`}
-                  className="text-sm font-medium text-titular underline-offset-4 hover:underline"
-                >
-                  {c.compania.name}
-                </Link>
-                <Metadato>
-                  {c.invertible.invertible
-                    ? "Invertible"
-                    : `${c.invertible.siguientesPasos.length} pasos`}
-                </Metadato>
-              </div>
-              {c.invertible.siguientesPasos.length > 0 ? (
-                <ol className="mt-1 flex flex-col gap-0.5">
-                  {c.invertible.siguientesPasos.slice(0, 3).map((paso) => (
-                    <li key={paso} className="text-sm text-secundario">
-                      {paso}
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="mt-1 text-sm text-secundario">
-                  Cumple la definición de proyecto invertible del programa.
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </Bloque>
+      <div className="mt-6 flex flex-col gap-6">
+        <Embudo tramos={tramos} objetivo={cohorte?.investable_target ?? null} />
+        <MapaIntervencion mapa={mapa} />
+
+        <Bloque>
+          <TituloBloque accion={<Metadato>Lo que falta a cada una</Metadato>}>
+            Siguientes pasos de la cohorte
+          </TituloBloque>
+          <ul className="divide-y divide-filete">
+            {companias.map((c) => (
+              <li key={c.compania.id} className="px-4 py-3">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <Link
+                    href={`/cartera/${c.compania.slug}`}
+                    className="text-sm font-medium text-titular underline-offset-4 hover:underline"
+                  >
+                    {c.compania.name}
+                  </Link>
+                  <Metadato>
+                    {c.invertible.invertible
+                      ? "Invertible"
+                      : c.invertible.siguientesPasos.length === 1
+                        ? "Un paso"
+                        : `${c.invertible.siguientesPasos.length} pasos`}
+                  </Metadato>
+                </div>
+                {c.invertible.siguientesPasos.length > 0 ? (
+                  <ol className="mt-1 flex flex-col gap-0.5">
+                    {c.invertible.siguientesPasos.slice(0, 3).map((paso) => (
+                      <li key={paso} className="text-sm text-secundario">
+                        {paso}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-1 text-sm text-secundario">
+                    Cumple la definición de proyecto invertible del programa.
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Bloque>
+      </div>
+
     </main>
   );
 }
