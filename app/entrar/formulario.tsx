@@ -4,8 +4,22 @@ import { useState } from "react";
 import { clienteNavegador } from "@/lib/supabase/navegador";
 
 /**
- * Entrada con enlace mágico. No hay contraseñas en producción.
+ * Entrada con enlace mágico. No hay contraseñas.
+ *
+ * En local el correo no sale a internet: Supabase lo intercepta y lo deja en
+ * una bandeja que corre junto a la base. Por eso, en desarrollo, la pantalla
+ * enlaza directamente a esa bandeja: quien arranca el proyecto por primera vez
+ * no tiene por qué saber que ese puerto existe.
  */
+const BANDEJA_LOCAL = "http://127.0.0.1:54324";
+
+function esLocal() {
+  return (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  );
+}
+
 export function FormularioEntrada() {
   const [correo, setCorreo] = useState("");
   const [estado, setEstado] = useState<"inicial" | "enviando" | "enviado" | "error">(
@@ -41,8 +55,32 @@ export function FormularioEntrada() {
           Enlace enviado a <span className="cifra">{correo}</span>.
         </p>
         <p className="mt-2 text-sm text-secundario">
-          Ábrelo desde este mismo navegador. Caduca en una hora.
+          Ábrelo desde este mismo navegador. Caduca en una hora y vale para un
+          solo uso.
         </p>
+
+        {esLocal() ? (
+          <p className="mt-4 border-t border-filete pt-3 text-sm text-secundario">
+            En local el correo no sale a internet. Lo encontrarás en la bandeja
+            de desarrollo:{" "}
+            <a
+              href={BANDEJA_LOCAL}
+              target="_blank"
+              rel="noreferrer"
+              className="cifra text-acento-texto underline underline-offset-4"
+            >
+              abrir la bandeja
+            </a>
+          </p>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => setEstado("inicial")}
+          className="mt-4 text-sm text-secundario underline underline-offset-4 transition-colors hover:text-titular"
+        >
+          Pedir otro enlace
+        </button>
       </div>
     );
   }
@@ -75,6 +113,21 @@ export function FormularioEntrada() {
       {estado === "error" ? (
         <p className="border-l-2 border-red-600 pl-3 text-sm text-red-700">
           {mensaje}
+        </p>
+      ) : null}
+
+      {esLocal() ? (
+        <p className="border-t border-filete pt-3 text-xs text-metadato">
+          Entorno local. El correo no sale a internet: el enlace aparece en la{" "}
+          <a
+            href={BANDEJA_LOCAL}
+            target="_blank"
+            rel="noreferrer"
+            className="text-acento-texto underline underline-offset-4"
+          >
+            bandeja de desarrollo
+          </a>
+          . Personas de prueba en el README.
         </p>
       ) : null}
     </form>

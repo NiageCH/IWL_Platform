@@ -23,7 +23,13 @@ npm run dev          # http://localhost:3000
 
 ### Entrar en la aplicación en local
 
-En local el correo no sale a internet: Supabase lo captura en Inbucket. Pide el enlace mágico desde `/entrar` con cualquiera de los correos de la semilla y ábrelo desde la bandeja local, en el puerto que indique `npx supabase status` (`Inbucket URL`).
+**El correo no sale a internet.** Supabase lo intercepta y lo deja en una bandeja que corre junto a la base, en **http://127.0.0.1:54324**. La propia pantalla de entrada enlaza a ella cuando detecta que estás en local.
+
+1. Abre http://localhost:3000/entrar
+2. Escribe uno de los correos de la tabla de abajo y pulsa **Enviar enlace de entrada**
+3. Abre http://127.0.0.1:54324 y pincha el enlace del mensaje
+
+El enlace caduca en una hora y vale para un solo uso. Si `npm run db:reset` recrea la base, las sesiones abiertas dejan de valer y hay que pedir un enlace nuevo.
 
 Personas de la semilla, todas con datos ficticios:
 
