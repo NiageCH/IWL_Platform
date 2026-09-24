@@ -105,3 +105,16 @@ Ruta en Storage: `<company_id>/<area>/<document_id>/<fichero>`. La primera carpe
 El bucket es privado y no hay URL pública: cada consulta se sirve con un enlace firmado de un minuto y queda registrada en `document_access_log`.
 
 Al subir un documento enlazado a un punto del checklist, ese punto pasa a entregado y hereda la caducidad. Es carga única aplicada al data room: entregar un documento y decir que lo has entregado son el mismo gesto.
+
+## 2026-09-24 · Acceso abierto durante el desarrollo · PENDIENTE de cerrar
+
+Ahora mismo cualquiera que escriba un correo en `/entrar` se crea una cuenta, con rol `fundadora` y sin compañía. Se deja así a propósito para poder recorrer la plataforma sin fricción, decidido con Rodrigo.
+
+**Antes de cualquier despliegue hay que cerrarlo.** Aquí se guarda el due diligence de las compañías de la cohorte y no puede haber autoservicio. El cierre son dos cambios:
+
+- `enable_signup = false` en la sección `[auth]` de `supabase/config.toml`.
+- `shouldCreateUser: false` en `signInWithOtp`, en `app/entrar/formulario.tsx`.
+
+**Cuidado con un detalle que cuesta una tarde:** poner `enable_signup = false` en `[auth.email]` **apaga el inicio de sesión por correo entero**, no solo el registro. La respuesta del servidor es `email_provider_disabled` y no entra nadie, tampoco quien ya tenía cuenta. Lo que hay que cerrar es el de `[auth]`.
+
+El alta la hace IWL con `npm run alta -- <correo> <rol> [slug] [papel]`, que crea la cuenta, fija el rol y la asigna a una compañía. Es lo que sustituye a la pantalla de administración hasta que exista.

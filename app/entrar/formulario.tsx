@@ -20,6 +20,21 @@ function esLocal() {
   );
 }
 
+/**
+ * El mensaje que devuelve el servidor de auth para un correo no dado de alta
+ * habla de «signups», que no significa nada para quien lo lee. Se traduce a lo
+ * que de verdad ha pasado, sin confirmar ni desmentir si ese correo existe.
+ */
+function traducir(mensaje: string): string {
+  if (/signup|not allowed|not found/i.test(mensaje)) {
+    return "Ese correo no tiene acceso a la plataforma. El alta la hace el equipo de IWL.";
+  }
+  if (/rate limit|too many/i.test(mensaje)) {
+    return "Se han pedido demasiados enlaces seguidos. Espera un minuto.";
+  }
+  return mensaje;
+}
+
 export function FormularioEntrada() {
   const [correo, setCorreo] = useState("");
   const [estado, setEstado] = useState<"inicial" | "enviando" | "enviado" | "error">(
@@ -36,12 +51,15 @@ export function FormularioEntrada() {
       email: correo,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/confirmar`,
+        // Durante el desarrollo se crea la cuenta al vuelo, para poder
+        // recorrer la plataforma sin fricción. Al cerrar el acceso, aquí va
+        // `shouldCreateUser: false`. Ver DECISIONES.md.
       },
     });
 
     if (error) {
       setEstado("error");
-      setMensaje(error.message);
+      setMensaje(traducir(error.message));
       return;
     }
 

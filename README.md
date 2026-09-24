@@ -44,6 +44,18 @@ Personas de la semilla, todas con datos ficticios:
 | `fundadora@raiz.test` | fundadora | Raíz Sensórica |
 | `mentor@iwl.test` | mentor | Marea Clínica |
 
+### Dar de alta a una persona
+
+```bash
+npm run alta -- ana@iwl.es equipo_iwl
+npm run alta -- ana@compania.com fundadora marea-clinica fundadora
+npm run alta -- cto@niage.es revisor_niage vega-predictiva revisor_niage
+```
+
+Crea la cuenta, le fija el rol y la asigna a una compañía. Contra un proyecto remoto, exporta antes `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
+
+Durante el desarrollo el registro está abierto: entrar con un correo cualquiera crea la cuenta, con rol `fundadora` y sin compañía, y acaba en la pantalla «sin compañía asignada». Cómo cerrarlo antes de desplegar está en `DECISIONES.md`.
+
 ## Variables de entorno
 
 Ver `.env.example`. En local las genera `npm run db:env` desde la instancia de Supabase; no hay que copiarlas a mano ni versionarlas.

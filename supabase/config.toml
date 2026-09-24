@@ -175,6 +175,14 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
+#
+# Abierto durante el desarrollo, para poder recorrer la plataforma sin fricción.
+#
+# PENDIENTE antes de cualquier despliegue: cerrarlo. Aquí se guarda el due
+# diligence de las compañías de la cohorte y no debe haber autoservicio; el
+# alta la hace IWL con `npm run alta`. Ojo al cerrarlo: poner
+# `enable_signup = false` en [auth.email] apaga el inicio de sesión por correo
+# entero, no solo el registro. Lo que hay que cerrar es este de [auth].
 enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
@@ -220,6 +228,7 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
+# No tocar: a false apaga el inicio de sesión por correo, no solo el registro.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
