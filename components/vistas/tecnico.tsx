@@ -10,6 +10,14 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import {
+  EstadoHallazgo,
+  EstadoPuntoPlan,
+  FormularioHallazgo,
+  FormularioPuntoPlan,
+  FormularioPuntuacion,
+  RespuestaCuestionario,
+} from "@/components/formularios/tecnico";
 import { euros, fecha, numero } from "@/lib/utils";
 
 /**
@@ -72,6 +80,30 @@ export async function VistaTecnico({
       .order("held_on", { ascending: false }),
   ]);
 
+  const { permisos, compania } = resumen;
+  const slug = compania.slug;
+
+  // Catálogo de dimensiones con su id, para los formularios
+  const { data: catalogo } = await supabase
+    .from("tech_dimensions")
+    .select("id, code, name, applicability, order_index")
+    .eq("is_active", true)
+    .order("order_index");
+
+  const aplicables = (catalogo ?? []).filter(
+    (d) =>
+      d.applicability === "siempre" ||
+      (d.applicability === "ia" && compania.tech_profile === "software_ia") ||
+      (d.applicability === "hardware" && compania.tech_profile === "hardware"),
+  );
+
+  const idPorCodigo = new Map(aplicables.map((d) => [d.code, d.id]));
+
+  // El cuestionario solo se enseña a quien lo responde: la compañía
+  const cuestionario = permisos.esFundadora
+    ? await leerCuestionario(supabase, companyId, aplicables.map((d) => d.id))
+    : null;
+
   const { scoreTecnico } = resumen;
   const prioridad = dimensionesPorPrioridad(scoreTecnico);
 
@@ -99,12 +131,16 @@ export async function VistaTecnico({
     );
   }
 
+  // La estrechez de tipo se pierde dentro de los callbacks del JSX, así que
+  // se saca a una constante una vez comprobado que existe
+  const evaluacionActual = evaluacion.data;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <Bloque>
           <TituloBloque
-            accion={<Metadato>Evaluación de {fecha(evaluacion.data.assessed_on)}</Metadato>}
+            accion={<Metadato>Evaluación de {fecha(evaluacionActual.assessed_on)}</Metadato>}
           >
             Scorecard técnico
           </TituloBloque>
@@ -139,17 +175,17 @@ export async function VistaTecnico({
           <Bloque>
             <TituloBloque>Lectura del revisor</TituloBloque>
             <div className="flex flex-col gap-3 px-4 py-4">
-              <p className="text-sm text-secundario">{evaluacion.data.summary}</p>
-              {evaluacion.data.strengths ? (
+              <p className="text-sm text-secundario">{evaluacionActual.summary}</p>
+              {evaluacionActual.strengths ? (
                 <div>
                   <Metadato>Fortalezas</Metadato>
                   <p className="mt-1 text-sm text-secundario">
-                    {evaluacion.data.strengths}
+                    {evaluacionActual.strengths}
                   </p>
                 </div>
               ) : null}
               <Metadato>
-                {evaluacion.data.profiles?.full_name ?? "Ingeniería Niage"}
+                {evaluacionActual.profiles?.full_name ?? "Ingeniería Niage"}
               </Metadato>
             </div>
           </Bloque>
@@ -185,6 +221,24 @@ export async function VistaTecnico({
                   </div>
                   {puntuacion?.evidence ? (
                     <p className="mt-1.5 text-sm text-secundario">{puntuacion.evidence}</p>
+                  ) : (
+                    <p className="mt-1.5 text-sm text-metadato">
+                      Sin puntuar todavía.
+                    </p>
+                  )}
+
+                  {permisos.puedeValidar && idPorCodigo.has(d.codigo) ? (
+                    <div className="-mx-4 mt-2">
+                      <FormularioPuntuacion
+                        slug={slug}
+                        assessmentId={evaluacionActual.id}
+                        dimensionId={idPorCodigo.get(d.codigo)!}
+                        dimension={d.nombre}
+                        nivelActual={d.nivel}
+                        objetivo={d.objetivo}
+                        evidenciaActual={puntuacion?.evidence ?? null}
+                      />
+                    </div>
                   ) : null}
                 </li>
               );
@@ -215,10 +269,22 @@ export async function VistaTecnico({
                 <p className="mt-2 border-l-2 border-acento pl-3 text-sm text-titular">
                   {h.recommendation}
                 </p>
+                {permisos.puedeValidar ? (
+                  <EstadoHallazgo slug={slug} id={h.id} estado={h.status} />
+                ) : null}
               </li>
             ))}
           </ul>
         )}
+
+        {permisos.puedeValidar ? (
+          <FormularioHallazgo
+            slug={slug}
+            companyId={companyId}
+            assessmentId={evaluacionActual.id}
+            dimensiones={aplicables.map((d) => ({ id: d.id, nombre: d.name }))}
+          />
+        ) : null}
       </Bloque>
 
       <Bloque>
@@ -267,7 +333,11 @@ export async function VistaTecnico({
                   <td className="cifra px-4 py-3 text-secundario">{p.quarter ?? "—"}</td>
                   <td className="cifra px-4 py-3 text-secundario">{fecha(p.due_date)}</td>
                   <td className="px-4 py-3">
-                    <Etiqueta>{ESTADOS_PLAN[p.status] ?? p.status}</Etiqueta>
+                    {permisos.puedeEscribir ? (
+                      <EstadoPuntoPlan slug={slug} id={p.id} estado={p.status} />
+                    ) : (
+                      <Etiqueta>{ESTADOS_PLAN[p.status] ?? p.status}</Etiqueta>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -275,7 +345,42 @@ export async function VistaTecnico({
           </table>
           </div>
         )}
+
+        {permisos.puedeValidar ? (
+          <FormularioPuntoPlan
+            slug={slug}
+            companyId={companyId}
+            hallazgos={(hallazgos.data ?? []).map((h) => ({
+              id: h.id,
+              titulo: h.title,
+            }))}
+          />
+        ) : null}
       </Bloque>
+
+      {cuestionario ? (
+        <Bloque>
+          <TituloBloque
+            accion={<Metadato>Lo responde el equipo técnico</Metadato>}
+          >
+            Cuestionario técnico
+          </TituloBloque>
+          <div className="divide-y divide-filete">
+            {cuestionario.map((c) => (
+              <RespuestaCuestionario
+                key={c.id}
+                slug={slug}
+                companyId={companyId}
+                criterionId={c.id}
+                titulo={c.title}
+                descripcion={c.description}
+                evidenciaEsperada={c.expected_evidence}
+                respuesta={c.respuesta}
+              />
+            ))}
+          </div>
+        </Bloque>
+      ) : null}
 
       {(sesiones.data ?? []).length > 0 ? (
         <Bloque>
@@ -298,4 +403,37 @@ export async function VistaTecnico({
       ) : null}
     </div>
   );
+}
+
+/**
+ * Criterios de las dimensiones que aplican, con la respuesta que ya haya dado
+ * la compañía. Es la capa 2 del módulo: lo que la fundadora aporta antes de
+ * que el revisor puntúe.
+ */
+async function leerCuestionario(
+  supabase: Awaited<ReturnType<typeof clienteServidor>>,
+  companyId: string,
+  dimensionIds: string[],
+) {
+  const [criterios, respuestas] = await Promise.all([
+    supabase
+      .from("tech_criteria")
+      .select("id, title, description, expected_evidence, order_index, dimension_id")
+      .in("dimension_id", dimensionIds)
+      .eq("is_active", true)
+      .order("order_index"),
+    supabase
+      .from("tech_questionnaire_answers")
+      .select("criterion_id, answer")
+      .eq("company_id", companyId),
+  ]);
+
+  const porCriterio = new Map(
+    (respuestas.data ?? []).map((r) => [r.criterion_id, r.answer]),
+  );
+
+  return (criterios.data ?? []).map((c) => ({
+    ...c,
+    respuesta: porCriterio.get(c.id) ?? null,
+  }));
 }

@@ -75,3 +75,17 @@ Next 16 escribe un fichero de reglas para agentes en cada `next dev` y, sin `AGE
 ## 2026-09-24 · Los tests restauran lo que tocan
 
 Los tests de RLS y de interfaz trabajan contra los datos semilla, que son también los datos con los que se enseña la plataforma. Todo test que escriba restaura el valor anterior con la clave de servicio. Se descubrió al ver cadenas como «Revisión 1790234166797» en el nombre de una compañía en pantalla.
+
+## 2026-09-24 · La validación de identificadores no usa `z.uuid()`
+
+Zod 4 valida los UUID según el RFC, comprobando versión y variante. El tipo `uuid` de Postgres no: acepta cualquier hexadecimal con formato 8-4-4-4-12. Con `z.uuid()`, las Server Actions rechazaban identificadores que la base acepta sin problema, incluidos los de los datos semilla y cualquier UUID v1 o v7.
+
+Se sustituye por una expresión regular que comprueba solo el formato. La regla general: **la validación de entrada nunca puede ser más estricta que la columna**, porque entonces rechaza datos válidos y el fallo aparece lejos de su causa.
+
+Se descubrió probando a guardar una puntuación desde el navegador: la acción devolvía «Revisa los campos marcados» sin marcar ningún campo, porque el identificador que fallaba iba en un campo oculto. Cubierto ahora por `lib/acciones/resultado.test.ts`.
+
+## 2026-09-24 · La interfaz oculta lo que la base prohíbe, y no al revés
+
+A la fundadora no se le ofrece el estado «validado» ni el formulario de puntuar. No porque eso la detenga (quien la detiene es un trigger), sino porque enseñar un control que va a fallar al pulsarlo es una mala interfaz.
+
+Las dos capas son independientes a propósito: `lib/datos/permisos.ts` decide qué se enseña, las políticas y los triggers deciden qué se puede. Si discrepan, manda la base y lo único que se ve es un botón que da error. Nunca al contrario.

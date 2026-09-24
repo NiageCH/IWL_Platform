@@ -8,6 +8,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { EstadoPunto } from "@/components/formularios/diligencia";
 import { fecha, numero } from "@/lib/utils";
 
 /**
@@ -32,6 +33,7 @@ export async function VistaDiligencia({
   resumen: NonNullable<ResumenCompania>;
 }) {
   const { areas, hallazgos, documentos } = await leerDiligencia(resumen.compania.id);
+  const { permisos, compania } = resumen;
 
   const scorePorArea = new Map(
     resumen.scorePreparacion.areas.map((a) => [a.codigo, a]),
@@ -106,9 +108,18 @@ export async function VistaDiligencia({
                   ) : punto.expires_on ? (
                     <Metadato>Vence {fecha(punto.expires_on)}</Metadato>
                   ) : null}
-                  <Etiqueta>
-                    {ESTADOS[punto.estadoEfectivo] ?? punto.estadoEfectivo}
-                  </Etiqueta>
+                  {permisos.puedeEscribir && !punto.caducado ? (
+                    <EstadoPunto
+                      slug={compania.slug}
+                      id={punto.id}
+                      estado={punto.status}
+                      puedeValidar={permisos.puedeValidar}
+                    />
+                  ) : (
+                    <Etiqueta>
+                      {ESTADOS[punto.estadoEfectivo] ?? punto.estadoEfectivo}
+                    </Etiqueta>
+                  )}
                 </li>
               ))}
             </ul>

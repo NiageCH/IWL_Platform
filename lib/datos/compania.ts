@@ -3,6 +3,7 @@ import { calcularScoreTecnico } from "@/lib/scoring/score-tecnico";
 import { calcularScorePreparacion } from "@/lib/scoring/score-preparacion";
 import { calcularSemaforo, evaluarInvertible } from "@/lib/scoring/invertible";
 import { calcularDerivados } from "@/lib/scoring/kpi-derivados";
+import { permisosDeCompania } from "./permisos";
 import type {
   AreaDd,
   DimensionTecnica,
@@ -39,11 +40,12 @@ export async function leerCompania(slug: string) {
 
   if (!compania) return null;
 
-  const [dimensiones, areas, hallazgos, kpis] = await Promise.all([
+  const [dimensiones, areas, hallazgos, kpis, permisos] = await Promise.all([
     leerDimensiones(supabase, compania.id),
     leerAreas(supabase, compania.id),
     leerHallazgosAbiertos(supabase, compania.id),
     leerKpisRecientes(supabase, compania.id),
+    permisosDeCompania(compania.id),
   ]);
 
   const scoreTecnico = calcularScoreTecnico(dimensiones);
@@ -66,6 +68,7 @@ export async function leerCompania(slug: string) {
 
   return {
     compania,
+    permisos,
     scoreTecnico,
     scorePreparacion,
     hallazgos,

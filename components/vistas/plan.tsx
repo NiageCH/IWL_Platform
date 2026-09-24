@@ -7,6 +7,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { EditorSeccion, NuevoComentario } from "@/components/formularios/plan";
 import { fecha } from "@/lib/utils";
 
 /**
@@ -37,6 +38,7 @@ export async function VistaPlan({
 }) {
   const supabase = await clienteServidor();
   const companyId = resumen.compania.id;
+  const { permisos, compania } = resumen;
 
   const [secciones, hipotesis, comentarios] = await Promise.all([
     supabase
@@ -171,9 +173,20 @@ export async function VistaPlan({
               </div>
             ) : null}
 
-            {susComentarios.length > 0 ? (
-              <div className="border-t border-filete px-4 py-3">
-                <Metadato>Comentarios</Metadato>
+            {permisos.puedeEscribir ? (
+              <EditorSeccion
+                slug={compania.slug}
+                id={seccion.id}
+                contenido={seccion.content}
+                estado={seccion.status}
+                guia={plantilla?.guidance ?? null}
+                puedeValidar={permisos.puedeValidar}
+              />
+            ) : null}
+
+            <div className="border-t border-filete px-4 py-3">
+              <Metadato>Comentarios</Metadato>
+              {susComentarios.length > 0 ? (
                 <ul className="mt-2 flex flex-col gap-2">
                   {susComentarios.map((c) => (
                     <li key={c.id} className="border-l-2 border-filete pl-3">
@@ -184,8 +197,19 @@ export async function VistaPlan({
                     </li>
                   ))}
                 </ul>
-              </div>
-            ) : null}
+              ) : (
+                <p className="mt-1 text-sm text-metadato">
+                  Sin comentarios en esta sección.
+                </p>
+              )}
+
+              <NuevoComentario
+                slug={compania.slug}
+                companyId={companyId}
+                entidad="bp_section"
+                entidadId={seccion.id}
+              />
+            </div>
           </Bloque>
         );
       })}

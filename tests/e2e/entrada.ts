@@ -60,5 +60,6 @@ export const USUARIOS = {
   equipoIwl: "programa@iwl.test",
   fundadoraMarea: "fundadora@marea.test",
   fundadoraVega: "fundadora@vega.test",
+  revisorMarea: "revisor@niage.test",
   revisorVega: "revisor2@niage.test",
 } as const;

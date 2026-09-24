@@ -9,6 +9,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { CargaKpis, FormularioUpdate } from "@/components/formularios/kpi";
 import { euros, fecha, numero, porcentaje } from "@/lib/utils";
 
 /**
@@ -34,8 +35,9 @@ export async function VistaKpi({
 }) {
   const supabase = await clienteServidor();
   const companyId = resumen.compania.id;
+  const { permisos, compania } = resumen;
 
-  const [series, updates] = await Promise.all([
+  const [series, updates, cartera] = await Promise.all([
     supabase
       .from("kpi_series")
       .select("period, code, name, unit, value, target_value, category")
@@ -46,6 +48,16 @@ export async function VistaKpi({
       .select("id, period, status, achievements, blockers, requests, due_date, submitted_at")
       .eq("company_id", companyId)
       .order("period", { ascending: false }),
+    // Los KPI que esta compañía sigue y se teclean: el núcleo y los de su
+    // sector. Los técnicos no, que llegan del análisis del repositorio
+    supabase
+      .from("company_kpis")
+      .select(
+        "id, order_index, custom_name, custom_unit, kpi_definitions ( code, name, unit, category )",
+      )
+      .eq("company_id", companyId)
+      .eq("is_active", true)
+      .order("order_index"),
   ]);
 
   const filas = series.data ?? [];
@@ -84,6 +96,27 @@ export async function VistaKpi({
 
   const ultimo = periodos[periodos.length - 1];
   const tecnicos = filas.filter((f) => f.category === "tecnico" && f.period === ultimo);
+
+  // El mes que toca cargar: el siguiente al último con datos
+  const mesACargar = siguienteMes(ultimo);
+
+  const cargables = (cartera.data ?? [])
+    .filter((ck) => ck.kpi_definitions?.category !== "tecnico")
+    .map((ck) => ({
+      companyKpiId: ck.id,
+      nombre: ck.kpi_definitions?.name ?? ck.custom_name ?? "Sin nombre",
+      unidad: ck.kpi_definitions?.unit ?? ck.custom_unit ?? "numero",
+      valor:
+        filas.find(
+          (f) =>
+            f.code === ck.kpi_definitions?.code && f.period === `${mesACargar}-01`,
+        )?.value ?? null,
+    }))
+    .map((k) => ({ ...k, valor: k.valor === null ? null : Number(k.valor) }));
+
+  const updateDelMes = (updates.data ?? []).find(
+    (u) => u.period === `${mesACargar}-01`,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -183,6 +216,35 @@ export async function VistaKpi({
         </Bloque>
       ) : null}
 
+      {permisos.puedeEscribir ? (
+        <>
+          <Bloque>
+            <TituloBloque accion={<Metadato>Se carga una vez</Metadato>}>
+              Cargar los KPI del mes
+            </TituloBloque>
+            <CargaKpis
+              slug={compania.slug}
+              companyId={companyId}
+              mes={mesACargar}
+              kpis={cargables}
+            />
+          </Bloque>
+
+          <Bloque>
+            <TituloBloque accion={<Metadato>{mesACargar}</Metadato>}>
+              Update mensual
+            </TituloBloque>
+            <FormularioUpdate
+              slug={compania.slug}
+              companyId={companyId}
+              mes={mesACargar}
+              update={updateDelMes ?? null}
+              puedeRevisar={permisos.esIwl}
+            />
+          </Bloque>
+        </>
+      ) : null}
+
       <Bloque>
         <TituloBloque accion={<Metadato>{(updates.data ?? []).length} updates</Metadato>}>
           Updates mensuales
@@ -229,4 +291,11 @@ function formatear(unidad: string | null, valor: number | null) {
   if (unidad === "moneda") return euros(valor);
   if (unidad === "porcentaje") return porcentaje(valor, 1);
   return numero(valor, 0);
+}
+
+/** El mes siguiente al último con datos, en formato AAAA-MM */
+function siguienteMes(ultimo: string | undefined): string {
+  const base = ultimo ? new Date(`${ultimo.slice(0, 7)}-01T00:00:00Z`) : new Date();
+  if (ultimo) base.setUTCMonth(base.getUTCMonth() + 1);
+  return `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}`;
 }
