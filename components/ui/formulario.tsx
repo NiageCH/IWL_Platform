@@ -45,11 +45,11 @@ export function Formulario({
     <form action={enviar} className={cn("flex flex-col gap-4", className)}>
       {children(resultado)}
       {!resultado.ok ? (
-        <p className="border-l-2 border-red-600 pl-3 text-sm text-red-700">
+        <p className="rounded-md border border-mal/40 bg-mal/10 px-3 py-2 text-sm text-mal">
           {resultado.error}
         </p>
       ) : resultado.mensaje ? (
-        <p className="border-l-2 border-acento pl-3 text-sm text-secundario">
+        <p className="rounded-md border border-acento/40 bg-acento/10 px-3 py-2 text-sm text-acento-texto">
           {resultado.mensaje}
         </p>
       ) : null}
@@ -77,13 +77,13 @@ export function Campo({
       {ayuda && !error ? (
         <span className="text-xs text-metadato">{ayuda}</span>
       ) : null}
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
+      {error ? <span className="text-xs text-mal">{error}</span> : null}
     </label>
   );
 }
 
 const CLASES_CAMPO =
-  "border border-filete bg-papel px-3 py-2 text-sm text-titular outline-none focus:border-acento";
+  "rounded-md border border-filete bg-hundido px-3 py-2 text-sm text-titular outline-none transition-colors focus:border-acento focus:ring-1 focus:ring-acento/40";
 
 export function Texto({
   error,
@@ -93,7 +93,7 @@ export function Texto({
   return (
     <input
       {...props}
-      className={cn(CLASES_CAMPO, error && "border-red-600", className)}
+      className={cn(CLASES_CAMPO, error && "border-mal", className)}
     />
   );
 }
@@ -106,7 +106,7 @@ export function AreaTexto({
   return (
     <textarea
       {...props}
-      className={cn(CLASES_CAMPO, "resize-y", error && "border-red-600", className)}
+      className={cn(CLASES_CAMPO, "resize-y", error && "border-mal", className)}
     />
   );
 }
@@ -120,7 +120,7 @@ export function Seleccion({
   return (
     <select
       {...props}
-      className={cn(CLASES_CAMPO, error && "border-red-600", className)}
+      className={cn(CLASES_CAMPO, error && "border-mal", className)}
     >
       {children}
     </select>
@@ -142,10 +142,10 @@ export function Boton({
       {...props}
       disabled={props.disabled || pending}
       className={cn(
-        "px-3 py-2 text-sm font-medium transition-opacity disabled:opacity-50",
+        "rounded-md px-3 py-2 text-sm font-medium transition-all disabled:opacity-50",
         variante === "principal"
-          ? "border border-titular bg-titular text-papel hover:opacity-90"
-          : "border border-filete bg-papel text-titular hover:border-titular",
+          ? "barra-acento text-white hover:brightness-110"
+          : "border border-filete bg-elevado text-titular hover:border-filete-fuerte",
         className,
       )}
     >

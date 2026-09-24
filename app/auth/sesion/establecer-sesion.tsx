@@ -56,7 +56,8 @@ export function EstablecerSesion() {
 
   if (estado === "error") {
     return (
-      <div className="border-l-2 border-acento pl-4">
+      <div className="relative pl-4">
+          <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
         <p className="text-sm text-titular">Este enlace ya no sirve.</p>
         <p className="mt-2 text-sm text-secundario">
           Los enlaces de entrada caducan en una hora y valen para un solo uso.

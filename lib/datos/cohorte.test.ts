@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { bandaDe, embudo, lecturaDeCohorte, mapaIntervencion } from "./cohorte";
+import {
+  bandaDe,
+  embudo,
+  evolucionCohorte,
+  lecturaDeCohorte,
+  mapaIntervencion,
+} from "./cohorte";
 import type { Banda } from "./cohorte";
 import { calcularScoreTecnico } from "@/lib/scoring/score-tecnico";
 import { calcularScorePreparacion } from "@/lib/scoring/score-preparacion";
@@ -170,5 +176,46 @@ describe("lecturaDeCohorte", () => {
 
   it("aguanta una cohorte vacía", () => {
     expect(lecturaDeCohorte([], new Map(), [], null)).toContain("No hay compañías");
+  });
+});
+
+describe("evolucionCohorte", () => {
+  /**
+   * Dos compañías medidas con días de diferencia son el mismo punto de la
+   * serie. Si no se agrupara, el eje repetiría el mes.
+   */
+  it("agrupa por mes, no por fecha exacta", () => {
+    const serie = evolucionCohorte([
+      { company_id: "a", taken_on: "2026-03-08", preparation_score: 20 },
+      { company_id: "b", taken_on: "2026-03-27", preparation_score: 40 },
+      { company_id: "a", taken_on: "2026-06-01", preparation_score: 60 },
+    ]);
+
+    expect(serie.map((p) => p.fecha)).toEqual(["2026-03-01", "2026-06-01"]);
+    // En marzo, A vale 20 y B vale 40
+    expect(serie[0]).toMatchObject({ media: 30, companias: 2 });
+    // En junio, A ya vale 60 y B sigue en 40
+    expect(serie[1]).toMatchObject({ media: 50, companias: 2 });
+  });
+
+  it("no cuenta a quien todavía no había entrado en el programa", () => {
+    const serie = evolucionCohorte([
+      { company_id: "a", taken_on: "2026-01-10", preparation_score: 10 },
+      { company_id: "b", taken_on: "2026-05-10", preparation_score: 90 },
+    ]);
+
+    // En enero solo estaba A: la media es la suya, no una mezcla con quien
+    // aún no existía
+    expect(serie[0]).toMatchObject({ media: 10, companias: 1 });
+    expect(serie[1]).toMatchObject({ media: 50, companias: 2 });
+  });
+
+  it("ignora las instantáneas sin score de preparación", () => {
+    const serie = evolucionCohorte([
+      { company_id: "a", taken_on: "2026-01-10", preparation_score: null },
+      { company_id: "b", taken_on: "2026-01-11", preparation_score: 40 },
+    ]);
+
+    expect(serie[0]).toMatchObject({ media: 40, companias: 1 });
   });
 });

@@ -18,9 +18,9 @@ import {
  * gris, que se distingue del dato por el trazo y no solo por el color.
  */
 
-const ACENTO = "#D6005F";
-const NEUTRO = "#71717A";
-const FILETE = "#E4E4E7";
+const ACENTO = "#FF007A";
+const NEUTRO = "#8B8B94";
+const FILETE = "#2C2C33";
 
 interface Punto {
   periodo: string;
@@ -85,7 +85,7 @@ export function SerieKpi({
               stroke={ACENTO}
               strokeWidth={2}
               dot={{ r: 3, fill: ACENTO, strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: ACENTO, stroke: "#FFFFFF", strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: ACENTO, stroke: "#1A1A1F", strokeWidth: 2 }}
               isAnimationActive={false}
               connectNulls
             />
@@ -128,7 +128,7 @@ function Etiqueta({ active, label, payload, unidad, nombre }: EtiquetaProps) {
   const objetivo = payload.find((p) => p.dataKey === "objetivo")?.value ?? null;
 
   return (
-    <div className="border border-filete bg-papel px-3 py-2 text-xs shadow-sm">
+    <div className="elevacion-2 rounded-md px-3 py-2 text-xs">
       <p className="cifra text-metadato">{label}</p>
       <p className="mt-1 text-titular">
         {nombre}: <span className="cifra">{formatear(valor, unidad)}</span>

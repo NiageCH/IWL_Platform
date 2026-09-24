@@ -22,9 +22,9 @@ import { Metadato } from "@/components/ui/primitivas";
  * prestado un color que no existe en la identidad.
  */
 
-const ACENTO = "#D6005F";
-const NEUTRO = "#71717A";
-const FILETE = "#E4E4E7";
+const ACENTO = "#FF007A";
+const NEUTRO = "#8B8B94";
+const FILETE = "#2C2C33";
 
 export interface PuntoEvolucion {
   fecha: string;
@@ -89,7 +89,7 @@ function Panel({
         <span className="text-sm font-medium text-titular">{titulo}</span>
         <span className="cifra text-sm text-secundario">
           {formatear(primero)} → <span className="text-titular">{formatear(ultimo)}</span>{" "}
-          <span className={delta < 0 ? "text-red-700" : "text-acento-texto"}>
+          <span className={delta < 0 ? "text-mal" : "text-acento-texto"}>
             {delta === 0
               ? "sin cambio"
               : `${delta > 0 ? "↑" : "↓"} ${formatear(Math.abs(delta))}`}
@@ -131,7 +131,7 @@ function Panel({
               fill={ACENTO}
               fillOpacity={0.1}
               dot={{ r: 3, fill: ACENTO, strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: ACENTO, stroke: "#FFFFFF", strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: ACENTO, stroke: "#1A1A1F", strokeWidth: 2 }}
               isAnimationActive={false}
               connectNulls
             />
@@ -164,7 +164,7 @@ function Etiqueta({ active, label, payload }: EtiquetaProps) {
   const punto = payload[0].payload;
 
   return (
-    <div className="border border-filete bg-papel px-3 py-2 text-xs shadow-sm">
+    <div className="elevacion-2 rounded-md px-3 py-2 text-xs">
       <p className="cifra text-metadato">{label}</p>
       <p className="cifra mt-1 text-titular">{formatear(punto.valor)}</p>
       <p className="text-secundario">{MOTIVOS[punto.motivo] ?? punto.motivo}</p>
@@ -218,7 +218,7 @@ export function Chispa({
       <polyline
         points={puntos}
         fill="none"
-        stroke={baja ? "#B91C1C" : ACENTO}
+        stroke={baja ? "#FB7185" : ACENTO}
         strokeWidth="1.5"
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -245,7 +245,7 @@ export function Movimiento({
 
   return (
     <span
-      className={`cifra whitespace-nowrap text-xs ${delta > 0 ? "text-acento-texto" : "text-red-700"}`}
+      className={`cifra whitespace-nowrap text-xs ${delta > 0 ? "text-acento-texto" : "text-mal"}`}
     >
       {delta > 0 ? "↑" : "↓"} {formatear(Math.abs(delta))} {sufijo}
     </span>

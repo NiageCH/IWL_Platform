@@ -19,10 +19,12 @@ export async function BarraSuperior() {
   const persona = await personaActual();
 
   return (
-    <div className="border-b border-filete bg-papel">
+    <div className="sticky top-0 z-20 border-b border-filete bg-lienzo/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
         <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-lg font-semibold leading-none text-acento-texto">W</span>
+          <span className="brillo-acento text-lg font-semibold leading-none text-acento">
+            W
+          </span>
           <span className="text-sm font-medium tracking-tight text-titular">
             Plataforma IWL
           </span>

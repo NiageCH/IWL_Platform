@@ -17,7 +17,8 @@ export default async function SinCompania() {
     <>
       <BarraSuperior />
       <main className="mx-auto w-full max-w-2xl px-6 py-16">
-        <div className="border-l-2 border-acento pl-4">
+        <div className="relative pl-4">
+          <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
           <h1 className="text-lg font-semibold tracking-tight text-titular">
             Sin compañía asignada
           </h1>
@@ -52,7 +53,7 @@ export default async function SinCompania() {
               </li>
               <li>
                 Dar de alta tu cuenta con el papel que quieras:
-                <code className="mt-1 block bg-zinc-50 px-3 py-2 text-xs text-titular">
+                <code className="mt-1 block bg-elevado px-3 py-2 text-xs text-titular">
                   npm run alta -- {persona?.email ?? "tu@correo.com"} equipo_iwl
                 </code>
                 <span className="mt-1 block text-xs text-metadato">

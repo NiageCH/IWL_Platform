@@ -16,12 +16,21 @@ export function Filete({ className }: { className?: string }) {
 export function Bloque({
   children,
   className,
+  elevacion = 1,
 }: {
   children: ReactNode;
   className?: string;
+  /** 2 para lo que tiene que destacar sobre el resto de la pantalla */
+  elevacion?: 1 | 2;
 }) {
   return (
-    <section className={cn("border border-filete bg-papel", className)}>
+    <section
+      className={cn(
+        elevacion === 2 ? "elevacion-2" : "elevacion-1",
+        "rounded-lg",
+        className,
+      )}
+    >
       {children}
     </section>
   );
@@ -56,24 +65,34 @@ export function Cifra({
   valor,
   etiqueta,
   nota,
+  destacada = false,
 }: {
   valor: ReactNode;
   etiqueta: string;
   nota?: ReactNode;
+  /** La cifra que manda en la pantalla, con el acento encendido */
+  destacada?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1">
       <Metadato>{etiqueta}</Metadato>
-      <span className="cifra text-2xl leading-none text-titular">{valor}</span>
+      <span
+        className={cn(
+          "cifra text-2xl leading-none",
+          destacada ? "brillo-acento text-acento-texto" : "text-titular",
+        )}
+      >
+        {valor}
+      </span>
       {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
     </div>
   );
 }
 
 const TONOS_SEMAFORO = {
-  verde: "border-emerald-600 text-emerald-700",
-  ambar: "border-amber-600 text-amber-700",
-  rojo: "border-red-600 text-red-700",
+  verde: "border-bien text-bien",
+  ambar: "border-aviso text-aviso",
+  rojo: "border-mal text-mal",
 } as const;
 
 /**
@@ -103,9 +122,9 @@ export function Semaforo({
 }
 
 const TONOS_SEVERIDAD = {
-  critico: "border-red-600 text-red-700",
-  alto: "border-amber-600 text-amber-700",
-  medio: "border-zinc-400 text-secundario",
+  critico: "border-mal bg-mal/10 text-mal",
+  alto: "border-aviso bg-aviso/10 text-aviso",
+  medio: "border-filete-fuerte text-secundario",
   bajo: "border-filete text-metadato",
 } as const;
 
@@ -124,7 +143,7 @@ export function Severidad({
   return (
     <span
       className={cn(
-        "cifra inline-block border px-1.5 py-0.5 text-[11px] uppercase tracking-wide",
+        "cifra inline-block rounded border px-1.5 py-0.5 text-[11px] uppercase tracking-wide",
         TONOS_SEVERIDAD[nivel],
       )}
     >
@@ -135,7 +154,7 @@ export function Severidad({
 
 export function Etiqueta({ children }: { children: ReactNode }) {
   return (
-    <span className="cifra inline-block border border-filete px-1.5 py-0.5 text-[11px] uppercase tracking-wide text-secundario">
+    <span className="cifra inline-block rounded border border-filete bg-elevado px-1.5 py-0.5 text-[11px] uppercase tracking-wide text-secundario">
       {children}
     </span>
   );

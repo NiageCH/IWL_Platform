@@ -34,9 +34,9 @@ const NOMBRES_CORTOS: Record<string, string> = {
   equipo_proceso: "Equipo",
 };
 
-const ACENTO = "#D6005F";
-const NEUTRO = "#71717A";
-const FILETE = "#E4E4E7";
+const ACENTO = "#FF007A";
+const NEUTRO = "#8B8B94";
+const FILETE = "#2C2C33";
 
 interface Punto {
   dimension: string;
@@ -156,7 +156,7 @@ function Etiqueta({ active, payload }: EtiquetaProps) {
   const brecha = Math.max(0, punto.objetivo - punto.nivel);
 
   return (
-    <div className="border border-filete bg-papel px-3 py-2 text-xs shadow-sm">
+    <div className="elevacion-2 rounded-md px-3 py-2 text-xs">
       <p className="font-semibold text-titular">{punto.nombre}</p>
       <p className="cifra mt-1 text-secundario">
         Nivel {punto.evaluada ? punto.nivel : "sin evaluar"} · objetivo{" "}

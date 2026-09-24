@@ -96,7 +96,8 @@ export default async function Comparativa() {
     <>
       <BarraSuperior />
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
-        <div className="mb-6 border-l-2 border-acento pl-4">
+        <div className="relative mb-6 pl-4">
+        <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
           <h1 className="text-lg font-semibold tracking-tight text-titular">
             Comparativa
           </h1>
@@ -153,7 +154,7 @@ export default async function Comparativa() {
                             <span className="text-metadato">/ {d.objetivo}</span>
                           </span>
                           {d.brecha > 0 ? (
-                            <span className="ml-2 text-xs text-red-700">
+                            <span className="ml-2 text-xs text-mal">
                               −{d.brecha}
                             </span>
                           ) : d.objetivo === 0 ? (
@@ -173,7 +174,7 @@ export default async function Comparativa() {
                   </tr>
                 ))}
 
-                <tr className="bg-zinc-50">
+                <tr className="bg-elevado">
                   <td className="px-4 py-2.5 font-medium text-titular">
                     Score técnico
                   </td>
@@ -246,7 +247,7 @@ export default async function Comparativa() {
                   ))}
                 </tr>
 
-                <tr className="bg-zinc-50">
+                <tr className="bg-elevado">
                   <td className="px-4 py-2.5 font-medium text-titular">Preparación</td>
                   {companias.map((c) => (
                     <td key={c.compania.id} className="cifra px-4 py-2.5 text-titular">

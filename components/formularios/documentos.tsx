@@ -147,7 +147,7 @@ export function AbrirDocumento({ documentId }: { documentId: string }) {
       >
         {pendiente ? "Abriendo" : "Abrir"}
       </button>
-      {fallo ? <span className="text-xs text-red-700">{fallo}</span> : null}
+      {fallo ? <span className="text-xs text-mal">{fallo}</span> : null}
     </span>
   );
 }

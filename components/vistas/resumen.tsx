@@ -152,9 +152,9 @@ export async function VistaResumen({
               <span className="w-32 shrink-0 text-sm text-titular sm:w-56">
                 {area.nombre}
               </span>
-              <span className="h-1.5 flex-1 bg-filete" aria-hidden="true">
+              <span className="h-1.5 flex-1 rounded-sm bg-hundido" aria-hidden="true">
                 <span
-                  className="block h-full bg-acento"
+                  className="barra-acento block h-full rounded-sm"
                   style={{ width: `${area.valor}%` }}
                 />
               </span>
@@ -172,13 +172,13 @@ export async function VistaResumen({
           ))}
 
           {scorePreparacion.aportacionTecnica ? (
-            <li className="flex items-center gap-4 bg-zinc-50 px-4 py-3">
+            <li className="flex items-center gap-4 bg-elevado px-4 py-3">
               <span className="w-32 shrink-0 text-sm font-medium text-titular sm:w-56">
                 Due diligence técnico
               </span>
-              <span className="h-1.5 flex-1 bg-filete" aria-hidden="true">
+              <span className="h-1.5 flex-1 rounded-sm bg-hundido" aria-hidden="true">
                 <span
-                  className="block h-full bg-acento"
+                  className="barra-acento block h-full rounded-sm"
                   style={{ width: `${scorePreparacion.aportacionTecnica.valor}%` }}
                 />
               </span>

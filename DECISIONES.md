@@ -24,9 +24,9 @@ El documento no fija gestor. `pnpm` no está instalado en la máquina de desarro
 
 El scaffold fija `@types/node@^20`, que entra en conflicto con el peer de Vitest 5 (`^22 || >=24`). Se sube a `^24`, alineado con el Node 24 de desarrollo y con el runtime de Vercel.
 
-## 2026-09-23 · Sin modo oscuro
+## 2026-09-23 · Sin modo oscuro · REVERTIDA el 2026-09-24
 
-La identidad de IWL (§8) es papel blanco con texto en zinc. Un modo oscuro obligaría a una segunda paleta que el documento no define y que cambiaría el uso del acento magenta. Se fija `color-scheme: light` y se retira el bloque `prefers-color-scheme` del scaffold. Si más adelante se quiere, se decide paleta antes de implementarlo.
+Se decidió papel blanco siguiendo el §8. Rodrigo pidió después el tema oscuro para que resalte el fucsia. Ver la entrada del 24 de septiembre.
 
 ## 2026-09-23 · Tokens de color con nombre en español
 
@@ -152,3 +152,24 @@ Ordena por demanda acumulada y no por número de compañías afectadas: una brec
 Poner el nivel bruto de una pre-semilla al lado del de una serie A en la misma columna sería engañoso: un 2 no significa lo mismo en las dos. La tabla enseña siempre «nivel / objetivo de su etapa» y la etapa en la cabecera de cada columna.
 
 Los KPI de sector (unidades fabricadas, coste de inferencia) quedan fuera de la comparativa: no se comparan entre compañías de sectores distintos.
+
+## 2026-09-24 · Tema oscuro · se aparta del §8 a petición de Rodrigo
+
+El documento fija papel blanco (§8). Rodrigo pide gris oscuro para que el fucsia resalte, y se hace. Queda anotado que es una desviación consciente del documento de alcance, no un descuido.
+
+Lo que **no** cambia: sigue habiendo un solo color cromático. Lo que cambia es el lienzo, y con él los pasos de gris, que se invierten. Y los informes en PDF siguen siendo papel blanco: son documentos para imprimir y enviar a un inversor, no pantallas.
+
+Tres niveles de elevación y no más: en una interfaz densa, cada nivel extra de profundidad es una decisión menos clara sobre qué importa. La profundidad se consigue con superficie más clara que el fondo, borde superior que recoge luz y sombra; no con relieve simulado, que en una herramienta de due diligence envejece mal y resta credibilidad.
+
+## 2026-09-24 · Los gráficos usan una sola serie, siempre
+
+Sobre el fondo oscuro se volvió a validar la paleta, como exige cambiar de superficie. El acento `#FF007A` pasa todas las comprobaciones en solitario. Una rampa de cuatro pasos para severidad **no** pasa: los pasos adyacentes quedan a ΔE 5,4 en deuteranopia y 6,7 en visión normal, muy por debajo del suelo de 15, y los dos pasos oscuros bajan de 3:1 de contraste.
+
+Conclusión, que vale para todo gráfico nuevo: **una serie de datos en acento, y la diferencia por etiqueta de texto**. Las referencias (objetivo, línea base, umbral) van en trazo discontinuo gris, que se distingue por la forma y no por el color. Cuando hay dos medidas que comparar, dos paneles con el mismo eje, no dos series en uno.
+
+## 2026-09-24 · Cuatro gráficos nuevos en el dashboard
+
+- **Preparación en el tiempo**: media de la cohorte, agrupada por mes. Solo cuenta a quien ya estaba: una compañía que entra en junio no arrastra la media de marzo.
+- **Hallazgos por severidad**: los críticos en el tono de alerta, porque bloquean el estado invertible.
+- **Meses de caja**: barras por compañía con el umbral de 6 meses marcado. Quien está por debajo va en el tono de alerta y además lleva su cifra escrita.
+- **Scorecards de la cohorte**: un radar por compañía, en paralelo. No superpuestos, que necesitaría un color por compañía; en paralelo se comparan las formas, que es lo que se quiere ver.

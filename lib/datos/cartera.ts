@@ -3,9 +3,13 @@ import { leerCompania, type ResumenCompania } from "./compania";
 import { leerMovimientoCartera } from "./movimiento";
 import {
   embudo,
+  evolucionCohorte,
+  hallazgosPorSeveridad,
   leerBandas,
   lecturaDeCohorte,
   mapaIntervencion,
+  radaresCohorte,
+  runwayCohorte,
 } from "./cohorte";
 
 /**
@@ -41,12 +45,22 @@ export async function leerCartera() {
   const cohorte = filas?.[0]?.cohorts ?? null;
   const mapa = mapaIntervencion(companias);
 
+  // Las instantáneas en crudo, para la media de la cohorte en el tiempo
+  const { data: instantaneas } = await supabase
+    .from("readiness_snapshots")
+    .select("company_id, taken_on, preparation_score")
+    .order("taken_on");
+
   return {
     companias,
     cohorte,
     bandas,
     mapa,
     tramos: embudo(companias, bandas),
+    evolucion: evolucionCohorte(instantaneas ?? []),
+    severidades: hallazgosPorSeveridad(companias),
+    radares: radaresCohorte(companias),
+    runway: runwayCohorte(companias),
     lectura: lecturaDeCohorte(
       companias,
       movimientos,

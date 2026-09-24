@@ -109,7 +109,7 @@ Fase 1 del documento de alcance, pasos 1 a 8:
 | Due diligence general y data room | Completo: checklist con estados, subida de documentos con caducidad y enlaces firmados |
 | Business plan | Completo: edición con versionado, estados, hipótesis y comentarios |
 | Update mensual y KPI | Completo: carga del mes, series y métricas derivadas |
-| Dashboard IWL | Cohorte con lectura de apertura, embudo por bandas, mapa de intervención y ficha por compañía |
+| Dashboard IWL | Lectura de apertura, preparación en el tiempo, hallazgos por severidad, meses de caja, embudo por bandas, mapa de intervención y scorecards en paralelo |
 | Movimiento en el tiempo | Instantáneas congeladas, línea base, evolución de los dos scores y recorrido en la cartera |
 | Comparativa | Compañías sobre la misma vara, cada una contra el objetivo de su etapa |
 

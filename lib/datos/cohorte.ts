@@ -183,3 +183,104 @@ export function lecturaDeCohorte(
 function formatear(valor: number): string {
   return new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 }).format(valor);
 }
+
+// -----------------------------------------------------------------------------
+// Series para los gráficos de cohorte
+// -----------------------------------------------------------------------------
+
+export interface PuntoCohorte {
+  fecha: string;
+  media: number;
+  companias: number;
+}
+
+/**
+ * Preparación media de la cohorte en el tiempo.
+ *
+ * Se agrupa por mes, no por fecha exacta: dos compañías medidas con tres días
+ * de diferencia son el mismo punto de la serie, y separarlas dibujaría un eje
+ * con el mismo mes repetido.
+ *
+ * Solo cuenta las compañías que ya tenían medición. Si una entra al programa
+ * en junio, no arrastra la media de marzo hacia abajo: en marzo no estaba.
+ */
+export function evolucionCohorte(
+  instantaneas: Array<{ company_id: string; taken_on: string; preparation_score: number | null }>,
+): PuntoCohorte[] {
+  const meses = [...new Set(instantaneas.map((s) => s.taken_on.slice(0, 7)))].sort();
+
+  return meses.map((mes) => {
+    // Para cada compañía, su medición más reciente hasta el final de ese mes
+    const porCompania = new Map<string, number>();
+
+    for (const s of [...instantaneas].sort((a, b) =>
+      a.taken_on.localeCompare(b.taken_on),
+    )) {
+      if (s.taken_on.slice(0, 7) > mes || s.preparation_score === null) continue;
+      porCompania.set(s.company_id, Number(s.preparation_score));
+    }
+
+    const valores = [...porCompania.values()];
+    const media =
+      valores.length === 0
+        ? 0
+        : Math.round((valores.reduce((a, b) => a + b, 0) / valores.length) * 10) / 10;
+
+    return { fecha: `${mes}-01`, media, companias: valores.length };
+  });
+}
+
+/** Hallazgos abiertos de toda la cohorte, agrupados por severidad */
+export function hallazgosPorSeveridad(companias: Compania[]) {
+  const orden = [
+    { severidad: "critico", nombre: "Crítico", critica: true },
+    { severidad: "alto", nombre: "Alto", critica: false },
+    { severidad: "medio", nombre: "Medio", critica: false },
+    { severidad: "bajo", nombre: "Bajo", critica: false },
+  ];
+
+  return orden.map((s) => ({
+    ...s,
+    cuenta: companias.reduce(
+      (acc, c) => acc + c.hallazgos.filter((h) => h.severidad === s.severidad).length,
+      0,
+    ),
+  }));
+}
+
+/** Scorecards de la cohorte, para verlos en paralelo */
+export function radaresCohorte(companias: Compania[]) {
+  const NOMBRES_CORTOS: Record<string, string> = {
+    arquitectura_producto: "Arquitectura",
+    codigo_calidad: "Código",
+    seguridad: "Seguridad",
+    infraestructura_operacion: "Infra",
+    escalabilidad_rendimiento: "Escala",
+    datos_privacidad: "Datos",
+    ia_modelos: "IA",
+    hardware: "Hardware",
+    propiedad_intelectual_tecnica: "PI",
+    equipo_proceso: "Equipo",
+  };
+
+  return companias.map((c) => ({
+    nombre: c.compania.name,
+    slug: c.compania.slug,
+    score: c.scoreTecnico.valor,
+    dimensiones: c.scoreTecnico.dimensiones
+      .filter((d) => d.aplica)
+      .map((d) => ({
+        nombre: NOMBRES_CORTOS[d.codigo] ?? d.nombre,
+        nivel: d.nivel ?? 0,
+        objetivo: d.objetivo,
+      })),
+  }));
+}
+
+/** Meses de caja por compañía */
+export function runwayCohorte(companias: Compania[]) {
+  return companias.map((c) => ({
+    nombre: c.compania.name,
+    meses: c.kpis.derivados.runway_meses,
+  }));
+}

@@ -68,7 +68,8 @@ export function FormularioEntrada() {
 
   if (estado === "enviado") {
     return (
-      <div className="border-l-2 border-acento pl-4">
+      <div className="relative pl-4">
+          <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
         <p className="text-sm text-titular">
           Enlace enviado a <span className="cifra">{correo}</span>.
         </p>
@@ -115,7 +116,7 @@ export function FormularioEntrada() {
           autoComplete="email"
           value={correo}
           onChange={(e) => setCorreo(e.target.value)}
-          className="border border-filete bg-papel px-3 py-2 text-sm text-titular outline-none focus:border-acento"
+          className="rounded-md border border-filete bg-hundido px-3 py-2 text-sm text-titular outline-none transition-colors focus:border-acento focus:ring-1 focus:ring-acento/40"
           placeholder="tu@compania.com"
         />
       </label>
@@ -123,13 +124,13 @@ export function FormularioEntrada() {
       <button
         type="submit"
         disabled={estado === "enviando"}
-        className="border border-titular bg-titular px-3 py-2 text-sm font-medium text-papel transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="barra-acento rounded-md px-3 py-2 text-sm font-medium text-white transition-all hover:brightness-110 disabled:opacity-50"
       >
         {estado === "enviando" ? "Enviando" : "Enviar enlace de entrada"}
       </button>
 
       {estado === "error" ? (
-        <p className="border-l-2 border-red-600 pl-3 text-sm text-red-700">
+        <p className="rounded-md border border-mal/40 bg-mal/10 px-3 py-2 text-sm text-mal">
           {mensaje}
         </p>
       ) : null}

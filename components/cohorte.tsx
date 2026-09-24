@@ -46,9 +46,9 @@ export function Embudo({
                   {tramo.banda.nombre}
                 </span>
 
-                <span className="flex h-4 flex-1 items-center" aria-hidden="true">
+                <span className="flex h-4 flex-1 items-center rounded-sm bg-hundido" aria-hidden="true">
                   <span
-                    className="block h-full bg-acento"
+                    className="barra-acento block h-full rounded-sm"
                     style={{
                       width: `${(tramo.companias.length / maximo) * 100}%`,
                       minWidth: tramo.companias.length > 0 ? "2px" : "0",
@@ -115,9 +115,9 @@ export function MapaIntervencion({ mapa }: { mapa: DemandaDimension[] }) {
               <div className="flex items-center gap-4">
                 <span className="w-44 shrink-0 text-sm text-titular">{d.nombre}</span>
 
-                <span className="flex h-4 flex-1 items-center" aria-hidden="true">
+                <span className="flex h-4 flex-1 items-center rounded-sm bg-hundido" aria-hidden="true">
                   <span
-                    className="block h-full bg-acento"
+                    className="barra-acento block h-full rounded-sm"
                     style={{ width: `${(d.demanda / maximo) * 100}%`, minWidth: "2px" }}
                   />
                 </span>

@@ -1,23 +1,49 @@
 @import "tailwindcss";
 
 /*
- * Identidad IWL · sección 8 del documento de alcance.
- * Papel blanco, texto en zinc, acento magenta solo en filetes y elementos
- * gráficos. Sin modo oscuro: la identidad es papel.
+ * Identidad IWL · tema oscuro.
+ *
+ * El documento de alcance (§8) fija papel blanco. Se cambia a petición de
+ * Rodrigo para que el fucsia resalte: sobre un gris oscuro, el acento tiene
+ * fuerza propia y la interfaz gana profundidad sin recurrir a más color.
+ *
+ * La identidad no cambia: sigue habiendo un solo color cromático. Lo que
+ * cambia es el lienzo, y con él los pasos de gris, que se invierten.
+ *
+ * Los informes en PDF siguen siendo papel blanco: son documentos para
+ * imprimir y enviar a un inversor, no pantallas.
  */
 @theme {
-  /* Papel y texto */
-  --color-papel: #ffffff;
-  --color-titular: #18181b;
-  --color-cuerpo: #18181b;
-  --color-secundario: #3f3f46;
-  --color-metadato: #71717a;
-  --color-filete: #e4e4e7;
+  /* ---------------------------------------------------------------------
+   * Superficies. Tres niveles de elevación, no más: en una interfaz densa,
+   * cada nivel extra de profundidad es una decisión menos clara sobre qué
+   * es importante.
+   * ------------------------------------------------------------------- */
+  --color-lienzo: #121215;
+  --color-papel: #1a1a1f;
+  --color-elevado: #232329;
+  --color-hundido: #0e0e11;
 
-  /* Acento. Solo filetes y elementos gráficos */
+  /* Texto */
+  --color-titular: #fafafa;
+  --color-cuerpo: #e4e4e7;
+  --color-secundario: #a1a1aa;
+  --color-metadato: #8b8b94;
+
+  /* Filetes. Dos pesos: el normal y el que separa de verdad */
+  --color-filete: #2c2c33;
+  --color-filete-fuerte: #3d3d45;
+
+  /* Acento. Sobre oscuro el magenta puro tiene contraste de sobra para
+   * elementos gráficos y para texto pequeño */
   --color-acento: #ff007a;
-  /* Acento para texto pequeño, con contraste suficiente sobre papel */
-  --color-acento-texto: #d6005f;
+  --color-acento-texto: #ff4d9d;
+  --color-acento-apagado: #7a1345;
+
+  /* Estados. Siempre acompañados de texto, nunca solo color (§8) */
+  --color-bien: #34d399;
+  --color-aviso: #fbbf24;
+  --color-mal: #fb7185;
 
   /* Tipografía */
   --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
@@ -25,18 +51,105 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 body {
-  background-color: var(--color-papel);
+  background-color: var(--color-lienzo);
   color: var(--color-cuerpo);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Fondo del lienzo. Un degradado muy contenido desde arriba, con un punto de
+ * acento arriba a la izquierda. Es lo único decorativo de la interfaz y se
+ * queda por debajo de todo, sin competir con ningún dato.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      60rem 40rem at 8% -10%,
+      color-mix(in oklab, var(--color-acento) 10%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(180deg, #17171c 0%, var(--color-lienzo) 40%);
 }
 
 /* Las cifras y métricas se alinean en columna */
 .cifra {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Elevación.
+ *
+ * En oscuro la profundidad no se consigue solo con sombra: se necesita que la
+ * superficie sea más clara que el fondo y que el borde superior recoja algo de
+ * luz. Las tres cosas juntas dan volumen sin relieve falso.
+ */
+.elevacion-1 {
+  background-color: var(--color-papel);
+  border: 1px solid var(--color-filete);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.04) inset,
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 8px 24px -12px rgb(0 0 0 / 0.5);
+}
+
+.elevacion-2 {
+  background-color: var(--color-elevado);
+  border: 1px solid var(--color-filete-fuerte);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.06) inset,
+    0 2px 4px rgb(0 0 0 / 0.45),
+    0 16px 40px -16px rgb(0 0 0 / 0.6);
+}
+
+/* El acento con luz propia, para la cifra que manda en cada pantalla */
+.brillo-acento {
+  text-shadow: 0 0 24px color-mix(in oklab, var(--color-acento) 45%, transparent);
+}
+
+/* Barra de datos con algo de cuerpo, sin dejar de ser una barra */
+.barra-acento {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-acento) 88%, white),
+    var(--color-acento)
+  );
+  box-shadow: 0 0 16px -2px color-mix(in oklab, var(--color-acento) 55%, transparent);
+}
+
+/* Filete de sección: arranca en el acento y se apaga */
+.filete-acento {
+  background: linear-gradient(
+    180deg,
+    var(--color-acento),
+    color-mix(in oklab, var(--color-acento) 20%, transparent)
+  );
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-acento) 35%, transparent);
+  color: var(--color-titular);
+}
+
+/* Campos de formulario sobre oscuro */
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
+/* La barra de desplazamiento, en el mismo registro que el resto */
+* {
+  scrollbar-color: var(--color-filete-fuerte) transparent;
+  scrollbar-width: thin;
 }

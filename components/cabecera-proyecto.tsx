@@ -48,10 +48,11 @@ export function CabeceraProyecto({
   ];
 
   return (
-    <header className="border-b border-filete bg-papel">
+    <header className="border-b border-filete bg-lienzo/60">
       <div className="mx-auto w-full max-w-6xl px-6 pt-6">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="border-l-2 border-acento pl-4">
+          <div className="relative pl-4">
+            <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
             <div className="flex flex-wrap items-baseline gap-3">
               <h1 className="text-lg font-semibold tracking-tight text-titular">
                 {compania.name}
@@ -73,6 +74,7 @@ export function CabeceraProyecto({
               obligar a desplazar la página en horizontal */}
           <div className="flex flex-wrap gap-x-10 gap-y-4">
             <Cifra
+              destacada
               etiqueta="Score técnico"
               valor={numero(scoreTecnico.valor, 1)}
               nota={
@@ -129,8 +131,8 @@ export function CabeceraProyecto({
               href={s.href}
               className={
                 s.codigo === seccionActiva
-                  ? "border-b-2 border-acento pb-2 text-sm font-medium text-titular"
-                  : "border-b-2 border-transparent pb-2 text-sm text-secundario transition-colors hover:text-titular"
+                  ? "border-b-2 border-acento pb-2 text-sm font-medium text-titular [text-shadow:0_0_20px_color-mix(in_oklab,var(--color-acento)_35%,transparent)]"
+                  : "border-b-2 border-transparent pb-2 text-sm text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
               }
             >
               {s.nombre}

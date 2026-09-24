@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/primitivas";
 import { Chispa, Movimiento } from "@/components/evolucion";
 import { Embudo, MapaIntervencion } from "@/components/cohorte";
+import {
+  EvolucionCohorte,
+  HallazgosPorSeveridad,
+  RadaresCohorte,
+  RunwayCohorte,
+} from "@/components/graficos-cohorte";
 import { bandaDe } from "@/lib/datos/cohorte";
 import { euros, numero } from "@/lib/utils";
 
@@ -34,7 +40,18 @@ export default async function Cartera() {
   if (!persona) redirect("/entrar");
   if (!esIwl(persona.role) && persona.role !== "revisor_niage") redirect("/proyecto");
 
-  const { companias, cohorte, bandas, mapa, tramos, lectura } = await leerCartera();
+  const {
+    companias,
+    cohorte,
+    bandas,
+    mapa,
+    tramos,
+    lectura,
+    evolucion,
+    severidades,
+    radares,
+    runway,
+  } = await leerCartera();
 
   if (companias.length === 0) {
     return (
@@ -57,7 +74,8 @@ export default async function Cartera() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-8">
-      <div className="mb-6 border-l-2 border-acento pl-4">
+      <div className="relative mb-6 pl-4">
+        <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
         <h1 className="text-lg font-semibold tracking-tight text-titular">
           {cohorte?.name ?? "Cartera"}
         </h1>
@@ -75,8 +93,9 @@ export default async function Cartera() {
       </p>
 
       <div className="mb-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Bloque className="px-4 py-4">
+        <Bloque elevacion={2} className="px-4 py-4">
           <Cifra
+            destacada
             etiqueta="Invertibles"
             valor={`${invertibles} de ${companias.length}`}
             nota={
@@ -108,6 +127,29 @@ export default async function Cartera() {
           />
         </Bloque>
       </div>
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <Bloque>
+          <TituloBloque accion={<Metadato>Media de la cohorte</Metadato>}>
+            Preparación en el tiempo
+          </TituloBloque>
+          <EvolucionCohorte puntos={evolucion} />
+        </Bloque>
+
+        <Bloque>
+          <TituloBloque accion={<Metadato>Abiertos ahora</Metadato>}>
+            Hallazgos por severidad
+          </TituloBloque>
+          <HallazgosPorSeveridad filas={severidades} />
+        </Bloque>
+      </div>
+
+      <Bloque className="mb-6">
+        <TituloBloque accion={<Metadato>Umbral en 6 meses</Metadato>}>
+          Meses de caja
+        </TituloBloque>
+        <RunwayCohorte filas={runway} />
+      </Bloque>
 
       <Bloque>
         <TituloBloque accion={<Metadato>Fila por compañía</Metadato>}>
@@ -189,6 +231,13 @@ export default async function Cartera() {
       <div className="mt-6 flex flex-col gap-6">
         <Embudo tramos={tramos} objetivo={cohorte?.investable_target ?? null} />
         <MapaIntervencion mapa={mapa} />
+
+        <Bloque>
+          <TituloBloque accion={<Metadato>Nivel frente al objetivo de su etapa</Metadato>}>
+            Scorecards de la cohorte
+          </TituloBloque>
+          <RadaresCohorte companias={radares} />
+        </Bloque>
 
         <Bloque>
           <TituloBloque accion={<Metadato>Lo que falta a cada una</Metadato>}>
