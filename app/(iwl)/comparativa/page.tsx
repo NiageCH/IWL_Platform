@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
 import { leerCartera } from "@/lib/datos/cartera";
-import { BarraSuperior } from "@/components/barra-superior";
 import {
   Bloque,
   Etiqueta,
@@ -47,17 +46,14 @@ export default async function Comparativa() {
 
   if (companias.length < 2) {
     return (
-      <>
-        <BarraSuperior />
-        <main className="mx-auto w-full max-w-6xl px-6 py-8">
+      <main className="mx-auto w-full max-w-6xl px-6 py-8">
           <Bloque>
             <TituloBloque>Comparativa</TituloBloque>
             <SinDatos>
               Hacen falta al menos dos compañías a tu alcance para comparar.
             </SinDatos>
-          </Bloque>
-        </main>
-      </>
+        </Bloque>
+      </main>
     );
   }
 
@@ -93,9 +89,7 @@ export default async function Comparativa() {
   };
 
   return (
-    <>
-      <BarraSuperior />
-      <main className="mx-auto w-full max-w-6xl px-6 py-8">
+    <main className="mx-auto w-full max-w-6xl px-6 py-8">
         <div className="relative mb-6 pl-4">
         <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
           <h1 className="text-lg font-semibold tracking-tight text-titular">
@@ -263,8 +257,7 @@ export default async function Comparativa() {
             entran aquí: no se comparan entre compañías de sectores distintos.
           </p>
         </Bloque>
-      </main>
-    </>
+    </main>
   );
 }
 

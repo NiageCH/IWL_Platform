@@ -54,6 +54,42 @@ html {
   color-scheme: dark;
 }
 
+/*
+ * Tema claro, para la vista de la compañía.
+ *
+ * La consola de IWL es oscura: se mira de seguido, tiene muchos gráficos y el
+ * acento se enciende sobre el gris. La vista de la fundadora es clara: ahí se
+ * redacta el business plan, se lee el checklist y se trabaja con texto largo,
+ * y para eso el papel sigue siendo mejor. Documento claro, consola oscura.
+ *
+ * Solo se redefinen los tokens. Ningún componente sabe en qué tema está.
+ */
+[data-tema="claro"] {
+  color-scheme: light;
+
+  --color-lienzo: #fafafa;
+  --color-papel: #ffffff;
+  --color-elevado: #f4f4f5;
+  --color-hundido: #ffffff;
+
+  --color-titular: #18181b;
+  --color-cuerpo: #18181b;
+  --color-secundario: #3f3f46;
+  --color-metadato: #71717a;
+
+  --color-filete: #e4e4e7;
+  --color-filete-fuerte: #d4d4d8;
+
+  /* Sobre papel, el magenta puro no tiene contraste para texto pequeño */
+  --color-acento: #ff007a;
+  --color-acento-texto: #c4005c;
+  --color-acento-apagado: #fbcfe0;
+
+  --color-bien: #047857;
+  --color-aviso: #b45309;
+  --color-mal: #b91c1c;
+}
+
 body {
   background-color: var(--color-lienzo);
   color: var(--color-cuerpo);
@@ -66,7 +102,7 @@ body {
  * acento arriba a la izquierda. Es lo único decorativo de la interfaz y se
  * queda por debajo de todo, sin competir con ningún dato.
  */
-body::before {
+.lienzo-degradado::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -112,9 +148,32 @@ body::before {
     0 16px 40px -16px rgb(0 0 0 / 0.6);
 }
 
+/*
+ * En claro, la profundidad es otra cosa: sobre papel, una sombra fuerte
+ * ensucia. Basta el filete y una sombra corta.
+ */
+[data-tema="claro"] .elevacion-1 {
+  box-shadow: 0 1px 2px rgb(24 24 27 / 0.04);
+}
+
+[data-tema="claro"] .elevacion-2 {
+  background-color: var(--color-papel);
+  box-shadow: 0 2px 8px -2px rgb(24 24 27 / 0.08);
+}
+
+/* El degradado del lienzo solo tiene sentido sobre oscuro */
+[data-tema="claro"] .lienzo-degradado::before {
+  display: none;
+}
+
 /* El acento con luz propia, para la cifra que manda en cada pantalla */
 .brillo-acento {
   text-shadow: 0 0 24px color-mix(in oklab, var(--color-acento) 45%, transparent);
+}
+
+/* Sobre papel el brillo no aporta: solo desenfoca el número */
+[data-tema="claro"] .brillo-acento {
+  text-shadow: none;
 }
 
 /* Barra de datos con algo de cuerpo, sin dejar de ser una barra */
@@ -125,6 +184,10 @@ body::before {
     var(--color-acento)
   );
   box-shadow: 0 0 16px -2px color-mix(in oklab, var(--color-acento) 55%, transparent);
+}
+
+[data-tema="claro"] .barra-acento {
+  box-shadow: none;
 }
 
 /* Filete de sección: arranca en el acento y se apaga */

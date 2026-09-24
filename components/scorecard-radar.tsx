@@ -34,9 +34,17 @@ const NOMBRES_CORTOS: Record<string, string> = {
   equipo_proceso: "Equipo",
 };
 
-const ACENTO = "#FF007A";
-const NEUTRO = "#8B8B94";
-const FILETE = "#2C2C33";
+/*
+ * Los colores salen de los tokens del tema, no de constantes.
+ *
+ * Un atributo de presentación de SVG acepta `var()`, así que el mismo gráfico
+ * se lee sobre la consola oscura de IWL y sobre el papel de la vista de la
+ * compañía sin saber en cuál está. Con hexadecimales fijos habría que
+ * duplicar cada componente.
+ */
+const ACENTO = "var(--color-acento)";
+const NEUTRO = "var(--color-metadato)";
+const FILETE = "var(--color-filete)";
 
 interface Punto {
   dimension: string;

@@ -28,12 +28,21 @@ import {
  * lo suficiente para quien no distingue el color.
  */
 
-const ACENTO = "#FF007A";
-const ACENTO_APAGADO = "#7A1345";
-const NEUTRO = "#8B8B94";
-const FILETE = "#2C2C33";
-const MAL = "#FB7185";
-const SUPERFICIE = "#1A1A1F";
+/*
+ * Los colores salen de los tokens del tema, no de constantes.
+ *
+ * Un atributo de presentación de SVG acepta `var()`, así que el mismo gráfico
+ * se lee sobre la consola oscura de IWL y sobre el papel de la vista de la
+ * compañía sin saber en cuál está. Con hexadecimales fijos habría que
+ * duplicar cada componente.
+ */
+const ACENTO = "var(--color-acento)";
+const NEUTRO = "var(--color-metadato)";
+const FILETE = "var(--color-filete)";
+const MAL = "var(--color-mal)";
+const SUPERFICIE = "var(--color-papel)";
+const TEXTO = "var(--color-cuerpo)";
+const ACENTO_APAGADO = "var(--color-acento-apagado)";
 
 function Caja({ children }: { children: React.ReactNode }) {
   return <div className="elevacion-2 rounded-md px-3 py-2 text-xs">{children}</div>;
@@ -193,7 +202,7 @@ export function RunwayCohorte({
           <YAxis
             type="category"
             dataKey="nombre"
-            tick={{ fill: "#E4E4E7", fontSize: 12 }}
+            tick={{ fill: TEXTO, fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             width={128}
@@ -237,7 +246,7 @@ export function RunwayCohorte({
             <LabelList
               dataKey="meses"
               position="right"
-              fill="#E4E4E7"
+              fill={TEXTO}
               fontSize={11}
               formatter={(v) => (typeof v === "number" ? `${formatear(v)} m` : "")}
             />
@@ -362,7 +371,7 @@ export function HallazgosPorSeveridad({ filas }: { filas: FilaSeveridad[] }) {
         <BarChart data={filas} margin={{ top: 16, right: 8, bottom: 0, left: 0 }}>
           <XAxis
             dataKey="nombre"
-            tick={{ fill: "#E4E4E7", fontSize: 12 }}
+            tick={{ fill: TEXTO, fontSize: 12 }}
             tickLine={false}
             axisLine={{ stroke: FILETE }}
           />
@@ -401,7 +410,7 @@ export function HallazgosPorSeveridad({ filas }: { filas: FilaSeveridad[] }) {
             <LabelList
               dataKey="cuenta"
               position="top"
-              fill="#E4E4E7"
+              fill={TEXTO}
               fontSize={12}
             />
           </Bar>

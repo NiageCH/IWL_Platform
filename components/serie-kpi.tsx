@@ -18,9 +18,18 @@ import {
  * gris, que se distingue del dato por el trazo y no solo por el color.
  */
 
-const ACENTO = "#FF007A";
-const NEUTRO = "#8B8B94";
-const FILETE = "#2C2C33";
+/*
+ * Los colores salen de los tokens del tema, no de constantes.
+ *
+ * Un atributo de presentación de SVG acepta `var()`, así que el mismo gráfico
+ * se lee sobre la consola oscura de IWL y sobre el papel de la vista de la
+ * compañía sin saber en cuál está. Con hexadecimales fijos habría que
+ * duplicar cada componente.
+ */
+const ACENTO = "var(--color-acento)";
+const NEUTRO = "var(--color-metadato)";
+const FILETE = "var(--color-filete)";
+const SUPERFICIE = "var(--color-papel)";
 
 interface Punto {
   periodo: string;
@@ -85,7 +94,7 @@ export function SerieKpi({
               stroke={ACENTO}
               strokeWidth={2}
               dot={{ r: 3, fill: ACENTO, strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: ACENTO, stroke: "#1A1A1F", strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: ACENTO, stroke: SUPERFICIE, strokeWidth: 2 }}
               isAnimationActive={false}
               connectNulls
             />

@@ -181,3 +181,14 @@ Conclusión, que vale para todo gráfico nuevo: **una serie de datos en acento, 
 Pasó dos veces con la cuenta de Rodrigo. Se arregla en el sitio correcto: `npm run db:reset` encadena ahora `altas:locales`, que lee `.altas-locales.json` y vuelve a dar de alta esas cuentas con su rol. El fichero no se versiona, porque son correos reales de personas concretas; hay un ejemplo versionado al lado.
 
 La lección, que vale para más sitios: cuando algo se rompe de forma repetida por un efecto secundario previsible de un comando del proyecto, el arreglo va en el comando, no en las instrucciones de recuperación.
+
+## 2026-09-24 · Tema por vista: documento claro, consola oscura
+
+El oscuro en toda la plataforma pesaba demasiado. Se reparte según lo que se hace en cada sitio, que es una razón de producto y no una preferencia:
+
+- **Vista de la compañía, clara.** Ahí se redacta el business plan, se lee el checklist y se trabaja con texto largo. El papel sigue siendo mejor para eso, y además devuelve el §8 justo donde importa.
+- **Consola de IWL, oscura.** Se mira de seguido, está llena de gráficos y el fucsia se enciende sobre el gris.
+
+Lo decide el layout de cada grupo de rutas con `<Marco tema="...">`, que solo redefine tokens. **Ningún componente sabe en qué tema está**: todos leen los mismos nombres y aquí se decide qué valen. Los gráficos también, con `var(--color-...)` en los atributos de SVG, que los navegadores resuelven; con hexadecimales fijos habría que duplicar cada componente.
+
+Sobre papel cambian dos cosas: el acento para texto pequeño baja a `#C4005C`, porque el magenta puro no tiene contraste suficiente sobre blanco, y desaparecen el brillo y las sombras largas, que sobre claro solo ensucian.

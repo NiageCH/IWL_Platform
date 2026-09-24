@@ -87,7 +87,7 @@ export async function analizar(
 
     if (resultado.repositorio.commit === "") {
       // Sin clon no hay nada que analizar; las incidencias ya lo dicen
-      return cerrar(resultado, iniciada, false);
+      return cerrar(resultado, iniciada);
     }
 
     const tamano = await tamanoDe(repo);
@@ -99,7 +99,7 @@ export async function analizar(
         nivel: "fallo",
         mensaje: `El repositorio ocupa ${Math.round(tamano / 1e9)} GB y no se analiza.`,
       });
-      return cerrar(resultado, iniciada, false);
+      return cerrar(resultado, iniciada);
     }
 
     // Las herramientas son independientes entre sí salvo Grype, que necesita
@@ -127,7 +127,7 @@ export async function analizar(
       );
     }
 
-    return cerrar(resultado, iniciada, true);
+    return cerrar(resultado, iniciada);
   } finally {
     // El código se borra pase lo que pase (§11)
     await rm(directorio, { recursive: true, force: true });
@@ -135,11 +135,7 @@ export async function analizar(
   }
 }
 
-function cerrar(
-  resultado: ResultadoAnalisis,
-  iniciada: number,
-  _completo: boolean,
-): ResultadoAnalisis {
+function cerrar(resultado: ResultadoAnalisis, iniciada: number): ResultadoAnalisis {
   const terminada = Date.now();
   resultado.ejecucion.terminada = new Date(terminada).toISOString();
   resultado.ejecucion.iniciada = new Date(iniciada).toISOString();

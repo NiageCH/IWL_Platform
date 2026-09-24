@@ -1,4 +1,5 @@
 import { BarraSuperior } from "@/components/barra-superior";
+import { Marco } from "@/components/marco";
 import { personaActual } from "@/lib/supabase/servidor";
 
 export const metadata = { title: "Sin compañía asignada · Plataforma IWL" };
@@ -14,7 +15,7 @@ export default async function SinCompania() {
   const esDesarrollo = process.env.NODE_ENV === "development";
 
   return (
-    <>
+    <Marco tema="claro">
       <BarraSuperior />
       <main className="mx-auto w-full max-w-2xl px-6 py-16">
         <div className="relative pl-4">
@@ -68,6 +69,6 @@ export default async function SinCompania() {
           </div>
         ) : null}
       </main>
-    </>
+    </Marco>
   );
 }
