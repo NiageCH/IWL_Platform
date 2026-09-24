@@ -113,6 +113,13 @@ describe("escritura sobre compañías ajenas", () => {
   });
 
   it("una fundadora sí edita la ficha de su propia compañía", async () => {
+    const servicio = clienteServicio();
+    const { data: original } = await servicio
+      .from("companies")
+      .select("one_liner")
+      .eq("id", COMPANIAS.marea)
+      .single();
+
     const texto = `Seguimiento de pacientes crónicos. Revisión ${Date.now()}`;
 
     const { data, error } = await fundadoraMarea
@@ -123,6 +130,13 @@ describe("escritura sobre compañías ajenas", () => {
 
     expect(error).toBeNull();
     expect(data?.[0].one_liner).toBe(texto);
+
+    // Los tests no dejan rastro en los datos semilla: si lo dejaran, la
+    // aplicación acabaría enseñando cadenas de prueba
+    await servicio
+      .from("companies")
+      .update({ one_liner: original!.one_liner })
+      .eq("id", COMPANIAS.marea);
   });
 
   it("una fundadora no puede crear una compañía", async () => {
@@ -239,6 +253,13 @@ describe("perfiles", () => {
   });
 
   it("cada persona sí puede corregir su nombre", async () => {
+    const servicio = clienteServicio();
+    const { data: original } = await servicio
+      .from("profiles")
+      .select("full_name")
+      .eq("email", USUARIOS.fundadoraMarea)
+      .single();
+
     const nombre = `Fundadora Marea ${Date.now()}`;
     const { error } = await fundadoraMarea
       .from("profiles")
@@ -246,6 +267,11 @@ describe("perfiles", () => {
       .eq("email", USUARIOS.fundadoraMarea);
 
     expect(error).toBeNull();
+
+    await servicio
+      .from("profiles")
+      .update({ full_name: original!.full_name })
+      .eq("email", USUARIOS.fundadoraMarea);
   });
 });
 

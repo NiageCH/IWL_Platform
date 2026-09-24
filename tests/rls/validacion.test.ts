@@ -388,8 +388,21 @@ describe("business plan", () => {
     return data!;
   }
 
+  /** Deja la sección como estaba: los tests no ensucian los datos semilla */
+  async function restaurar(id: string, contenido: string | null, estado: string) {
+    await servicio
+      .from("bp_sections")
+      .update({ content: contenido, status: estado })
+      .eq("id", id);
+  }
+
   it("la fundadora edita y manda a revisión, pero no valida", async () => {
     const seccion = await seccionDe(COMPANIAS.vega, "mercado");
+    const { data: antes } = await servicio
+      .from("bp_sections")
+      .select("content, status")
+      .eq("id", seccion.id)
+      .single();
 
     const edicion = await fundadoraVega
       .from("bp_sections")
@@ -405,11 +418,18 @@ describe("business plan", () => {
 
     expect(validacion.error).not.toBeNull();
     expect(validacion.error?.message).toContain("equipo de IWL");
+
+    await restaurar(seccion.id, antes!.content, antes!.status);
   });
 
   it("cada cambio de contenido deja versión con su autor", async () => {
     const seccion = await seccionDe(COMPANIAS.vega, "equipo");
     const versionInicial = seccion.current_version;
+    const { data: antes } = await servicio
+      .from("bp_sections")
+      .select("content, status")
+      .eq("id", seccion.id)
+      .single();
 
     await fundadoraVega
       .from("bp_sections")
@@ -426,6 +446,8 @@ describe("business plan", () => {
 
     expect(data?.version).toBe(versionInicial + 1);
     expect(data?.author_id).not.toBeNull();
+
+    await restaurar(seccion.id, antes!.content, antes!.status);
   });
 
   it("guardar el mismo contenido no crea versión nueva", async () => {

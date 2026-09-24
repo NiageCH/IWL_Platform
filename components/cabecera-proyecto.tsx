@@ -1,0 +1,117 @@
+import Link from "next/link";
+import type { ResumenCompania } from "@/lib/datos/compania";
+import { Cifra, Metadato, Semaforo } from "@/components/ui/primitivas";
+import { numero } from "@/lib/utils";
+
+/**
+ * Cabecera fija de todas las pantallas del proyecto (§4.1): fase, semáforo,
+ * score de preparación y score técnico.
+ *
+ * Los dos scores llevan siempre su lectura en texto, para que se entiendan sin
+ * abrir el módulo: qué mide y contra qué.
+ */
+
+const ETAPAS: Record<string, string> = {
+  pre_semilla: "Pre-semilla",
+  semilla: "Semilla",
+  serie_a: "Serie A",
+};
+
+const PERFILES: Record<string, string> = {
+  software: "Software",
+  software_ia: "Software con IA",
+  hardware: "Hardware",
+};
+
+export function CabeceraProyecto({
+  resumen,
+  base,
+  seccionActiva,
+}: {
+  resumen: NonNullable<ResumenCompania>;
+  /** Prefijo de las rutas: `/proyecto` para la fundadora, `/cartera/<slug>` para IWL */
+  base: string;
+  seccionActiva: string;
+}) {
+  const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
+
+  const secciones = [
+    { codigo: "resumen", nombre: "Resumen", href: base },
+    { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico` },
+    { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia` },
+    { codigo: "plan", nombre: "Business plan", href: `${base}/plan` },
+    { codigo: "kpi", nombre: "KPI y updates", href: `${base}/kpi` },
+  ];
+
+  return (
+    <header className="border-b border-filete bg-papel">
+      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="border-l-2 border-acento pl-4">
+            <div className="flex flex-wrap items-baseline gap-3">
+              <h1 className="text-lg font-semibold tracking-tight text-titular">
+                {compania.name}
+              </h1>
+              <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
+            </div>
+            <p className="mt-1 max-w-2xl text-sm text-secundario">
+              {compania.one_liner ?? "Sin descripción todavía."}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+              <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
+              <Metadato>{ETAPAS[compania.stage] ?? compania.stage}</Metadato>
+              <Metadato>{PERFILES[compania.tech_profile] ?? compania.tech_profile}</Metadato>
+              <Semaforo estado={semaforo.estado} motivo={semaforo.motivo} />
+            </div>
+          </div>
+
+          {/* En móvil las tres cifras se reparten en dos líneas antes que
+              obligar a desplazar la página en horizontal */}
+          <div className="flex flex-wrap gap-x-10 gap-y-4">
+            <Cifra
+              etiqueta="Score técnico"
+              valor={numero(scoreTecnico.valor, 1)}
+              nota={
+                scoreTecnico.completo
+                  ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
+                  : `${scoreTecnico.sinEvaluar.length} sin evaluar`
+              }
+            />
+            <Cifra
+              etiqueta="Preparación"
+              valor={numero(scorePreparacion.valor, 1)}
+              nota={`${scorePreparacion.areas.length} áreas y la técnica`}
+            />
+            <Cifra
+              etiqueta="Invertible"
+              valor={invertible.invertible ? "Sí" : "No"}
+              nota={
+                invertible.invertible
+                  ? "Cumple la definición del programa"
+                  : invertible.siguientesPasos.length === 1
+                    ? "Un paso por delante"
+                    : `${invertible.siguientesPasos.length} pasos por delante`
+              }
+            />
+          </div>
+        </div>
+
+        <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+          {secciones.map((s) => (
+            <Link
+              key={s.codigo}
+              href={s.href}
+              className={
+                s.codigo === seccionActiva
+                  ? "border-b-2 border-acento pb-2 text-sm font-medium text-titular"
+                  : "border-b-2 border-transparent pb-2 text-sm text-secundario transition-colors hover:text-titular"
+              }
+            >
+              {s.nombre}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </header>
+  );
+}

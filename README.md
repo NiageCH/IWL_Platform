@@ -74,6 +74,25 @@ Las migraciones están en `supabase/migrations`, en orden cronológico. Los dato
 
 Toda tabla de negocio nace con Row Level Security y sus políticas en la misma migración. `npm run test:rls` lo comprueba entrando como cada persona.
 
+## Qué hay construido
+
+Fase 1 del documento de alcance, pasos 1 a 8:
+
+| Módulo | Estado |
+|---|---|
+| Auth, roles y aislamiento por compañía | Completo, con 45 tests de RLS y 13 de interfaz |
+| Configuración del programa como dato | Completa: fases, pilares, áreas, dimensiones, KPI, alertas |
+| Ficha de compañía y cabecera | Completa |
+| Due diligence técnico | Lectura completa: scorecard radar, dimensiones con evidencia, hallazgos, plan de trabajo, sesiones |
+| Due diligence general y data room | Lectura completa, con score por área y caducidad de documentos |
+| Business plan | Lectura completa: secciones, estados, versiones, hipótesis, comentarios |
+| Update mensual y KPI | Lectura completa, con series y métricas derivadas |
+| Dashboard IWL | Cohorte, embudo a invertible y ficha por compañía |
+
+La edición desde la interfaz es lo siguiente: la base, los permisos y el cálculo ya la sostienen, y los datos semilla enseñan la plataforma con contenido real.
+
+Fuera de fase 1, según la §9 del documento: worker de análisis de repositorios, GitHub App, informes en PDF, Anexo de Programa e hitos, sesiones y dedicación, alertas por correo y exportaciones.
+
 ## Despliegue
 
 Vercel en región UE, con Supabase en región UE. Pendiente de configurar: ver `DECISIONES.md`.
