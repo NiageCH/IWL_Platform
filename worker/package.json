@@ -1,0 +1,10 @@
+{
+  "name": "iwl-worker",
+  "private": true,
+  "type": "module",
+  "description": "Analiza un repositorio y escribe el JSON de esquema.ts. No guarda código.",
+  "scripts": {
+    "analizar": "node --experimental-strip-types analizar.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}
