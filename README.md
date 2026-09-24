@@ -80,16 +80,18 @@ Fase 1 del documento de alcance, pasos 1 a 8:
 
 | Módulo | Estado |
 |---|---|
-| Auth, roles y aislamiento por compañía | Completo, con 45 tests de RLS y 13 de interfaz |
+| Auth, roles y aislamiento por compañía | Completo, con 45 tests de RLS y 25 de interfaz |
 | Configuración del programa como dato | Completa: fases, pilares, áreas, dimensiones, KPI, alertas |
 | Ficha de compañía y cabecera | Completa |
-| Due diligence técnico | Lectura completa: scorecard radar, dimensiones con evidencia, hallazgos, plan de trabajo, sesiones |
-| Due diligence general y data room | Lectura completa, con score por área y caducidad de documentos |
-| Business plan | Lectura completa: secciones, estados, versiones, hipótesis, comentarios |
-| Update mensual y KPI | Lectura completa, con series y métricas derivadas |
+| Due diligence técnico | Completo: scorecard radar, puntuación con evidencia, hallazgos, plan de trabajo, cuestionario y sesiones |
+| Due diligence general y data room | Completo: checklist con estados, subida de documentos con caducidad y enlaces firmados |
+| Business plan | Completo: edición con versionado, estados, hipótesis y comentarios |
+| Update mensual y KPI | Completo: carga del mes, series y métricas derivadas |
 | Dashboard IWL | Cohorte, embudo a invertible y ficha por compañía |
 
-La edición desde la interfaz es lo siguiente: la base, los permisos y el cálculo ya la sostienen, y los datos semilla enseñan la plataforma con contenido real.
+Quién puede escribir qué lo decide la base, no la interfaz: las políticas de Row Level Security y unos triggers que impiden que la parte evaluada se valide a sí misma. La interfaz oculta lo que la base prohíbe, nunca al revés.
+
+Queda fuera, y es trabajo de administración por ahora: alta de compañías y edición de la configuración, que se hacen desde Supabase Studio.
 
 Fuera de fase 1, según la §9 del documento: worker de análisis de repositorios, GitHub App, informes en PDF, Anexo de Programa e hitos, sesiones y dedicación, alertas por correo y exportaciones.
 
