@@ -1,0 +1,12 @@
+[
+  { "correo": "tu@correo.com", "rol": "admin_iwl" },
+
+  { "correo": "otra@iwl.es", "rol": "equipo_iwl" },
+
+  {
+    "correo": "prueba@compania.com",
+    "rol": "fundadora",
+    "compania": "marea-clinica",
+    "papel": "fundadora"
+  }
+]

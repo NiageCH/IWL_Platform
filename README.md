@@ -54,6 +54,14 @@ npm run alta -- cto@niage.es revisor_niage vega-predictiva revisor_niage
 
 Crea la cuenta, le fija el rol y la asigna a una compañía. Contra un proyecto remoto, exporta antes `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
 
+**Tu cuenta de desarrollo, para que sobreviva a `db:reset`.** Copia `.altas-locales.example.json` a `.altas-locales.json` y pon la tuya:
+
+```json
+[{ "correo": "tu@correo.com", "rol": "admin_iwl" }]
+```
+
+`npm run db:reset` la vuelve a dar de alta al terminar. El fichero no se versiona: son correos reales. Sin él, cada reset te deja fuera y acabas en la pantalla «sin compañía asignada».
+
 Durante el desarrollo el registro está abierto: entrar con un correo cualquiera crea la cuenta, con rol `fundadora` y sin compañía, y acaba en la pantalla «sin compañía asignada». Cómo cerrarlo antes de desplegar está en `DECISIONES.md`.
 
 ## Variables de entorno

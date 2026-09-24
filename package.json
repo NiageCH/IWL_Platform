@@ -14,11 +14,12 @@
     "test:e2e": "playwright test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:reset": "supabase db reset && npm run snapshots",
+    "db:reset": "supabase db reset && npm run snapshots && npm run altas:locales",
     "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
     "db:env": "node scripts/env-local.mjs",
     "alta": "node scripts/alta.mjs",
-    "snapshots": "tsx scripts/snapshots.mts"
+    "snapshots": "tsx scripts/snapshots.mts",
+    "altas:locales": "node scripts/altas-locales.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

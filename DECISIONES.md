@@ -173,3 +173,11 @@ Conclusión, que vale para todo gráfico nuevo: **una serie de datos en acento, 
 - **Hallazgos por severidad**: los críticos en el tono de alerta, porque bloquean el estado invertible.
 - **Meses de caja**: barras por compañía con el umbral de 6 meses marcado. Quien está por debajo va en el tono de alerta y además lleva su cifra escrita.
 - **Scorecards de la cohorte**: un radar por compañía, en paralelo. No superpuestos, que necesitaría un color por compañía; en paralelo se comparan las formas, que es lo que se quiere ver.
+
+## 2026-09-24 · Las cuentas de desarrollo sobreviven a `db:reset`
+
+`npm run db:reset` recrea los usuarios, así que cualquier cuenta que no esté en los datos semilla desaparece. Con el registro abierto, al volver a entrar se crea otra con rol `fundadora` y sin compañía, y la persona acaba en «sin compañía asignada» sin relacionarlo con el reset que hizo diez minutos antes.
+
+Pasó dos veces con la cuenta de Rodrigo. Se arregla en el sitio correcto: `npm run db:reset` encadena ahora `altas:locales`, que lee `.altas-locales.json` y vuelve a dar de alta esas cuentas con su rol. El fichero no se versiona, porque son correos reales de personas concretas; hay un ejemplo versionado al lado.
+
+La lección, que vale para más sitios: cuando algo se rompe de forma repetida por un efecto secundario previsible de un comando del proyecto, el arreglo va en el comando, no en las instrucciones de recuperación.

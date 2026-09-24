@@ -45,3 +45,7 @@ next-env.d.ts
 
 # Fichero que Next regenera en cada `next dev`
 AGENTS.md
+
+# Cuentas de desarrollo de cada persona. Correos reales: no se versionan.
+# Copia .altas-locales.example.json para crear el tuyo.
+.altas-locales.json
