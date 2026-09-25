@@ -216,3 +216,77 @@ select {
   scrollbar-color: var(--color-filete-fuerte) transparent;
   scrollbar-width: thin;
 }
+
+/* =========================================================================
+ * Impresión
+ *
+ * Los informes son lo único de la plataforma que sale de ella: van a un
+ * inversor, a un consejo o a un expediente de subvención. Se imprimen
+ * siempre sobre papel blanco, aunque quien los genere esté en la consola
+ * oscura, porque un fondo oscuro en papel es ilegible y gasta tinta.
+ *
+ * La página de informe fuerza el tema claro en el marcado; aquí se ajusta
+ * lo que solo tiene sentido en pantalla.
+ * ========================================================================= */
+
+@media print {
+  /* Que los fondos y los filetes salgan: por defecto el navegador los quita */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    background: white;
+  }
+
+  /* Lo que solo sirve para manejar la pantalla no se imprime */
+  .no-imprimir {
+    display: none !important;
+  }
+
+  /* Las sombras en papel son una mancha gris */
+  .elevacion-1,
+  .elevacion-2 {
+    box-shadow: none !important;
+    border: 1px solid var(--color-filete);
+  }
+
+  .brillo-acento {
+    text-shadow: none !important;
+  }
+
+  /* Un bloque no se parte entre dos hojas si cabe entero */
+  .bloque-informe {
+    break-inside: avoid;
+  }
+
+  /* Y una sección mayor empieza en hoja nueva */
+  .hoja-nueva {
+    break-before: page;
+  }
+
+  /* Una fila de tabla partida por la mitad no se lee */
+  tr,
+  li {
+    break-inside: avoid;
+  }
+
+  /* Un titular suelto al final de la hoja no sirve de nada */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  /* Los gráficos se imprimen enteros o pasan a la hoja siguiente */
+  figure {
+    break-inside: avoid;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+}

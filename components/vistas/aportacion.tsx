@@ -3,6 +3,7 @@ import { leerExtracto } from "@/lib/datos/aportacion";
 import { leerAportacionExtra, nombreTipo } from "@/lib/datos/aportacion-extra";
 import { leerHojaDeRuta } from "@/lib/datos/ruta";
 import { NuevaAportacion } from "@/components/formularios/ruta";
+import { EnlacesInforme } from "@/components/informe/enlace";
 import { RegistroRapidoHoras } from "@/components/formularios/programa";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
@@ -90,6 +91,7 @@ export async function VistaAportacion({
             de horas, caja ni introducciones contra el que medir. Lo que IWL ya
             ha puesto sí está registrado y se ve aquí abajo.
           </SinDatos>
+          <EnlacesInforme slug={compania.slug} tipos={["aportacion"]} />
         </Bloque>
       ) : (
       <Bloque elevacion={2}>
@@ -150,6 +152,7 @@ export async function VistaAportacion({
           El contador funciona en los dos sentidos. Si IWL va por detrás de lo
           comprometido, se ve aquí igual que si va por delante.
         </p>
+        <EnlacesInforme slug={compania.slug} tipos={["aportacion"]} />
       </Bloque>
       )}
 

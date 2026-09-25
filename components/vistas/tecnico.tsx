@@ -19,6 +19,7 @@ import {
   RespuestaCuestionario,
 } from "@/components/formularios/tecnico";
 import { euros, fecha, numero } from "@/lib/utils";
+import { EnlacesInforme } from "@/components/informe/enlace";
 
 /**
  * Due diligence tecnológico (§4.4). El módulo principal.
@@ -244,6 +245,10 @@ export async function VistaTecnico({
               );
             })}
         </ul>
+        <EnlacesInforme
+          slug={slug}
+          tipos={["tecnico", "tecnico-inversor"]}
+        />
       </Bloque>
 
       <Bloque>

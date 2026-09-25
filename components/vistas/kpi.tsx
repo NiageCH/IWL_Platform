@@ -10,7 +10,8 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { CargaKpis, FormularioUpdate } from "@/components/formularios/kpi";
-import { euros, fecha, numero, porcentaje } from "@/lib/utils";
+import { valorKpi as formatear } from "@/lib/etiquetas";
+import { fecha, numero, porcentaje } from "@/lib/utils";
 
 /**
  * Update mensual y KPI (§4.6).
@@ -314,13 +315,6 @@ export async function VistaKpi({
       </Bloque>
     </div>
   );
-}
-
-function formatear(unidad: string | null, valor: number | null) {
-  if (valor === null) return "—";
-  if (unidad === "moneda") return euros(valor);
-  if (unidad === "porcentaje") return porcentaje(valor, 1);
-  return numero(valor, 0);
 }
 
 /** El mes siguiente al último con datos, en formato AAAA-MM */

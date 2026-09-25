@@ -57,3 +57,6 @@ supabase/seed/local/
 # Resultados de Playwright
 test-results/
 playwright-report/
+
+# Informes generados en local: llevan datos de compañías reales
+informes/

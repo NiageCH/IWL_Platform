@@ -323,3 +323,35 @@ Ahora se restauran con la clave de servicio en un `afterEach`. Lo mismo con los 
 `leerCompania` pasaba `hitos: []` con un comentario que decía «llegan con el Anexo, en fase 2». Cuando llegaron, nadie quitó el array vacío: el cálculo los daba por cumplidos sin decirlo, y una compañía podía salir «invertible» con los hitos de producto y tracción pendientes, que es precisamente lo que la definición exige.
 
 Lo destapó la hoja de ruta, que es la primera que genera hitos para todas las compañías. Un valor de relleno con un comentario que anuncia su caducidad se queda ahí hasta que algo lo rompe.
+
+## 2026-09-25 · Los informes se imprimen desde el navegador, no se generan en el servidor
+
+Un motor de PDF en el servidor obligaría a rehacer la maquetación con sus primitivas, y los radares de Recharts no sobreviven: habría que reimplementar los gráficos. Chromium headless en Vercel son cincuenta megas de dependencia frágil.
+
+Las páginas de informe con CSS de impresión reutilizan el diseño que ya existe, los SVG salen tal cual y las fuentes ya están cargadas. El PDF es idéntico a lo que se ve.
+
+Lo que se pierde: no se puede adjuntar un PDF a un correo automáticamente. Cuando lleguen las alertas se enviará el enlace, no el archivo. Para generarlos en lote está `npm run informes`, que usa el Chromium de Playwright desde la máquina local sin arrastrarlo a producción.
+
+## 2026-09-25 · El informe de inversor no describe lo que sigue abierto
+
+Es la misma regla del worker: los problemas se cuentan por tipo y ubicación, nunca con lo que haría falta para aprovecharlos. Un informe de due diligence circula por correo y acaba en carpetas que nadie controla.
+
+La versión de inversor lleva el score, el scorecard entero y el recuento por severidad. El detalle de cada hallazgo —descripción, evidencia, recomendación— se queda en la versión interna. Hay una prueba que extrae las evidencias del informe interno y comprueba que ninguna aparece en el de inversor: quitar la sección no basta si el mismo texto se cuela en otro sitio.
+
+## 2026-09-25 · Los informes se prueban generando el PDF de verdad
+
+Las pruebas emulan el medio de impresión y llaman a `page.pdf()`. Comprueban que el archivo empieza por `%PDF`, que tiene tamaño de documento con contenido y que el botón de imprimir desaparece en papel.
+
+Un informe que se ve bien en pantalla y sale roto al imprimirlo es exactamente el fallo que ninguna aserción sobre el DOM detecta.
+
+## 2026-09-25 · Las compañías de demostración tienen Anexo firmado
+
+Las únicas con Anexo eran las de los datos locales y, peor, los que dejaban los tests de RLS al pasar: el extracto de Marea salía con 100 horas comprometidas y un cumplimiento del 238 %, cifras que no venía de ninguna parte.
+
+Ahora el seed trae Anexo, pilares, partidas de caja y desembolsos, con las horas y el dinero cuadrando con lo que reparte cada hoja de ruta por etapa. Si no cuadraran, el contador mediría contra un número que el plan nunca pretendió cumplir. De paso, los tests ya no crean Anexos: encuentran el que hay.
+
+## 2026-09-25 · El valor de un KPI se formatea en un solo sitio
+
+`unit` guarda el tipo de magnitud («moneda», «numero», «porcentaje»), no el símbolo. El informe mensual lo concatenó tal cual y enseñaba «15.079 moneda» y «99,9 porcentaje».
+
+La vista de KPI ya tenía la función bien resuelta; el informe la reimplementó mal. Ahora está en `lib/etiquetas` y la usan las dos, junto con los nombres de etapa, perfil y estado de entrada, que estaban repetidos en cada pantalla.

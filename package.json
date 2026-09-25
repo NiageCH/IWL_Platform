@@ -19,7 +19,8 @@
     "db:env": "node scripts/env-local.mjs",
     "alta": "node scripts/alta.mjs",
     "snapshots": "tsx scripts/snapshots.mts",
-    "altas:locales": "node scripts/altas-locales.mjs"
+    "altas:locales": "node scripts/altas-locales.mjs",
+    "informes": "node scripts/informes.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
