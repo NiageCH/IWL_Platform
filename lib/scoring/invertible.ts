@@ -2,17 +2,18 @@ import type {
   EntradaInvertible,
   ResultadoInvertible,
   Semaforo,
+  Umbrales,
 } from "./tipos";
 
 /**
  * Umbrales del estado invertible. Se exponen para que la administración los
  * pueda mover sin tocar la lógica.
  */
-export const UMBRALES_INVERTIBLE = {
+export const UMBRALES_INVERTIBLE: Umbrales = {
   scoreTecnicoMinimo: 80,
   scorePreparacionMinimo: 80,
   runwayMinimoMeses: 6,
-} as const;
+};
 
 /**
  * Proyecto invertible · sección 3.
@@ -27,7 +28,7 @@ export const UMBRALES_INVERTIBLE = {
  */
 export function evaluarInvertible(
   entrada: EntradaInvertible,
-  umbrales = UMBRALES_INVERTIBLE,
+  umbrales: Umbrales = UMBRALES_INVERTIBLE,
 ): ResultadoInvertible {
   const siguientesPasos: string[] = [];
 
@@ -95,7 +96,7 @@ export function evaluarInvertible(
  */
 export function calcularSemaforo(
   entrada: EntradaInvertible,
-  umbrales = UMBRALES_INVERTIBLE,
+  umbrales: Umbrales = UMBRALES_INVERTIBLE,
 ): { estado: Semaforo; motivo: string } {
   const criticos = entrada.hallazgosAbiertos.filter(
     (h) => h.severidad === "critico",

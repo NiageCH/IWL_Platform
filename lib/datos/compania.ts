@@ -1,7 +1,11 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { calcularScoreTecnico } from "@/lib/scoring/score-tecnico";
 import { calcularScorePreparacion } from "@/lib/scoring/score-preparacion";
-import { calcularSemaforo, evaluarInvertible } from "@/lib/scoring/invertible";
+import {
+  UMBRALES_INVERTIBLE,
+  calcularSemaforo,
+  evaluarInvertible,
+} from "@/lib/scoring/invertible";
 import { calcularDerivados } from "@/lib/scoring/kpi-derivados";
 import { permisosDeCompania } from "./permisos";
 import type {
@@ -50,7 +54,10 @@ export async function leerCompania(slug: string) {
 
   const scoreTecnico = calcularScoreTecnico(dimensiones);
 
-  const pesoTecnico = await leerPesoTecnico(supabase);
+  const [pesoTecnico, umbrales] = await Promise.all([
+    leerPesoTecnico(supabase),
+    leerUmbrales(supabase),
+  ]);
   const scorePreparacion = calcularScorePreparacion(
     areas,
     scoreTecnico,
@@ -73,8 +80,8 @@ export async function leerCompania(slug: string) {
     scorePreparacion,
     hallazgos,
     kpis,
-    semaforo: calcularSemaforo(entrada),
-    invertible: evaluarInvertible(entrada),
+    semaforo: calcularSemaforo(entrada, umbrales),
+    invertible: evaluarInvertible(entrada, umbrales),
   };
 }
 
@@ -221,4 +228,35 @@ async function leerPesoTecnico(supabase: Cliente): Promise<number> {
 
   const valor = data?.value as { peso?: number } | null;
   return valor?.peso ?? 2;
+}
+
+/**
+ * Umbrales del estado invertible, de la configuración.
+ *
+ * Estaban en una constante de TypeScript, donde IWL no los podía tocar. El
+ * documento define «invertible» en prosa y deja los números abiertos, así que
+ * son suyos. La constante sigue existiendo como valor por defecto, para que
+ * el cálculo funcione aunque la configuración falte.
+ */
+export async function leerUmbrales(supabase: Cliente) {
+  const { data } = await supabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "umbrales_invertible")
+    .maybeSingle();
+
+  const valor = data?.value as {
+    score_tecnico_minimo?: number;
+    score_preparacion_minimo?: number;
+    runway_minimo_meses?: number;
+  } | null;
+
+  return {
+    scoreTecnicoMinimo:
+      valor?.score_tecnico_minimo ?? UMBRALES_INVERTIBLE.scoreTecnicoMinimo,
+    scorePreparacionMinimo:
+      valor?.score_preparacion_minimo ?? UMBRALES_INVERTIBLE.scorePreparacionMinimo,
+    runwayMinimoMeses:
+      valor?.runway_minimo_meses ?? UMBRALES_INVERTIBLE.runwayMinimoMeses,
+  };
 }

@@ -45,6 +45,14 @@ export async function BarraSuperior() {
               >
                 Comparativa
               </Link>
+              {persona.role === "admin_iwl" ? (
+                <Link
+                  href="/admin"
+                  className="text-sm text-secundario transition-colors hover:text-titular"
+                >
+                  Administración
+                </Link>
+              ) : null}
             </>
           ) : null}
           {persona ? (

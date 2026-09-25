@@ -237,3 +237,25 @@ Ahora comprueban la relación —ve todas las que hay, ve exactamente las que ti
 ## 2026-09-24 · Separador de miles también en cuatro dígitos
 
 El español escribe 9000 sin punto, pero en una columna donde conviven 9.000 y 14.500 eso hace que dos cifras del mismo tipo se lean distinto. En una tabla financiera manda la legibilidad de la columna, así que `euros` y `numero` fuerzan `useGrouping: "always"`. El porcentaje usa espacio duro antes del símbolo, igual que hace Intl con el euro.
+
+## 2026-09-25 · Los umbrales del estado invertible salen del código
+
+Vivían en `UMBRALES_INVERTIBLE`, una constante de TypeScript donde IWL no los podía tocar. El documento define «proyecto invertible» en prosa y deja los números abiertos: son suyos. Ahora están en `platform_settings` y se editan desde la administración.
+
+La constante sigue existiendo como valor por defecto, para que el cálculo funcione aunque falte la configuración. Lo que **no** se configura y bloquea siempre: un hallazgo crítico abierto, un punto bloqueante y los hitos del Anexo que condicionan el estado.
+
+## 2026-09-25 · Dar de alta una compañía instancia todo, en la misma transacción
+
+`app.crear_compania` crea la fila y además el checklist de due diligence, las nueve secciones del business plan y los KPI que le tocan por perfil. Van juntas porque una compañía sin nada de eso no es una compañía: es una ficha vacía en la que no se puede trabajar. Y en la misma transacción, para que no pueda quedar a medias.
+
+La función vive en `app`, que es donde está lo interno, con una puerta en `public` que solo delega: PostgREST solo expone `public`, y no tiene sentido abrir el esquema entero para una llamada.
+
+## 2026-09-25 · Una compañía nueva ya puede cargar su primer KPI
+
+La vista de KPI devolvía temprano cuando no había valores y el formulario de carga quedaba fuera. Para cargar el primer dato hacía falta tener datos, así que una compañía recién dada de alta se quedaba atascada.
+
+Lo encontró el test de administración que da de alta una compañía y comprueba que queda lista para trabajar. Es el tipo de fallo que no aparece con datos semilla, porque ahí todas las compañías ya tienen meses cargados.
+
+## 2026-09-25 · La clave de servicio aparece en un solo sitio
+
+Todas las acciones escriben con el cliente de sesión, para que mande RLS. La excepción es el alta de personas: crear una cuenta en `auth.users` no se puede hacer de otra forma. Ahí, y solo ahí, se comprueba la autorización a mano antes de usar la clave, y está comentado por qué.

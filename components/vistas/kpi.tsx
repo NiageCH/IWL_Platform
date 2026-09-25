@@ -62,14 +62,44 @@ export async function VistaKpi({
 
   const filas = series.data ?? [];
 
+  /*
+   * Sin ningún valor cargado, la pantalla enseñaba solo un mensaje vacío y el
+   * formulario de carga quedaba fuera: para cargar el primer dato hacía falta
+   * tener datos. Una compañía recién dada de alta se quedaba atascada ahí.
+   *
+   * Ahora el estado vacío trae el formulario, que es lo único que hace falta
+   * en ese momento.
+   */
   if (filas.length === 0) {
+    const cargablesIniciales = (cartera.data ?? [])
+      .filter((ck) => ck.kpi_definitions?.category !== "tecnico")
+      .map((ck) => ({
+        companyKpiId: ck.id,
+        nombre: ck.kpi_definitions?.name ?? ck.custom_name ?? "Sin nombre",
+        unidad: ck.kpi_definitions?.unit ?? ck.custom_unit ?? "numero",
+        valor: null,
+      }));
+
+    const mesInicial = new Date().toISOString().slice(0, 7);
+
     return (
       <Bloque>
-        <TituloBloque>KPI</TituloBloque>
+        <TituloBloque accion={<Metadato>Primer mes</Metadato>}>
+          Cargar los KPI del mes
+        </TituloBloque>
         <SinDatos>
-          Todavía no hay valores cargados. El primer update mensual fija la línea
-          de partida del seguimiento.
+          Todavía no hay valores cargados. El primero fija la línea de partida
+          del seguimiento, y a partir de ahí la plataforma calcula el runway, el
+          crecimiento y la conversión sin que nadie los teclee.
         </SinDatos>
+        {permisos.puedeEscribir && cargablesIniciales.length > 0 ? (
+          <CargaKpis
+            slug={compania.slug}
+            companyId={companyId}
+            mes={mesInicial}
+            kpis={cargablesIniciales}
+          />
+        ) : null}
       </Bloque>
     );
   }

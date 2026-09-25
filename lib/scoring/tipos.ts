@@ -128,3 +128,16 @@ export interface ResultadoInvertible {
    */
   siguientesPasos: string[];
 }
+
+/**
+ * Umbrales del estado invertible.
+ *
+ * El documento define «proyecto invertible» en prosa y deja los números
+ * abiertos, así que son configurables: viven en `platform_settings` y aquí
+ * solo está su forma.
+ */
+export interface Umbrales {
+  scoreTecnicoMinimo: number;
+  scorePreparacionMinimo: number;
+  runwayMinimoMeses: number;
+}

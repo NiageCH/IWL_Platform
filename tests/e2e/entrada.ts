@@ -57,6 +57,7 @@ export async function entrarComo(page: Page, email: string, destino = "/") {
 }
 
 export const USUARIOS = {
+  admin: "admin@iwl.test",
   equipoIwl: "programa@iwl.test",
   fundadoraMarea: "fundadora@marea.test",
   fundadoraVega: "fundadora@vega.test",
