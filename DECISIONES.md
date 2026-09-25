@@ -317,3 +317,9 @@ Guardar el resultado compararía dos formas distintas de medir y el salto entre 
 Los tests de interfaz que tocan umbrales o pesos los devolvían a su sitio usando el mismo formulario que estaban probando. Si el test se cortaba a mitad, el valor quedaba cambiado y la siguiente pasada fallaba por algo que no tenía que ver con lo que se quería comprobar.
 
 Ahora se restauran con la clave de servicio en un `afterEach`. Lo mismo con los datos: el test que crea una hoja de ruta borra también sus hitos, porque borrar la etapa no los borra a ellos.
+
+## 2026-09-25 · Los hitos vuelven a contar para el estado invertible
+
+`leerCompania` pasaba `hitos: []` con un comentario que decía «llegan con el Anexo, en fase 2». Cuando llegaron, nadie quitó el array vacío: el cálculo los daba por cumplidos sin decirlo, y una compañía podía salir «invertible» con los hitos de producto y tracción pendientes, que es precisamente lo que la definición exige.
+
+Lo destapó la hoja de ruta, que es la primera que genera hitos para todas las compañías. Un valor de relleno con un comentario que anuncia su caducidad se queda ahí hasta que algo lo rompe.

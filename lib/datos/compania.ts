@@ -14,6 +14,7 @@ import type {
   EntradaInvertible,
   EstadoPuntoDd,
   HallazgoAbierto,
+  HitoAnexo,
   NivelMadurez,
   Severidad,
 } from "@/lib/scoring/tipos";
@@ -44,11 +45,12 @@ export async function leerCompania(slug: string) {
 
   if (!compania) return null;
 
-  const [dimensiones, areas, hallazgos, kpis, permisos] = await Promise.all([
+  const [dimensiones, areas, hallazgos, kpis, hitos, permisos] = await Promise.all([
     leerDimensiones(supabase, compania.id),
     leerAreas(supabase, compania.id),
     leerHallazgosAbiertos(supabase, compania.id),
     leerKpisRecientes(supabase, compania.id),
+    leerHitos(supabase, compania.id),
     permisosDeCompania(compania.id),
   ]);
 
@@ -68,8 +70,7 @@ export async function leerCompania(slug: string) {
     scoreTecnico,
     scorePreparacion,
     hallazgosAbiertos: hallazgos,
-    // Los hitos llegan con el Anexo de Programa, en fase 2
-    hitos: [],
+    hitos,
     runwayMeses: kpis.derivados.runway_meses,
   };
 
@@ -217,6 +218,32 @@ async function leerKpisRecientes(supabase: Cliente, companyId: string) {
     valores: mes.valores,
     derivados: calcularDerivados(mes, mesAnterior),
   };
+}
+
+/**
+ * Hitos que condicionan el estado invertible.
+ *
+ * Vienen del Anexo y de la hoja de ruta. Mientras no existieron, esta lista
+ * llegaba vacía y el cálculo los daba por cumplidos sin decirlo: una compañía
+ * podía salir «invertible» teniendo pendientes los hitos de producto y
+ * tracción que la definición exige.
+ */
+async function leerHitos(
+  supabase: Cliente,
+  companyId: string,
+): Promise<HitoAnexo[]> {
+  const { data } = await supabase
+    .from("milestones")
+    .select("id, title, status, gates_investable")
+    .eq("company_id", companyId)
+    .order("due_date", { nullsFirst: false });
+
+  return (data ?? []).map((h) => ({
+    id: h.id,
+    titulo: h.title,
+    estado: h.status,
+    condicionaInvertible: h.gates_investable,
+  }));
 }
 
 async function leerPesoTecnico(supabase: Cliente): Promise<number> {

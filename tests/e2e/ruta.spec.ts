@@ -147,3 +147,19 @@ test.afterAll(async () => {
   await borrar("milestones", { company_id: COMPANIAS.vega });
   await borrar("roadmap_stages", { company_id: COMPANIAS.vega });
 });
+
+test("un hito del plan sin cumplir bloquea el estado invertible", async ({
+  page,
+}) => {
+  /*
+   * Mientras los hitos no existieron, el cálculo recibía una lista vacía y los
+   * daba por cumplidos sin decirlo. Marea supera los dos scores y no tiene
+   * hallazgos críticos, así que lo único que puede estar frenándola son los
+   * hitos de su hoja de ruta que todavía no ha cerrado.
+   */
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
+
+  await expect(
+    page.getByText(/Cumplir el hito del Anexo/).first(),
+  ).toBeVisible();
+});
