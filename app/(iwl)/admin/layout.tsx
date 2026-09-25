@@ -19,6 +19,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
   const secciones = [
     { href: "/admin/companias", nombre: "Compañías y cohortes" },
     { href: "/admin/personas", nombre: "Personas y accesos" },
+    { href: "/admin/rutas", nombre: "Recorridos" },
     { href: "/admin/evaluacion", nombre: "Evaluación técnica" },
     { href: "/admin/programa", nombre: "Programa y umbrales" },
   ];

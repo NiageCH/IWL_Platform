@@ -6,6 +6,8 @@ import {
   cambiarRol,
   crearCohorte,
   crearCompania,
+  guardarObjetivosTraccion,
+  guardarPesosMadurez,
   crearPersona,
   guardarBandas,
   guardarObjetivo,
@@ -29,6 +31,14 @@ const ETAPAS = [
   { valor: "pre_semilla", texto: "Pre-semilla" },
   { valor: "semilla", texto: "Semilla" },
   { valor: "serie_a", texto: "Serie A" },
+];
+
+const ESTADOS_ENTRADA = [
+  { valor: "idea", texto: "Idea" },
+  { valor: "prototipo", texto: "Prototipo" },
+  { valor: "mvp", texto: "MVP" },
+  { valor: "primeros_clientes", texto: "Primeros clientes" },
+  { valor: "facturacion", texto: "Facturación" },
 ];
 
 const PERFILES = [
@@ -63,9 +73,17 @@ const PAPELES = [
 export function FormularioCompania({
   fases,
   cohortes,
+  plantillas,
 }: {
   fases: Array<{ code: string; name: string }>;
   cohortes: Array<{ id: string; name: string }>;
+  plantillas: Array<{
+    id: string;
+    nombre: string;
+    estadoEntrada: string;
+    etapas: number;
+    hitos: number;
+  }>;
 }) {
   return (
     <Desplegable titulo="Dar de alta una compañía">
@@ -109,6 +127,19 @@ export function FormularioCompania({
               >
                 <Seleccion name="stage" required defaultValue="pre_semilla">
                   {ETAPAS.map((e) => (
+                    <option key={e.valor} value={e.valor}>
+                      {e.texto}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+
+              <Campo
+                etiqueta="Estado de entrada"
+                ayuda="Qué tiene construido al entrar. Decide su hoja de ruta"
+              >
+                <Seleccion name="entry_state" required defaultValue="idea">
+                  {ESTADOS_ENTRADA.map((e) => (
                     <option key={e.valor} value={e.valor}>
                       {e.texto}
                     </option>
@@ -178,6 +209,29 @@ export function FormularioCompania({
               </Campo>
             </div>
 
+            <div className="grid gap-4 border-t border-filete pt-4 sm:grid-cols-2">
+              <Campo
+                etiqueta="Hoja de ruta"
+                ayuda="Opcional. También se puede diseñar después, desde la ficha"
+              >
+                <Seleccion name="roadmap_template" defaultValue="">
+                  <option value="">Diseñarla más tarde</option>
+                  {plantillas.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre} · {p.etapas} etapas, {p.hitos} hitos
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+
+              <Campo
+                etiqueta="Arranque de la hoja de ruta"
+                ayuda="Desde aquí se encadenan los plazos"
+              >
+                <Texto name="roadmap_start" type="date" />
+              </Campo>
+            </div>
+
             <div>
               <Boton>Dar de alta</Boton>
             </div>
@@ -185,7 +239,9 @@ export function FormularioCompania({
             <p className="text-xs text-metadato">
               Al darla de alta se crean su checklist de due diligence, las nueve
               secciones del business plan y los KPI que le corresponden por
-              perfil.
+              perfil. La plantilla de hoja de ruta, si se elige, se copia: a
+              partir de ahí las etapas son de este proyecto y editarlas no toca
+              la plantilla.
             </p>
           </>
         )}
@@ -644,6 +700,93 @@ export function FilaTarifa({
             <Boton variante="secundario" className="py-1 text-xs">
               Guardar
             </Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+const EJES_MADUREZ = [
+  { campo: "tecnologia", nombre: "Tecnología", ayuda: "El score técnico" },
+  { campo: "gobierno", nombre: "Gobierno", ayuda: "El score de preparación" },
+  { campo: "plan", nombre: "Plan", ayuda: "Hitos ya exigibles cumplidos" },
+  { campo: "traccion", nombre: "Tracción", ayuda: "Ingreso frente al objetivo" },
+  { campo: "solidez", nombre: "Solidez", ayuda: "Runway frente al mínimo" },
+] as const;
+
+/**
+ * Pesos de los ejes de madurez.
+ *
+ * No hace falta que sumen cien: el índice se reparte sobre el peso de los
+ * ejes que tienen datos, así que lo que cuenta es la proporción. Un eje a
+ * cero queda fuera del cálculo sin desaparecer de la pantalla.
+ */
+export function FormularioPesosMadurez({
+  pesos,
+}: {
+  pesos: Record<string, number>;
+}) {
+  const total = EJES_MADUREZ.reduce((t, e) => t + (pesos[e.campo] ?? 0), 0);
+
+  return (
+    <Formulario accion={guardarPesosMadurez} className="px-4 py-4">
+      {() => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-5">
+            {EJES_MADUREZ.map((e) => (
+              <Campo key={e.campo} etiqueta={e.nombre} ayuda={e.ayuda}>
+                <Texto
+                  name={e.campo}
+                  type="number"
+                  min="0"
+                  max="100"
+                  defaultValue={pesos[e.campo] ?? 0}
+                  required
+                />
+              </Campo>
+            ))}
+          </div>
+          <p className="text-xs text-metadato">
+            Suman {total}. No tienen por qué sumar cien: cuenta la proporción
+            entre ellos, porque el índice se reparte solo sobre los ejes que
+            tienen datos. Un eje que no se mide no resta.
+          </p>
+          <div>
+            <Boton>Guardar pesos</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/** Ingreso recurrente esperado en cada etapa: la referencia del eje de tracción */
+export function FormularioObjetivosTraccion({
+  objetivos,
+}: {
+  objetivos: Record<string, number>;
+}) {
+  return (
+    <Formulario accion={guardarObjetivosTraccion} className="px-4 py-4">
+      {() => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {ETAPAS.map((e) => (
+              <Campo key={e.valor} etiqueta={e.texto} ayuda="MRR esperado, en euros">
+                <Texto
+                  name={e.valor}
+                  type="number"
+                  min="0"
+                  step="500"
+                  defaultValue={objetivos[e.valor] ?? 0}
+                  required
+                />
+              </Campo>
+            ))}
+          </div>
+          <div>
+            <Boton>Guardar objetivos</Boton>
           </div>
         </>
       )}

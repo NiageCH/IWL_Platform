@@ -3,6 +3,8 @@ import {
   CeldaNumero,
   FilaTarifa,
   FormularioBandas,
+  FormularioObjetivosTraccion,
+  FormularioPesosMadurez,
   FormularioUmbrales,
   guardarPesoAreaAccion,
 } from "@/components/formularios/admin";
@@ -64,6 +66,9 @@ export default async function AdminPrograma() {
     peso?: number;
   };
 
+  const pesosMadurez = (ajuste("pesos_madurez") ?? {}) as Record<string, number>;
+  const objetivos = (ajuste("objetivos_traccion") ?? {}) as Record<string, number>;
+
   return (
     <div className="flex flex-col gap-6">
       <Bloque elevacion={2}>
@@ -82,6 +87,30 @@ export default async function AdminPrograma() {
           un punto bloqueante en el due diligence y cualquier hito del Anexo que
           condicione el estado. Eso no se configura.
         </p>
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>Cómo se mide el avance</Metadato>}>
+          Ejes de madurez
+        </TituloBloque>
+
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          El score técnico dice si la tecnología aguanta y el de preparación si
+          el expediente está en orden. El índice de madurez contesta a otra
+          pregunta: si el proyecto está más maduro que cuando entró. Se compara
+          contra la línea base congelada, y la comparación usa siempre estos
+          pesos en los dos extremos, así que cambiarlos mueve las dos figuras a
+          la vez y el salto entre ellas sigue siendo comparable.
+        </p>
+
+        <FormularioPesosMadurez pesos={pesosMadurez} />
+
+        <div className="border-t border-filete">
+          <TituloBloque accion={<Metadato>Referencia del eje de tracción</Metadato>}>
+            Ingreso recurrente esperado por etapa
+          </TituloBloque>
+          <FormularioObjetivosTraccion objetivos={objetivos} />
+        </div>
       </Bloque>
 
       <Bloque>

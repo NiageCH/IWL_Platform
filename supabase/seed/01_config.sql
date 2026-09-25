@@ -642,3 +642,168 @@ insert into kpi_definitions (code, name, description, category, unit, direction,
    'Propuestas enviadas sobre conversaciones abiertas. Mide si los pilotos se traducen en oferta.',
    'nucleo', 'porcentaje', 'sube_mejor', true, '{propuestas_enviadas,conversaciones_abiertas}', 12)
 on conflict (code) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Plantillas de hoja de ruta
+--
+-- Tres puntos de partida según el estado en que entra la startup. No son
+-- programas cerrados: se copian al instanciar y a partir de ahí cada proyecto
+-- edita los suyos, que es como trabaja una incubadora boutique.
+--
+-- Los criterios de éxito están escritos para que se puedan comprobar. «Validar
+-- el mercado» no es un hito; «veinte entrevistas con el perfil que firma la
+-- compra» sí.
+-- -----------------------------------------------------------------------------
+
+insert into roadmap_templates (code, name, entry_state, description, duration_months) values
+  ('desde_idea', 'Desde la idea', 'idea',
+   'Para equipos con tesis y sin producto. El recorrido va de confirmar que el problema existe a tener el primer cliente pagando.', 12),
+  ('desde_mvp', 'Desde el MVP', 'mvp',
+   'Para equipos con producto en manos de usuarios y sin modelo de venta repetible. El recorrido busca encaje y un motor comercial que no dependa del fundador.', 12),
+  ('con_facturacion', 'Con facturación', 'facturacion',
+   'Para equipos con ingreso recurrente. El recorrido va de sostener el escalado sin romper la operación a levantar ronda institucional.', 9)
+on conflict (code) do nothing;
+
+insert into roadmap_template_stages
+  (template_id, code, name, objective, order_index, planned_weeks, planned_hours, planned_cash)
+select t.id, v.code, v.name, v.objective, v.order_index, v.weeks, v.hours, v.cash
+from (values
+  -- Desde la idea
+  ('desde_idea', 'validacion_problema', 'Validación del problema',
+   'Confirmar con el mercado que el problema existe, duele y alguien pagaría por resolverlo. Sin esto, todo lo demás es construir a ciegas.',
+   0::smallint, 8::smallint, 60::numeric, 0::numeric),
+  ('desde_idea', 'viabilidad_tecnica', 'Prototipo y viabilidad técnica',
+   'Demostrar que la solución se puede construir y saber qué riesgos técnicos tiene antes de comprometerse con ellos.',
+   1, 10, 80, 3000),
+  ('desde_idea', 'base_societaria', 'Constitución y base societaria',
+   'Dejar la sociedad, el pacto de socios y la propiedad intelectual en un estado que no bloquee una ronda dentro de un año.',
+   2, 6, 40, 2500),
+  ('desde_idea', 'mvp_usuarios', 'MVP en manos de usuarios',
+   'Poner producto real delante de usuarios reales y medir qué hacen con él, no qué dicen de él.',
+   3, 12, 90, 0),
+  ('desde_idea', 'primeros_ingresos', 'Primeros ingresos y preparación de ronda',
+   'Convertir uso en pago y dejar el proyecto en condiciones de salir a buscar capital.',
+   4, 16, 110, 4000),
+
+  -- Desde el MVP
+  ('desde_mvp', 'diagnostico', 'Diagnóstico y línea base',
+   'Saber de dónde se parte, con números y no con impresiones, y congelarlo para poder medir el avance después.',
+   0, 4, 50, 0),
+  ('desde_mvp', 'encaje', 'Encaje producto-mercado',
+   'Encontrar el segmento que retiene y dejar de servir a los que no. El objetivo es retención medida, no usuarios registrados.',
+   1, 12, 100, 0),
+  ('desde_mvp', 'motor_comercial', 'Motor comercial repetible',
+   'Que vender deje de depender del fundador: proceso documentado, coste de adquisición conocido y alguien más capaz de cerrar.',
+   2, 14, 120, 5000),
+  ('desde_mvp', 'preparacion_ronda', 'Preparación de ronda',
+   'Materiales, métricas y relato listos, y conversaciones abiertas con inversores que encajan con la tesis.',
+   3, 10, 80, 3000),
+
+  -- Con facturación
+  ('con_facturacion', 'diagnostico', 'Diagnóstico y línea base',
+   'Radiografía técnica y de negocio del punto de partida, congelada para medir la transformación.',
+   0, 4, 50, 0),
+  ('con_facturacion', 'escalado_operacion', 'Escalado de la operación',
+   'Que el crecimiento no rompa la entrega: resolver la deuda técnica que limita y preparar la operación para multiplicar volumen.',
+   1, 14, 120, 6000),
+  ('con_facturacion', 'unit_economics', 'Crecimiento y unit economics',
+   'Crecer con margen. Un crecimiento que destruye caja no es un argumento de inversión.',
+   2, 12, 100, 0),
+  ('con_facturacion', 'ronda_institucional', 'Ronda institucional',
+   'Salir al mercado con una tesis defendible y aguantar la due diligence de un fondo.',
+   3, 9, 90, 4000)
+) as v(plantilla, code, name, objective, order_index, weeks, hours, cash)
+join roadmap_templates t on t.code = v.plantilla
+on conflict (template_id, code) do nothing;
+
+insert into roadmap_template_milestones
+  (template_stage_id, title, success_criteria, gates_investable, order_index, offset_weeks)
+select s.id, v.title, v.criterio, v.gates, v.order_index, v.offset_weeks
+from (values
+  -- Desde la idea
+  ('desde_idea', 'validacion_problema', 'Veinte entrevistas con el perfil que decide la compra',
+   'Veinte entrevistas registradas con personas del perfil que firma, no usuarios finales, con notas y patrón de dolor identificado.',
+   false, 0::smallint, 6::smallint),
+  ('desde_idea', 'validacion_problema', 'Tesis de valor escrita y contrastada',
+   'Documento de una página con problema, segmento, alternativa actual y por qué se cambiaría, revisado con IWL.',
+   false, 1, 8),
+  ('desde_idea', 'viabilidad_tecnica', 'Prototipo funcional demostrable',
+   'Prototipo que un tercero puede ver funcionar de principio a fin sobre el caso de uso principal.',
+   false, 0, 8),
+  ('desde_idea', 'viabilidad_tecnica', 'Riesgos técnicos identificados con plan de mitigación',
+   'Lista de riesgos técnicos con probabilidad, impacto y qué se hará con cada uno, revisada en sesión técnica.',
+   true, 1, 10),
+  ('desde_idea', 'base_societaria', 'Sociedad constituida con pacto de socios',
+   'Escritura y pacto firmados, con vesting y cláusulas de salida.',
+   true, 0, 5),
+  ('desde_idea', 'base_societaria', 'Propiedad intelectual asignada a la sociedad',
+   'Cesión firmada por todas las personas que han escrito código o creado contenido, incluidas las anteriores a la constitución.',
+   true, 1, 6),
+  ('desde_idea', 'mvp_usuarios', 'MVP en uso por al menos cinco usuarios reales',
+   'Cinco usuarios ajenos al equipo usándolo por su cuenta durante al menos dos semanas.',
+   true, 0, 10),
+  ('desde_idea', 'mvp_usuarios', 'Métricas de uso instrumentadas',
+   'Activación, uso recurrente y abandono medidos en la propia herramienta, no en una hoja de cálculo.',
+   false, 1, 12),
+  ('desde_idea', 'primeros_ingresos', 'Primer cliente pagando',
+   'Contrato o suscripción firmada y cobrada, no una carta de intenciones.',
+   true, 0, 12),
+  ('desde_idea', 'primeros_ingresos', 'Dossier de inversión y data room listos',
+   'Dossier revisado por IWL y data room con el checklist de due diligence en verde.',
+   false, 1, 16),
+
+  -- Desde el MVP
+  ('desde_mvp', 'diagnostico', 'Due diligence técnico cerrado',
+   'Todas las dimensiones aplicables puntuadas y los hallazgos críticos con plan asignado y fecha.',
+   true, 0, 3),
+  ('desde_mvp', 'diagnostico', 'Línea base congelada y firmada',
+   'Línea base inicial registrada en la plataforma y aceptada por las dos partes.',
+   false, 1, 4),
+  ('desde_mvp', 'encaje', 'Retención medida a tres meses',
+   'Cohorte de usuarios seguida tres meses con retención calculada y segmentada.',
+   true, 0, 12),
+  ('desde_mvp', 'encaje', 'Tres clientes de referencia con caso de uso escrito',
+   'Tres clientes dispuestos a ser referencia, con su caso documentado y autorización para citarlo.',
+   false, 1, 12),
+  ('desde_mvp', 'motor_comercial', 'Coste de adquisición conocido',
+   'Embudo instrumentado de principio a fin, con coste por cliente calculado sobre al menos un trimestre.',
+   true, 0, 10),
+  ('desde_mvp', 'motor_comercial', 'Venta cerrada por alguien distinto del fundador',
+   'Al menos dos ventas cerradas por otra persona siguiendo el proceso documentado.',
+   true, 1, 14),
+  ('desde_mvp', 'preparacion_ronda', 'Data room completo y validado',
+   'Checklist de due diligence en verde y documentos dentro de su vigencia.',
+   false, 0, 6),
+  ('desde_mvp', 'preparacion_ronda', 'Tres inversores en conversación avanzada',
+   'Tres inversores que han pasado de la primera reunión y han pedido materiales.',
+   false, 1, 10),
+
+  -- Con facturación
+  ('con_facturacion', 'diagnostico', 'Due diligence técnico cerrado',
+   'Todas las dimensiones aplicables puntuadas y los hallazgos críticos con plan asignado y fecha.',
+   true, 0, 3),
+  ('con_facturacion', 'diagnostico', 'Línea base congelada y firmada',
+   'Línea base inicial registrada en la plataforma y aceptada por las dos partes.',
+   false, 1, 4),
+  ('con_facturacion', 'escalado_operacion', 'Deuda técnica crítica resuelta',
+   'Los hallazgos de severidad crítica y alta del due diligence, cerrados y verificados.',
+   true, 0, 12),
+  ('con_facturacion', 'escalado_operacion', 'La operación soporta el triple de volumen',
+   'Prueba de carga o evidencia operativa de que se puede triplicar el volumen sin triplicar el equipo.',
+   false, 1, 14),
+  ('con_facturacion', 'unit_economics', 'Margen de contribución positivo y demostrado',
+   'Margen por cliente calculado con costes reales de entrega y soporte, positivo durante un trimestre.',
+   true, 0, 10),
+  ('con_facturacion', 'unit_economics', 'Ingreso recurrente creciendo tres meses seguidos',
+   'Tres meses consecutivos de crecimiento del ingreso recurrente, cargados en la plataforma.',
+   true, 1, 12),
+  ('con_facturacion', 'ronda_institucional', 'Term sheet recibido',
+   'Al menos un term sheet por escrito de un inversor institucional.',
+   false, 0, 7),
+  ('con_facturacion', 'ronda_institucional', 'Due diligence de inversor superado',
+   'Proceso de due diligence del inversor cerrado sin condiciones bloqueantes pendientes.',
+   false, 1, 9)
+) as v(plantilla, etapa, title, criterio, gates, order_index, offset_weeks)
+join roadmap_templates t on t.code = v.plantilla
+join roadmap_template_stages s on s.template_id = t.id and s.code = v.etapa
+on conflict (template_stage_id, order_index) do nothing;

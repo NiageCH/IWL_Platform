@@ -36,6 +36,21 @@ function refrescar() {
 const ETAPAS = ["pre_semilla", "semilla", "serie_a"] as const;
 const PERFILES = ["software", "software_ia", "hardware"] as const;
 
+/*
+ * El estado de entrada no es la etapa de inversión.
+ *
+ * `stage` responde a «cuánto ha levantado» y esto a «qué tiene construido».
+ * Son independientes —se puede facturar sin haber levantado nada— y es este
+ * el que decide qué hoja de ruta le corresponde.
+ */
+const ESTADOS_ENTRADA_VALIDOS = [
+  "idea",
+  "prototipo",
+  "mvp",
+  "primeros_clientes",
+  "facturacion",
+] as const;
+
 const esquemaCompania = z.object({
   name: textoObligatorio(2, "¿Cómo se llama la compañía?"),
   slug: z
@@ -49,7 +64,17 @@ const esquemaCompania = z.object({
   one_liner: textoOpcional,
   stage: z.enum(ETAPAS),
   tech_profile: z.enum(PERFILES),
+  entry_state: z.enum(ESTADOS_ENTRADA_VALIDOS),
   phase_code: textoObligatorio(),
+  /*
+   * La hoja de ruta es opcional en el alta.
+   *
+   * Se puede diseñar aquí, con la plantilla del estado de entrada, o más
+   * tarde desde la ficha: un proyecto recién entrado todavía no tiene plan, y
+   * forzar uno antes del diagnóstico es inventárselo.
+   */
+  roadmap_template: idOpcional,
+  roadmap_start: fechaOpcional,
   cohort_id: idOpcional,
   female_leadership_pct: z
     .union([z.string(), z.null(), z.undefined()])
@@ -88,7 +113,10 @@ export async function crearCompania(formData: FormData): Promise<Resultado> {
     p_one_liner: datos.one_liner ?? undefined,
     p_stage: datos.stage,
     p_tech_profile: datos.tech_profile,
+    p_entry_state: datos.entry_state,
     p_phase_code: datos.phase_code,
+    p_roadmap_template: datos.roadmap_template ?? undefined,
+    p_roadmap_start: datos.roadmap_start ?? undefined,
     p_cohort_id: datos.cohort_id ?? undefined,
     p_female_leadership_pct: datos.female_leadership_pct ?? undefined,
     p_founded_on: datos.founded_on ?? undefined,
@@ -105,7 +133,11 @@ export async function crearCompania(formData: FormData): Promise<Resultado> {
   }
 
   refrescar();
-  return ok(`${datos.name} dada de alta, con su checklist y sus KPI listos.`);
+  return ok(
+    datos.roadmap_template
+      ? `${datos.name} dada de alta, con su checklist, sus KPI y su hoja de ruta listos.`
+      : `${datos.name} dada de alta, con su checklist y sus KPI listos. Su hoja de ruta se diseña desde la ficha.`,
+  );
 }
 
 const esquemaFicha = z.object({
@@ -116,6 +148,15 @@ const esquemaFicha = z.object({
   one_liner: textoOpcional,
   stage: z.enum(ETAPAS),
   tech_profile: z.enum(PERFILES),
+  /*
+   * El estado de entrada se puede corregir.
+   *
+   * No cambia con el tiempo —es el estado del día que entró, y por eso el
+   * recorrido que se le diseñó tiene sentido— pero se puede haber clasificado
+   * mal al darla de alta, o quedar sin fijar en las que son anteriores a este
+   * campo.
+   */
+  entry_state: z.enum(ESTADOS_ENTRADA_VALIDOS).nullish(),
   phase_id: idOpcional,
   cohort_id: idOpcional,
 });
@@ -522,4 +563,66 @@ export async function crearCohorte(formData: FormData): Promise<Resultado> {
 
   refrescar();
   return ok("Cohorte creada.");
+}
+
+/**
+ * Pesos de los ejes de madurez.
+ *
+ * No tienen que sumar cien: el índice se reparte sobre el peso de los ejes
+ * que de verdad tienen datos, así que lo que importa es la proporción entre
+ * ellos. Poner un eje a cero lo saca del cálculo sin borrarlo.
+ */
+const esquemaPesosMadurez = z.object({
+  tecnologia: z.coerce.number().min(0).max(100),
+  gobierno: z.coerce.number().min(0).max(100),
+  plan: z.coerce.number().min(0).max(100),
+  traccion: z.coerce.number().min(0).max(100),
+  solidez: z.coerce.number().min(0).max(100),
+});
+
+export async function guardarPesosMadurez(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaPesosMadurez, formData);
+  if (fallo) return fallo;
+
+  const total = Object.values(datos).reduce((t, v) => t + v, 0);
+  if (total === 0) {
+    return error("Al menos un eje tiene que pesar algo, o no hay índice.");
+  }
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: datos })
+    .eq("key", "pesos_madurez");
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok(
+    "Pesos guardados. La madurez se recalcula al leerla, también la del día de partida: se compara siempre con la misma vara.",
+  );
+}
+
+const esquemaObjetivosTraccion = z.object({
+  pre_semilla: z.coerce.number().min(0),
+  semilla: z.coerce.number().min(0),
+  serie_a: z.coerce.number().min(0),
+});
+
+export async function guardarObjetivosTraccion(
+  formData: FormData,
+): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaObjetivosTraccion, formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: datos })
+    .eq("key", "objetivos_traccion");
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok("Objetivos de tracción guardados.");
 }

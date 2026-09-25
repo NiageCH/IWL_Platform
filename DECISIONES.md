@@ -259,3 +259,61 @@ Lo encontró el test de administración que da de alta una compañía y comprueb
 ## 2026-09-25 · La clave de servicio aparece en un solo sitio
 
 Todas las acciones escriben con el cliente de sesión, para que mande RLS. La excepción es el alta de personas: crear una cuenta en `auth.users` no se puede hacer de otra forma. Ahí, y solo ahí, se comprueba la autorización a mano antes de usar la clave, y está comentado por qué.
+
+## 2026-09-25 · El estado de entrada es otro eje, distinto de la etapa de inversión
+
+`stage` (pre-semilla, semilla, serie A) responde a «cuánto ha levantado». `entry_state` (idea, prototipo, MVP, primeros clientes, facturación) responde a «qué tiene construido». Son independientes: se puede facturar sin haber levantado nada.
+
+Hacía falta el segundo porque es el que decide el recorrido. Una incubadora boutique no tiene un programa, tiene varios, y el que le toca a un proyecto depende de lo que trae hecho, no de lo que ha recaudado.
+
+## 2026-09-25 · La hoja de ruta se copia de una plantilla, no la referencia
+
+Al aplicar un recorrido a una compañía se copian sus etapas y sus hitos. A partir de ahí son de ese proyecto y editarlos no toca la plantilla; y al revés, reorganizar el catálogo no reescribe el plan de nadie que esté en marcha.
+
+Es el mismo patrón del checklist de due diligence y de las secciones del business plan, y por la misma razón. La plantilla es el punto de partida, no el corsé: eso es lo que significa «a medida».
+
+## 2026-09-25 · Borrar una etapa no borra sus hitos
+
+`milestones.stage_id` es `on delete set null`. Un hito acordado con la compañía no desaparece porque IWL reorganice los tramos del plan: pasa a la lista de hitos sin etapa y sigue contando para el estado invertible.
+
+Lo mismo vale para los que nacen del plan técnico o del due diligence, que aparecen cuando aparecen y no siempre encajan en un tramo previsto.
+
+## 2026-09-25 · El carril de un avance lo decide la base, no el formulario
+
+`progress_entries.side` lo pone un trigger según quién escribe: IWL en su carril, la compañía en el suyo. No es un campo que se elija.
+
+Si se pudiera elegir, IWL podría apuntarse avances en el carril de la compañía y al revés, y los dos carriles dejarían de significar nada. Un avance tampoco cambia de carril al editarlo.
+
+## 2026-09-25 · La aportación existe aunque no haya Anexo firmado
+
+La pantalla de aportación se cortaba entera cuando faltaba el Anexo y escondía las horas y el dinero ya puestos. El Anexo fija el compromiso —contra qué se mide—, pero lo entregado existe desde el primer día.
+
+Ahora se avisa de que no hay compromiso contra el que medir y se enseña todo lo demás. Lo encontró mirar la ficha de una compañía real en el navegador, no un test.
+
+## 2026-09-25 · Compras, eventos y reuniones se registran aparte de las horas
+
+Hasta ahora la aportación recogía horas, caja, introducciones y entregables. Faltaba lo que IWL pone y no es ninguna de esas cuatro cosas: una licencia que asume, un estand al que lleva al proyecto, una tarde de reuniones que organiza.
+
+Cada línea lleva dos importes: lo que le cuesta a IWL y lo que le costaría a la compañía por su cuenta. La diferencia es la aportación real, igual que con las tarifas. Un estand cuesta lo mismo lo pague quien lo pague, pero una compañía sola no entra en la agenda de un fondo.
+
+No sustituye a `introductions`: una introducción es presentar a alguien y seguir el embudo hasta el final; una reunión de aquí es una reunión concreta con su fecha y su resultado.
+
+## 2026-09-25 · El índice de madurez no rellena huecos
+
+Cinco ejes: tecnología, gobierno, plan, tracción y solidez. Todos se calculan con datos que alguien ya ha validado; ninguno se estima.
+
+Un eje sin datos no cuenta como cero: el índice se reparte sobre el peso de los ejes que sí se pueden medir, como en el score técnico. Un proyecto sin evaluar tiene que parecer no evaluado, no inmaduro. La pantalla dice siempre qué parte del peso está medida.
+
+El eje de plan se mide contra los hitos que **ya vencían**, no contra todo el recorrido. Si no, un proyecto que va perfecto en su primer mes puntuaría bajísimo solo por tener el plan por delante, y la madurez bajaría cada vez que se alarga la hoja de ruta.
+
+## 2026-09-25 · La línea base guarda las entradas del cálculo, no su resultado
+
+El contenido congelado incluye los números que alimentan el índice de madurez, no el índice ya calculado. Así, si IWL cambia los pesos de los ejes, los dos extremos de la comparación se recalculan con la misma vara.
+
+Guardar el resultado compararía dos formas distintas de medir y el salto entre el inicio y hoy dejaría de significar nada.
+
+## 2026-09-25 · Las pruebas restauran la configuración por fuera de lo que prueban
+
+Los tests de interfaz que tocan umbrales o pesos los devolvían a su sitio usando el mismo formulario que estaban probando. Si el test se cortaba a mitad, el valor quedaba cambiado y la siguiente pasada fallaba por algo que no tenía que ver con lo que se quería comprobar.
+
+Ahora se restauran con la clave de servicio en un `afterEach`. Lo mismo con los datos: el test que crea una hoja de ruta borra también sus hitos, porque borrar la etapa no los borra a ellos.

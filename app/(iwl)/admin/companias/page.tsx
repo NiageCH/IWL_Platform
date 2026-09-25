@@ -11,6 +11,8 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { leerPlantillas } from "@/lib/datos/ruta";
+import { EstadoEntrada } from "@/components/formularios/plantillas";
 import { fecha, numero } from "@/lib/utils";
 
 export const metadata = { title: "Compañías · Administración" };
@@ -30,15 +32,16 @@ const PERFILES: Record<string, string> = {
 export default async function AdminCompanias() {
   const supabase = await clienteServidor();
 
-  const [companias, fases, cohortes] = await Promise.all([
+  const [companias, fases, cohortes, plantillas] = await Promise.all([
     supabase
       .from("companies")
       .select(
-        "id, name, slug, sector, stage, tech_profile, created_at, phases ( name ), cohorts ( name )",
+        "id, name, slug, sector, stage, tech_profile, entry_state, created_at, phases ( name ), cohorts ( name ), roadmap_stages ( id )",
       )
       .order("name"),
     supabase.from("phases").select("code, name, order_index").order("order_index"),
     supabase.from("cohorts").select("id, name, start_date, end_date, investable_target").order("name"),
+    leerPlantillas(),
   ]);
 
   return (
@@ -59,8 +62,10 @@ export default async function AdminCompanias() {
                 <tr className="border-b border-filete text-left">
                   <th className="px-4 py-2 font-medium text-metadato">Compañía</th>
                   <th className="px-4 py-2 font-medium text-metadato">Etapa</th>
+                  <th className="px-4 py-2 font-medium text-metadato">Entró en</th>
                   <th className="px-4 py-2 font-medium text-metadato">Perfil</th>
                   <th className="px-4 py-2 font-medium text-metadato">Fase</th>
+                  <th className="px-4 py-2 font-medium text-metadato">Hoja de ruta</th>
                   <th className="px-4 py-2 font-medium text-metadato">Cohorte</th>
                   <th className="px-4 py-2 font-medium text-metadato">Alta</th>
                 </tr>
@@ -83,10 +88,30 @@ export default async function AdminCompanias() {
                       {ETAPAS[c.stage] ?? c.stage}
                     </td>
                     <td className="px-4 py-3 text-secundario">
+                      <EstadoEntrada id={c.id} valor={c.entry_state} />
+                    </td>
+                    <td className="px-4 py-3 text-secundario">
                       {PERFILES[c.tech_profile] ?? c.tech_profile}
                     </td>
                     <td className="px-4 py-3 text-secundario">
                       {c.phases?.name ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-secundario">
+                      {(c.roadmap_stages ?? []).length > 0 ? (
+                        <Link
+                          href={`/cartera/${c.slug}/ruta`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {(c.roadmap_stages ?? []).length} etapas
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/cartera/${c.slug}/ruta`}
+                          className="text-acento-texto underline-offset-4 hover:underline"
+                        >
+                          Diseñarla
+                        </Link>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-secundario">
                       {c.cohorts?.name ?? "Sin cohorte"}
@@ -104,6 +129,13 @@ export default async function AdminCompanias() {
         <FormularioCompania
           fases={(fases.data ?? []).map((f) => ({ code: f.code, name: f.name }))}
           cohortes={(cohortes.data ?? []).map((c) => ({ id: c.id, name: c.name }))}
+          plantillas={plantillas.map((p) => ({
+            id: p.id,
+            nombre: p.nombre,
+            estadoEntrada: p.estadoEntrada,
+            etapas: p.etapas.length,
+            hitos: p.etapas.reduce((t, e) => t + e.hitos.length, 0),
+          }))}
         />
       </Bloque>
 

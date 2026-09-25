@@ -41,7 +41,8 @@ export function CabeceraProyecto({
 
   const secciones = [
     { codigo: "resumen", nombre: "Resumen", href: base },
-    { codigo: "programa", nombre: "Programa e hitos", href: `${base}/programa` },
+    { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta` },
+    { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa` },
     { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion` },
     { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico` },
     { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia` },

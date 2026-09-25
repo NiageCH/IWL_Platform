@@ -34,7 +34,7 @@ export async function leerCompania(slug: string) {
   const { data: compania } = await supabase
     .from("companies")
     .select(
-      `id, name, slug, sector, one_liner, stage, tech_profile, phase_id,
+      `id, name, slug, sector, one_liner, stage, tech_profile, entry_state, phase_id,
        female_leadership_pct, founded_on, website,
        phases ( code, name, order_index ),
        cohorts ( name )`,
@@ -259,4 +259,10 @@ export async function leerUmbrales(supabase: Cliente) {
     runwayMinimoMeses:
       valor?.runway_minimo_meses ?? UMBRALES_INVERTIBLE.runwayMinimoMeses,
   };
+}
+
+/** Los umbrales sin tener que traer un cliente: los usan acciones y vistas */
+export async function leerUmbralesPublicos() {
+  const supabase = await clienteServidor();
+  return leerUmbrales(supabase);
 }

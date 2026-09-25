@@ -1,6 +1,7 @@
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { leerMovimiento } from "@/lib/datos/movimiento";
 import { Evolucion } from "@/components/evolucion";
+import { VistaMadurez } from "./madurez";
 import { Bloque, Cifra, Metadato, Severidad, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { euros, numero, porcentaje } from "@/lib/utils";
 
@@ -54,6 +55,8 @@ export async function VistaResumen({
           </ol>
         )}
       </Bloque>
+
+      <VistaMadurez resumen={resumen} />
 
       <Bloque>
         <TituloBloque

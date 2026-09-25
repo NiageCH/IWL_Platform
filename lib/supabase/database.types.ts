@@ -998,6 +998,7 @@ export type Database = {
           cohort_id: string | null
           created_at: string
           created_by: string | null
+          entry_state: Database["public"]["Enums"]["estado_entrada"] | null
           female_leadership_pct: number | null
           founded_on: string | null
           id: string
@@ -1016,6 +1017,7 @@ export type Database = {
           cohort_id?: string | null
           created_at?: string
           created_by?: string | null
+          entry_state?: Database["public"]["Enums"]["estado_entrada"] | null
           female_leadership_pct?: number | null
           founded_on?: string | null
           id?: string
@@ -1034,6 +1036,7 @@ export type Database = {
           cohort_id?: string | null
           created_at?: string
           created_by?: string | null
+          entry_state?: Database["public"]["Enums"]["estado_entrada"] | null
           female_leadership_pct?: number | null
           founded_on?: string | null
           id?: string
@@ -1397,6 +1400,7 @@ export type Database = {
           profile_id: string | null
           rate_card_id: string | null
           session_id: string | null
+          stage_id: string | null
           subject_id: string
           updated_at: string
           worked_on: string
@@ -1417,6 +1421,7 @@ export type Database = {
           profile_id?: string | null
           rate_card_id?: string | null
           session_id?: string | null
+          stage_id?: string | null
           subject_id: string
           updated_at?: string
           worked_on: string
@@ -1437,6 +1442,7 @@ export type Database = {
           profile_id?: string | null
           rate_card_id?: string | null
           session_id?: string | null
+          stage_id?: string | null
           subject_id?: string
           updated_at?: string
           worked_on?: string
@@ -1527,7 +1533,145 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "contribution_hours_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_stages"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "contribution_hours_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_items: {
+        Row: {
+          amount: number | null
+          annex_id: string | null
+          company_id: string
+          counterpart: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["tipo_aportacion"]
+          market_value: number | null
+          occurred_on: string
+          outcome: string | null
+          stage_id: string | null
+          subject_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          annex_id?: string | null
+          company_id: string
+          counterpart?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["tipo_aportacion"]
+          market_value?: number | null
+          occurred_on: string
+          outcome?: string | null
+          stage_id?: string | null
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          annex_id?: string | null
+          company_id?: string
+          counterpart?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["tipo_aportacion"]
+          market_value?: number | null
+          occurred_on?: string
+          outcome?: string | null
+          stage_id?: string | null
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_items_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "contribution_subjects"
@@ -2762,6 +2906,7 @@ export type Database = {
           origin: Database["public"]["Enums"]["origen_hito"]
           phase_id: string | null
           plan_item_id: string | null
+          stage_id: string | null
           status: Database["public"]["Enums"]["estado_hito"]
           success_criteria: string
           title: string
@@ -2783,6 +2928,7 @@ export type Database = {
           origin?: Database["public"]["Enums"]["origen_hito"]
           phase_id?: string | null
           plan_item_id?: string | null
+          stage_id?: string | null
           status?: Database["public"]["Enums"]["estado_hito"]
           success_criteria: string
           title: string
@@ -2804,6 +2950,7 @@ export type Database = {
           origin?: Database["public"]["Enums"]["origen_hito"]
           phase_id?: string | null
           plan_item_id?: string | null
+          stage_id?: string | null
           status?: Database["public"]["Enums"]["estado_hito"]
           success_criteria?: string
           title?: string
@@ -2885,6 +3032,13 @@ export type Database = {
             columns: ["plan_item_id"]
             isOneToOne: false
             referencedRelation: "tech_plan_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_stages"
             referencedColumns: ["id"]
           },
         ]
@@ -3231,6 +3385,111 @@ export type Database = {
           },
         ]
       }
+      progress_entries: {
+        Row: {
+          author_id: string | null
+          body: string | null
+          company_id: string
+          created_at: string
+          document_id: string | null
+          entry_date: string
+          evidence_url: string | null
+          id: string
+          milestone_id: string | null
+          side: Database["public"]["Enums"]["lado_avance"]
+          stage_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string | null
+          company_id: string
+          created_at?: string
+          document_id?: string | null
+          entry_date?: string
+          evidence_url?: string | null
+          id?: string
+          milestone_id?: string | null
+          side: Database["public"]["Enums"]["lado_avance"]
+          stage_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string | null
+          company_id?: string
+          created_at?: string
+          document_id?: string | null
+          entry_date?: string
+          evidence_url?: string | null
+          id?: string
+          milestone_id?: string | null
+          side?: Database["public"]["Enums"]["lado_avance"]
+          stage_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_entries_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "admin_personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "progress_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "progress_entries_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_cards: {
         Row: {
           applied_rate: number
@@ -3356,6 +3615,238 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      roadmap_stages: {
+        Row: {
+          annex_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          ends_on: string | null
+          id: string
+          name: string
+          notes: string | null
+          objective: string
+          order_index: number
+          planned_cash: number | null
+          planned_hours: number | null
+          starts_on: string | null
+          status: Database["public"]["Enums"]["estado_etapa"]
+          template_stage_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          annex_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          ends_on?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          objective: string
+          order_index: number
+          planned_cash?: number | null
+          planned_hours?: number | null
+          starts_on?: string | null
+          status?: Database["public"]["Enums"]["estado_etapa"]
+          template_stage_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annex_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          ends_on?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          objective?: string
+          order_index?: number
+          planned_cash?: number | null
+          planned_hours?: number | null
+          starts_on?: string | null
+          status?: Database["public"]["Enums"]["estado_etapa"]
+          template_stage_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_stages_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roadmap_stages_template_stage_id_fkey"
+            columns: ["template_stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_template_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roadmap_template_milestones: {
+        Row: {
+          gates_investable: boolean
+          id: string
+          offset_weeks: number | null
+          order_index: number
+          success_criteria: string
+          template_stage_id: string
+          title: string
+        }
+        Insert: {
+          gates_investable?: boolean
+          id?: string
+          offset_weeks?: number | null
+          order_index: number
+          success_criteria: string
+          template_stage_id: string
+          title: string
+        }
+        Update: {
+          gates_investable?: boolean
+          id?: string
+          offset_weeks?: number | null
+          order_index?: number
+          success_criteria?: string
+          template_stage_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_template_milestones_template_stage_id_fkey"
+            columns: ["template_stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_template_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roadmap_template_stages: {
+        Row: {
+          code: string
+          id: string
+          name: string
+          objective: string
+          order_index: number
+          planned_cash: number | null
+          planned_hours: number | null
+          planned_weeks: number | null
+          template_id: string
+        }
+        Insert: {
+          code: string
+          id?: string
+          name: string
+          objective: string
+          order_index: number
+          planned_cash?: number | null
+          planned_hours?: number | null
+          planned_weeks?: number | null
+          template_id: string
+        }
+        Update: {
+          code?: string
+          id?: string
+          name?: string
+          objective?: string
+          order_index?: number
+          planned_cash?: number | null
+          planned_hours?: number | null
+          planned_weeks?: number | null
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_template_stages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roadmap_templates: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          duration_months: number | null
+          entry_state: Database["public"]["Enums"]["estado_entrada"]
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          duration_months?: number | null
+          entry_state: Database["public"]["Enums"]["estado_entrada"]
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          duration_months?: number | null
+          entry_state?: Database["public"]["Enums"]["estado_entrada"]
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       tasks: {
         Row: {
@@ -4279,6 +4770,39 @@ export type Database = {
           },
         ]
       }
+      contribution_items_summary: {
+        Row: {
+          amount: number | null
+          company_id: string | null
+          discount: number | null
+          items: number | null
+          kind: Database["public"]["Enums"]["tipo_aportacion"] | null
+          market_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+        ]
+      }
       kpi_series: {
         Row: {
           category: Database["public"]["Enums"]["kpi_category"] | null
@@ -4381,11 +4905,14 @@ export type Database = {
       crear_compania: {
         Args: {
           p_cohort_id?: string
+          p_entry_state?: Database["public"]["Enums"]["estado_entrada"]
           p_female_leadership_pct?: number
           p_founded_on?: string
           p_name: string
           p_one_liner?: string
           p_phase_code: string
+          p_roadmap_start?: string
+          p_roadmap_template?: string
           p_sector?: string
           p_slug: string
           p_stage: Database["public"]["Enums"]["company_stage"]
@@ -4393,6 +4920,15 @@ export type Database = {
           p_website?: string
         }
         Returns: string
+      }
+      instanciar_hoja_de_ruta: {
+        Args: {
+          inicio?: string
+          target_annex?: string
+          target_company: string
+          template: string
+        }
+        Returns: number
       }
     }
     Enums: {
@@ -4412,6 +4948,13 @@ export type Database = {
       company_tech_profile: "software" | "software_ia" | "hardware"
       estado_anexo: "borrador" | "firmado" | "cerrado"
       estado_caja: "comprometido" | "desembolsado" | "justificado"
+      estado_entrada:
+        | "idea"
+        | "prototipo"
+        | "mvp"
+        | "primeros_clientes"
+        | "facturacion"
+      estado_etapa: "planificada" | "en_curso" | "completada" | "cancelada"
       estado_evaluacion: "borrador" | "publicada"
       estado_hallazgo: "abierto" | "en_curso" | "resuelto" | "aceptado"
       estado_hito: "pendiente" | "en_curso" | "cumplido" | "retrasado"
@@ -4434,12 +4977,14 @@ export type Database = {
       kpi_category: "nucleo" | "sector" | "tecnico" | "propio"
       kpi_direction: "sube_mejor" | "baja_mejor" | "neutro"
       kpi_unit: "moneda" | "porcentaje" | "numero" | "meses" | "dias" | "ratio"
+      lado_avance: "compania" | "iwl"
       motivo_instantanea: "linea_base" | "evaluacion" | "mensual" | "manual"
       origen_hito: "anexo" | "plan_tecnico" | "due_diligence" | "acordado"
       origen_puntuacion: "automatico" | "manual"
       responsable_plan: "compania" | "niage"
       severidad_hallazgo: "critico" | "alto" | "medio" | "bajo"
       tech_applicability: "siempre" | "ia" | "hardware"
+      tipo_aportacion: "compra" | "evento" | "reunion_inversor" | "gestion"
       tipo_contacto:
         | "inversor"
         | "cliente"
@@ -4603,6 +5148,14 @@ export const Constants = {
       company_tech_profile: ["software", "software_ia", "hardware"],
       estado_anexo: ["borrador", "firmado", "cerrado"],
       estado_caja: ["comprometido", "desembolsado", "justificado"],
+      estado_entrada: [
+        "idea",
+        "prototipo",
+        "mvp",
+        "primeros_clientes",
+        "facturacion",
+      ],
+      estado_etapa: ["planificada", "en_curso", "completada", "cancelada"],
       estado_evaluacion: ["borrador", "publicada"],
       estado_hallazgo: ["abierto", "en_curso", "resuelto", "aceptado"],
       estado_hito: ["pendiente", "en_curso", "cumplido", "retrasado"],
@@ -4627,12 +5180,14 @@ export const Constants = {
       kpi_category: ["nucleo", "sector", "tecnico", "propio"],
       kpi_direction: ["sube_mejor", "baja_mejor", "neutro"],
       kpi_unit: ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],
+      lado_avance: ["compania", "iwl"],
       motivo_instantanea: ["linea_base", "evaluacion", "mensual", "manual"],
       origen_hito: ["anexo", "plan_tecnico", "due_diligence", "acordado"],
       origen_puntuacion: ["automatico", "manual"],
       responsable_plan: ["compania", "niage"],
       severidad_hallazgo: ["critico", "alto", "medio", "bajo"],
       tech_applicability: ["siempre", "ia", "hardware"],
+      tipo_aportacion: ["compra", "evento", "reunion_inversor", "gestion"],
       tipo_contacto: [
         "inversor",
         "cliente",

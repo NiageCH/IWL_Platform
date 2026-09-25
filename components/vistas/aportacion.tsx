@@ -1,5 +1,8 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { leerExtracto } from "@/lib/datos/aportacion";
+import { leerAportacionExtra, nombreTipo } from "@/lib/datos/aportacion-extra";
+import { leerHojaDeRuta } from "@/lib/datos/ruta";
+import { NuevaAportacion } from "@/components/formularios/ruta";
 import { RegistroRapidoHoras } from "@/components/formularios/programa";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
@@ -40,7 +43,11 @@ export async function VistaAportacion({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const extracto = await leerExtracto(resumen.compania.id);
+  const [extracto, extra, ruta] = await Promise.all([
+    leerExtracto(resumen.compania.id),
+    leerAportacionExtra(resumen.compania.id),
+    leerHojaDeRuta(resumen.compania.id, resumen.compania.entry_state),
+  ]);
   const { compromiso } = extracto;
   const { permisos, compania } = resumen;
 
@@ -64,21 +71,27 @@ export async function VistaAportacion({
   // La última línea imputada, para no reescribir persona y perfil cada vez
   const ultima = extracto.horas[0];
 
-  if (!compromiso?.annexId) {
-    return (
-      <Bloque>
-        <TituloBloque>Aportación de IWL</TituloBloque>
-        <SinDatos>
-          Todavía no hay Anexo de Programa firmado. El compromiso de horas, caja
-          e introducciones se fija al firmarlo, y a partir de ahí esta pantalla
-          lleva la cuenta de lo entregado.
-        </SinDatos>
-      </Bloque>
-    );
-  }
+  /*
+   * Sin Anexo firmado hay aportación, lo que no hay es compromiso.
+   *
+   * Antes esta pantalla se cortaba entera cuando faltaba el Anexo, y escondía
+   * las horas y el dinero ya puestos. El Anexo fija contra qué se mide; lo
+   * entregado existe desde el primer día y es lo que la fundadora quiere ver.
+   */
+  const conAnexo = Boolean(compromiso?.annexId);
 
   return (
     <div className="flex flex-col gap-6">
+      {!conAnexo || !compromiso ? (
+        <Bloque>
+          <TituloBloque>Compromiso del Anexo</TituloBloque>
+          <SinDatos>
+            Todavía no hay Anexo de Programa firmado, así que no hay compromiso
+            de horas, caja ni introducciones contra el que medir. Lo que IWL ya
+            ha puesto sí está registrado y se ve aquí abajo.
+          </SinDatos>
+        </Bloque>
+      ) : (
       <Bloque elevacion={2}>
         <TituloBloque
           accion={
@@ -138,6 +151,7 @@ export async function VistaAportacion({
           comprometido, se ve aquí igual que si va por delante.
         </p>
       </Bloque>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Bloque>
@@ -287,6 +301,94 @@ export async function VistaAportacion({
       </Bloque>
 
       <Bloque>
+        <TituloBloque
+          accion={
+            <Metadato>
+              {extra.items.length}{" "}
+              {extra.items.length === 1 ? "registro" : "registros"}
+            </Metadato>
+          }
+        >
+          Compras, eventos y reuniones
+        </TituloBloque>
+
+        {extra.porTipo.length > 0 ? (
+          <div className="grid gap-6 border-b border-filete px-4 py-4 sm:grid-cols-3">
+            <Cifra
+              valor={euros(extra.coste)}
+              etiqueta="Le cuesta a IWL"
+              nota="Desembolso real"
+            />
+            <Cifra
+              valor={euros(extra.valorMercado)}
+              etiqueta="Valor de mercado"
+              nota="Lo que costaría por su cuenta"
+            />
+            <Cifra
+              destacada
+              valor={euros(extra.descuento)}
+              etiqueta="Aportación"
+              nota="La diferencia, que es lo que se ahorra la compañía"
+            />
+          </div>
+        ) : null}
+
+        {extra.items.length === 0 ? (
+          <SinDatos>
+            Todavía no hay compras, eventos ni reuniones registradas. Es la
+            parte de la aportación que no son horas ni transferencias, y sin
+            ella el extracto cuenta el trabajo pero no el acceso.
+          </SinDatos>
+        ) : (
+          <ul className="divide-y divide-filete">
+            {extra.items.map((i) => (
+              <li key={i.id} className="px-4 py-3">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <Etiqueta>{nombreTipo(i.tipo)}</Etiqueta>
+                  <span className="text-sm font-medium text-titular">
+                    {i.titulo}
+                  </span>
+                  <span className="flex-1" />
+                  <Metadato>{fecha(i.fecha)}</Metadato>
+                </div>
+
+                {i.descripcion ? (
+                  <p className="mt-1 text-sm text-secundario">{i.descripcion}</p>
+                ) : null}
+
+                {i.resultado ? (
+                  <p className="mt-1 border-l-2 border-filete pl-3 text-sm text-secundario">
+                    Resultado: {i.resultado}
+                  </p>
+                ) : null}
+
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+                  {i.contraparte ? <Metadato>{i.contraparte}</Metadato> : null}
+                  {i.etapa ? <Metadato>{i.etapa}</Metadato> : null}
+                  {i.coste ? (
+                    <Metadato>Coste {euros(i.coste)}</Metadato>
+                  ) : null}
+                  {i.descuento > 0 ? (
+                    <span className="cifra text-xs text-acento-texto">
+                      Aportación {euros(i.descuento)}
+                    </span>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {permisos.esIwl ? (
+          <NuevaAportacion
+            slug={compania.slug}
+            companyId={compania.id}
+            etapas={ruta.etapas.map((e) => ({ id: e.id, nombre: e.nombre }))}
+          />
+        ) : null}
+      </Bloque>
+
+      <Bloque>
         <TituloBloque accion={<Metadato>Producidos por IWL</Metadato>}>
           Entregables
         </TituloBloque>
@@ -319,7 +421,7 @@ export async function VistaAportacion({
           <RegistroRapidoHoras
             slug={compania.slug}
             companyId={compania.id}
-            annexId={compromiso.annexId}
+            annexId={compromiso?.annexId ?? null}
             materias={(materias.data ?? []).map((m) => ({ id: m.id, nombre: m.name }))}
             perfiles={[
               ...new Map(

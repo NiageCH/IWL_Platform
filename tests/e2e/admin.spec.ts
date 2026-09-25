@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, entrarComo } from "./entrada";
+import { AJUSTES_BASE, USUARIOS, ajustar, entrarComo } from "./entrada";
 
 /**
  * Administración.
@@ -82,11 +82,14 @@ test("los umbrales del estado invertible se tocan desde aquí", async ({ page })
   await umbrales.getByRole("button", { name: /Guardar umbrales/ }).click();
 
   await expect(page.getByText(/Umbrales guardados/)).toBeVisible();
+  await page.reload();
+  await expect(umbrales.locator('input[name="score_tecnico_minimo"]')).toHaveValue("85");
+});
 
-  // Se dejan como estaban
-  await umbrales.locator('input[name="score_tecnico_minimo"]').fill("80");
-  await umbrales.getByRole("button", { name: /Guardar umbrales/ }).click();
-  await expect(page.getByText(/Umbrales guardados/)).toBeVisible();
+// Se restaura por fuera: si se hiciera con el mismo formulario y el test se
+// cortase antes, la siguiente pasada fallaría por el valor que dejó esta
+test.afterEach(async () => {
+  await ajustar("umbrales_invertible", AJUSTES_BASE.umbrales_invertible);
 });
 
 test("las bandas no se guardan si los cortes están desordenados", async ({ page }) => {
