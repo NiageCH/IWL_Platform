@@ -1,42 +1,48 @@
 # Plataforma IWL
 
-Plataforma de seguimiento de la cohorte de Inception Woman Lab. Cada compañía mantiene su business plan vivo y su due diligence vivo, reporta KPI cada mes y ve su avance en el programa. El equipo de IWL ve la cartera completa y saca informes.
+Plataforma de seguimiento de la cohorte de **Inception Woman Lab**. Cada compañía mantiene su business plan vivo y su due diligence vivo, reporta sus KPI cada mes y ve su avance en el programa. El equipo de IWL ve la cartera completa, entra proyecto a proyecto y mide lo que la incubadora aporta.
 
-El alcance completo está en `IWL_Doc_EspecPlataformaSeguimiento_ES_v2_20260923.md`. Las convenciones de trabajo, en `CLAUDE.md`. Las decisiones tomadas, en `DECISIONES.md`.
+Dos vistas sobre los mismos datos, con un aislamiento estricto entre compañías que decide la base y no la interfaz.
 
-## Requisitos
+| Vista | Quién | Ve |
+|---|---|---|
+| Compañía | El equipo fundador | Solo su proyecto. Carga información, responde comentarios, reporta KPI |
+| IWL | Equipo de IWL e ingeniería de Niage Technology | Toda la cartera, dashboard de cohorte, revisión y validación |
 
-- Node.js 20.9 o superior. El proyecto se desarrolla con Node 24.
-- Docker, para levantar Supabase en local.
+## Tres principios
 
-## Arranque local
+**Carga única.** Un dato se introduce una vez. Business plan, due diligence, KPI, informes y extracto se alimentan del mismo origen. Si algo se pide dos veces, está mal modelado.
+
+**Se evalúa contra la etapa.** El score técnico mide la distancia al nivel objetivo de la etapa (pre-semilla, semilla, serie A), nunca la distancia a la perfección. Una compañía pre-semilla con nivel 2 donde el objetivo es 2 está al cien por cien: no le falta nada para su momento.
+
+**Nadie valida su propio trabajo.** La compañía carga, IWL valida. Lo impiden triggers en la base, no comprobaciones en la interfaz: una política decide si puedes escribir la fila, no a qué valor puedes ponerla.
+
+## Arranque
+
+Requiere Node 20.9 o superior (se desarrolla con 24) y Docker.
 
 ```bash
 npm install
-npm run db:start     # Levanta Supabase en Docker. La primera vez descarga imágenes
-npm run db:reset     # Aplica migraciones y datos semilla
-npm run db:env       # Escribe .env.local con las claves de la instancia local
+npm run db:start     # Supabase en Docker. La primera vez descarga imágenes
+npm run db:reset     # Migraciones, datos semilla, instantáneas y cuentas locales
+npm run db:env       # Escribe .env.local con las claves de la instancia
 npm run dev          # http://localhost:3000
 ```
 
-`npm run db:stop` para el stack cuando termines.
+`npm run db:stop` para el stack al terminar.
 
-### Entrar en la aplicación en local
+### Entrar
 
-**El correo no sale a internet.** Supabase lo intercepta y lo deja en una bandeja que corre junto a la base, en **http://127.0.0.1:54324**. La propia pantalla de entrada enlaza a ella cuando detecta que estás en local.
+**El correo no sale a internet.** Supabase lo intercepta y lo deja en una bandeja que corre junto a la base, en **http://127.0.0.1:54324**. La pantalla de entrada enlaza a ella cuando detecta que estás en local.
 
 1. Abre http://localhost:3000/entrar
-2. Escribe uno de los correos de la tabla de abajo y pulsa **Enviar enlace de entrada**
-3. Abre http://127.0.0.1:54324 y pincha el enlace del mensaje
-
-El enlace caduca en una hora y vale para un solo uso. Si `npm run db:reset` recrea la base, las sesiones abiertas dejan de valer y hay que pedir un enlace nuevo.
-
-Personas de la semilla, todas con datos ficticios:
+2. Escribe uno de los correos de abajo y pulsa **Enviar enlace de entrada**
+3. Abre la bandeja y pincha el enlace del mensaje
 
 | Correo | Rol | Ve |
 |---|---|---|
 | `admin@iwl.test` | admin_iwl | Todo, incluida la configuración |
-| `programa@iwl.test` | equipo_iwl | Las tres compañías |
+| `programa@iwl.test` | equipo_iwl | Toda la cartera |
 | `revisor@niage.test` | revisor_niage | Marea Clínica y Raíz Sensórica |
 | `revisor2@niage.test` | revisor_niage | Vega Predictiva |
 | `fundadora@marea.test` | fundadora | Marea Clínica |
@@ -44,36 +50,26 @@ Personas de la semilla, todas con datos ficticios:
 | `fundadora@raiz.test` | fundadora | Raíz Sensórica |
 | `mentor@iwl.test` | mentor | Marea Clínica |
 
-### Dar de alta a una persona
+Las tres compañías de la semilla son ficticias, de sectores distintos —software, IA y hardware— y están en momentos distintos a propósito: una casi invertible, una bloqueada por un hallazgo crítico y una con un punto bloqueante.
 
-```bash
-npm run alta -- ana@iwl.es equipo_iwl
-npm run alta -- ana@compania.com fundadora marea-clinica fundadora
-npm run alta -- cto@niage.es revisor_niage vega-predictiva revisor_niage
-```
+### Tu cuenta de desarrollo
 
-Crea la cuenta, le fija el rol y la asigna a una compañía. Contra un proyecto remoto, exporta antes `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
-
-**Tu cuenta de desarrollo, para que sobreviva a `db:reset`.** Copia `.altas-locales.example.json` a `.altas-locales.json` y pon la tuya:
+`npm run db:reset` recrea los usuarios y se lleva por delante cualquier cuenta que no esté en la semilla. Copia `.altas-locales.example.json` a `.altas-locales.json` con la tuya:
 
 ```json
 [{ "correo": "tu@correo.com", "rol": "admin_iwl" }]
 ```
 
-`npm run db:reset` la vuelve a dar de alta al terminar. El fichero no se versiona: son correos reales. Sin él, cada reset te deja fuera y acabas en la pantalla «sin compañía asignada».
+El reset la vuelve a dar de alta al terminar. El fichero no se versiona.
 
-Durante el desarrollo el registro está abierto: entrar con un correo cualquiera crea la cuenta, con rol `fundadora` y sin compañía, y acaba en la pantalla «sin compañía asignada». Cómo cerrarlo antes de desplegar está en `DECISIONES.md`.
+### Dar de alta a una persona
 
-## Variables de entorno
+```bash
+npm run alta -- ana@ejemplo.com equipo_iwl
+npm run alta -- ana@compania.com fundadora marea-clinica fundadora
+```
 
-Ver `.env.example`. En local las genera `npm run db:env` desde la instancia de Supabase; no hay que copiarlas a mano ni versionarlas.
-
-| Variable | Para qué |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Endpoint de Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública. Todas sus consultas pasan por RLS |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio. Solo en servidor y en el worker |
-| `RESEND_API_KEY` | Correo transaccional. Fase 2 |
+Contra un proyecto remoto, exporta antes `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## Comandos
 
@@ -82,51 +78,100 @@ npm run dev            # Aplicación en local
 npm run build          # Build de producción
 npm run lint           # ESLint
 npm run typecheck      # tsc --noEmit
-npm run test           # Vitest: cálculo de scores y métricas derivadas
+npm run test           # Cálculo de scores, métricas derivadas y formato
 npm run test:rls       # Aislamiento entre compañías contra Supabase local
-npm run test:e2e       # Playwright
+npm run test:e2e       # Interfaz con Playwright, escritorio y móvil
 npm run db:types       # Regenera lib/supabase/database.types.ts
 npm run snapshots      # Genera las instantáneas de preparación
-npm run alta           # Da de alta a una persona
 ```
 
-`npm run db:reset` encadena las instantáneas: tras recrear la base, el histórico de movimiento está listo.
+La primera vez, `npx playwright install chromium`.
 
 Antes de cerrar un paso: `npm run typecheck && npm run lint && npm run test && npm run test:rls`.
 
-## Base de datos
-
-Las migraciones están en `supabase/migrations`, en orden cronológico. Los datos semilla, en `supabase/seed`:
-
-- `01_config.sql` · configuración real del programa: fases, pilares, áreas de due diligence con su checklist, dimensiones técnicas con criterios y niveles objetivo, secciones de business plan, biblioteca de KPI y reglas de alerta.
-- `02_companies.sql` · tres compañías ficticias de sectores distintos y las personas que las acompañan.
-- `03_actividad.sql` · actividad de los últimos meses.
-
-Toda tabla de negocio nace con Row Level Security y sus políticas en la misma migración. `npm run test:rls` lo comprueba entrando como cada persona.
-
 ## Qué hay construido
 
-Fase 1 del documento de alcance, pasos 1 a 8:
+Fase 1 del documento de alcance, completa, más el registro de aportación y la línea base del documento complementario.
 
 | Módulo | Estado |
 |---|---|
-| Auth, roles y aislamiento por compañía | Completo, con 45 tests de RLS y 25 de interfaz |
-| Configuración del programa como dato | Completa: fases, pilares, áreas, dimensiones, KPI, alertas |
-| Ficha de compañía y cabecera | Completa |
-| Due diligence técnico | Completo: scorecard radar, puntuación con evidencia, hallazgos, plan de trabajo, cuestionario y sesiones |
-| Due diligence general y data room | Completo: checklist con estados, subida de documentos con caducidad y enlaces firmados |
+| Auth, roles y aislamiento por compañía | Completo |
+| Configuración del programa como dato | 7 áreas, 10 dimensiones con 50 criterios, niveles objetivo por etapa, 25 KPI |
+| Ficha de compañía y cabecera | Completa, con movimiento desde la línea base |
+| Programa, Anexo e hitos | Completo: fases, compromiso firmado, pilares e hitos con criterio |
+| Aportación de IWL | Completo: horas, caja, introducciones, entregables, extracto y contador |
+| Due diligence técnico | Completo: scorecard radar, puntuación con evidencia, hallazgos, plan y cuestionario |
+| Due diligence general y data room | Completo: checklist, documentos con caducidad y enlaces firmados |
 | Business plan | Completo: edición con versionado, estados, hipótesis y comentarios |
-| Update mensual y KPI | Completo: carga del mes, series y métricas derivadas |
-| Dashboard IWL | Lectura de apertura, preparación en el tiempo, hallazgos por severidad, meses de caja, embudo por bandas, mapa de intervención y scorecards en paralelo |
-| Movimiento en el tiempo | Instantáneas congeladas, línea base, evolución de los dos scores y recorrido en la cartera |
-| Comparativa | Compañías sobre la misma vara, cada una contra el objetivo de su etapa |
+| KPI y update mensual | Completo: carga del mes, series y métricas derivadas |
+| Dashboard IWL | Lectura de cohorte, evolución, embudo por bandas, mapa de intervención, comparativa |
+| Worker de análisis de repositorios | Contrato y orquestador escritos, sin ejecutar todavía |
 
-Quién puede escribir qué lo decide la base, no la interfaz: las políticas de Row Level Security y unos triggers que impiden que la parte evaluada se valide a sí misma. La interfaz oculta lo que la base prohíbe, nunca al revés.
+Fuera de esto: informes en PDF, alertas por correo, sesiones y dedicación por pilar, pantalla de administración, y el rol de mentor con enlaces de solo lectura.
 
-Queda fuera, y es trabajo de administración por ahora: alta de compañías y edición de la configuración, que se hacen desde Supabase Studio.
+## Cómo está montado
 
-Fuera de fase 1, según la §9 del documento: worker de análisis de repositorios, GitHub App, informes en PDF, Anexo de Programa e hitos, sesiones y dedicación, alertas por correo y exportaciones.
+| Capa | Elección |
+|---|---|
+| Aplicación | Next.js 16 (App Router) con TypeScript estricto |
+| Interfaz | Tailwind CSS 4 |
+| Datos, auth y ficheros | Supabase: Postgres, enlace mágico, Storage y Row Level Security. Región UE |
+| Gráficos | Recharts |
+| Tests | Vitest, Playwright y tests de RLS contra Supabase local |
+| Worker | Contenedor Docker con scc, Syft, Grype, OSV-Scanner, Gitleaks y Semgrep |
+
+### Estructura
+
+```
+app/
+  (fundadora)/     Vista de la compañía, en claro
+  (iwl)/           Consola de cartera, en oscuro
+components/
+  vistas/          Una por módulo, compartidas entre las dos vistas
+  formularios/     Server Actions con validación en el borde
+lib/
+  scoring/         Cálculo puro y probado: scores, invertible, derivadas
+  datos/           Lectura, con el cliente de sesión
+  acciones/        Server Actions
+supabase/
+  migrations/      SQL versionado, con las políticas de RLS
+  seed/            Configuración real y tres compañías ficticias
+worker/            Analizador de repositorios. No guarda código
+```
+
+### Decisiones que conviene conocer antes de tocar nada
+
+**El cálculo vive en un solo sitio.** `lib/scoring` es puro y con tests de tabla. La interfaz nunca recalcula, y el script que genera el histórico usa el mismo código: una función SQL habría sido más corta y habría creado una segunda implementación que acabaría divergiendo.
+
+**Las instantáneas están congeladas.** Cambiar los niveles objetivo no reescribe la historia. Si lo hiciera, una compañía «mejoraría» sin haber tocado nada.
+
+**Las tarifas se copian, no se referencian.** Cada línea de horas guarda la tarifa del día en que se imputó, así un cambio de tarifa no altera el valor de lo ya registrado.
+
+**El worker no almacena código.** Clona en un contenedor efímero, analiza y borra en un `finally`. De un secreto detectado se guarda el tipo y la ubicación, nunca el valor.
+
+**Un solo color cromático.** Los gráficos usan el acento como única serie y diferencian por etiqueta de texto; las referencias van en trazo discontinuo gris. La paleta se valida contra cada superficie antes de usarla.
+
+## Base de datos
+
+Las migraciones están en `supabase/migrations`, en orden cronológico. Toda tabla de negocio nace con RLS y sus políticas en la misma migración: una tabla sin políticas es un fallo, no un pendiente. `npm run test:rls` lo comprueba entrando como cada persona.
+
+Los datos semilla, en `supabase/seed`:
+
+- `01_config.sql` · la configuración real del programa
+- `02_companies.sql` · tres compañías ficticias y quienes las acompañan
+- `03_actividad.sql` · seis meses de actividad
+- `04_historico.sql` · evaluaciones sucesivas, para que el movimiento enseñe un recorrido
+
+`supabase/seed/local/*.sql` se aplica al final y **no se versiona**: es donde van los proyectos reales, cuyos Anexos llevan importes, tarifas y porcentajes de equity. Ver `supabase/seed/local.LEEME.md`.
+
+## Documentación del proyecto
+
+- `CLAUDE.md` · convenciones, comandos y reglas de trabajo
+- `DECISIONES.md` · cada decisión técnica o de producto, con su motivo
+- `IWL_Doc_EspecPlataformaSeguimiento_ES_v2_20260923.md` · el alcance
 
 ## Despliegue
 
-Vercel en región UE, con Supabase en región UE. Pendiente de configurar: ver `DECISIONES.md`.
+Vercel en región UE, con Supabase en región UE. Pendiente de configurar.
+
+**Antes de desplegar hay que cerrar el registro abierto.** Hoy cualquiera que escriba un correo en `/entrar` se crea una cuenta; se dejó así para poder recorrer la plataforma sin fricción. Cómo cerrarlo, y una trampa que cuesta una tarde, está en `DECISIONES.md`.

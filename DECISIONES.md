@@ -224,16 +224,16 @@ Se añade una política: se puede leer un contacto si existe una introducción d
 
 ## 2026-09-24 · Un score sin evaluaciones es un hueco, no un número
 
-AgrolabX entró con el estado técnico sin evaluar y la cabecera enseñaba «4,5». Ese número salía de las dimensiones cuyo objetivo en pre-semilla es 0, que cuentan como cubiertas. Técnicamente correcto y completamente engañoso: parecía una medición y era la ausencia de una.
+El proyecto de referencia entró con el estado técnico sin evaluar y la cabecera enseñaba «4,5». Ese número salía de las dimensiones cuyo objetivo en pre-semilla es 0, que cuentan como cubiertas. Técnicamente correcto y completamente engañoso: parecía una medición y era la ausencia de una.
 
 Ahora, sin ninguna dimensión evaluada, la cifra es «—» y la nota dice «Due diligence técnico pendiente». `ScoreTecnico` lleva `evaluadas` y `aplicables` para poder distinguir los tres casos: sin evaluar, a medias, y completo.
 
 ## 2026-09-24 · Los tests no cuentan filas que dependen de datos locales
 
-Dos tests de RLS y uno de interfaz se rompieron al cargar AgrolabX, porque afirmaban que la cohorte tenía exactamente tres compañías. Una instalación puede tener semillas locales con proyectos reales, y un test que cuenta filas empieza a fallar por una razón que no tiene nada que ver con lo que prueba.
+Dos tests de RLS y uno de interfaz se rompieron al cargar el proyecto de referencia desde una semilla local, porque afirmaban que la cohorte tenía exactamente tres compañías. Una instalación puede tener semillas locales con proyectos reales, y un test que cuenta filas empieza a fallar por una razón que no tiene nada que ver con lo que prueba.
 
 Ahora comprueban la relación —ve todas las que hay, ve exactamente las que tiene asignadas— leyendo las asignaciones de la base en vez de escribirlas en el test.
 
 ## 2026-09-24 · Separador de miles también en cuatro dígitos
 
-El español escribe 9000 sin punto, pero en una columna donde conviven 9.000 y 37.600 eso hace que dos cifras del mismo tipo se lean distinto. En una tabla financiera manda la legibilidad de la columna, así que `euros` y `numero` fuerzan `useGrouping: "always"`. El porcentaje usa espacio duro antes del símbolo, igual que hace Intl con el euro.
+El español escribe 9000 sin punto, pero en una columna donde conviven 9.000 y 14.500 eso hace que dos cifras del mismo tipo se lean distinto. En una tabla financiera manda la legibilidad de la columna, así que `euros` y `numero` fuerzan `useGrouping: "always"`. El porcentaje usa espacio duro antes del símbolo, igual que hace Intl con el euro.

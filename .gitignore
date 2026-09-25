@@ -53,3 +53,7 @@ AGENTS.md
 # Semillas locales: proyectos reales con condiciones comerciales.
 # No se versionan. Ver supabase/seed/local.LEEME.md
 supabase/seed/local/
+
+# Resultados de Playwright
+test-results/
+playwright-report/
