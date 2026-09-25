@@ -72,6 +72,10 @@ sql_paths = [
   "./seed/02_companies.sql",
   "./seed/03_actividad.sql",
   "./seed/04_historico.sql",
+  # Datos locales de cada instalación: proyectos reales con condiciones
+  # comerciales que no deben acabar en el repositorio. El directorio está en
+  # .gitignore. Si está vacío, el glob no aporta nada y no falla.
+  "./seed/local/*.sql",
 ]
 
 [db.network_restrictions]

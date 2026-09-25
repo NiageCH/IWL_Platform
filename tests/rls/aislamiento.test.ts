@@ -63,21 +63,58 @@ describe("companies", () => {
     expect(data).toEqual([]);
   });
 
+  /**
+   * El número exacto no se fija en el test: una instalación puede tener
+   * semillas locales con proyectos reales, y un test que cuenta filas
+   * empezaría a fallar por una razón que no tiene nada que ver con el
+   * aislamiento. Lo que se comprueba es que ve todas las que hay.
+   */
   it("el equipo de IWL ve la cartera completa", async () => {
+    const servicio = clienteServicio();
+    const { count: total } = await servicio
+      .from("companies")
+      .select("id", { count: "exact", head: true });
+
     const { data, error } = await equipoIwl.from("companies").select("id");
 
     expect(error).toBeNull();
-    expect(data?.length).toBe(3);
+    expect(data?.length).toBe(total);
+    expect(data?.length).toBeGreaterThanOrEqual(3);
   });
 
   it("un revisor de Niage solo ve las compañías que tiene asignadas", async () => {
-    const asignadasAlPrimero = await revisorMareaRaiz.from("companies").select("id, slug");
-    const asignadasAlSegundo = await revisorVega.from("companies").select("id, slug");
+    const servicio = clienteServicio();
 
-    expect(asignadasAlPrimero.data?.map((c) => c.id).sort()).toEqual(
-      [COMPANIAS.marea, COMPANIAS.raiz].sort(),
+    // Las asignaciones se leen de la base, no se escriben en el test: así el
+    // test sigue valiendo si una instalación añade proyectos propios
+    const asignaciones = async (email: string) => {
+      const { data: perfil } = await servicio
+        .from("profiles")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      const { data } = await servicio
+        .from("company_members")
+        .select("company_id")
+        .eq("profile_id", perfil!.id)
+        .eq("member_role", "revisor_niage");
+
+      return (data ?? []).map((m) => m.company_id).sort();
+    };
+
+    const vePrimero = await revisorMareaRaiz.from("companies").select("id");
+    const veSegundo = await revisorVega.from("companies").select("id");
+
+    expect(vePrimero.data?.map((c) => c.id).sort()).toEqual(
+      await asignaciones(USUARIOS.revisorMareaRaiz),
     );
-    expect(asignadasAlSegundo.data?.map((c) => c.id)).toEqual([COMPANIAS.vega]);
+    expect(veSegundo.data?.map((c) => c.id).sort()).toEqual(
+      await asignaciones(USUARIOS.revisorVega),
+    );
+
+    // Y desde luego, el segundo no ve las del primero
+    expect(veSegundo.data?.map((c) => c.id)).not.toContain(COMPANIAS.marea);
   });
 
   it("un mentor solo ve la compañía donde está asignado", async () => {

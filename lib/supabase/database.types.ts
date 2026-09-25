@@ -77,6 +77,13 @@ export type Database = {
             foreignKeyName: "activity_log_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "activity_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -121,6 +128,239 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      annex_pillars: {
+        Row: {
+          annex_id: string
+          cadence: string | null
+          company_id: string
+          created_at: string
+          id: string
+          intensity: number
+          pillar_id: string
+          planned_hours: number | null
+        }
+        Insert: {
+          annex_id: string
+          cadence?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          intensity?: number
+          pillar_id: string
+          planned_hours?: number | null
+        }
+        Update: {
+          annex_id?: string
+          cadence?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          intensity?: number
+          pillar_id?: string
+          planned_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annex_pillars_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annex_pillars_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "annex_pillars_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "annex_pillars_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annex_pillars_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "annex_pillars_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      annexes: {
+        Row: {
+          committed_cash: number | null
+          committed_hours: number | null
+          committed_hours_value: number | null
+          committed_seniors: number | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          duration_months: number | null
+          ends_on: string | null
+          equity_pct: number | null
+          id: string
+          notes: string | null
+          other_commitments: string | null
+          signed_on: string | null
+          starts_on: string | null
+          status: Database["public"]["Enums"]["estado_anexo"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          committed_cash?: number | null
+          committed_hours?: number | null
+          committed_hours_value?: number | null
+          committed_seniors?: number | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          ends_on?: string | null
+          equity_pct?: number | null
+          id?: string
+          notes?: string | null
+          other_commitments?: string | null
+          signed_on?: string | null
+          starts_on?: string | null
+          status?: Database["public"]["Enums"]["estado_anexo"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          committed_cash?: number | null
+          committed_hours?: number | null
+          committed_hours_value?: number | null
+          committed_seniors?: number | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          ends_on?: string | null
+          equity_pct?: number | null
+          id?: string
+          notes?: string | null
+          other_commitments?: string | null
+          signed_on?: string | null
+          starts_on?: string | null
+          status?: Database["public"]["Enums"]["estado_anexo"]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annexes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "annexes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annexes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "annexes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      baselines: {
+        Row: {
+          company_id: string
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["tipo_linea_base"]
+          notes: string | null
+          stage: Database["public"]["Enums"]["company_stage"]
+          taken_on: string
+        }
+        Insert: {
+          company_id: string
+          content: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["tipo_linea_base"]
+          notes?: string | null
+          stage: Database["public"]["Enums"]["company_stage"]
+          taken_on: string
+        }
+        Update: {
+          company_id?: string
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["tipo_linea_base"]
+          notes?: string | null
+          stage?: Database["public"]["Enums"]["company_stage"]
+          taken_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baselines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "baselines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "baselines_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "baselines_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bp_section_templates: {
         Row: {
@@ -198,6 +438,13 @@ export type Database = {
             foreignKeyName: "bp_section_versions_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "bp_section_versions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -258,6 +505,13 @@ export type Database = {
           validated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bp_sections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "bp_sections_company_id_fkey"
             columns: ["company_id"]
@@ -334,6 +588,13 @@ export type Database = {
             foreignKeyName: "cap_table_entries_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "cap_table_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -349,6 +610,179 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_commitments: {
+        Row: {
+          amount: number
+          annex_id: string | null
+          company_id: string
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expected_on: string | null
+          heading: string
+          id: string
+          tranche: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          annex_id?: string | null
+          company_id: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expected_on?: string | null
+          heading: string
+          id?: string
+          tranche?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          annex_id?: string | null
+          company_id?: string
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expected_on?: string | null
+          heading?: string
+          id?: string
+          tranche?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_commitments_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_commitments_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "cash_commitments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "cash_commitments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_commitments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "cash_commitments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_disbursements: {
+        Row: {
+          amount: number
+          commitment_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          disbursed_on: string
+          document_id: string | null
+          id: string
+          justified_on: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          commitment_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          disbursed_on: string
+          document_id?: string | null
+          id?: string
+          justified_on?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          commitment_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          disbursed_on?: string
+          document_id?: string | null
+          id?: string
+          justified_on?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_disbursements_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "cash_commitments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_disbursements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "cash_disbursements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_disbursements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "cash_disbursements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_disbursements_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
         ]
@@ -444,6 +878,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "comments_company_id_fkey"
@@ -606,6 +1047,13 @@ export type Database = {
             foreignKeyName: "company_kpis_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "company_kpis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -661,6 +1109,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "company_members_company_id_fkey"
             columns: ["company_id"]
@@ -723,6 +1178,13 @@ export type Database = {
             foreignKeyName: "company_pillars_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "company_pillars_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -748,6 +1210,237 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contacts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["tipo_contacto"]
+          name: string
+          notes: string | null
+          organization: string | null
+          organization_id: string | null
+          role: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["tipo_contacto"]
+          name: string
+          notes?: string | null
+          organization?: string | null
+          organization_id?: string | null
+          role?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["tipo_contacto"]
+          name?: string
+          notes?: string | null
+          organization?: string | null
+          organization_id?: string | null
+          role?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_hours: {
+        Row: {
+          annex_id: string | null
+          applied_rate: number
+          company_id: string
+          created_at: string
+          created_by: string | null
+          deliverable_id: string | null
+          description: string
+          hours: number
+          id: string
+          market_rate: number
+          person_name: string
+          profile_code: string
+          profile_id: string | null
+          rate_card_id: string | null
+          session_id: string | null
+          subject_id: string
+          updated_at: string
+          worked_on: string
+        }
+        Insert: {
+          annex_id?: string | null
+          applied_rate: number
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          deliverable_id?: string | null
+          description: string
+          hours: number
+          id?: string
+          market_rate: number
+          person_name: string
+          profile_code: string
+          profile_id?: string | null
+          rate_card_id?: string | null
+          session_id?: string | null
+          subject_id: string
+          updated_at?: string
+          worked_on: string
+        }
+        Update: {
+          annex_id?: string | null
+          applied_rate?: number
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          deliverable_id?: string | null
+          description?: string
+          hours?: number
+          id?: string
+          market_rate?: number
+          person_name?: string
+          profile_code?: string
+          profile_id?: string | null
+          rate_card_id?: string | null
+          session_id?: string | null
+          subject_id?: string
+          updated_at?: string
+          worked_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_hours_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_deliverable_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "deliverables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_rate_card_id_fkey"
+            columns: ["rate_card_id"]
+            isOneToOne: false
+            referencedRelation: "rate_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "tech_review_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contribution_subjects: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          order_index: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       dd_areas: {
         Row: {
@@ -823,6 +1516,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dd_item_status_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "dd_item_status_history_company_id_fkey"
@@ -973,6 +1673,13 @@ export type Database = {
             foreignKeyName: "dd_items_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "dd_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1020,6 +1727,91 @@ export type Database = {
           },
         ]
       }
+      deliverables: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          delivered_on: string
+          description: string | null
+          document_id: string | null
+          id: string
+          subject_id: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          delivered_on: string
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          delivered_on?: string
+          description?: string | null
+          document_id?: string | null
+          id?: string
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliverables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "deliverables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliverables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "deliverables_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliverables_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliverables_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_access_log: {
         Row: {
           action: string
@@ -1046,6 +1838,13 @@ export type Database = {
           profile_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "document_access_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "document_access_log_company_id_fkey"
             columns: ["company_id"]
@@ -1114,6 +1913,13 @@ export type Database = {
           version?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "document_versions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "document_versions_company_id_fkey"
             columns: ["company_id"]
@@ -1193,6 +1999,13 @@ export type Database = {
             foreignKeyName: "documents_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1253,6 +2066,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "evidence_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "evidence_links_company_id_fkey"
             columns: ["company_id"]
@@ -1357,6 +2177,13 @@ export type Database = {
             foreignKeyName: "findings_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "findings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1422,6 +2249,13 @@ export type Database = {
             foreignKeyName: "hypotheses_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "hypotheses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1444,6 +2278,106 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "bp_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      introductions: {
+        Row: {
+          amount: number | null
+          closed_on: string | null
+          commission_window_months: number
+          company_id: string
+          contact_id: string
+          counts_for_commission: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          introduced_by: string | null
+          introduced_on: string
+          introducer_name: string
+          notes: string | null
+          outcome: string | null
+          status: Database["public"]["Enums"]["estado_introduccion"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          closed_on?: string | null
+          commission_window_months?: number
+          company_id: string
+          contact_id: string
+          counts_for_commission?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          introduced_by?: string | null
+          introduced_on: string
+          introducer_name: string
+          notes?: string | null
+          outcome?: string | null
+          status?: Database["public"]["Enums"]["estado_introduccion"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          closed_on?: string | null
+          commission_window_months?: number
+          company_id?: string
+          contact_id?: string
+          counts_for_commission?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          introduced_by?: string | null
+          introduced_on?: string
+          introducer_name?: string
+          notes?: string | null
+          outcome?: string | null
+          status?: Database["public"]["Enums"]["estado_introduccion"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introductions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "introductions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "introductions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "introductions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "introductions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "introductions_introduced_by_fkey"
+            columns: ["introduced_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1547,6 +2481,13 @@ export type Database = {
             foreignKeyName: "kpi_values_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "kpi_values_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1576,6 +2517,136 @@ export type Database = {
             columns: ["update_id"]
             isOneToOne: false
             referencedRelation: "monthly_updates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          annex_id: string | null
+          company_id: string
+          completed_on: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          evidence: string | null
+          gates_investable: boolean
+          id: string
+          origin: Database["public"]["Enums"]["origen_hito"]
+          phase_id: string | null
+          plan_item_id: string | null
+          status: Database["public"]["Enums"]["estado_hito"]
+          success_criteria: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          annex_id?: string | null
+          company_id: string
+          completed_on?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          evidence?: string | null
+          gates_investable?: boolean
+          id?: string
+          origin?: Database["public"]["Enums"]["origen_hito"]
+          phase_id?: string | null
+          plan_item_id?: string | null
+          status?: Database["public"]["Enums"]["estado_hito"]
+          success_criteria: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          annex_id?: string | null
+          company_id?: string
+          completed_on?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          evidence?: string | null
+          gates_investable?: boolean
+          id?: string
+          origin?: Database["public"]["Enums"]["origen_hito"]
+          phase_id?: string | null
+          plan_item_id?: string | null
+          status?: Database["public"]["Enums"]["estado_hito"]
+          success_criteria?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "annexes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_annex_id_fkey"
+            columns: ["annex_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["annex_id"]
+          },
+          {
+            foreignKeyName: "milestones_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "milestones_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "milestones_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_plan_item_id_fkey"
+            columns: ["plan_item_id"]
+            isOneToOne: false
+            referencedRelation: "tech_plan_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1634,6 +2705,13 @@ export type Database = {
             foreignKeyName: "monthly_updates_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "monthly_updates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1654,6 +2732,87 @@ export type Database = {
           {
             foreignKeyName: "monthly_updates_submitted_by_fkey"
             columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objections: {
+        Row: {
+          company_id: string
+          created_at: string
+          entity: string
+          entity_id: string
+          id: string
+          raised_by: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["estado_objecion"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          entity: string
+          entity_id: string
+          id?: string
+          raised_by: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["estado_objecion"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          entity?: string
+          entity_id?: string
+          id?: string
+          raised_by?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["estado_objecion"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "objections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "objections_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objections_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1806,6 +2965,45 @@ export type Database = {
           },
         ]
       }
+      rate_cards: {
+        Row: {
+          applied_rate: number
+          created_at: string
+          id: string
+          market_rate: number
+          profile_code: string
+          profile_name: string
+          source: string | null
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          applied_rate: number
+          created_at?: string
+          id?: string
+          market_rate: number
+          profile_code: string
+          profile_name: string
+          source?: string | null
+          updated_at?: string
+          valid_from: string
+          valid_to?: string | null
+        }
+        Update: {
+          applied_rate?: number
+          created_at?: string
+          id?: string
+          market_rate?: number
+          profile_code?: string
+          profile_name?: string
+          source?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
       readiness_snapshots: {
         Row: {
           company_id: string
@@ -1856,6 +3054,13 @@ export type Database = {
           tech_score?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "readiness_snapshots_company_id_fkey"
             columns: ["company_id"]
@@ -1923,6 +3128,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "tasks_company_id_fkey"
             columns: ["company_id"]
@@ -2000,6 +3212,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tech_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "tech_assessments_company_id_fkey"
             columns: ["company_id"]
@@ -2222,6 +3441,13 @@ export type Database = {
             foreignKeyName: "tech_findings_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "tech_findings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2320,6 +3546,13 @@ export type Database = {
             foreignKeyName: "tech_plan_items_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "tech_plan_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2387,6 +3620,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tech_questionnaire_answers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "tech_questionnaire_answers_company_id_fkey"
@@ -2462,6 +3702,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tech_score_input"
             referencedColumns: ["assessment_id"]
+          },
+          {
+            foreignKeyName: "tech_review_sessions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "tech_review_sessions_company_id_fkey"
@@ -2551,6 +3798,13 @@ export type Database = {
             foreignKeyName: "tech_scores_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "tech_scores_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -2614,6 +3868,68 @@ export type Database = {
       }
     }
     Views: {
+      commitment_counter: {
+        Row: {
+          annex_id: string | null
+          cash_pct: number | null
+          committed_cash: number | null
+          committed_hours: number | null
+          company_id: string | null
+          deliverables_count: number | null
+          delivered_hours: number | null
+          delivered_hours_value: number | null
+          delivered_market_value: number | null
+          disbursed_cash: number | null
+          equity_pct: number | null
+          hours_pct: number | null
+          introductions_closed: number | null
+          introductions_made: number | null
+          justified_cash: number | null
+        }
+        Relationships: []
+      }
+      contribution_hours_valued: {
+        Row: {
+          applied_rate: number | null
+          applied_value: number | null
+          company_id: string | null
+          description: string | null
+          discount_value: number | null
+          hours: number | null
+          id: string | null
+          market_rate: number | null
+          market_value: number | null
+          objected: boolean | null
+          person_name: string | null
+          profile_code: string | null
+          subject_code: string | null
+          subject_name: string | null
+          worked_on: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_hours_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "tech_score_input"
+            referencedColumns: ["company_id"]
+          },
+        ]
+      }
       kpi_series: {
         Row: {
           category: Database["public"]["Enums"]["kpi_category"] | null
@@ -2629,6 +3945,13 @@ export type Database = {
           value: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "kpi_values_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "kpi_values_company_id_fkey"
             columns: ["company_id"]
@@ -2661,6 +3984,13 @@ export type Database = {
           tech_movement: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "readiness_snapshots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "commitment_counter"
+            referencedColumns: ["company_id"]
+          },
           {
             foreignKeyName: "readiness_snapshots_company_id_fkey"
             columns: ["company_id"]
@@ -2716,8 +4046,18 @@ export type Database = {
         | "mentor"
       company_stage: "pre_semilla" | "semilla" | "serie_a"
       company_tech_profile: "software" | "software_ia" | "hardware"
+      estado_anexo: "borrador" | "firmado" | "cerrado"
+      estado_caja: "comprometido" | "desembolsado" | "justificado"
       estado_evaluacion: "borrador" | "publicada"
       estado_hallazgo: "abierto" | "en_curso" | "resuelto" | "aceptado"
+      estado_hito: "pendiente" | "en_curso" | "cumplido" | "retrasado"
+      estado_introduccion:
+        | "presentada"
+        | "reunion_celebrada"
+        | "en_negociacion"
+        | "cerrada"
+        | "descartada"
+      estado_objecion: "abierta" | "aceptada" | "rechazada"
       estado_plan: "pendiente" | "en_curso" | "hecho" | "descartado"
       estado_punto_dd:
         | "pendiente"
@@ -2731,10 +4071,17 @@ export type Database = {
       kpi_direction: "sube_mejor" | "baja_mejor" | "neutro"
       kpi_unit: "moneda" | "porcentaje" | "numero" | "meses" | "dias" | "ratio"
       motivo_instantanea: "linea_base" | "evaluacion" | "mensual" | "manual"
+      origen_hito: "anexo" | "plan_tecnico" | "due_diligence" | "acordado"
       origen_puntuacion: "automatico" | "manual"
       responsable_plan: "compania" | "niage"
       severidad_hallazgo: "critico" | "alto" | "medio" | "bajo"
       tech_applicability: "siempre" | "ia" | "hardware"
+      tipo_contacto:
+        | "inversor"
+        | "cliente"
+        | "partner"
+        | "proveedor"
+        | "organismo_publico"
       tipo_evidencia:
         | "documento"
         | "kpi"
@@ -2742,6 +4089,7 @@ export type Database = {
         | "hallazgo_tecnico"
         | "dimension_tecnica"
         | "enlace"
+      tipo_linea_base: "inicial" | "trimestral" | "previa_ronda"
       traffic_light: "verde" | "ambar" | "rojo"
     }
     CompositeTypes: {
@@ -2889,8 +4237,19 @@ export const Constants = {
       ],
       company_stage: ["pre_semilla", "semilla", "serie_a"],
       company_tech_profile: ["software", "software_ia", "hardware"],
+      estado_anexo: ["borrador", "firmado", "cerrado"],
+      estado_caja: ["comprometido", "desembolsado", "justificado"],
       estado_evaluacion: ["borrador", "publicada"],
       estado_hallazgo: ["abierto", "en_curso", "resuelto", "aceptado"],
+      estado_hito: ["pendiente", "en_curso", "cumplido", "retrasado"],
+      estado_introduccion: [
+        "presentada",
+        "reunion_celebrada",
+        "en_negociacion",
+        "cerrada",
+        "descartada",
+      ],
+      estado_objecion: ["abierta", "aceptada", "rechazada"],
       estado_plan: ["pendiente", "en_curso", "hecho", "descartado"],
       estado_punto_dd: [
         "pendiente",
@@ -2905,10 +4264,18 @@ export const Constants = {
       kpi_direction: ["sube_mejor", "baja_mejor", "neutro"],
       kpi_unit: ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],
       motivo_instantanea: ["linea_base", "evaluacion", "mensual", "manual"],
+      origen_hito: ["anexo", "plan_tecnico", "due_diligence", "acordado"],
       origen_puntuacion: ["automatico", "manual"],
       responsable_plan: ["compania", "niage"],
       severidad_hallazgo: ["critico", "alto", "medio", "bajo"],
       tech_applicability: ["siempre", "ia", "hardware"],
+      tipo_contacto: [
+        "inversor",
+        "cliente",
+        "partner",
+        "proveedor",
+        "organismo_publico",
+      ],
       tipo_evidencia: [
         "documento",
         "kpi",
@@ -2917,6 +4284,7 @@ export const Constants = {
         "dimension_tecnica",
         "enlace",
       ],
+      tipo_linea_base: ["inicial", "trimestral", "previa_ronda"],
       traffic_light: ["verde", "ambar", "rojo"],
     },
   },

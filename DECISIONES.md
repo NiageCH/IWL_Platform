@@ -192,3 +192,48 @@ El oscuro en toda la plataforma pesaba demasiado. Se reparte según lo que se ha
 Lo decide el layout de cada grupo de rutas con `<Marco tema="...">`, que solo redefine tokens. **Ningún componente sabe en qué tema está**: todos leen los mismos nombres y aquí se decide qué valen. Los gráficos también, con `var(--color-...)` en los atributos de SVG, que los navegadores resuelven; con hexadecimales fijos habría que duplicar cada componente.
 
 Sobre papel cambian dos cosas: el acento para texto pequeño baja a `#C4005C`, porque el magenta puro no tiene contraste suficiente sobre blanco, y desaparecen el brillo y las sombras largas, que sobre claro solo ensucian.
+
+## 2026-09-24 · Registro de aportación y línea base
+
+Del documento `IWL_Doc_PlataformaAportacionYBaseline_ES_v1_20260924.md`, que mide a la incubadora donde la v2 solo medía a la compañía. Entra en fase 1, antes del business plan, como dice su §11.
+
+**Las tarifas se copian, no se referencian.** Cada línea de horas guarda la tarifa que tenía el día que se imputó. Si se referenciara `rate_cards`, cambiar una tarifa reescribiría el valor de las horas ya registradas y el extracto dejaría de cuadrar con lo que se comunicó en su día. Cubierto por un test que cambia la tarifa y comprueba que lo ya imputado no se mueve.
+
+**La línea base no se edita: se crea otra.** Lo corta un trigger que ni siquiera la clave de servicio esquiva. El contenido se congela en JSON y no como referencias a otras tablas: si fueran referencias, editar un KPI de hace seis meses cambiaría el punto de partida.
+
+**Un Anexo firmado no se reescribe: se firma una versión nueva.** Es el documento que sostiene el equity.
+
+**Confirmar un hito es de IWL.** La compañía lo mueve a «en curso» y aporta evidencia; darlo por cumplido es valoración, y vale la misma regla que en el resto.
+
+### Decisiones del §7, tomadas con Rodrigo
+
+- **§7.1** La fundadora ve las horas y su valor en euros. Es el argumento del equity.
+- **§7.2** Las horas no necesitan confirmación previa, pero la compañía puede objetar. Tabla `objections`: sin ella, ese derecho sería una frase en un documento.
+- **§7.3** Solo IWL crea introducciones; la compañía actualiza el resultado.
+- **§7.4** Comisión: la marca IWL al crear la introducción, con **ventana de 18 meses** desde la presentación. La ventana se guarda en la fila y no se calcula al vuelo, para que cambiar la política mañana no reescriba lo ya acordado.
+- **§7.7** Si no llega el update: recordatorio, aviso al responsable y **marca visible en la cartera**. Nada se bloquea.
+- **§7.8** La fundadora ve el **informe técnico completo**, con hallazgos. Es su plan de trabajo.
+
+Pendientes de §7 que no bloquean y siguen abiertos: qué consecuencia tiene que IWL incumpla su compromiso de horas (§7.6). El contador ya lo hace visible en los dos sentidos; la consecuencia es una decisión de negocio.
+
+## 2026-09-24 · La compañía ve el contacto de su propia introducción
+
+La agenda de contactos es de IWL y se comparte entre la cartera: ninguna compañía tiene por qué verla entera. Pero con solo esa regla, el extracto de la fundadora decía «reunión celebrada con alguien», que no es información.
+
+Se añade una política: se puede leer un contacto si existe una introducción de tu compañía con él. La introducción es parte de lo que IWL aporta y saber con quién fue es la mitad de su valor.
+
+## 2026-09-24 · Un score sin evaluaciones es un hueco, no un número
+
+AgrolabX entró con el estado técnico sin evaluar y la cabecera enseñaba «4,5». Ese número salía de las dimensiones cuyo objetivo en pre-semilla es 0, que cuentan como cubiertas. Técnicamente correcto y completamente engañoso: parecía una medición y era la ausencia de una.
+
+Ahora, sin ninguna dimensión evaluada, la cifra es «—» y la nota dice «Due diligence técnico pendiente». `ScoreTecnico` lleva `evaluadas` y `aplicables` para poder distinguir los tres casos: sin evaluar, a medias, y completo.
+
+## 2026-09-24 · Los tests no cuentan filas que dependen de datos locales
+
+Dos tests de RLS y uno de interfaz se rompieron al cargar AgrolabX, porque afirmaban que la cohorte tenía exactamente tres compañías. Una instalación puede tener semillas locales con proyectos reales, y un test que cuenta filas empieza a fallar por una razón que no tiene nada que ver con lo que prueba.
+
+Ahora comprueban la relación —ve todas las que hay, ve exactamente las que tiene asignadas— leyendo las asignaciones de la base en vez de escribirlas en el test.
+
+## 2026-09-24 · Separador de miles también en cuatro dígitos
+
+El español escribe 9000 sin punto, pero en una columna donde conviven 9.000 y 37.600 eso hace que dos cifras del mismo tipo se lean distinto. En una tabla financiera manda la legibilidad de la columna, así que `euros` y `numero` fuerzan `useGrouping: "always"`. El porcentaje usa espacio duro antes del símbolo, igual que hace Intl con el euro.

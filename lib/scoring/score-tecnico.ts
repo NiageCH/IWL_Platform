@@ -57,6 +57,8 @@ export function calcularScoreTecnico(
     valor,
     dimensiones: resultados,
     sinEvaluar,
+    evaluadas: aplicables.length - sinEvaluar.length,
+    aplicables: aplicables.length,
     completo: aplicables.length > 0 && sinEvaluar.length === 0,
   };
 }

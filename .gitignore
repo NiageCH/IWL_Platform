@@ -49,3 +49,7 @@ AGENTS.md
 # Cuentas de desarrollo de cada persona. Correos reales: no se versionan.
 # Copia .altas-locales.example.json para crear el tuyo.
 .altas-locales.json
+
+# Semillas locales: proyectos reales con condiciones comerciales.
+# No se versionan. Ver supabase/seed/local.LEEME.md
+supabase/seed/local/

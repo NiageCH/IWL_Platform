@@ -41,6 +41,8 @@ export function CabeceraProyecto({
 
   const secciones = [
     { codigo: "resumen", nombre: "Resumen", href: base },
+    { codigo: "programa", nombre: "Programa e hitos", href: `${base}/programa` },
+    { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion` },
     { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico` },
     { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia` },
     { codigo: "plan", nombre: "Business plan", href: `${base}/plan` },
@@ -76,7 +78,14 @@ export function CabeceraProyecto({
             <Cifra
               destacada
               etiqueta="Score técnico"
-              valor={numero(scoreTecnico.valor, 1)}
+              /*
+               * Sin ninguna dimensión evaluada no hay score que enseñar. Una
+               * cifra ahí sería peor que un hueco: parecería una medición y
+               * es la ausencia de una.
+               */
+              valor={
+                scoreTecnico.evaluadas === 0 ? "—" : numero(scoreTecnico.valor, 1)
+              }
               nota={
                 <>
                   {movimiento?.deltaTecnico !== undefined &&
@@ -86,9 +95,11 @@ export function CabeceraProyecto({
                     </span>
                   ) : null}
                   <span className="block">
-                    {scoreTecnico.completo
-                      ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
-                      : `${scoreTecnico.sinEvaluar.length} sin evaluar`}
+                    {scoreTecnico.evaluadas === 0
+                      ? "Due diligence técnico pendiente"
+                      : scoreTecnico.completo
+                        ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
+                        : `${scoreTecnico.evaluadas} de ${scoreTecnico.aplicables} dimensiones evaluadas`}
                   </span>
                 </>
               }

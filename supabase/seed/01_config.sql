@@ -569,3 +569,76 @@ insert into platform_settings (key, value, description) values
    '{"meses": 3}',
    'Cadencia de reevaluación técnica. La plataforma avisa cuando toca (§4.4).')
 on conflict (key) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Materias de la aportación
+--
+-- No son los pilares. Un pilar es una línea del programa; una materia es el
+-- área en la que se imputan las horas. Una sesión de mentoría puede ser de
+-- estrategia comercial o de producto, y el extracto tiene que decir cuál.
+-- -----------------------------------------------------------------------------
+
+insert into contribution_subjects (code, name, description, order_index) values
+  ('estrategia_comercial', 'Estrategia comercial',
+   'Modelo de venta, precios, embudo, negociación con clientes y pilotos.', 0),
+  ('estrategia_marketing', 'Estrategia de marketing',
+   'Posicionamiento, mensaje, canales y generación de demanda.', 1),
+  ('producto_tecnologia', 'Producto y tecnología',
+   'Arquitectura, roadmap técnico, decisiones de producto y acompañamiento de ingeniería.', 2),
+  ('operacion_servicio', 'Operación y servicio',
+   'Procesos de entrega, soporte, calidad y escalado de la operación.', 3),
+  ('financiacion_legal', 'Financiación, ayudas públicas y legal',
+   'Preparación de ronda, subvenciones, societario y contratos.', 4),
+  ('espacio_red', 'Espacio, red y visibilidad',
+   'Espacio de trabajo, acceso a la red de IWL, eventos y presencia pública.', 5)
+on conflict (code) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Tarifas por perfil
+--
+-- La tarifa aplicada es lo que IWL cobra a la compañía; la de mercado, lo que
+-- costaría fuera. La diferencia es la aportación real y es el número que
+-- sostiene el equity, así que la fuente queda registrada.
+-- -----------------------------------------------------------------------------
+
+insert into rate_cards (profile_code, profile_name, applied_rate, market_rate, source, valid_from) values
+  ('socio',       'Socio o dirección',        95.00, 180.00, 'Tarifas de consultoría estratégica en España, 2026', '2026-01-01'),
+  ('senior',      'Perfil sénior',            80.00, 140.00, 'Tarifas de consultoría especializada, 2026',         '2026-01-01'),
+  ('especialista','Especialista de materia',  70.00, 120.00, 'Tarifas de consultoría especializada, 2026',         '2026-01-01'),
+  ('ingenieria',  'Ingeniería Niage',         85.00, 150.00, 'Tarifas de ingeniería de software sénior, 2026',     '2026-01-01'),
+  ('mentor',      'Mentoría de la red',        0.00, 130.00, 'Aportada por la red de IWL, sin coste para la compañía', '2026-01-01'),
+  ('operacion',   'Equipo de operación',      55.00,  85.00, 'Tarifas de gestión de programa, 2026',               '2026-01-01')
+on conflict do nothing;
+
+-- -----------------------------------------------------------------------------
+-- KPI para compañías sin facturación
+--
+-- Una compañía en piloto no tiene MRR, y medirla con la vara de una que factura
+-- solo dice que está a cero. Estos KPI miden lo que sí está pasando: demanda
+-- que se mueve. Los de ingresos se activan con la primera factura, y esa
+-- aparición es en sí misma un hito (documento de aportación §6).
+-- -----------------------------------------------------------------------------
+
+insert into kpi_definitions (code, name, description, category, unit, direction, sector, is_derived, derived_from, order_index) values
+  ('conversaciones_abiertas', 'Conversaciones comerciales abiertas',
+   'Interlocutores con una conversación de venta viva a cierre de mes.',
+   'sector', 'numero', 'sube_mejor', 'pre_facturacion', false, '{}', 40),
+  ('propuestas_enviadas', 'Propuestas enviadas',
+   'Propuestas formales enviadas en el mes.',
+   'sector', 'numero', 'sube_mejor', 'pre_facturacion', false, '{}', 41),
+  ('incidencias_abiertas', 'Incidencias abiertas',
+   'Incidencias de servicio sin resolver a cierre de mes.',
+   'sector', 'numero', 'baja_mejor', 'pre_facturacion', false, '{}', 42),
+  ('explotaciones_monitorizadas', 'Explotaciones monitorizadas',
+   'Explotaciones con sensores instalados y transmitiendo.',
+   'sector', 'numero', 'sube_mejor', 'agro', false, '{}', 43),
+  ('hectareas_monitorizadas', 'Hectáreas monitorizadas',
+   'Superficie bajo seguimiento a cierre de mes.',
+   'sector', 'numero', 'sube_mejor', 'agro', false, '{}', 44)
+on conflict (code) do nothing;
+
+insert into kpi_definitions (code, name, description, category, unit, direction, is_derived, derived_from, order_index) values
+  ('conversion_piloto_propuesta', 'Conversión de piloto a propuesta',
+   'Propuestas enviadas sobre conversaciones abiertas. Mide si los pilotos se traducen en oferta.',
+   'nucleo', 'porcentaje', 'sube_mejor', true, '{propuestas_enviadas,conversaciones_abiertas}', 12)
+on conflict (code) do nothing;

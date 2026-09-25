@@ -53,6 +53,10 @@ export interface ScoreTecnico {
   dimensiones: ResultadoDimension[];
   /** Dimensiones que aplican y todavía no tienen puntuación */
   sinEvaluar: string[];
+  /** Cuántas dimensiones aplicables tienen puntuación */
+  evaluadas: number;
+  /** Cuántas dimensiones aplican a esta compañía */
+  aplicables: number;
   /** Si ninguna dimensión aplicable está evaluada, el score no significa nada */
   completo: boolean;
 }

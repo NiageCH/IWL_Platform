@@ -30,7 +30,7 @@ export async function leerCompania(slug: string) {
   const { data: compania } = await supabase
     .from("companies")
     .select(
-      `id, name, slug, sector, one_liner, stage, tech_profile,
+      `id, name, slug, sector, one_liner, stage, tech_profile, phase_id,
        female_leadership_pct, founded_on, website,
        phases ( code, name, order_index ),
        cohorts ( name )`,

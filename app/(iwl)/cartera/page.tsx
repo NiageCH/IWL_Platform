@@ -19,7 +19,7 @@ import {
   RunwayCohorte,
 } from "@/components/graficos-cohorte";
 import { bandaDe } from "@/lib/datos/cohorte";
-import { euros, numero } from "@/lib/utils";
+import { euros, numero, porcentaje } from "@/lib/utils";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -51,6 +51,7 @@ export default async function Cartera() {
     severidades,
     radares,
     runway,
+    compromisos,
   } = await leerCartera();
 
   if (companias.length === 0) {
@@ -239,6 +240,61 @@ export default async function Cartera() {
           <RadaresCohorte companias={radares} />
         </Bloque>
 
+        {compromisos.length > 0 ? (
+          <Bloque>
+            <TituloBloque accion={<Metadato>Entregado sobre comprometido</Metadato>}>
+              Compromiso de IWL
+            </TituloBloque>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[680px] text-sm">
+                <thead>
+                  <tr className="border-b border-filete text-left">
+                    <th className="px-4 py-2 font-medium text-metadato">Compañía</th>
+                    <th className="px-4 py-2 font-medium text-metadato">Horas</th>
+                    <th className="px-4 py-2 text-right font-medium text-metadato">
+                      Entregadas
+                    </th>
+                    <th className="px-4 py-2 font-medium text-metadato">Caja</th>
+                    <th className="px-4 py-2 text-right font-medium text-metadato">
+                      Desembolsada
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-filete">
+                  {compromisos.map((c) => (
+                    <tr key={c.slug}>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/cartera/${c.slug}/aportacion`}
+                          className="font-medium text-titular underline-offset-4 hover:underline"
+                        >
+                          {c.nombre}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">
+                        <ProgresoCompromiso pct={c.horasPct} />
+                      </td>
+                      <td className="cifra px-4 py-3 text-right text-secundario">
+                        {numero(c.horasEntregadas, 0)} de {numero(c.horasComprometidas, 0)} h
+                      </td>
+                      <td className="px-4 py-3">
+                        <ProgresoCompromiso pct={c.cajaPct} />
+                      </td>
+                      <td className="cifra px-4 py-3 text-right text-secundario">
+                        {euros(c.cajaDesembolsada)} de {euros(c.cajaComprometida)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="border-t border-filete px-4 py-2.5 text-xs text-metadato">
+              Lo que IWL ha entregado frente a lo que firmó. Si va por detrás,
+              se ve aquí antes de que lo pregunte nadie.
+            </p>
+          </Bloque>
+        ) : null}
+
         <Bloque>
           <TituloBloque accion={<Metadato>Lo que falta a cada una</Metadato>}>
             Siguientes pasos de la cohorte
@@ -281,5 +337,24 @@ export default async function Cartera() {
       </div>
 
     </main>
+  );
+}
+
+/** Barra de avance del compromiso, con su cifra siempre escrita al lado */
+function ProgresoCompromiso({ pct }: { pct: number | null }) {
+  if (pct === null) {
+    return <span className="text-xs text-metadato">Sin compromiso fijado</span>;
+  }
+
+  return (
+    <span className="flex items-center gap-2">
+      <span className="h-1.5 w-24 shrink-0 rounded-sm bg-hundido" aria-hidden="true">
+        <span
+          className="barra-acento block h-full rounded-sm"
+          style={{ width: `${Math.min(100, pct)}%` }}
+        />
+      </span>
+      <span className="cifra text-xs text-secundario">{porcentaje(pct, 0)}</span>
+    </span>
   );
 }

@@ -43,9 +43,13 @@ test("el equipo de IWL ve la cohorte completa", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl);
 
   await expect(page).toHaveURL(/\/cartera/);
-  // El nombre aparece en la tabla de cohorte y en «Camino a invertible»,
-  // así que se comprueba la fila de la tabla
-  const cohorte = page.getByRole("table");
+
+  // El dashboard tiene varias tablas: se apunta a la de la cohorte por su
+  // sección, no por ser «la tabla»
+  const cohorte = page
+    .locator("section", { hasText: "Fila por compañía" })
+    .getByRole("table");
+
   for (const nombre of ["Marea Clínica", "Vega Predictiva", "Raíz Sensórica"]) {
     await expect(cohorte.getByRole("link", { name: nombre })).toBeVisible();
   }
@@ -54,7 +58,9 @@ test("el equipo de IWL ve la cohorte completa", async ({ page }) => {
 test("un revisor de Niage solo ve las compañías que lleva", async ({ page }) => {
   await entrarComo(page, USUARIOS.revisorVega, "/cartera");
 
-  const cohorte = page.getByRole("table");
+  const cohorte = page
+    .locator("section", { hasText: "Fila por compañía" })
+    .getByRole("table");
   await expect(cohorte.getByRole("link", { name: "Vega Predictiva" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Marea Clínica" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Raíz Sensórica" })).toHaveCount(0);

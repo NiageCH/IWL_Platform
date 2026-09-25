@@ -45,6 +45,14 @@ export async function leerCartera() {
   const cohorte = filas?.[0]?.cohorts ?? null;
   const mapa = mapaIntervencion(companias);
 
+  // Compromiso de IWL por compañía: horas y caja entregadas sobre
+  // comprometidas. Es el panel que el documento de aportación pide en el
+  // dashboard de cohorte (§9), y funciona en los dos sentidos.
+  const { data: compromisos } = await supabase
+    .from("commitment_counter")
+    .select("*")
+    .not("annex_id", "is", null);
+
   // Las instantáneas en crudo, para la media de la cohorte en el tiempo
   const { data: instantaneas } = await supabase
     .from("readiness_snapshots")
@@ -61,6 +69,21 @@ export async function leerCartera() {
     severidades: hallazgosPorSeveridad(companias),
     radares: radaresCohorte(companias),
     runway: runwayCohorte(companias),
+    compromisos: (compromisos ?? [])
+      .map((c) => {
+        const compania = companias.find((x) => x.compania.id === c.company_id);
+        return {
+          nombre: compania?.compania.name ?? "",
+          slug: compania?.compania.slug ?? "",
+          horasComprometidas: Number(c.committed_hours ?? 0),
+          horasEntregadas: Number(c.delivered_hours ?? 0),
+          horasPct: c.hours_pct === null ? null : Number(c.hours_pct),
+          cajaComprometida: Number(c.committed_cash ?? 0),
+          cajaDesembolsada: Number(c.disbursed_cash ?? 0),
+          cajaPct: c.cash_pct === null ? null : Number(c.cash_pct),
+        };
+      })
+      .filter((c) => c.slug !== ""),
     lectura: lecturaDeCohorte(
       companias,
       movimientos,

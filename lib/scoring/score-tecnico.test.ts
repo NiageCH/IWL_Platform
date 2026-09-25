@@ -157,3 +157,32 @@ describe("dimensionesPorPrioridad", () => {
 function redondear(valor: number): number {
   return Math.round(valor * 10) / 10;
 }
+
+describe("dimensiones evaluadas", () => {
+  /**
+   * Una compañía que todavía no ha pasado el due diligence técnico no tiene
+   * score, tiene ausencia de score. Enseñar una cifra ahí sería peor que un
+   * hueco: parecería una medición.
+   */
+  it("cuenta cuántas están evaluadas y cuántas aplican", () => {
+    const score = calcularScoreTecnico([
+      dim("arquitectura_producto", "semilla", 2),
+      dim("seguridad", "semilla", null),
+      { codigo: "hardware", nombre: "Hardware", peso: 0, objetivo: 2, nivel: null },
+    ]);
+
+    expect(score.aplicables).toBe(2);
+    expect(score.evaluadas).toBe(1);
+    expect(score.completo).toBe(false);
+  });
+
+  it("sin ninguna evaluada, lo dice", () => {
+    const score = calcularScoreTecnico([
+      dim("arquitectura_producto", "pre_semilla", null),
+      dim("seguridad", "pre_semilla", null),
+    ]);
+
+    expect(score.evaluadas).toBe(0);
+    expect(score.aplicables).toBe(2);
+  });
+});
