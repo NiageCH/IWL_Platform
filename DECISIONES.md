@@ -453,3 +453,13 @@ La prueba que da de alta a alguien dejaba la cuenta puesta. Al cabo de unas cuan
 Borrar el perfil no basta, porque la cuenta vive en `auth.users` y el perfil se recrearía. El helper `borrarCuenta` quita las dos cosas.
 
 Es el mismo problema que ya había aparecido con los ajustes de configuración y con las hojas de ruta: una prueba que no limpia lo que crea envenena la base de desarrollo, y el síntoma aparece semanas después en un sitio que no tiene nada que ver.
+
+## 2026-09-28 · Las compañías de demostración se archivan, no se borran
+
+Una instalación de trabajo tiene proyectos de verdad y las tres ficticias solo estorban: ensucian las medias de la cohorte y hacen ruido en los listados. Pero no se pueden quitar del repositorio, por dos razones que van en direcciones opuestas y las dos mandan.
+
+La especificación las pide (§10): son lo único que puede llevar el seed versionado, porque ahí nunca van nombres reales. Y las pruebas se apoyan en ellas, que es lo mismo dicho de otra forma: en cualquier otra máquina son las únicas compañías que existen.
+
+Así que el seed local las archiva —Marea Clínica se queda como ejemplo, porque es la que tiene hoja de ruta, avances por los dos lados, línea base y los cuatro informes— y las suites las desarchivan al arrancar, en `tests/preparar-base.ts`. Sin eso, media suite de RLS no encontraba nada: una compañía archivada deja de ser visible para su equipo fundador, que es justo lo que esas pruebas comprueban.
+
+No se restaura el estado al terminar. Quien trabaja con proyectos reales recupera su vista con `npm run db:reset`; dejarlas como estaban obligaría a adivinar cuáles se archivaron a propósito y cuáles las archivó una prueba.

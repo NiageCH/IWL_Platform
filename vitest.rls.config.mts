@@ -37,6 +37,13 @@ export default defineConfig({
     environment: "node",
     include: ["tests/rls/**/*.test.ts"],
     env: entornoSupabase(),
+    /*
+     * Una instalación de trabajo archiva las compañías de demostración desde
+     * su seed local, y una compañía archivada deja de ser visible para su
+     * equipo fundador: sin esto, la mitad de estas pruebas no encontraría
+     * nada que comprobar.
+     */
+    globalSetup: ["./tests/preparar-base.ts"],
     // Las sesiones se pisan entre sí si los ficheros corren en paralelo
     fileParallelism: false,
     testTimeout: 20000,
