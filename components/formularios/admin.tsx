@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import {
+  archivarPersona,
   asignarACompania,
+  borrarPersona,
   cambiarRol,
   crearCohorte,
   crearCompania,
+  editarPersona,
   guardarObjetivosTraccion,
   guardarPesosMadurez,
   crearPersona,
@@ -56,11 +59,28 @@ const ROLES = [
   { valor: "lector_externo", texto: "Lectura externa" },
 ];
 
+/*
+ * El papel dentro de un proyecto, que no es el rol de la persona.
+ *
+ * La misma mentora coordina un proyecto y entra de apoyo en otro, y en cada
+ * uno puede lo que su papel allí le deja. Por eso «mentoría» a secas ya no se
+ * ofrece: no dice lo bastante.
+ */
 const PAPELES = [
   { valor: "fundadora", texto: "Equipo fundador" },
   { valor: "responsable_iwl", texto: "Responsable de IWL" },
   { valor: "revisor_niage", texto: "Revisora técnica de Niage" },
-  { valor: "mentor", texto: "Mentoría" },
+  { valor: "mentor_principal", texto: "Mentoría · coordina el proyecto" },
+  { valor: "mentor_secundario", texto: "Mentoría · apoyo" },
+];
+
+const PERFILES_TARIFA = [
+  "socio",
+  "ingenieria",
+  "senior",
+  "especialista",
+  "operacion",
+  "mentor",
 ];
 
 /**
@@ -420,6 +440,13 @@ export function CambiarRol({
   );
 }
 
+/**
+ * Asignar una persona a un proyecto.
+ *
+ * Con su papel allí y, si es mentoría, las horas acordadas y con qué tarifa
+ * se valoran. Sin las horas acordadas no hay contra qué medir su dedicación,
+ * y la aportación del programa se acaba sabiendo solo a posteriori.
+ */
 export function Asignar({
   profileId,
   companias,
@@ -427,14 +454,23 @@ export function Asignar({
   profileId: string;
   companias: Array<{ id: string; name: string }>;
 }) {
+  const [papel, setPapel] = useState("fundadora");
+  const esMentoria = papel.startsWith("mentor");
+
   return (
     <Formulario accion={asignarACompania} className="gap-2">
-      {() => (
+      {(resultado) => (
         <>
           <input type="hidden" name="profile_id" value={profileId} />
+
           <div className="flex flex-wrap items-end gap-2">
             <Campo etiqueta="Compañía">
-              <Seleccion name="company_id" required defaultValue="" className="py-1 text-xs">
+              <Seleccion
+                name="company_id"
+                required
+                defaultValue=""
+                className="py-1 text-xs"
+              >
                 <option value="" disabled>
                   Elige una
                 </option>
@@ -445,11 +481,13 @@ export function Asignar({
                 ))}
               </Seleccion>
             </Campo>
+
             <Campo etiqueta="Papel">
               <Seleccion
                 name="member_role"
                 required
-                defaultValue="fundadora"
+                value={papel}
+                onChange={(e) => setPapel(e.currentTarget.value)}
                 className="py-1 text-xs"
               >
                 {PAPELES.map((p) => (
@@ -459,8 +497,62 @@ export function Asignar({
                 ))}
               </Seleccion>
             </Campo>
+
+            {esMentoria ? (
+              <>
+                <Campo etiqueta="Horas">
+                  <Texto
+                    name="assigned_hours"
+                    type="number"
+                    min="0"
+                    step="5"
+                    placeholder="120"
+                    className="w-24 py-1 text-xs"
+                  />
+                </Campo>
+                <Campo etiqueta="Tarifa">
+                  <Seleccion
+                    name="rate_profile"
+                    defaultValue="especialista"
+                    className="py-1 text-xs"
+                  >
+                    {PERFILES_TARIFA.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </Seleccion>
+                </Campo>
+              </>
+            ) : null}
+
             <Boton variante="secundario">Asignar</Boton>
           </div>
+
+          {esMentoria ? (
+            <>
+              <div className="flex flex-wrap items-end gap-2">
+                <Campo etiqueta="Desde" error={!resultado.ok ? resultado.campos?.starts_on : undefined}>
+                  <Texto name="starts_on" type="date" className="py-1 text-xs" />
+                </Campo>
+                <Campo etiqueta="Hasta" error={!resultado.ok ? resultado.campos?.ends_on : undefined}>
+                  <Texto name="ends_on" type="date" className="py-1 text-xs" />
+                </Campo>
+                <Campo etiqueta="En qué entra">
+                  <Texto
+                    name="title"
+                    placeholder="Estrategia comercial"
+                    className="py-1 text-xs"
+                  />
+                </Campo>
+              </div>
+              <p className="text-xs text-metadato">
+                {papel === "mentor_principal"
+                  ? "Quien coordina responde del avance del proyecto: puntúa el due diligence, confirma hitos y mueve el plan. Solo en este proyecto."
+                  : "El apoyo ve el proyecto entero, imputa sus horas y cierra sus tareas. No puntúa ni confirma hitos."}
+              </p>
+            </>
+          ) : null}
         </>
       )}
     </Formulario>
@@ -791,5 +883,172 @@ export function FormularioObjetivosTraccion({
         </>
       )}
     </Formulario>
+  );
+}
+
+/** Editar el nombre y el rol de una persona. El correo es su identidad y no se toca */
+export function EditarPersona({
+  persona,
+}: {
+  persona: { id: string; full_name: string | null; role: string };
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+      >
+        Editar
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 w-full border-t border-filete pt-3">
+      <Formulario accion={editarPersona} onOk={() => setAbierto(false)}>
+        {(resultado) => (
+          <>
+            <input type="hidden" name="id" value={persona.id} />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo
+                etiqueta="Nombre"
+                error={!resultado.ok ? resultado.campos?.full_name : undefined}
+              >
+                <Texto name="full_name" defaultValue={persona.full_name ?? ""} required />
+              </Campo>
+              <Campo
+                etiqueta="Rol"
+                ayuda="Qué puede hacer en general. Dónde lo hace lo dicen sus asignaciones"
+              >
+                <Seleccion key={persona.role} name="role" defaultValue={persona.role}>
+                  {ROLES.map((r) => (
+                    <option key={r.valor} value={r.valor}>
+                      {r.texto}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+            </div>
+
+            <p className="text-xs text-metadato">
+              El correo no se cambia: es su identidad y cambiarlo la dejaría
+              sin poder entrar. Si alguien cambia de correo, dale de alta el
+              nuevo y archiva el viejo.
+            </p>
+
+            <div className="flex gap-2">
+              <Boton>Guardar</Boton>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                className="rounded-md border border-filete bg-elevado px-3 py-2 text-sm text-secundario"
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </Formulario>
+    </div>
+  );
+}
+
+/** Archivar o reactivar. Una persona archivada no entra, pero su trabajo sigue */
+export function ArchivarPersona({
+  id,
+  activa,
+}: {
+  id: string;
+  activa: boolean;
+}) {
+  return (
+    <Formulario accion={archivarPersona} className="gap-0">
+      {() => (
+        <>
+          <input type="hidden" name="id" value={id} />
+          <input type="hidden" name="activa" value={activa ? "no" : "si"} />
+          <button
+            type="submit"
+            className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+          >
+            {activa ? "Archivar" : "Reactivar"}
+          </button>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Borrado real de una persona.
+ *
+ * Solo si no ha dejado rastro. Cuando lo tiene se explica por qué no se
+ * puede: un botón deshabilitado sin motivo se lee como un fallo.
+ */
+export function BorrarPersona({
+  persona,
+}: {
+  persona: { id: string; email: string; tiene_actividad: boolean };
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (persona.tiene_actividad) {
+    return (
+      <span className="text-xs text-metadato">
+        No se puede borrar: tiene trabajo a su nombre
+      </span>
+    );
+  }
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="text-xs text-metadato underline decoration-filete underline-offset-4 transition-colors hover:text-mal"
+      >
+        Borrar
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 w-full border-t border-mal/40 pt-3">
+      <Formulario accion={borrarPersona} onOk={() => setAbierto(false)}>
+        {(resultado) => (
+          <>
+            <input type="hidden" name="id" value={persona.id} />
+            <input type="hidden" name="email" value={persona.email} />
+
+            <p className="text-xs text-mal">
+              Borra su cuenta y no tiene vuelta atrás. Solo se ofrece porque no
+              ha dejado nada registrado.
+            </p>
+
+            <Campo
+              etiqueta={`Escribe «${persona.email}» para confirmar`}
+              error={!resultado.ok ? resultado.campos?.confirmacion : undefined}
+            >
+              <Texto name="confirmacion" autoComplete="off" required />
+            </Campo>
+
+            <div className="flex gap-2">
+              <Boton>Borrar definitivamente</Boton>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                className="rounded-md border border-filete bg-elevado px-3 py-2 text-sm text-secundario"
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </Formulario>
+    </div>
   );
 }

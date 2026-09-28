@@ -155,3 +155,38 @@ export const AJUSTES_BASE = {
     solidez: 10,
   },
 } as const;
+
+/**
+ * Deja filas como estaban, con la clave de servicio.
+ *
+ * Igual que `ajustar`, pero para cualquier tabla: las pruebas que archivan o
+ * editan una compañía tienen que poder restaurarla por fuera del camino que
+ * están probando, o la siguiente pasada falla por lo que dejó la anterior.
+ */
+export async function actualizar(
+  tabla: string,
+  filtro: Record<string, string>,
+  valores: Record<string, unknown>,
+): Promise<void> {
+  const { url, clave } = supabase();
+  const consulta = new URLSearchParams(
+    Object.entries(filtro).map(([k, v]) => [k, v]),
+  );
+
+  const respuesta = await fetch(`${url}/rest/v1/${tabla}?${consulta}`, {
+    method: "PATCH",
+    headers: {
+      apikey: clave,
+      Authorization: `Bearer ${clave}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(valores),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(
+      `No se ha podido actualizar ${tabla}: ${respuesta.status} ${await respuesta.text()}`,
+    );
+  }
+}

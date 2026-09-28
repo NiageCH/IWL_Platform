@@ -119,8 +119,13 @@ test("los niveles objetivo se editan y explican qué significan", async ({ page 
 test("el rol y la asignación se explican, porque no son lo mismo", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/admin/personas");
 
-  await expect(page.getByText(/rol.*dice qué puede hacer/)).toBeVisible();
+  await expect(page.getByText(/dice qué puede hacer una persona/)).toBeVisible();
   await expect(
-    page.getByText(/un revisor de Niage sin asignación no ve nada/),
+    page.getByText(/sin asignación no ve nada/),
+  ).toBeVisible();
+
+  // Y que el papel de mentoría depende del proyecto, no de la persona
+  await expect(
+    page.getByText(/coordina un proyecto y entra de apoyo en otro/),
   ).toBeVisible();
 });

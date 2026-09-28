@@ -40,7 +40,7 @@ beforeAll(async () => {
     entrarComo(USUARIOS.admin),
     entrarComo(USUARIOS.revisorMareaRaiz),
     entrarComo(USUARIOS.revisorVega),
-    entrarComo(USUARIOS.mentor),
+    entrarComo(USUARIOS.mentorProducto),
   ]);
 });
 
@@ -117,9 +117,14 @@ describe("companies", () => {
     expect(veSegundo.data?.map((c) => c.id)).not.toContain(COMPANIAS.marea);
   });
 
-  it("un mentor solo ve la compañía donde está asignado", async () => {
+  it("un mentor solo ve las compañías donde está asignado", async () => {
     const { data } = await mentor.from("companies").select("id");
-    expect(data?.map((c) => c.id)).toEqual([COMPANIAS.marea]);
+
+    // Coordina Marea y apoya en Raíz. Vega no la lleva, así que no existe
+    expect(new Set(data?.map((c) => c.id))).toEqual(
+      new Set([COMPANIAS.marea, COMPANIAS.raiz]),
+    );
+    expect(data?.map((c) => c.id)).not.toContain(COMPANIAS.vega);
   });
 
   it("sin sesión no se ve ninguna compañía", async () => {

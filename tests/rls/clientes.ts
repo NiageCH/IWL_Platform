@@ -24,7 +24,13 @@ export const USUARIOS = {
   ctoMarea: "cto@marea.test",
   fundadoraVega: "fundadora@vega.test",
   fundadoraRaiz: "fundadora@raiz.test",
-  mentor: "mentor@iwl.test",
+  /*
+   * Los dos mentores están cruzados a propósito: producto coordina Marea y
+   * apoya en Raíz; comercial al revés. Es la situación que hay que probar,
+   * porque el papel va en la asignación y no en la persona.
+   */
+  mentorProducto: "mentor@iwl.test",
+  mentorComercial: "mentor2@iwl.test",
 } as const;
 
 export const COMPANIAS = {

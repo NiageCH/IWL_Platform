@@ -190,7 +190,21 @@ const ROLES = [
   "lector_externo",
 ] as const;
 
-const PAPELES = ["fundadora", "responsable_iwl", "revisor_niage", "mentor"] as const;
+/*
+ * El papel dentro de una compañía, que no es el rol de la persona.
+ *
+ * `mentor` a secas ya no se ofrece: el papel de un mentor depende del
+ * proyecto, y la misma persona coordina uno y entra de apoyo en otro. El
+ * valor sigue en el enum porque Postgres no deja quitarlo sin recrear el
+ * tipo, pero ninguna pantalla lo propone.
+ */
+const PAPELES = [
+  "fundadora",
+  "responsable_iwl",
+  "revisor_niage",
+  "mentor_principal",
+  "mentor_secundario",
+] as const;
 
 const esquemaPersona = z.object({
   email: z.string().trim().email("Eso no parece un correo."),
@@ -281,7 +295,29 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
   );
 }
 
+const horasOpcionales = z
+  .union([z.string(), z.number(), z.null()])
+  .optional()
+  .transform((v) => {
+    if (v === null || v === undefined || v === "") return null;
+    const n = Number(String(v).replace(",", "."));
+    return Number.isFinite(n) ? n : null;
+  })
+  .refine((v) => v === null || v >= 0, "No puede ser un número negativo.");
+
 const esquemaAsignacion = z.object({
+  profile_id: uuid,
+  company_id: uuid,
+  member_role: z.enum(PAPELES),
+  title: textoOpcional,
+  assigned_hours: horasOpcionales,
+  rate_profile: textoOpcional,
+  starts_on: fechaOpcional,
+  ends_on: fechaOpcional,
+});
+
+/** Quitar una asignación solo necesita saber cuál */
+const esquemaQuitar = z.object({
   profile_id: uuid,
   company_id: uuid,
   member_role: z.enum(PAPELES),
@@ -291,12 +327,20 @@ export async function asignarACompania(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaAsignacion, formData);
   if (fallo) return fallo;
 
+  if (datos.starts_on && datos.ends_on && datos.ends_on < datos.starts_on) {
+    return error("La asignación no puede terminar antes de empezar.", {
+      ends_on: "Antes del inicio.",
+    });
+  }
+
   const supabase = await clienteServidor();
   const { error: falloBase } = await supabase.from("company_members").insert(datos);
 
   if (falloBase) {
     if (falloBase.code === "23505") {
-      return error("Esa persona ya tiene ese papel en esa compañía.");
+      return error(
+        "Esa persona ya tiene ese papel en esa compañía. Si quieres cambiarle las horas, edita la asignación que ya tiene.",
+      );
     }
     return traducirError(falloBase);
   }
@@ -306,7 +350,7 @@ export async function asignarACompania(formData: FormData): Promise<Resultado> {
 }
 
 export async function quitarAsignacion(formData: FormData): Promise<Resultado> {
-  const { datos, fallo } = validar(esquemaAsignacion, formData);
+  const { datos, fallo } = validar(esquemaQuitar, formData);
   if (fallo) return fallo;
 
   const supabase = await clienteServidor();
@@ -625,4 +669,216 @@ export async function guardarObjetivosTraccion(
 
   refrescar();
   return ok("Objetivos de tracción guardados.");
+}
+
+// -----------------------------------------------------------------------------
+// Ciclo de vida de una compañía
+//
+// Archivar saca de la cartera y conserva el histórico. Borrar es para lo que
+// se creó por error: la base comprueba que no hay nada dentro antes de
+// dejarlo, porque una comprobación que vive en el formulario se salta con una
+// llamada directa y esto no tiene deshacer.
+// -----------------------------------------------------------------------------
+
+const esquemaArchivar = z.object({
+  id: uuid,
+  slug: textoObligatorio(),
+  motivo: textoOpcional,
+});
+
+export async function archivarCompania(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaArchivar, formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("archivar_compania", {
+    target_company: datos.id,
+    ...(datos.motivo ? { motivo: datos.motivo } : {}),
+  });
+
+  if (falloBase) return traducirError(falloBase);
+
+  revalidatePath(`/cartera/${datos.slug}`, "layout");
+  refrescar();
+  return ok(
+    "Compañía archivada. Sale de la cartera y su equipo deja de verla, pero su histórico sigue entero y se puede restaurar.",
+  );
+}
+
+export async function restaurarCompania(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ id: uuid }), formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("restaurar_compania", {
+    target_company: datos.id,
+  });
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok("Compañía restaurada. Vuelve a la cartera y su equipo la ve otra vez.");
+}
+
+/**
+ * Borrado real.
+ *
+ * Pide escribir el identificador de la compañía. No es teatro: es lo único
+ * que separa un clic accidental de una decisión, y la acción no tiene
+ * deshacer aunque la base se niegue a borrar lo que tiene contenido.
+ */
+const esquemaBorrar = z.object({
+  id: uuid,
+  slug: textoObligatorio(),
+  confirmacion: textoObligatorio(1, "Escribe el identificador para confirmar."),
+});
+
+export async function borrarCompania(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaBorrar, formData);
+  if (fallo) return fallo;
+
+  if (datos.confirmacion.trim() !== datos.slug) {
+    return error(
+      `Para borrarla, escribe «${datos.slug}» exactamente. Si lo que quieres es sacarla del programa sin perder su historial, archívala.`,
+      { confirmacion: "No coincide con el identificador." },
+    );
+  }
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("borrar_compania", {
+    target_company: datos.id,
+  });
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok(`${datos.slug} borrada. No tenía nada registrado.`);
+}
+
+// -----------------------------------------------------------------------------
+// Ciclo de vida de una persona
+// -----------------------------------------------------------------------------
+
+/**
+ * Editar los datos de una persona.
+ *
+ * El correo no se toca: es su identidad en `auth.users` y cambiarlo la
+ * dejaría sin poder entrar. Si alguien cambia de correo, se le da de alta con
+ * el nuevo y se archiva el viejo.
+ */
+const esquemaEditarPersona = z.object({
+  id: uuid,
+  full_name: textoObligatorio(2, "¿Cómo se llama?"),
+  role: z.enum(ROLES),
+});
+
+export async function editarPersona(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaEditarPersona, formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase
+    .from("profiles")
+    .update({ full_name: datos.full_name, role: datos.role })
+    .eq("id", datos.id);
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok("Datos actualizados.");
+}
+
+/**
+ * Archivar a una persona.
+ *
+ * Deja de poder entrar y desaparece de los desplegables, pero sus horas, sus
+ * validaciones y sus tareas siguen llevando su nombre. Un extracto de
+ * aportación donde las horas las puso «alguien que ya no está» no justifica
+ * nada.
+ */
+const esquemaArchivarPersona = z.object({ id: uuid, activa: z.enum(["si", "no"]) });
+
+export async function archivarPersona(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaArchivarPersona, formData);
+  if (fallo) return fallo;
+
+  const persona = await personaActual();
+  if (persona?.id === datos.id && datos.activa === "no") {
+    return error("No puedes archivarte a ti misma: te quedarías fuera.");
+  }
+
+  const supabase = await clienteServidor();
+  const archivar = datos.activa === "no";
+
+  const { error: falloBase } = await supabase
+    .from("profiles")
+    .update({
+      is_active: !archivar,
+      archived_at: archivar ? new Date().toISOString() : null,
+    })
+    .eq("id", datos.id);
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok(
+    archivar
+      ? "Persona archivada. Deja de entrar, pero su trabajo sigue registrado a su nombre."
+      : "Persona reactivada.",
+  );
+}
+
+/**
+ * Borrado real de una persona.
+ *
+ * Solo si no ha dejado rastro. Hay que quitar la cuenta de `auth.users`, que
+ * necesita la clave de servicio, así que la autorización se comprueba aquí a
+ * mano igual que en el alta.
+ */
+const esquemaBorrarPersona = z.object({
+  id: uuid,
+  email: textoObligatorio(),
+  confirmacion: textoObligatorio(1, "Escribe el correo para confirmar."),
+});
+
+export async function borrarPersona(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaBorrarPersona, formData);
+  if (fallo) return fallo;
+
+  if (datos.confirmacion.trim().toLowerCase() !== datos.email.toLowerCase()) {
+    return error(
+      `Para borrarla, escribe «${datos.email}» exactamente. Si solo quieres que deje de entrar, archívala.`,
+      { confirmacion: "No coincide con el correo." },
+    );
+  }
+
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+  if (persona.role !== "admin_iwl") {
+    return error("Borrar a una persona es de la dirección de IWL.");
+  }
+  if (persona.id === datos.id) {
+    return error("No puedes borrarte a ti misma.");
+  }
+
+  const supabase = await clienteServidor();
+  const { data: tieneActividad, error: falloConsulta } = await supabase.rpc(
+    "persona_tiene_actividad",
+    { target_profile: datos.id },
+  );
+
+  if (falloConsulta) return traducirError(falloConsulta);
+
+  if (tieneActividad) {
+    return error(
+      "Esta persona tiene trabajo registrado a su nombre y no se puede borrar. Archívala: deja de entrar y su historial se mantiene.",
+    );
+  }
+
+  const servicio = clienteServicio();
+  const { error: falloBorrado } = await servicio.auth.admin.deleteUser(datos.id);
+  if (falloBorrado) return error(falloBorrado.message);
+
+  refrescar();
+  return ok(`${datos.email} borrada. No tenía nada registrado.`);
 }

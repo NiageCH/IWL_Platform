@@ -387,7 +387,7 @@ describe("hitos", () => {
       .eq("id", hito!.id);
 
     expect(cumplido.error).not.toBeNull();
-    expect(cumplido.error?.message).toContain("equipo de IWL");
+    expect(cumplido.error?.message).toMatch(/IWL/);
 
     const porIwl = await equipoIwl
       .from("milestones")

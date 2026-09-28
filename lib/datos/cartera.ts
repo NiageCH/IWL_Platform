@@ -26,6 +26,15 @@ export async function leerCartera() {
   const { data: filas } = await supabase
     .from("companies")
     .select("slug, cohorts ( name, investable_target )")
+    /*
+     * Las archivadas no salen en la cartera.
+     *
+     * Siguen siendo visibles para IWL —el histórico de una compañía que pasó
+     * por el programa es lo que justifica la participación— pero la cartera
+     * es la lista de proyectos vivos. Una graduada de hace dos años
+     * arrastrando el score de su último mes ensucia todas las medias.
+     */
+    .is("archived_at", null)
     .order("name");
 
   const [resumenes, movimientos, bandas] = await Promise.all([

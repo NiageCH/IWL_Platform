@@ -355,3 +355,47 @@ Ahora el seed trae Anexo, pilares, partidas de caja y desembolsos, con las horas
 `unit` guarda el tipo de magnitud («moneda», «numero», «porcentaje»), no el símbolo. El informe mensual lo concatenó tal cual y enseñaba «15.079 moneda» y «99,9 porcentaje».
 
 La vista de KPI ya tenía la función bien resuelta; el informe la reimplementó mal. Ahora está en `lib/etiquetas` y la usan las dos, junto con los nombres de etapa, perfil y estado de entrada, que estaban repetidos en cada pantalla.
+
+## 2026-09-28 · El papel de un mentor va en la asignación, no en la persona
+
+`company_member_role` gana `mentor_principal` y `mentor_secundario`. El rol de la persona sigue siendo `mentor` a secas; lo que cambia por proyecto es qué papel tiene en cada uno.
+
+Sale de cómo trabaja IWL: la misma mentora coordina un proyecto y entra de apoyo en otro. Si el permiso dependiera de su rol global, coordinaría las dos o ninguna.
+
+El valor `mentor` se queda en el enum porque Postgres no deja quitarlo sin recrear el tipo, y recrearlo obligaría a reescribir todas las políticas que lo comparan. Ninguna pantalla lo ofrece.
+
+## 2026-09-28 · El mentor principal es parte de IWL en su proyecto
+
+Decisión de Rodrigo. Quien coordina puntúa el due diligence, confirma hitos, mueve el plan y revisa el update mensual, en los proyectos donde es principal. No ve la cartera ni toca la configuración: eso sigue siendo de IWL.
+
+Esto flexibiliza a propósito la regla de que quien hace el trabajo no lo certifica. El documento la puso para la fundadora (§5, §11) y ahí sigue intacta: una fundadora no puede puntuarse ni validarse, y eso es criterio de aceptación. Para el coordinador se acepta porque en una incubadora boutique es quien conoce el proyecto, y esperar a la dirección para cada confirmación paraliza.
+
+Lo que no toca un mentor ni siendo principal: el Anexo y el equity, la caja, las objeciones de la compañía sobre horas —que pueden ser a las suyas—, congelar líneas base, y el alta de personas.
+
+La función `app.coordina_company` es lo que sustituye a `app.is_iwl()` en todo lo que es de un proyecto y no del programa.
+
+## 2026-09-28 · Cada mentor imputa sus propias horas
+
+El libro de horas era solo de IWL. Con mentores externos eso significa que lo rellena la dirección, y un libro que no rellena quien trabaja no se rellena.
+
+Ahora un mentor puede insertar horas donde `profile_id = auth.uid()`, en cualquier proyecto que lea. Lo que no puede es imputarlas a nombre de otra persona ni corregir las de nadie más.
+
+## 2026-09-28 · Las tareas se asignan desde el programa, no desde la compañía
+
+Una fundadora se apunta trabajo propio, pero no puede crear tareas a nombre de un mentor: la lista de pendientes de la mentoría la llenaría la compañía. Pedir es otra cosa y ya tenía su sitio, el apartado «qué pide a IWL» del update mensual.
+
+La comprobación está en un trigger y no en la política porque necesita mirar `company_members`.
+
+## 2026-09-28 · Archivar conserva, borrar es para lo vacío
+
+Decisión de Rodrigo. Una compañía con due diligence, horas imputadas y equity acordado se archiva: sale de la cartera y su equipo deja de verla, pero el histórico sigue entero y se puede restaurar. El extracto de aportación justifica una participación y esa prueba tiene que sobrevivir a que el proyecto salga del programa.
+
+El borrado real solo para lo creado por error. Y quien decide si hay algo dentro es la base, no el formulario: una comprobación que vive en la interfaz se salta con una llamada directa, y esto no tiene deshacer. La interfaz solo la consulta para no ofrecer lo imposible.
+
+Lo mismo con las personas: quien ha imputado horas o validado algo se archiva. Un extracto donde las horas las puso «alguien que ya no está» no justifica nada.
+
+## 2026-09-28 · La cartera no enseña las archivadas
+
+Lo encontró el test de archivado: se archivaba una compañía y seguía en `/cartera` con todos sus datos.
+
+IWL sigue viéndolas desde administración, porque el archivo es suyo. Pero la cartera es la lista de proyectos vivos: una graduada de hace dos años arrastrando el score de su último mes ensucia todas las medias de la cohorte.

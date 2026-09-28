@@ -37,7 +37,7 @@ beforeAll(async () => {
     entrarComo(USUARIOS.equipoIwl),
     entrarComo(USUARIOS.revisorMareaRaiz),
     entrarComo(USUARIOS.revisorVega),
-    entrarComo(USUARIOS.mentor),
+    entrarComo(USUARIOS.mentorProducto),
   ]);
 });
 
@@ -503,7 +503,7 @@ describe("update mensual y KPI", () => {
       .eq("id", update!.id);
 
     expect(error).not.toBeNull();
-    expect(error?.message).toContain("equipo de IWL");
+    expect(error?.message).toMatch(/IWL/);
   });
 
   it("los KPI de una compañía no se leen desde otra", async () => {
@@ -531,18 +531,49 @@ describe("update mensual y KPI", () => {
 });
 
 describe("mentor", () => {
-  it("un mentor lee el business plan de su compañía pero no lo edita", async () => {
-    const lectura = await mentor.from("bp_sections").select("id, company_id");
-
-    expect(lectura.error).toBeNull();
-    expect(lectura.data?.every((s) => s.company_id === COMPANIAS.marea)).toBe(true);
-
-    const escritura = await mentor
+  /*
+   * El mentor que coordina sí edita; el que apoya, no.
+   *
+   * Es la misma persona en los dos casos: coordina Marea y apoya en Raíz. Si
+   * el permiso dependiera del rol de la persona en vez de su papel en cada
+   * proyecto, esta prueba no podría distinguir los dos casos.
+   */
+  it("el mentor que coordina edita el business plan de su proyecto", async () => {
+    const { data: seccion } = await mentor
       .from("bp_sections")
-      .update({ content: "Editado por el mentor" })
-      .eq("id", lectura.data![0].id)
+      .select("id, content")
+      .eq("company_id", COMPANIAS.marea)
+      .limit(1)
+      .single();
+
+    const { data: tras } = await mentor
+      .from("bp_sections")
+      .update({ content: "Revisado por la coordinación del proyecto" })
+      .eq("id", seccion!.id)
       .select();
 
-    expect(escritura.data ?? []).toEqual([]);
+    expect(tras).toHaveLength(1);
+
+    await servicio
+      .from("bp_sections")
+      .update({ content: seccion!.content })
+      .eq("id", seccion!.id);
+  });
+
+  it("el mentor que solo apoya no edita el business plan", async () => {
+    const { data: seccion } = await mentor
+      .from("bp_sections")
+      .select("id")
+      .eq("company_id", COMPANIAS.raiz)
+      .limit(1)
+      .single();
+
+    const { data: tras } = await mentor
+      .from("bp_sections")
+      .update({ content: "Editado por quien solo apoya" })
+      .eq("id", seccion!.id)
+      .select();
+
+    expect(tras ?? []).toEqual([]);
   });
 });
