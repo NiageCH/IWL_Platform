@@ -17,6 +17,7 @@ import {
   Seleccion,
   Texto,
 } from "@/components/ui/formulario";
+import { nombrePersona } from "@/lib/etiquetas";
 
 /**
  * Ciclo de vida de una compañía.
@@ -332,6 +333,7 @@ export function BorrarCompania({ compania }: { compania: FichaCompania }) {
 export interface Asignable {
   id: string;
   full_name: string | null;
+  email: string | null;
   job_title: string | null;
   expertise: string[];
   proyectos: number;
@@ -391,7 +393,7 @@ export function AnadirAlEquipo({
                     </option>
                     {personas.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.full_name}
+                        {nombrePersona(p)}
                         {p.job_title ? ` · ${p.job_title}` : ""}
                       </option>
                     ))}

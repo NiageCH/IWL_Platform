@@ -130,3 +130,26 @@ export const PAPELES: Record<Papel, string> = {
 export function papel(valor: Papel | string): string {
   return PAPELES[valor as Papel] ?? valor;
 }
+
+/**
+ * Cómo se llama alguien en una lista.
+ *
+ * Un perfil puede no tener nombre: se crea desde `auth.users` y los metadatos
+ * pueden llegar vacíos. Cuando eso pasa, la opción del desplegable salía en
+ * blanco y no había forma de saber a quién se estaba asignando algo.
+ *
+ * Nunca se devuelve cadena vacía: si no hay nombre, el correo identifica; si
+ * tampoco, se dice que falta en vez de dejar el hueco.
+ */
+export function nombrePersona(persona: {
+  full_name?: string | null;
+  email?: string | null;
+}): string {
+  const nombre = persona.full_name?.trim();
+  if (nombre) return nombre;
+
+  const correo = persona.email?.trim();
+  if (correo) return correo;
+
+  return "Sin nombre ni correo";
+}

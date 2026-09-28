@@ -190,3 +190,29 @@ export async function actualizar(
     );
   }
 }
+
+/**
+ * Borra una cuenta entera, con su perfil.
+ *
+ * Las pruebas que dan de alta a alguien dejaban la cuenta puesta: al cabo de
+ * unas cuantas pasadas, el desplegable de asignar tenía nueve «Persona de
+ * prueba» y encontrar a alguien de verdad era imposible. Borrar un perfil no
+ * basta, porque la cuenta vive en `auth.users`.
+ */
+export async function borrarCuenta(correo: string): Promise<void> {
+  const { url, clave } = supabase();
+
+  const respuesta = await fetch(
+    `${url}/rest/v1/profiles?email=eq.${encodeURIComponent(correo)}&select=id`,
+    { headers: { apikey: clave, Authorization: `Bearer ${clave}` } },
+  );
+
+  const filas = (await respuesta.json()) as { id: string }[];
+
+  for (const { id } of filas) {
+    await fetch(`${url}/auth/v1/admin/users/${id}`, {
+      method: "DELETE",
+      headers: { apikey: clave, Authorization: `Bearer ${clave}` },
+    });
+  }
+}

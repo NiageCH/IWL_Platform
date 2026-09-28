@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrar, entrarComo } from "./entrada";
+import { USUARIOS, borrar, borrarCuenta, entrarComo } from "./entrada";
 
 /**
  * Montar el equipo de un proyecto y saber quién es cada quien.
@@ -151,4 +151,8 @@ test.afterAll(async () => {
     company_id: "00000000-0000-0000-0004-000000000002",
     member_role: "mentor_principal",
   });
+
+  // Y la cuenta de prueba, con las dos direcciones por las que ha pasado
+  await borrarCuenta(CORREO);
+  await borrarCuenta(CORREGIDO);
 });

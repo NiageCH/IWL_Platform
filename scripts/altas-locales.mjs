@@ -33,15 +33,22 @@ if (!Array.isArray(cuentas) || cuentas.length === 0) process.exit(0);
 const { url, clave } = entorno();
 
 for (const cuenta of cuentas) {
-  const { correo, rol, compania, papel } = cuenta;
+  const { correo, rol, compania, papel, nombre } = cuenta;
 
   if (!correo || !rol) {
     console.error(`Entrada sin correo o sin rol en ${FICHERO}:`, cuenta);
     continue;
   }
 
+  /*
+   * El nombre va detrás de compañía y papel, así que hay que rellenar esos
+   * huecos aunque no se asigne compañía: una cuenta sin nombre sale en
+   * blanco en los desplegables de asignación.
+   */
   const argumentos = [correo, rol];
   if (compania) argumentos.push(compania, papel ?? "fundadora");
+  else if (nombre) argumentos.push("", "");
+  if (nombre) argumentos.push(nombre);
 
   try {
     execFileSync("node", ["scripts/alta.mjs", ...argumentos], {

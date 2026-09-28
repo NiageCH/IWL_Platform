@@ -437,3 +437,19 @@ La decisión original ya estaba tomada y anotada en `next.config.ts`: las conven
 La misma etiqueta se escribía distinta en cada pantalla: «Coordina» en personas y «coordina» en compañías. Lo encontró una prueba que buscaba una y encontraba la otra.
 
 Están en `lib/etiquetas.ts`, junto a las de etapa, perfil y estado de entrada, que ya se habían duplicado antes por lo mismo.
+
+## 2026-09-28 · Una persona sin nombre no se enseña en blanco
+
+El desplegable de asignación mostraba opciones vacías. La causa venía de lejos: `scripts/alta.mjs` creaba las cuentas con el rol en los metadatos pero sin nombre, así que el perfil nacía sin él. Y como esos metadatos solo se envían al crear, una cuenta antigua se quedaba en blanco para siempre.
+
+Tres arreglos, de fondo a superficie: el script pone nombre siempre, derivándolo del correo si no se le da uno; al actualizar una cuenta que ya existía también lo escribe; y la interfaz nunca deja un hueco —si no hay nombre usa el correo, y si tampoco lo dice—.
+
+Lo señaló Rodrigo: «se asigna un mentor pero no el nombre».
+
+## 2026-09-28 · Las pruebas borran las cuentas que crean
+
+La prueba que da de alta a alguien dejaba la cuenta puesta. Al cabo de unas cuantas pasadas había nueve «Persona de prueba» en el desplegable de asignación y encontrar a alguien de verdad era imposible.
+
+Borrar el perfil no basta, porque la cuenta vive en `auth.users` y el perfil se recrearía. El helper `borrarCuenta` quita las dos cosas.
+
+Es el mismo problema que ya había aparecido con los ajustes de configuración y con las hojas de ruta: una prueba que no limpia lo que crea envenena la base de desarrollo, y el síntoma aparece semanas después en un sitio que no tiene nada que ver.

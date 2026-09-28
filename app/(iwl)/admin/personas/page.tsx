@@ -17,7 +17,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
-import { papel } from "@/lib/etiquetas";
+import { nombrePersona, papel } from "@/lib/etiquetas";
 import { numero } from "@/lib/utils";
 
 export const metadata = { title: "Personas · Administración" };
@@ -61,7 +61,7 @@ export default async function AdminPersonas() {
       <li className="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-4 py-4">
         <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="text-sm font-medium text-titular">
-            {p.full_name ?? "Sin nombre"}
+            {nombrePersona(p)}
           </span>
           {p.job_title ? (
             <span className="text-xs text-secundario">{p.job_title}</span>

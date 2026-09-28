@@ -26,13 +26,36 @@ const ROLES = [
   "lector_externo",
 ];
 
-const PAPELES = ["fundadora", "responsable_iwl", "revisor_niage", "mentor"];
+const PAPELES = [
+  "fundadora",
+  "responsable_iwl",
+  "revisor_niage",
+  "mentor_principal",
+  "mentor_secundario",
+];
 
-const [correo, rol, slug, papel] = process.argv.slice(2);
+/**
+ * Un nombre a partir del correo, cuando no se da ninguno.
+ *
+ * Una cuenta sin nombre sale en blanco en los desplegables de asignación, y
+ * entonces no hay forma de saber a quién se está poniendo en un proyecto.
+ * Sacarlo del correo no acierta el nombre real, pero identifica, y se
+ * corrige desde administración en un momento.
+ */
+function nombreDesdeCorreo(correo) {
+  return correo
+    .split("@")[0]
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((parte) => parte.charAt(0).toUpperCase() + parte.slice(1))
+    .join(" ");
+}
+
+const [correo, rol, slug, papel, nombre] = process.argv.slice(2);
 
 if (!correo || !rol) {
   console.error(
-    "Uso: node scripts/alta.mjs <correo> <rol> [slug-de-compañía] [papel]\n" +
+    "Uso: node scripts/alta.mjs <correo> <rol> [slug-de-compañía] [papel] [nombre]\n" +
       `Roles: ${ROLES.join(" · ")}`,
   );
   process.exit(1);
@@ -59,7 +82,10 @@ const alta = await fetch(`${url}/auth/v1/admin/users`, {
   body: JSON.stringify({
     email: correo,
     email_confirm: true,
-    user_metadata: { role: rol },
+    user_metadata: {
+      role: rol,
+      full_name: nombre || nombreDesdeCorreo(correo),
+    },
   }),
 });
 
@@ -79,12 +105,22 @@ if (!alta.ok) {
   }
 }
 
-// 2. Fijar el rol en el perfil. El trigger lo crea con el rol de los metadatos,
-//    pero si la cuenta ya existía hay que actualizarlo.
+/*
+ * 2. Fijar el rol y el nombre en el perfil.
+ *
+ * El trigger crea el perfil a partir de los metadatos, pero esos metadatos
+ * solo se envían al crear la cuenta: si ya existía, se queda con lo que
+ * tuviera. Una cuenta creada antes de que el script pusiera nombre se
+ * quedaba en blanco para siempre, y en blanco es como salía en los
+ * desplegables de asignación.
+ */
 const perfil = await fetch(`${url}/rest/v1/profiles?id=eq.${usuario.id}`, {
   method: "PATCH",
   headers: { ...cabeceras(clave), Prefer: "return=representation" },
-  body: JSON.stringify({ role: rol }),
+  body: JSON.stringify({
+    role: rol,
+    full_name: nombre || nombreDesdeCorreo(correo),
+  }),
 });
 
 if (!perfil.ok) {

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/primitivas";
 import {
   etapa as nombreEtapa,
+  nombrePersona,
   papel,
   perfil as nombrePerfil,
 } from "@/lib/etiquetas";
@@ -34,6 +35,7 @@ export const metadata = { title: "Compañías · Administración" };
 interface Miembro {
   profile_id: string;
   full_name: string | null;
+  email: string | null;
   job_title: string | null;
   member_role: string;
   assigned_hours: number | null;
@@ -53,7 +55,9 @@ export default async function AdminCompanias() {
     leerPlantillas(),
     supabase
       .from("personas_asignables")
-      .select("id, full_name, job_title, expertise, proyectos, horas_comprometidas")
+      .select(
+        "id, full_name, email, job_title, expertise, proyectos, horas_comprometidas",
+      )
       .order("full_name"),
   ]);
 
@@ -61,6 +65,7 @@ export default async function AdminCompanias() {
     id: p.id!,
     full_name: p.full_name,
     job_title: p.job_title,
+    email: p.email,
     expertise: p.expertise ?? [],
     proyectos: Number(p.proyectos ?? 0),
     horas_comprometidas: Number(p.horas_comprometidas ?? 0),
@@ -161,7 +166,7 @@ export default async function AdminCompanias() {
                           className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5"
                         >
                           <span className="text-sm text-cuerpo">
-                            {m.full_name}
+                            {nombrePersona(m)}
                           </span>
                           <Etiqueta>
                             {papel(m.member_role)}

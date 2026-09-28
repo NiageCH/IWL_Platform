@@ -1,11 +1,12 @@
 [
-  { "correo": "tu@correo.com", "rol": "admin_iwl" },
+  { "correo": "tu@correo.com", "rol": "admin_iwl", "nombre": "Tu Nombre" },
 
-  { "correo": "otra@iwl.es", "rol": "equipo_iwl" },
+  { "correo": "otra@iwl.es", "rol": "equipo_iwl", "nombre": "Otra Persona" },
 
   {
     "correo": "prueba@compania.com",
     "rol": "fundadora",
+    "nombre": "Fundadora de Prueba",
     "compania": "marea-clinica",
     "papel": "fundadora"
   }
