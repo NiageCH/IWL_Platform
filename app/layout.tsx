@@ -1,6 +1,21 @@
 import type { Metadata } from "next";
-import { Montserrat, Roboto_Mono } from "next/font/google";
+import { Montserrat, Roboto_Mono, Zalando_Sans_Expanded } from "next/font/google";
 import "./globals.css";
+
+/**
+ * La tipografía de titulares de inceptionwomanlab.es.
+ *
+ * Expandida y pesada, en mayúsculas y muy apretada: es lo que da a la marca
+ * su cara, más que el color, que la plataforma ya compartía. Se usa solo en
+ * los titulares grandes —el nombre de un proyecto, el título de un informe—
+ * porque en un texto largo o en una tabla densa cansa la vista.
+ */
+const zalando = Zalando_Sans_Expanded({
+  variable: "--font-titular",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -24,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${montserrat.variable} ${robotoMono.variable} h-full`}
+      className={`${zalando.variable} ${montserrat.variable} ${robotoMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

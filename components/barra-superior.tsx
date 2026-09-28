@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
 import { BotonSalir } from "./boton-salir";
+import { NavSecciones } from "./nav-secciones";
 
 const ROLES: Record<string, string> = {
   admin_iwl: "Dirección IWL",
@@ -21,39 +22,34 @@ export async function BarraSuperior() {
   return (
     <div className="sticky top-0 z-20 border-b border-filete bg-lienzo/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="brillo-acento text-lg font-semibold leading-none text-acento">
+        {/* La marca, como en inceptionwomanlab.es: la W en un cuadro y el
+            nombre en la tipografía expandida, en mayúsculas */}
+        <Link href="/" className="flex items-center gap-3">
+          <span className="titular-marca flex h-8 w-8 items-center justify-center rounded-lg bg-elevado text-base text-acento-texto">
             W
           </span>
-          <span className="text-sm font-medium tracking-tight text-titular">
+          <span className="titular-marca text-sm text-titular">
             Plataforma IWL
           </span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {/*
+            El menú se lee como un control, no como texto suelto: cambiar
+            solo el color al pasar por encima no dice que se pueda pulsar, y
+            sin pasar por encima no dice nada.
+          */}
           {persona && esIwl(persona.role) ? (
-            <>
-              <Link
-                href="/cartera"
-                className="text-sm text-secundario transition-colors hover:text-titular"
-              >
-                Cartera
-              </Link>
-              <Link
-                href="/comparativa"
-                className="text-sm text-secundario transition-colors hover:text-titular"
-              >
-                Comparativa
-              </Link>
-              {persona.role === "admin_iwl" ? (
-                <Link
-                  href="/admin"
-                  className="text-sm text-secundario transition-colors hover:text-titular"
-                >
-                  Administración
-                </Link>
-              ) : null}
-            </>
+            <NavSecciones
+              className="mb-0"
+              secciones={[
+                { href: "/cartera", nombre: "Cartera" },
+                { href: "/comparativa", nombre: "Comparativa" },
+                ...(persona.role === "admin_iwl"
+                  ? [{ href: "/admin", nombre: "Administración" }]
+                  : []),
+              ]}
+            />
           ) : null}
           {persona ? (
             <span className="hidden text-xs text-metadato sm:inline">

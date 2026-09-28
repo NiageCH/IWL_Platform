@@ -100,12 +100,31 @@ etiqueta de texto, y se comprueba el contraste para daltonismo antes de usar
 dos colores. Cuando dos series no se distinguen, se usan dos paneles o relleno
 frente a trazo, no dos tonos parecidos.
 
+**Los valores salen de inceptionwomanlab.es**: lienzo negro, grises de zinc,
+rosa `#FF007A` y titulares en Zalando Sans Expanded, en mayúsculas y
+apretados. Esa tipografía solo va en los titulares grandes: en una tabla o en
+un párrafo largo cansa. El amarillo de los antetítulos de la web se ha dejado
+fuera a propósito, para no romper la regla de un solo color cromático de la
+que dependen los gráficos.
+
+Sobre papel, `#FF007A` se queda en 3,8 contra el blanco: vale para un filete
+o una barra, no para leer. Ahí el texto usa `--color-acento-texto` y los
+botones `--color-acento-solido`, que son el mismo tono más oscuro.
+
 **Qué se puede pulsar se ve sin pasar el ratón.** La convención, en
 `globals.css`:
 
-- `.enlace` — lleva a otra página. Subrayado fino permanente.
+- `.enlace` — lleva a otra página. Subrayado permanente, en `currentColor` al
+  60 %: con un gris fijo desaparecía sobre el lienzo negro.
 - `.accion` — hace algo aquí mismo. Subrayado discontinuo.
-- Botón con fondo — la acción principal de un formulario.
+- `.fila-enlace` — una fila o tarjeta que lleva a otro sitio: se ilumina al
+  pasar y enciende una flecha, que es un enlace de verdad.
+- `.pestana` — navegación. La abierta lleva fondo y color de acento.
+- Botón en cápsula, en mayúsculas — la acción principal de un formulario.
+
+`.estirado` cubre el contenedor entero, pero **solo en listas**: sobre un
+`<tr>`, `position: relative` no crea bloque contenedor en todos los
+navegadores y la capa acaba en otro sitio.
 
 Todo lo pulsable tiene foco visible. Quitarlo no es una opción.
 

@@ -57,7 +57,7 @@ export function CabeceraProyecto({
           <div className="relative pl-4">
             <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
             <div className="flex flex-wrap items-baseline gap-3">
-              <h1 className="text-lg font-semibold tracking-tight text-titular">
+              <h1 className="titular-marca text-xl text-titular">
                 {compania.name}
               </h1>
               <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
@@ -143,8 +143,8 @@ export function CabeceraProyecto({
               href={s.href}
               className={
                 s.codigo === seccionActiva
-                  ? "border-b-2 border-acento pb-2 text-sm font-medium text-titular [text-shadow:0_0_20px_color-mix(in_oklab,var(--color-acento)_35%,transparent)]"
-                  : "border-b-2 border-transparent pb-2 text-sm text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
+                  ? "pestana pestana-activa"
+                  : "pestana"
               }
             >
               {s.nombre}

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { personaActual } from "@/lib/supabase/servidor";
+import { NavSecciones } from "@/components/nav-secciones";
 import { Metadato } from "@/components/ui/primitivas";
 
 /**
@@ -28,7 +28,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
     <main className="mx-auto w-full max-w-6xl px-6 py-8">
       <div className="relative mb-6 pl-4">
         <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
-        <h1 className="text-lg font-semibold tracking-tight text-titular">
+        <h1 className="titular-marca text-xl text-titular">
           Administración
         </h1>
         <p className="mt-1 text-sm text-secundario">
@@ -38,17 +38,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
         </p>
       </div>
 
-      <nav className="mb-6 flex flex-wrap gap-x-6 gap-y-2 border-b border-filete">
-        {secciones.map((s) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className="border-b-2 border-transparent pb-2 text-sm text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
-          >
-            {s.nombre}
-          </Link>
-        ))}
-      </nav>
+      <NavSecciones secciones={secciones} />
 
       {children}
 

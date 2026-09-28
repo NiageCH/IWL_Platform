@@ -463,3 +463,23 @@ La especificación las pide (§10): son lo único que puede llevar el seed versi
 Así que el seed local las archiva —Marea Clínica se queda como ejemplo, porque es la que tiene hoja de ruta, avances por los dos lados, línea base y los cuatro informes— y las suites las desarchivan al arrancar, en `tests/preparar-base.ts`. Sin eso, media suite de RLS no encontraba nada: una compañía archivada deja de ser visible para su equipo fundador, que es justo lo que esas pruebas comprueban.
 
 No se restaura el estado al terminar. Quien trabaja con proyectos reales recupera su vista con `npm run db:reset`; dejarlas como estaban obligaría a adivinar cuáles se archivaron a propósito y cuáles las archivó una prueba.
+
+## 2026-09-28 · Los estilos salen de inceptionwomanlab.es, medidos y no copiados a ojo
+
+El acento ya coincidía: la plataforma usaba `#FF007A`, el mismo de la web. Lo que la separaba era el lienzo —un gris azulado frente al negro puro— y sobre todo la tipografía.
+
+Se ha traído lo que da la cara de la marca: Zalando Sans Expanded en los titulares, en mayúsculas y con el tracking apretado de la web; el lienzo negro con los grises de zinc; los botones en cápsula, en mayúsculas y con la letra separada.
+
+Y lo que no se ha traído, con su motivo. El amarillo `#FFD600` de los antetítulos es muy característico, pero un segundo color cromático obliga a rehacer el sistema de gráficos, donde las series se distinguen por relleno y trazo precisamente para no depender del color. Tampoco se ha copiado el botón rosa con texto blanco: en la web se queda en 3,8 de contraste y no llega al mínimo legible. Se usa el mismo tono cinco puntos más oscuro, que llega a 4,6.
+
+Los valores se sacaron leyendo el estilo calculado de la web, no mirando capturas.
+
+## 2026-09-28 · Qué se puede pulsar, segunda vuelta
+
+La primera vez se puso subrayado permanente a los enlaces, y no sirvió: el subrayado usaba un gris de filete fijo que sobre el lienzo negro es invisible. El problema siguió ahí hasta que Rodrigo lo señaló por segunda vez, ahora nombrando los sitios —la cartera, el menú, administración—.
+
+Tres cosas faltaban. El subrayado ahora sale de `currentColor`, así que se ve sobre cualquier fondo. El menú y las secciones de administración se leen como pestañas, con la abierta marcada: antes eran texto que solo cambiaba de color al pasar, y sin pasar no decían nada. Y una fila de tabla se ilumina y enciende una flecha al final.
+
+La flecha es un enlace de verdad y no un adorno. La primera versión estiraba el enlace del nombre sobre la fila entera, que es la técnica habitual, pero sobre un `<tr>` no funciona: `position: relative` en una fila de tabla no crea bloque contenedor en todos los navegadores y la capa acaba cubriendo otra cosa. Lo encontró la prueba que intentaba pulsar en una celda del medio. En las listas, donde sí es de fiar, se mantiene.
+
+Hay pruebas de todo esto para que no se pierda en el siguiente retoque.

@@ -50,8 +50,15 @@ test("el equipo de IWL ve la cohorte completa", async ({ page }) => {
     .locator("section", { hasText: "Fila por compañía" })
     .getByRole("table");
 
+  /*
+   * Con `exact`: cada fila lleva dos enlaces al mismo proyecto, el nombre y
+   * la flecha del final, y la flecha se anuncia como «Abrir <compañía>» para
+   * que sirva a un lector de pantalla.
+   */
   for (const nombre of ["Marea Clínica", "Vega Predictiva", "Raíz Sensórica"]) {
-    await expect(cohorte.getByRole("link", { name: nombre })).toBeVisible();
+    await expect(
+      cohorte.getByRole("link", { name: nombre, exact: true }),
+    ).toBeVisible();
   }
 });
 
@@ -61,9 +68,11 @@ test("un revisor de Niage solo ve las compañías que lleva", async ({ page }) =
   const cohorte = page
     .locator("section", { hasText: "Fila por compañía" })
     .getByRole("table");
-  await expect(cohorte.getByRole("link", { name: "Vega Predictiva" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Marea Clínica" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Raíz Sensórica" })).toHaveCount(0);
+  await expect(
+    cohorte.getByRole("link", { name: "Vega Predictiva", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Marea Clínica/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Raíz Sensórica/ })).toHaveCount(0);
 });
 
 test("el semáforo y las severidades llevan texto, no solo color", async ({ page }) => {

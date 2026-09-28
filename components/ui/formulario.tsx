@@ -142,10 +142,11 @@ export function Boton({
       {...props}
       disabled={props.disabled || pending}
       className={cn(
-        "rounded-md px-3 py-2 text-sm font-medium transition-all disabled:opacity-50",
+        "px-4 py-2 text-sm transition-all disabled:opacity-50",
         variante === "principal"
-          ? "barra-acento text-white hover:brightness-110"
-          : "border border-filete bg-elevado text-titular hover:border-filete-fuerte",
+          ? // La cápsula en mayúsculas de inceptionwomanlab.es
+            "boton-marca text-xs"
+          : "rounded-full border border-filete bg-elevado px-4 py-2 text-sm font-medium text-titular hover:border-filete-fuerte",
         className,
       )}
     >

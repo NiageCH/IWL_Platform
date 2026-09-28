@@ -112,6 +112,9 @@ export default async function AdminCompanias() {
               return (
                 <li key={c.id} className="px-4 py-4">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    {/* Aquí el enlace no se estira: la ficha lleva dentro
+                        formularios y otros enlaces, y una capa encima los
+                        dejaría fuera de alcance */}
                     <Link
                       href={`/cartera/${c.slug}`}
                       className="enlace enlace-destacado text-sm font-medium text-titular"

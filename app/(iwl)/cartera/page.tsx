@@ -173,7 +173,7 @@ export default async function Cartera() {
             </thead>
             <tbody className="divide-y divide-filete">
               {companias.map((c) => (
-                <tr key={c.compania.id} className="align-top">
+                <tr key={c.compania.id} className="fila-enlace align-top">
                   <td className="px-4 py-3">
                     <Link
                       href={`/cartera/${c.compania.slug}`}
@@ -220,7 +220,21 @@ export default async function Cartera() {
                     {c.kpis.periodo?.slice(0, 7) ?? "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />
+                    <span className="flex items-center justify-between gap-3">
+                      <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />
+                      {/*
+                        El segundo punto de entrada de la fila, y un enlace
+                        de verdad: así funciona el clic derecho, la rueda del
+                        ratón y el teclado.
+                      */}
+                      <Link
+                        href={`/cartera/${c.compania.slug}`}
+                        aria-label={`Abrir ${c.compania.name}`}
+                        className="flecha cifra px-2 text-acento-texto"
+                      >
+                        →
+                      </Link>
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -262,7 +276,7 @@ export default async function Cartera() {
                 </thead>
                 <tbody className="divide-y divide-filete">
                   {compromisos.map((c) => (
-                    <tr key={c.slug}>
+                    <tr key={c.slug} className="fila-enlace">
                       <td className="px-4 py-3">
                         <Link
                           href={`/cartera/${c.slug}/aportacion`}
@@ -301,11 +315,11 @@ export default async function Cartera() {
           </TituloBloque>
           <ul className="divide-y divide-filete">
             {companias.map((c) => (
-              <li key={c.compania.id} className="px-4 py-3">
+              <li key={c.compania.id} className="fila-enlace px-4 py-3">
                 <div className="flex flex-wrap items-baseline gap-3">
                   <Link
                     href={`/cartera/${c.compania.slug}`}
-                    className="enlace enlace-destacado text-sm font-medium text-titular"
+                    className="estirado enlace enlace-destacado text-sm font-medium text-titular"
                   >
                     {c.compania.name}
                   </Link>

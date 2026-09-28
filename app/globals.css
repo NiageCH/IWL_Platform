@@ -3,12 +3,15 @@
 /*
  * Identidad IWL · tema oscuro.
  *
- * El documento de alcance (§8) fija papel blanco. Se cambia a petición de
- * Rodrigo para que el fucsia resalte: sobre un gris oscuro, el acento tiene
- * fuerza propia y la interfaz gana profundidad sin recurrir a más color.
+ * Los valores salen de inceptionwomanlab.es: lienzo negro puro, paneles en
+ * los grises de zinc y el mismo rosa, #FF007A. La plataforma ya usaba ese
+ * rosa; lo que la separaba de la web era el lienzo, que era un gris azulado,
+ * y la tipografía.
  *
- * La identidad no cambia: sigue habiendo un solo color cromático. Lo que
- * cambia es el lienzo, y con él los pasos de gris, que se invierten.
+ * Sigue habiendo un solo color cromático. El amarillo que la web usa en los
+ * antetítulos se ha dejado fuera a propósito: un segundo acento obligaría a
+ * rehacer el sistema de gráficos, donde las series se distinguen por relleno
+ * y trazo precisamente para no depender del color.
  *
  * Los informes en PDF siguen siendo papel blanco: son documentos para
  * imprimir y enviar a un inversor, no pantallas.
@@ -19,10 +22,10 @@
    * cada nivel extra de profundidad es una decisión menos clara sobre qué
    * es importante.
    * ------------------------------------------------------------------- */
-  --color-lienzo: #121215;
-  --color-papel: #1a1a1f;
-  --color-elevado: #232329;
-  --color-hundido: #0e0e11;
+  --color-lienzo: #000000;
+  --color-papel: #09090b;
+  --color-elevado: #18181b;
+  --color-hundido: #000000;
 
   /* Texto */
   --color-titular: #fafafa;
@@ -31,14 +34,16 @@
   --color-metadato: #8b8b94;
 
   /* Filetes. Dos pesos: el normal y el que separa de verdad */
-  --color-filete: #2c2c33;
-  --color-filete-fuerte: #3d3d45;
+  --color-filete: #27272a;
+  --color-filete-fuerte: #3f3f46;
 
   /* Acento. Sobre oscuro el magenta puro tiene contraste de sobra para
    * elementos gráficos y para texto pequeño */
   --color-acento: #ff007a;
   --color-acento-texto: #ff4d9d;
   --color-acento-apagado: #7a1345;
+  /* Fondo de botón: con texto blanco encima hace falta bajar a 4,6 */
+  --color-acento-solido: #e6006e;
 
   /* Estados. Siempre acompañados de texto, nunca solo color (§8) */
   --color-bien: #34d399;
@@ -48,6 +53,7 @@
   /* Tipografía */
   --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  --font-titular: var(--font-titular), var(--font-montserrat), sans-serif;
 }
 
 html {
@@ -80,9 +86,14 @@ html {
   --color-filete: #e4e4e7;
   --color-filete-fuerte: #d4d4d8;
 
-  /* Sobre papel, el magenta puro no tiene contraste para texto pequeño */
+  /*
+   * Sobre papel, el rosa de la marca se queda en 3,8 contra el blanco: vale
+   * para un filete o una barra, no para leer. El texto usa el mismo tono
+   * cinco puntos más oscuro, que llega a 4,6.
+   */
   --color-acento: #ff007a;
   --color-acento-texto: #c4005c;
+  --color-acento-solido: #e6006e;
   --color-acento-apagado: #fbcfe0;
 
   --color-bien: #047857;
@@ -114,7 +125,7 @@ body {
       color-mix(in oklab, var(--color-acento) 10%, transparent),
       transparent 60%
     ),
-    linear-gradient(180deg, #17171c 0%, var(--color-lienzo) 40%);
+    linear-gradient(180deg, #0b0b0d 0%, var(--color-lienzo) 45%);
 }
 
 /* Las cifras y métricas se alinean en columna */
@@ -294,25 +305,25 @@ select {
 /* =========================================================================
  * Qué se puede pulsar
  *
- * Los enlaces solo se subrayaban al pasar el ratón, así que en reposo no se
- * distinguían del texto: había que ir probando. Con un tipo de letra sobrio
- * y sin color en el cuerpo, el subrayado es lo único que queda para decir
- * «esto lleva a otro sitio», y tiene que estar siempre.
+ * Segunda vuelta. La primera puso subrayado permanente a los enlaces, pero
+ * en un color fijo de filete: sobre el lienzo negro eso es invisible, así
+ * que el problema seguía ahí. Ahora el subrayado sale del propio texto, con
+ * `currentColor`, y por tanto se ve sobre cualquier fondo.
  *
- * La convención del proyecto:
- *   · `.enlace`  — navega. Subrayado fino permanente, que se enciende al
- *                  pasar por encima.
- *   · `.accion`  — hace algo aquí mismo, sin cambiar de página. Subrayado
- *                  discontinuo, para que no se confunda con navegar.
- *   · botón      — la acción principal de un formulario. Tiene fondo.
+ * Y se añade lo que faltaba: una fila de tabla entera que se puede pulsar no
+ * se anuncia subrayando una palabra. Se anuncia reaccionando al ratón.
  *
- * Y todo lo que se pulsa lleva foco visible: quien navega con el teclado
- * necesita saber dónde está igual que quien usa el ratón.
+ * Tres formas, tres significados:
+ *   · `.enlace`      — texto que lleva a otra página
+ *   · `.accion`      — texto que hace algo aquí mismo
+ *   · `.fila-enlace` — una fila o tarjeta entera que lleva a otra página
  * ========================================================================= */
 
 .enlace {
   text-decoration: underline;
-  text-decoration-color: var(--color-filete-fuerte);
+  /* Del color del texto, no de un gris fijo: así se ve sobre negro y sobre
+     papel sin tener que declararlo dos veces */
+  text-decoration-color: color-mix(in oklab, currentColor 60%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
   transition: text-decoration-color 120ms ease, color 120ms ease;
@@ -320,10 +331,10 @@ select {
 
 .enlace:hover {
   text-decoration-color: currentColor;
-  color: var(--color-titular);
+  text-decoration-thickness: 2px;
 }
 
-/* El que además es el titular de su bloque va en el acento al pasar */
+/* El que además titula su bloque se enciende en el acento al pasar */
 .enlace-destacado:hover {
   color: var(--color-acento-texto);
 }
@@ -331,7 +342,7 @@ select {
 .accion {
   text-decoration: underline;
   text-decoration-style: dashed;
-  text-decoration-color: var(--color-filete-fuerte);
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
   transition: text-decoration-color 120ms ease, color 120ms ease;
@@ -342,32 +353,104 @@ select {
   color: var(--color-titular);
 }
 
-/* La acción que destruye algo se tiñe al acercarse, no antes */
 .accion-riesgo:hover {
   color: var(--color-mal);
 }
 
 /*
- * Foco visible en todo lo que se pulsa.
+ * Una fila o tarjeta entera que lleva a otro sitio.
  *
- * El navegador lo pone por defecto y muchos diseños lo quitan «porque
- * ensucia». Aquí se redefine para que encaje, no para que desaparezca.
+ * La fila reacciona al ratón y enciende una flecha al final: sin eso, una
+ * tabla de nueve columnas no parece clicable por mucho que una de sus
+ * palabras esté subrayada.
+ *
+ * El enlace estirado —`.estirado`, que cubre el contenedor entero— solo se
+ * usa en listas. Sobre un `<tr>` no es de fiar: `position: relative` en una
+ * fila de tabla no crea bloque contenedor en todos los navegadores, así que
+ * la capa acaba cubriendo otra cosa. En las tablas hay dos puntos de entrada
+ * visibles, el nombre y la flecha, y los dos son enlaces de verdad.
  */
+.fila-enlace {
+  position: relative;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.fila-enlace:hover {
+  background-color: var(--color-elevado);
+}
+
+.fila-enlace .estirado::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/*
+ * La flecha del final.
+ *
+ * Es un enlace de verdad, no un adorno: en una tabla es el segundo punto por
+ * el que entrar, y el primero que busca el ratón cuando la fila se ilumina.
+ * Se atenúa en reposo en vez de desaparecer, para que quien navegue con
+ * teclado la encuentre y para que la fila no cambie de ancho.
+ */
+.fila-enlace .flecha {
+  opacity: 0.25;
+  transform: translateX(-0.25rem);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.fila-enlace:hover .flecha,
+.fila-enlace:focus-within .flecha {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/*
+ * Navegación: pestañas y secciones.
+ *
+ * No son texto con un enlace dentro: son controles, y se leen como tales.
+ * La activa lleva fondo y filete en el acento; las demás se encienden al
+ * pasar por encima.
+ */
+.pestana {
+  position: relative;
+  border-radius: 9999px;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-secundario);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.pestana:hover {
+  background-color: var(--color-elevado);
+  color: var(--color-titular);
+}
+
+.pestana-activa {
+  background-color: color-mix(in oklab, var(--color-acento) 14%, transparent);
+  color: var(--color-acento-texto);
+  font-weight: 600;
+}
+
+.pestana-activa:hover {
+  background-color: color-mix(in oklab, var(--color-acento) 20%, transparent);
+  color: var(--color-acento-texto);
+}
+
+/* Foco visible en todo lo que se pulsa. El navegador ya lo daba; aquí solo
+   se le da la forma del resto */
 a:focus-visible,
 button:focus-visible,
 summary:focus-visible,
 [role="button"]:focus-visible {
   outline: 2px solid var(--color-acento);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
-/* Una fila entera clicable se marca al pasar, para que se vea que lo es */
-.fila-enlace {
-  transition: background-color 120ms ease;
-}
-
-.fila-enlace:hover {
+.fila-enlace:focus-within {
   background-color: var(--color-elevado);
 }
 
@@ -377,4 +460,83 @@ summary:focus-visible,
   .accion {
     text-decoration: none;
   }
+}
+
+
+/* =========================================================================
+ * La cara de la marca
+ *
+ * Tomado de inceptionwomanlab.es: titulares en Zalando Sans Expanded, en
+ * mayúsculas y muy apretados; botones en cápsula con mayúsculas y letra
+ * separada; etiquetas de papel en el rosa de la marca.
+ *
+ * Solo en los titulares grandes. En una tabla de doce filas o en un párrafo
+ * de business plan, esa tipografía cansa y ocupa de más: ahí sigue mandando
+ * Montserrat, que es lo que se lee de seguido.
+ * ========================================================================= */
+
+.titular-marca {
+  font-family: var(--font-titular);
+  font-weight: 700;
+  text-transform: uppercase;
+  /* El tracking de la web, en em para que aguante cualquier tamaño */
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+/* El antetítulo: pequeño, pesado y muy separado. En la web va en amarillo */
+.antetitulo {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* La etiqueta de papel, como los cargos de las tarjetas de equipo */
+.etiqueta-papel {
+  color: var(--color-acento-texto);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/*
+ * El filete corto bajo un cargo.
+ *
+ * En la web separa el cargo de la descripción sin cruzar la tarjeta entera.
+ * Es un detalle pequeño y es medio carácter de la marca.
+ */
+.filete-corto::after {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 1px;
+  margin: 0.625rem auto 0;
+  background: var(--color-filete-fuerte);
+}
+
+/*
+ * Botón en cápsula.
+ *
+ * El texto va en blanco sobre un rosa cinco puntos más oscuro que el de la
+ * marca: con #FF007A puro, el blanco encima se queda en 3,8 y no llega al
+ * mínimo legible. Mismo tono, mismo aire, y se puede leer.
+ */
+.boton-marca {
+  background: var(--color-acento-solido);
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.boton-marca:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.boton-marca:active:not(:disabled) {
+  transform: translateY(1px);
 }
