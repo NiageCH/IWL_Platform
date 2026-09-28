@@ -5,6 +5,7 @@ import {
   Asignar,
   BorrarPersona,
   CambiarRol,
+  Contrasena,
   CorregirCorreo,
   EditarPersona,
   FormularioPersona,
@@ -163,6 +164,7 @@ export default async function AdminPersonas() {
             email={p.email!}
             editable={p.correo_editable ?? false}
           />
+          <Contrasena id={p.id!} email={p.email!} />
           <ArchivarPersona id={p.id!} activa={p.is_active ?? false} />
           <BorrarPersona
             persona={{

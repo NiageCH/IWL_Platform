@@ -20,7 +20,8 @@
     "alta": "node scripts/alta.mjs",
     "snapshots": "tsx scripts/snapshots.mts",
     "altas:locales": "node scripts/altas-locales.mjs",
-    "informes": "node scripts/informes.mjs"
+    "informes": "node scripts/informes.mjs",
+    "sembrar:nube": "node scripts/sembrar-nube.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

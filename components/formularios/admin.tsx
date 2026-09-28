@@ -10,6 +10,7 @@ import {
   crearCohorte,
   crearCompania,
   editarPersona,
+  fijarContrasena,
   guardarObjetivosTraccion,
   guardarPesosMadurez,
   crearPersona,
@@ -371,6 +372,21 @@ export function FormularioPersona({
                 <Texto
                   name="expertise"
                   placeholder="Fondeo, Legal, Impacto social"
+                />
+              </Campo>
+
+              <Campo
+                etiqueta="Contraseña"
+                ayuda="Si la dejas en blanco se genera una y se enseña al guardar"
+                error={!resultado.ok ? resultado.campos?.password : undefined}
+              >
+                <Texto
+                  name="password"
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Se genera sola"
+                  className="font-mono"
                 />
               </Campo>
 
@@ -1150,4 +1166,111 @@ export function CorregirCorreo({
       </Formulario>
     </div>
   );
+}
+
+/**
+ * Poner o cambiar la contraseña de alguien.
+ *
+ * Se enseña mientras se escribe, porque hay que copiarla para pasarla: una
+ * contraseña que la dirección acaba de poner y no puede leer no sirve de
+ * nada. Y hay un generador, porque quien da de alta a siete personas
+ * seguidas se inventa siete variantes de la misma.
+ */
+export function Contrasena({
+  id,
+  email,
+}: {
+  id: string;
+  email: string;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [clave, setClave] = useState("");
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion text-xs text-secundario"
+      >
+        Poner contraseña
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 w-full border-t border-filete pt-3">
+      <Formulario
+        accion={fijarContrasena}
+        onOk={() => {
+          setAbierto(false);
+          setClave("");
+        }}
+      >
+        {(resultado) => (
+          <>
+            <input type="hidden" name="id" value={id} />
+            <input type="hidden" name="email" value={email} />
+
+            <Campo
+              etiqueta="Contraseña"
+              ayuda="Al menos 12 caracteres. Cópiala antes de guardar: no se vuelve a enseñar"
+              error={!resultado.ok ? resultado.campos?.password : undefined}
+            >
+              <div className="flex gap-2">
+                <Texto
+                  name="password"
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  minLength={12}
+                  required
+                  value={clave}
+                  onChange={(e) => setClave(e.currentTarget.value)}
+                  className="flex-1 font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setClave(claveSugerida())}
+                  className="rounded-full border border-filete bg-elevado px-3 py-2 text-xs text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
+                >
+                  Generar
+                </button>
+              </div>
+            </Campo>
+
+            <div className="flex gap-2">
+              <Boton>Guardar contraseña</Boton>
+              <button
+                type="button"
+                onClick={() => {
+                  setAbierto(false);
+                  setClave("");
+                }}
+                className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </Formulario>
+    </div>
+  );
+}
+
+/** Tres palabras y un número: se dicta por teléfono sin deletrear */
+function claveSugerida(): string {
+  const palabras = [
+    "faro", "duna", "brisa", "roble", "cauce", "sierra", "ambar", "junco",
+    "vela", "musgo", "risco", "trigo", "nieve", "cala", "olmo", "surco",
+    "greda", "helio", "lirio", "marea", "nardo", "prisma", "sauce", "vega",
+  ];
+  const azar = (n: number) => {
+    const b = new Uint32Array(1);
+    crypto.getRandomValues(b);
+    return b[0] % n;
+  };
+  const tres = Array.from({ length: 3 }, () => palabras[azar(palabras.length)]);
+  return `${tres.join("-")}-${10 + azar(90)}`;
 }

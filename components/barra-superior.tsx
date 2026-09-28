@@ -51,10 +51,15 @@ export async function BarraSuperior() {
               ]}
             />
           ) : null}
+          {/* Quién eres, y la puerta a cambiar tu contraseña */}
           {persona ? (
-            <span className="hidden text-xs text-metadato sm:inline">
-              {persona.full_name ?? persona.email} · {ROLES[persona.role] ?? persona.role}
-            </span>
+            <Link
+              href="/perfil"
+              className="enlace hidden text-xs text-metadato sm:inline"
+            >
+              {persona.full_name ?? persona.email} ·{" "}
+              {ROLES[persona.role] ?? persona.role}
+            </Link>
           ) : null}
           <BotonSalir />
         </div>

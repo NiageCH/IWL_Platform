@@ -228,6 +228,19 @@ const esquemaPersona = z.object({
   role: z.enum(ROLES),
   job_title: textoOpcional,
   expertise: areas,
+  /*
+   * La contraseña inicial. Si no se da, se genera una: una cuenta sin
+   * contraseña solo puede entrar por enlace de correo, y eso obliga a tener
+   * el envío montado antes de que nadie pueda probar nada.
+   */
+  password: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (v) => v === "" || v.length >= 12,
+      "La contraseña necesita al menos 12 caracteres.",
+    ),
   company_id: idOpcional,
   member_role: z
     .union([z.enum(PAPELES), z.literal(""), z.null(), z.undefined()])
@@ -260,9 +273,12 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
 
   const servicio = clienteServicio();
 
+  const clave = datos.password || generarClave();
+
   const { data: creada, error: falloAlta } = await servicio.auth.admin.createUser({
     email: datos.email,
     email_confirm: true,
+    password: clave,
     user_metadata: { full_name: datos.full_name, role: datos.role },
   });
 
@@ -313,8 +329,8 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
   refrescar();
   return ok(
     falloAlta
-      ? `${datos.email} ya tenía cuenta. Se ha actualizado su rol.`
-      : `${datos.email} dada de alta. Ya puede pedir su enlace de entrada.`,
+      ? `${datos.email} ya tenía cuenta. Se han actualizado sus datos; la contraseña no se toca.`
+      : `${datos.email} dada de alta. Su contraseña es «${clave}»: cópiala y pásasela, no se vuelve a enseñar.`,
   );
 }
 
@@ -974,4 +990,131 @@ export async function borrarPersona(formData: FormData): Promise<Resultado> {
 
   refrescar();
   return ok(`${datos.email} borrada. No tenía nada registrado.`);
+}
+
+// -----------------------------------------------------------------------------
+// Contraseñas
+//
+// Las pone la dirección al dar de alta y se enseñan una sola vez, para
+// copiarlas y pasarlas. No se guardan en claro en ninguna parte: Supabase
+// solo conserva su hash, y aquí no se escriben en el registro de actividad.
+//
+// Quien las recibe puede cambiarlas desde su perfil. Mientras no lo haga, la
+// dirección las conoce: para una cohorte pequeña es asumible y es lo que
+// permite empezar sin montar antes el envío de correo.
+// -----------------------------------------------------------------------------
+
+const MINIMO_CLAVE = 12;
+
+const esquemaClave = z.object({
+  id: uuid,
+  email: textoObligatorio(),
+  password: z
+    .string()
+    .min(
+      MINIMO_CLAVE,
+      `La contraseña necesita al menos ${MINIMO_CLAVE} caracteres.`,
+    ),
+});
+
+export async function fijarContrasena(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaClave, formData);
+  if (fallo) return fallo;
+
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+  if (persona.role !== "admin_iwl") {
+    return error("Poner contraseñas es de la dirección de IWL.");
+  }
+
+  const servicio = clienteServicio();
+  const { error: falloAuth } = await servicio.auth.admin.updateUserById(datos.id, {
+    password: datos.password,
+  });
+
+  if (falloAuth) {
+    if (/weak|password/i.test(falloAuth.message)) {
+      return error(
+        "Esa contraseña es demasiado débil para el servidor de acceso.",
+        { password: "Prueba con una más larga." },
+      );
+    }
+    return error(falloAuth.message);
+  }
+
+  /*
+   * En el registro queda que se cambió y para quién, nunca el valor. Un
+   * historial de actividad se consulta y se exporta: una contraseña ahí
+   * dentro es una contraseña filtrada.
+   */
+  await servicio.from("activity_log").insert({
+    actor_id: persona.id,
+    entity: "profiles",
+    entity_id: datos.id,
+    action: "contrasena",
+    detail: { correo: datos.email },
+  });
+
+  refrescar();
+  return ok(
+    `Contraseña puesta para ${datos.email}. Cópiala y pásasela: no se vuelve a enseñar.`,
+  );
+}
+
+/**
+ * Cambiar la propia contraseña.
+ *
+ * Va con el cliente de sesión y no con la clave de servicio: así solo puede
+ * cambiar la suya, y no hace falta comprobar de quién es.
+ */
+const esquemaCambio = z
+  .object({
+    password: z
+      .string()
+      .min(MINIMO_CLAVE, `La contraseña necesita al menos ${MINIMO_CLAVE} caracteres.`),
+    repetida: z.string(),
+  })
+  .refine((d) => d.password === d.repetida, {
+    message: "Las dos contraseñas no coinciden.",
+    path: ["repetida"],
+  });
+
+export async function cambiarMiContrasena(
+  formData: FormData,
+): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaCambio, formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloAuth } = await supabase.auth.updateUser({
+    password: datos.password,
+  });
+
+  if (falloAuth) return error(falloAuth.message);
+
+  return ok("Contraseña cambiada. La próxima vez entra con la nueva.");
+}
+
+/**
+ * Una contraseña que no haya que inventarse.
+ *
+ * Tres palabras y un número: se dicta por teléfono sin deletrear y aguanta
+ * mucho mejor que la que escribiría a mano quien está dando de alta a siete
+ * personas seguidas. El alfabeto evita las parejas que se confunden al
+ * leerlas.
+ */
+function generarClave(): string {
+  const palabras = [
+    "faro", "duna", "brisa", "roble", "cauce", "sierra", "ambar", "junco",
+    "vela", "musgo", "risco", "trigo", "nieve", "cala", "olmo", "surco",
+    "greda", "helio", "lirio", "marea", "nardo", "prisma", "sauce", "vega",
+  ];
+  const azar = (n: number) => {
+    const bytes = new Uint32Array(1);
+    crypto.getRandomValues(bytes);
+    return bytes[0] % n;
+  };
+
+  const tres = Array.from({ length: 3 }, () => palabras[azar(palabras.length)]);
+  return `${tres.join("-")}-${10 + azar(90)}`;
 }

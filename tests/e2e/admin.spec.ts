@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { AJUSTES_BASE, USUARIOS, ajustar, entrarComo } from "./entrada";
+import { AJUSTES_BASE, USUARIOS, ajustar, borrar, entrarComo } from "./entrada";
 
 /**
  * Administración.
@@ -27,10 +27,26 @@ test("una fundadora no llega a administración", async ({ page }) => {
   await expect(page).toHaveURL(/\/proyecto/);
 });
 
+/*
+ * Las compañías que crean estas pruebas se borran al terminar.
+ *
+ * Se acumulaban una por pasada: seis en la base de desarrollo antes de que
+ * nadie se diera cuenta. Recién creadas no tienen actividad, así que se
+ * pueden borrar de verdad.
+ */
+const creadas: string[] = [];
+
+test.afterAll(async () => {
+  for (const slug of creadas) {
+    await borrar("companies", { slug });
+  }
+});
+
 test("dar de alta una compañía la deja lista para trabajar", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/admin/companias");
 
   const slug = `prueba-${Date.now()}`;
+  creadas.push(slug);
 
   await page.getByText("Dar de alta una compañía").click();
 

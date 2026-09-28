@@ -483,3 +483,43 @@ Tres cosas faltaban. El subrayado ahora sale de `currentColor`, así que se ve s
 La flecha es un enlace de verdad y no un adorno. La primera versión estiraba el enlace del nombre sobre la fila entera, que es la técnica habitual, pero sobre un `<tr>` no funciona: `position: relative` en una fila de tabla no crea bloque contenedor en todos los navegadores y la capa acaba cubriendo otra cosa. Lo encontró la prueba que intentaba pulsar en una celda del medio. En las listas, donde sí es de fiar, se mantiene.
 
 Hay pruebas de todo esto para que no se pierda en el siguiente retoque.
+
+## 2026-09-28 · Se entra con contraseña, y la pone la dirección
+
+Decidido con Rodrigo para poder enseñar la plataforma a unas cuantas personas sin montar antes el envío de correo. El enlace mágico sigue estando como segunda vía, para quien no recuerde su contraseña, pero ya no es la puerta principal.
+
+Esto resuelve además un problema que arrastrábamos: con contraseña, **los correos no tienen que ser buzones reales**. Una cuenta se puede dar de alta con la dirección que le corresponde a esa persona aunque todavía no la use, que es justo el caso del equipo de IWL.
+
+La dirección pone la contraseña al dar de alta y la plataforma la enseña **una sola vez**, para copiarla y pasarla. No se guarda en claro en ninguna parte: Supabase conserva el hash, y en el registro de actividad queda que se cambió y para quién, nunca el valor. Un historial se consulta y se exporta; una contraseña ahí dentro es una contraseña filtrada.
+
+Si no se escribe ninguna, se genera: tres palabras y un número, que se dicta por teléfono sin deletrear y aguanta mucho mejor que la que se inventa quien está dando de alta a siete personas seguidas.
+
+Lo que esto tiene de malo, y hay que saberlo: mientras nadie cambie la suya, la dirección las conoce, y hay que pasarlas por algún canal. Para una cohorte pequeña es asumible. Cada persona puede cambiarla desde Mi cuenta, y esa pantalla lo dice.
+
+## 2026-09-28 · El registro queda cerrado
+
+`enable_signup = false` en `[auth]`. Aquí está el due diligence de la cohorte y no puede haber autoservicio: el alta la hace la dirección desde administración, que usa la clave de servicio y por tanto no pasa por esa comprobación.
+
+Llevaba abierto desde el principio, a propósito, para poder recorrer la plataforma sin fricción. Cerrarlo era condición para sacarla a internet.
+
+Ojo con el sitio: `enable_signup = false` en `[auth.email]` apaga el inicio de sesión por correo entero, no solo el registro. Ya pasó una vez.
+
+## 2026-09-28 · El mensaje de acceso fallido no distingue el caso
+
+«El correo o la contraseña no son correctos», tanto si la contraseña está mal como si el correo no existe. Distinguirlos le confirmaría a cualquiera qué direcciones están dadas de alta, y aquí las direcciones son las de las fundadoras de la cohorte.
+
+## 2026-09-28 · Tras entrar, navegación completa y no `router.push`
+
+El inicio de sesión dejaba a veces en la raíz sin pasar al proyecto. Era una carrera: la cookie de sesión la acaba de escribir el navegador y el servidor tiene que leerla para decidir a dónde va cada persona, pero con una navegación de cliente unas veces llega y otras la página se renderiza todavía sin sesión.
+
+Fallaba una de cada varias veces, que es la peor forma de fallar: parece cosa del navegador de quien lo sufre. Lo encontró la prueba nueva de acceso al correrla dentro de la suite entera, no en aislamiento.
+
+## 2026-09-28 · Las pruebas limpian lo que tocan, y lo que no se veía
+
+Tres cosas aparecieron a la vez al perseguir unos fallos que cambiaban de sitio en cada pasada.
+
+Las pruebas de administración dejaban una compañía por ejecución: había seis en la base antes de que nadie lo mirara. La de mentoría cambiaba una puntuación de Marea y no la reponía, y eso hacía fallar a otra prueba **de otro fichero** —la del revisor de Niage, que comprueba que el score se mueve al puntuar— porque el score de partida ya no era el de la semilla. El síntoma aparecía a un mundo de distancia de la causa.
+
+Y el tercero no era de las pruebas: en desarrollo, Next compila cada página la primera vez que alguien la pide, y esa espera se la comía la primera prueba que tocara cada ruta. El arranque de la suite las pide todas una vez, en fila, antes de empezar.
+
+Es la cuarta vez que aparece lo mismo, así que queda en las convenciones: **una prueba que crea algo lo borra, la que cambia algo lo repone, y ninguna de las dos usa para ello el camino que está probando.**

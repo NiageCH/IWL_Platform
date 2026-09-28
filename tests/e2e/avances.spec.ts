@@ -40,13 +40,23 @@ test("la fundadora registra un avance y cae en su carril", async ({ page }) => {
     .fill("Avance escrito por la fundadora en la prueba");
   await alta.getByRole("button", { name: "Registrar" }).click();
 
+  /*
+   * Primero se espera a que el formulario se cierre, que es lo que hace la
+   * acción al salir bien, y solo después se busca el avance.
+   *
+   * Entre las dos cosas hay una revalidación del servidor, y bajo carga
+   * tarda más de los cinco segundos por defecto: esta prueba fallaba una de
+   * cada varias pasadas de la suite entera, nunca en aislamiento.
+   */
+  await expect(alta.locator('input[name="title"]')).toHaveCount(0);
+
   const tarjeta = page
     .locator("article", {
       hasText: "Avance escrito por la fundadora en la prueba",
     })
     .first();
 
-  await expect(tarjeta).toBeVisible();
+  await expect(tarjeta).toBeVisible({ timeout: 15_000 });
   await expect(tarjeta.getByText("La compañía")).toBeVisible();
 });
 

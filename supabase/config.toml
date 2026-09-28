@@ -189,14 +189,15 @@ enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
 #
-# Abierto durante el desarrollo, para poder recorrer la plataforma sin fricción.
+# Cerrado. Aquí se guarda el due diligence de las compañías de la cohorte y
+# no hay autoservicio: el alta la hace la dirección de IWL desde la pantalla
+# de administración, que usa la clave de servicio y por tanto no pasa por
+# esta comprobación.
 #
-# PENDIENTE antes de cualquier despliegue: cerrarlo. Aquí se guarda el due
-# diligence de las compañías de la cohorte y no debe haber autoservicio; el
-# alta la hace IWL con `npm run alta`. Ojo al cerrarlo: poner
-# `enable_signup = false` en [auth.email] apaga el inicio de sesión por correo
-# entero, no solo el registro. Lo que hay que cerrar es este de [auth].
-enable_signup = true
+# Ojo al tocarlo: `enable_signup = false` en [auth.email] apaga el inicio de
+# sesión por correo entero, no solo el registro. Lo que cierra el registro es
+# este, el de [auth].
+enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
@@ -250,6 +251,9 @@ double_confirm_changes = true
 enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
+# Longitud mínima. La dirección pone contraseñas de tres palabras y un
+# número, que pasan de sobra; esto es el suelo para las que elija cada uno
+minimum_password_length = 12
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
 # Number of characters used in the email OTP.

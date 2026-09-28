@@ -66,6 +66,21 @@ describe("lo que puede el mentor que coordina", () => {
       .eq("code", "arquitectura_producto")
       .single();
 
+    /*
+     * Se guarda lo que había y se repone al terminar.
+     *
+     * Sin esto, esta prueba dejaba la dimensión puntuada a 3 y el score de
+     * Marea movido, y otra prueba de otro fichero —la del revisor de Niage,
+     * que comprueba que el score cambia al puntuar— fallaba una de cada
+     * varias pasadas. El síntoma aparecía lejos de la causa.
+     */
+    const { data: antes } = await servicio
+      .from("tech_scores")
+      .select("level, evidence")
+      .eq("assessment_id", evaluacion!.id)
+      .eq("dimension_id", dimension!.id)
+      .maybeSingle();
+
     const { data, error } = await producto
       .from("tech_scores")
       .upsert(
@@ -82,6 +97,20 @@ describe("lo que puede el mentor que coordina", () => {
 
     expect(error).toBeNull();
     expect(data).toHaveLength(1);
+
+    if (antes) {
+      await servicio
+        .from("tech_scores")
+        .update({ level: antes.level, evidence: antes.evidence })
+        .eq("assessment_id", evaluacion!.id)
+        .eq("dimension_id", dimension!.id);
+    } else {
+      await servicio
+        .from("tech_scores")
+        .delete()
+        .eq("assessment_id", evaluacion!.id)
+        .eq("dimension_id", dimension!.id);
+    }
   });
 
   it("no puntúa el proyecto donde solo apoya", async () => {
