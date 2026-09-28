@@ -186,7 +186,7 @@ export function RegistroRapidoHoras({
               <button
                 type="button"
                 onClick={() => setAbierto(false)}
-                className="text-sm text-secundario transition-colors hover:text-titular"
+                className="accion text-sm text-secundario"
               >
                 Cerrar
               </button>

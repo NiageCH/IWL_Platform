@@ -523,3 +523,17 @@ Las pruebas de administración dejaban una compañía por ejecución: había sei
 Y el tercero no era de las pruebas: en desarrollo, Next compila cada página la primera vez que alguien la pide, y esa espera se la comía la primera prueba que tocara cada ruta. El arranque de la suite las pide todas una vez, en fila, antes de empezar.
 
 Es la cuarta vez que aparece lo mismo, así que queda en las convenciones: **una prueba que crea algo lo borra, la que cambia algo lo repone, y ninguna de las dos usa para ello el camino que está probando.**
+
+## 2026-09-28 · El alta por línea de comandos también pone contraseña
+
+`scripts/alta.mjs` creaba las cuentas sin contraseña, así que solo podían entrar por enlace de correo. Se vio al preguntar Rodrigo si `iwl-local-2026` valía para todas: valía, pero porque esas cuentas las crea el seed, no el script.
+
+Ahora genera una —tres palabras y un número— y la imprime al terminar, o acepta la que se le pase como sexto argumento.
+
+## 2026-09-28 · Qué se puede pulsar, tercera vuelta
+
+«Redactar la sección» era un `<button>` sin ninguna marca: el control con el que se escribe todo el business plan parecía una línea de texto suelta. Los barridos anteriores no lo cogieron porque buscaban las clases que ya tenían forma de enlace, y este no tenía ninguna.
+
+Y el `<details>` tampoco se anunciaba: el triángulo que pone el navegador es diminuto y del color del texto, y sobre el lienzo negro no se ve. Ahora lleva una flecha propia en el acento que gira al abrir.
+
+Para que no haya una cuarta vuelta, hay una prueba que **recorre todos los botones y desplegables de una página** y falla si alguno no tiene ni fondo, ni borde, ni subrayado. Es la única forma de que esto no dependa de acordarse.

@@ -141,3 +141,39 @@ test("todo lo que se pulsa tiene foco visible", async ({ page }) => {
   expect(contorno.estilo).not.toBe("none");
   expect(parseFloat(contorno.ancho)).toBeGreaterThan(0);
 });
+
+test("los controles de texto se anuncian, no son párrafos", async ({ page }) => {
+  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/plan");
+
+  /*
+   * «Redactar la sección» era un botón sin ninguna marca: el control con el
+   * que se escribe todo el business plan parecía una línea de texto suelta.
+   * Se recorren todos los botones de texto de la página, que son los que no
+   * llevan fondo, y se comprueba que alguna forma tienen.
+   */
+  const sinMarca = await page.evaluate(() => {
+    const flojos: string[] = [];
+
+    for (const b of document.querySelectorAll("button, summary")) {
+      const s = getComputedStyle(b);
+      const texto = (b.textContent ?? "").trim().slice(0, 40);
+      if (!texto) continue;
+
+      const conFondo =
+        s.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+        s.backgroundColor !== "transparent";
+      const conBorde = parseFloat(s.borderTopWidth) > 0;
+      const subrayado = s.textDecorationLine.includes("underline");
+      const hijoSubrayado = [...b.querySelectorAll("*")].some((h) =>
+        getComputedStyle(h).textDecorationLine.includes("underline"),
+      );
+
+      if (!conFondo && !conBorde && !subrayado && !hijoSubrayado) {
+        flojos.push(texto);
+      }
+    }
+    return flojos;
+  });
+
+  expect(sinMarca).toEqual([]);
+});

@@ -540,3 +540,27 @@ summary:focus-visible,
 .boton-marca:active:not(:disabled) {
   transform: translateY(1px);
 }
+
+/*
+ * El desplegable.
+ *
+ * Sin el triángulo del navegador, que es diminuto y del color del texto:
+ * sobre el lienzo negro no se ve y el control acaba pareciendo una línea de
+ * texto suelta. En su lugar, una flecha en el acento que gira al abrir.
+ */
+.desplegable-titulo {
+  list-style: none;
+}
+
+.desplegable-titulo::-webkit-details-marker {
+  display: none;
+}
+
+.flecha-desplegable {
+  display: inline-block;
+  transition: transform 140ms ease;
+}
+
+details[open] > .desplegable-titulo .flecha-desplegable {
+  transform: rotate(90deg);
+}

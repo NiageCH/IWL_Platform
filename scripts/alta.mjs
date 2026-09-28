@@ -51,11 +51,28 @@ function nombreDesdeCorreo(correo) {
     .join(" ");
 }
 
-const [correo, rol, slug, papel, nombre] = process.argv.slice(2);
+const [correo, rol, slug, papel, nombre, claveDada] = process.argv.slice(2);
+
+/** Tres palabras y un número: se dicta por teléfono sin deletrear */
+function generarClave() {
+  const palabras = [
+    "faro", "duna", "brisa", "roble", "cauce", "sierra", "ambar", "junco",
+    "vela", "musgo", "risco", "trigo", "nieve", "cala", "olmo", "surco",
+  ];
+  const azar = (n) => {
+    const b = new Uint32Array(1);
+    crypto.getRandomValues(b);
+    return b[0] % n;
+  };
+  const tres = Array.from({ length: 3 }, () => palabras[azar(palabras.length)]);
+  return `${tres.join("-")}-${10 + azar(90)}`;
+}
+
+const contrasena = claveDada || generarClave();
 
 if (!correo || !rol) {
   console.error(
-    "Uso: node scripts/alta.mjs <correo> <rol> [slug-de-compañía] [papel] [nombre]\n" +
+    "Uso: node scripts/alta.mjs <correo> <rol> [slug] [papel] [nombre] [contraseña]\n" +
       `Roles: ${ROLES.join(" · ")}`,
   );
   process.exit(1);
@@ -82,6 +99,14 @@ const alta = await fetch(`${url}/auth/v1/admin/users`, {
   body: JSON.stringify({
     email: correo,
     email_confirm: true,
+    /*
+     * Con contraseña desde el primer momento.
+     *
+     * Sin ella, la cuenta solo entra por enlace de correo, y eso obliga a
+     * tener el envío montado. La contraseña se imprime al final para poder
+     * pasarla; no se guarda en claro en ninguna parte.
+     */
+    password: contrasena,
     user_metadata: {
       role: rol,
       full_name: nombre || nombreDesdeCorreo(correo),
@@ -165,8 +190,9 @@ if (slug) {
 }
 
 console.log(
-  "\nYa puede pedir su enlace de entrada en /entrar.\n" +
-    "En local, el correo aparece en la bandeja de desarrollo: http://127.0.0.1:54324",
+  `\nContraseña: ${contrasena}\n\n` +
+    "Cópiala y pásasela: no se vuelve a enseñar. Puede cambiarla desde Mi\n" +
+    "cuenta, y también se puede poner otra desde Administración → Personas.",
 );
 
 // -----------------------------------------------------------------------------

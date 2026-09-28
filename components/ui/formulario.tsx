@@ -171,11 +171,16 @@ export function Desplegable({
   return (
     <details className="border-t border-filete" name={id}>
       {/*
-        El triángulo que pone el navegador ya dice que esto se abre, pero es
-        diminuto y del color del texto. Se acompaña del mismo trazo
-        discontinuo del resto de acciones para que se lea a la primera.
+        Con su propia flecha.
+        
+        El triángulo que pone el navegador es diminuto y del color del texto:
+        sobre el lienzo oscuro no se ve, y el control acababa pareciendo una
+        línea de texto suelta. Se le quita y se pone uno que gira al abrir.
       */}
-      <summary className="cursor-pointer px-4 py-2.5 text-sm text-secundario transition-colors hover:bg-elevado hover:text-titular">
+      <summary className="desplegable-titulo flex cursor-pointer items-center gap-2 px-4 py-2.5 text-sm text-secundario transition-colors hover:bg-elevado hover:text-titular">
+        <span aria-hidden="true" className="flecha-desplegable text-acento-texto">
+          ▸
+        </span>
         <span className="accion">{titulo}</span>
       </summary>
       <div className="px-4 pb-4">{children}</div>

@@ -16,7 +16,7 @@ export function BotonSalir() {
     <button
       type="button"
       onClick={salir}
-      className="text-sm text-secundario transition-colors hover:text-titular"
+      className="accion text-sm text-secundario"
     >
       Salir
     </button>

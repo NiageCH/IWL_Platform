@@ -40,7 +40,7 @@ export function EditorSeccion({
         <button
           type="button"
           onClick={() => setAbierto(true)}
-          className="text-sm text-secundario transition-colors hover:text-titular"
+          className="accion text-sm text-secundario"
         >
           {contenido ? "Editar la sección" : "Redactar la sección"}
         </button>
@@ -84,7 +84,7 @@ export function EditorSeccion({
               <button
                 type="button"
                 onClick={() => setAbierto(false)}
-                className="px-3 py-2 text-sm text-secundario transition-colors hover:text-titular"
+                className="accion px-3 py-2 text-sm text-secundario"
               >
                 Cancelar
               </button>
