@@ -143,7 +143,7 @@ export function AbrirDocumento({ documentId }: { documentId: string }) {
         type="button"
         onClick={abrir}
         disabled={pendiente}
-        className="text-sm text-acento-texto underline underline-offset-4 disabled:opacity-50"
+        className="accion text-sm text-acento-texto disabled:opacity-50"
       >
         {pendiente ? "Abriendo" : "Abrir"}
       </button>

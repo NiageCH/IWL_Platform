@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   archivarCompania,
+  asignarACompania,
   borrarCompania,
   editarCompania,
   restaurarCompania,
@@ -11,6 +12,7 @@ import {
   AreaTexto,
   Boton,
   Campo,
+  Desplegable,
   Formulario,
   Seleccion,
   Texto,
@@ -66,7 +68,7 @@ export function EditarCompania({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         Editar
       </button>
@@ -191,7 +193,7 @@ export function ArchivarCompania({ compania }: { compania: FichaCompania }) {
             <input type="hidden" name="id" value={compania.id} />
             <button
               type="submit"
-              className="text-xs text-acento-texto underline decoration-filete underline-offset-4"
+              className="accion text-xs text-acento-texto"
             >
               Restaurar
             </button>
@@ -206,7 +208,7 @@ export function ArchivarCompania({ compania }: { compania: FichaCompania }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         Archivar
       </button>
@@ -271,7 +273,7 @@ export function BorrarCompania({ compania }: { compania: FichaCompania }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-metadato underline decoration-filete underline-offset-4 transition-colors hover:text-mal"
+        className="accion accion-riesgo text-xs text-metadato"
       >
         Borrar
       </button>
@@ -312,5 +314,176 @@ export function BorrarCompania({ compania }: { compania: FichaCompania }) {
         )}
       </Formulario>
     </div>
+  );
+}
+
+/**
+ * Montar el equipo de un proyecto.
+ *
+ * Antes solo se podía asignar desde la ficha de cada persona, de una en una:
+ * para poner a cuatro mentoras en un proyecto había que recorrer la lista
+ * entera cuatro veces. La pregunta real es «quién lleva este proyecto», y se
+ * hace mirando el proyecto.
+ *
+ * Cada persona se elige viendo su cargo, en qué entra y cuántos proyectos
+ * lleva ya: poner a alguien en el quinto es una decisión distinta de ponerla
+ * en el primero.
+ */
+export interface Asignable {
+  id: string;
+  full_name: string | null;
+  job_title: string | null;
+  expertise: string[];
+  proyectos: number;
+  horas_comprometidas: number;
+}
+
+const PAPELES_EQUIPO = [
+  { valor: "responsable_iwl", texto: "Responsable de IWL" },
+  { valor: "mentor_principal", texto: "Mentoría · coordina el proyecto" },
+  { valor: "mentor_secundario", texto: "Mentoría · apoyo" },
+  { valor: "revisor_niage", texto: "Revisora técnica de Niage" },
+  { valor: "fundadora", texto: "Equipo fundador" },
+];
+
+const PERFILES_TARIFA = [
+  "socio",
+  "ingenieria",
+  "senior",
+  "especialista",
+  "operacion",
+  "mentor",
+];
+
+export function AnadirAlEquipo({
+  companyId,
+  personas,
+}: {
+  companyId: string;
+  personas: Asignable[];
+}) {
+  const [papel, setPapel] = useState("mentor_secundario");
+  const [quien, setQuien] = useState("");
+  const esMentoria = papel.startsWith("mentor");
+  const elegida = personas.find((p) => p.id === quien);
+
+  return (
+    <Desplegable titulo="Añadir a alguien al equipo del proyecto">
+      <Formulario accion={asignarACompania}>
+        {(resultado) => {
+          const campo = (n: string) =>
+            !resultado.ok ? resultado.campos?.[n] : undefined;
+
+          return (
+            <>
+              <input type="hidden" name="company_id" value={companyId} />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Campo etiqueta="Quién" error={campo("profile_id")}>
+                  <Seleccion
+                    name="profile_id"
+                    required
+                    value={quien}
+                    onChange={(e) => setQuien(e.currentTarget.value)}
+                  >
+                    <option value="" disabled>
+                      Elige una persona
+                    </option>
+                    {personas.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.full_name}
+                        {p.job_title ? ` · ${p.job_title}` : ""}
+                      </option>
+                    ))}
+                  </Seleccion>
+                </Campo>
+
+                <Campo etiqueta="Papel en este proyecto">
+                  <Seleccion
+                    name="member_role"
+                    required
+                    value={papel}
+                    onChange={(e) => setPapel(e.currentTarget.value)}
+                  >
+                    {PAPELES_EQUIPO.map((p) => (
+                      <option key={p.valor} value={p.valor}>
+                        {p.texto}
+                      </option>
+                    ))}
+                  </Seleccion>
+                </Campo>
+              </div>
+
+              {elegida ? (
+                <p className="text-xs text-secundario">
+                  {elegida.expertise.length > 0
+                    ? `Entra en ${elegida.expertise.join(", ").toLowerCase()}. `
+                    : "Sin áreas registradas. "}
+                  {elegida.proyectos === 0
+                    ? "No lleva ningún proyecto todavía."
+                    : `Lleva ${elegida.proyectos} ${elegida.proyectos === 1 ? "proyecto" : "proyectos"}${
+                        elegida.horas_comprometidas > 0
+                          ? `, con ${elegida.horas_comprometidas} horas comprometidas en total`
+                          : ""
+                      }.`}
+                </p>
+              ) : null}
+
+              {esMentoria ? (
+                <div className="grid gap-4 sm:grid-cols-4">
+                  <Campo etiqueta="Horas" error={campo("assigned_hours")}>
+                    <Texto
+                      type="number"
+                      name="assigned_hours"
+                      min="0"
+                      step="5"
+                      placeholder="120"
+                    />
+                  </Campo>
+                  <Campo etiqueta="Tarifa">
+                    <Seleccion name="rate_profile" defaultValue="especialista">
+                      {PERFILES_TARIFA.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </Seleccion>
+                  </Campo>
+                  <Campo etiqueta="Desde" error={campo("starts_on")}>
+                    <Texto type="date" name="starts_on" />
+                  </Campo>
+                  <Campo etiqueta="Hasta" error={campo("ends_on")}>
+                    <Texto type="date" name="ends_on" />
+                  </Campo>
+                </div>
+              ) : null}
+
+              <Campo etiqueta="En qué entra aquí">
+                <Texto
+                  name="title"
+                  placeholder={
+                    papel === "mentor_principal"
+                      ? "Coordinación del proyecto"
+                      : "Estrategia comercial"
+                  }
+                />
+              </Campo>
+
+              {esMentoria ? (
+                <p className="text-xs text-metadato">
+                  {papel === "mentor_principal"
+                    ? "Quien coordina responde del avance: puntúa el due diligence, confirma hitos y mueve el plan. Solo en este proyecto."
+                    : "El apoyo ve el proyecto entero, imputa sus horas y cierra sus tareas. No puntúa ni confirma hitos."}
+                </p>
+              ) : null}
+
+              <div>
+                <Boton>Añadir al equipo</Boton>
+              </div>
+            </>
+          );
+        }}
+      </Formulario>
+    </Desplegable>
   );
 }

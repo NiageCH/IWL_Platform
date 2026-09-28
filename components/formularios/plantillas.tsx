@@ -252,7 +252,7 @@ export function BorrarDePlantilla({
           <input type="hidden" name="id" value={id} />
           <button
             type="submit"
-            className="text-xs text-metadato underline decoration-filete underline-offset-4 transition-colors hover:text-mal"
+            className="accion accion-riesgo text-xs text-metadato"
           >
             {etiqueta}
           </button>

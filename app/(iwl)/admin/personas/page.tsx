@@ -5,6 +5,7 @@ import {
   Asignar,
   BorrarPersona,
   CambiarRol,
+  CorregirCorreo,
   EditarPersona,
   FormularioPersona,
   QuitarAsignacion,
@@ -16,18 +17,10 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { papel } from "@/lib/etiquetas";
 import { numero } from "@/lib/utils";
 
 export const metadata = { title: "Personas · Administración" };
-
-const PAPELES: Record<string, string> = {
-  fundadora: "Equipo fundador",
-  responsable_iwl: "Responsable IWL",
-  revisor_niage: "Revisora Niage",
-  mentor_principal: "Coordina",
-  mentor_secundario: "Apoyo",
-  mentor: "Mentoría (obsoleto)",
-};
 
 interface Asignacion {
   company_id: string;
@@ -70,9 +63,22 @@ export default async function AdminPersonas() {
           <span className="text-sm font-medium text-titular">
             {p.full_name ?? "Sin nombre"}
           </span>
+          {p.job_title ? (
+            <span className="text-xs text-secundario">{p.job_title}</span>
+          ) : null}
           <Metadato>{p.email}</Metadato>
           {p.organization_name ? (
             <Metadato>{p.organization_name}</Metadato>
+          ) : null}
+
+          {(p.expertise ?? []).length > 0 ? (
+            <ul className="flex w-full flex-wrap gap-1.5">
+              {(p.expertise ?? []).map((area) => (
+                <li key={area}>
+                  <Etiqueta>{area}</Etiqueta>
+                </li>
+              ))}
+            </ul>
           ) : null}
         </div>
 
@@ -103,11 +109,11 @@ export default async function AdminPersonas() {
                 >
                   <Link
                     href={`/cartera/${a.company_slug}`}
-                    className="text-sm text-cuerpo underline-offset-4 hover:underline"
+                    className="enlace text-sm text-cuerpo"
                   >
                     {a.company_name}
                   </Link>
-                  <Etiqueta>{PAPELES[a.member_role] ?? a.member_role}</Etiqueta>
+                  <Etiqueta>{papel(a.member_role)}</Etiqueta>
                   {a.title ? <Metadato>{a.title}</Metadato> : null}
                   {a.archivada ? <Metadato>compañía archivada</Metadato> : null}
 
@@ -143,7 +149,19 @@ export default async function AdminPersonas() {
 
         <div className="flex w-full flex-wrap items-center gap-4">
           <EditarPersona
-            persona={{ id: p.id!, full_name: p.full_name, role: p.role! }}
+            persona={{
+              id: p.id!,
+              full_name: p.full_name,
+              role: p.role!,
+              job_title: p.job_title,
+              expertise: p.expertise,
+              bio: p.bio,
+            }}
+          />
+          <CorregirCorreo
+            id={p.id!}
+            email={p.email!}
+            editable={p.correo_editable ?? false}
           />
           <ArchivarPersona id={p.id!} activa={p.is_active ?? false} />
           <BorrarPersona

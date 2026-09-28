@@ -217,7 +217,7 @@ export async function VistaPrograma({
           Los hitos viven en la{" "}
           <Link
             href={`${base}/ruta`}
-            className="text-acento-texto underline decoration-filete underline-offset-4"
+            className="enlace text-acento-texto"
           >
             hoja de ruta
           </Link>

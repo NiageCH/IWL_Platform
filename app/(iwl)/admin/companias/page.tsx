@@ -5,11 +5,14 @@ import {
   FormularioCompania,
 } from "@/components/formularios/admin";
 import {
+  AnadirAlEquipo,
   ArchivarCompania,
   BorrarCompania,
   EditarCompania,
+  type Asignable,
   type FichaCompania,
 } from "@/components/formularios/companias";
+import { QuitarAsignacion } from "@/components/formularios/admin";
 import { EstadoEntrada } from "@/components/formularios/plantillas";
 import { leerPlantillas } from "@/lib/datos/ruta";
 import {
@@ -19,30 +22,28 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
-import { etapa as nombreEtapa, perfil as nombrePerfil } from "@/lib/etiquetas";
+import {
+  etapa as nombreEtapa,
+  papel,
+  perfil as nombrePerfil,
+} from "@/lib/etiquetas";
 import { fecha, numero } from "@/lib/utils";
 
 export const metadata = { title: "Compañías · Administración" };
 
-const PAPELES: Record<string, string> = {
-  fundadora: "fundadora",
-  responsable_iwl: "responsable",
-  revisor_niage: "revisora",
-  mentor_principal: "coordina",
-  mentor_secundario: "apoya",
-  mentor: "mentoría",
-};
-
 interface Miembro {
   profile_id: string;
   full_name: string | null;
+  job_title: string | null;
   member_role: string;
+  assigned_hours: number | null;
+  imputadas: number | null;
 }
 
 export default async function AdminCompanias() {
   const supabase = await clienteServidor();
 
-  const [companias, fases, cohortes, plantillas] = await Promise.all([
+  const [companias, fases, cohortes, plantillas, asignables] = await Promise.all([
     supabase.from("admin_companias").select("*").order("name"),
     supabase.from("phases").select("id, code, name, order_index").order("order_index"),
     supabase
@@ -50,7 +51,20 @@ export default async function AdminCompanias() {
       .select("id, name, start_date, end_date, investable_target")
       .order("name"),
     leerPlantillas(),
+    supabase
+      .from("personas_asignables")
+      .select("id, full_name, job_title, expertise, proyectos, horas_comprometidas")
+      .order("full_name"),
   ]);
+
+  const equipoDisponible: Asignable[] = (asignables.data ?? []).map((p) => ({
+    id: p.id!,
+    full_name: p.full_name,
+    job_title: p.job_title,
+    expertise: p.expertise ?? [],
+    proyectos: Number(p.proyectos ?? 0),
+    horas_comprometidas: Number(p.horas_comprometidas ?? 0),
+  }));
 
   const todas = companias.data ?? [];
   const activas = todas.filter((c) => c.archived_at === null);
@@ -95,7 +109,7 @@ export default async function AdminCompanias() {
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <Link
                       href={`/cartera/${c.slug}`}
-                      className="text-sm font-medium text-titular underline-offset-4 hover:underline"
+                      className="enlace enlace-destacado text-sm font-medium text-titular"
                     >
                       {c.name}
                     </Link>
@@ -127,8 +141,8 @@ export default async function AdminCompanias() {
                           href={`/cartera/${c.slug}/ruta`}
                           className={
                             (c.etapas ?? 0) > 0
-                              ? "text-cuerpo underline-offset-4 hover:underline"
-                              : "text-acento-texto underline-offset-4 hover:underline"
+                              ? "enlace text-cuerpo"
+                              : "enlace text-acento-texto"
                           }
                         >
                           {(c.etapas ?? 0) > 0
@@ -140,23 +154,44 @@ export default async function AdminCompanias() {
                   </dl>
 
                   {equipo.length > 0 ? (
-                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-secundario">
+                    <ul className="mt-2 divide-y divide-filete border-l-2 border-filete pl-3">
                       {equipo.map((m) => (
-                        <span key={`${m.profile_id}-${m.member_role}`}>
-                          {m.full_name}
-                          <span className="text-metadato">
-                            {" "}
-                            · {PAPELES[m.member_role] ?? m.member_role}
+                        <li
+                          key={`${m.profile_id}-${m.member_role}`}
+                          className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5"
+                        >
+                          <span className="text-sm text-cuerpo">
+                            {m.full_name}
                           </span>
-                        </span>
+                          <Etiqueta>
+                            {papel(m.member_role)}
+                          </Etiqueta>
+                          {m.job_title ? <Metadato>{m.job_title}</Metadato> : null}
+                          {m.assigned_hours !== null ? (
+                            <span className="cifra text-xs text-metadato">
+                              {numero(m.imputadas ?? 0, 1)} de{" "}
+                              {numero(m.assigned_hours, 0)} h
+                            </span>
+                          ) : null}
+                          <span className="flex-1" />
+                          <QuitarAsignacion
+                            profileId={m.profile_id}
+                            companyId={c.id!}
+                            memberRole={m.member_role}
+                          />
+                        </li>
                       ))}
-                    </p>
+                    </ul>
                   ) : (
                     <p className="mt-2 text-xs text-metadato">
                       Sin nadie asignado. Nadie de IWL la lleva y su equipo
                       fundador no puede entrar.
                     </p>
                   )}
+
+                  <div className="-mx-4 mt-2">
+                    <AnadirAlEquipo companyId={c.id!} personas={equipoDisponible} />
+                  </div>
 
                   <div className="mt-2 flex flex-wrap items-center gap-4">
                     <EditarCompania
@@ -201,7 +236,7 @@ export default async function AdminCompanias() {
               <li key={c.id} className="flex flex-wrap items-baseline gap-3 px-4 py-3">
                 <Link
                   href={`/cartera/${c.slug}`}
-                  className="text-sm text-titular underline-offset-4 hover:underline"
+                  className="enlace text-sm text-titular"
                 >
                   {c.name}
                 </Link>

@@ -487,7 +487,7 @@ function Tarjeta({
             href={avance.enlace}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-acento-texto underline decoration-filete underline-offset-4"
+            className="accion text-xs text-acento-texto"
           >
             Evidencia
           </a>

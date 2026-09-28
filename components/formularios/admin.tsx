@@ -6,6 +6,7 @@ import {
   asignarACompania,
   borrarPersona,
   cambiarRol,
+  corregirCorreo,
   crearCohorte,
   crearCompania,
   editarPersona,
@@ -359,6 +360,20 @@ export function FormularioPersona({
                 </Seleccion>
               </Campo>
 
+              <Campo etiqueta="Cargo" ayuda="En su organización, no en la plataforma">
+                <Texto name="job_title" placeholder="Cofundadora y CEO" />
+              </Campo>
+
+              <Campo
+                etiqueta="En qué entra"
+                ayuda="Separadas por comas. Se usan al montar el equipo de un proyecto"
+              >
+                <Texto
+                  name="expertise"
+                  placeholder="Fondeo, Legal, Impacto social"
+                />
+              </Campo>
+
               <Campo etiqueta="Compañía" ayuda="Opcional: se puede asignar después">
                 <Seleccion
                   name="company_id"
@@ -577,7 +592,7 @@ export function QuitarAsignacion({
           <input type="hidden" name="member_role" value={memberRole} />
           <button
             type="submit"
-            className="text-xs text-metadato underline underline-offset-4 transition-colors hover:text-mal"
+            className="accion accion-riesgo text-xs text-metadato"
           >
             quitar
           </button>
@@ -890,7 +905,14 @@ export function FormularioObjetivosTraccion({
 export function EditarPersona({
   persona,
 }: {
-  persona: { id: string; full_name: string | null; role: string };
+  persona: {
+    id: string;
+    full_name: string | null;
+    role: string;
+    job_title: string | null;
+    expertise: string[] | null;
+    bio: string | null;
+  };
 }) {
   const [abierto, setAbierto] = useState(false);
 
@@ -899,7 +921,7 @@ export function EditarPersona({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         Editar
       </button>
@@ -932,13 +954,20 @@ export function EditarPersona({
                   ))}
                 </Seleccion>
               </Campo>
+              <Campo etiqueta="Cargo">
+                <Texto name="job_title" defaultValue={persona.job_title ?? ""} />
+              </Campo>
+              <Campo etiqueta="En qué entra" ayuda="Separadas por comas">
+                <Texto
+                  name="expertise"
+                  defaultValue={(persona.expertise ?? []).join(", ")}
+                />
+              </Campo>
             </div>
 
-            <p className="text-xs text-metadato">
-              El correo no se cambia: es su identidad y cambiarlo la dejaría
-              sin poder entrar. Si alguien cambia de correo, dale de alta el
-              nuevo y archiva el viejo.
-            </p>
+            <Campo etiqueta="Nota">
+              <AreaTexto name="bio" rows={2} defaultValue={persona.bio ?? ""} />
+            </Campo>
 
             <div className="flex gap-2">
               <Boton>Guardar</Boton>
@@ -973,7 +1002,7 @@ export function ArchivarPersona({
           <input type="hidden" name="activa" value={activa ? "no" : "si"} />
           <button
             type="submit"
-            className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+            className="accion text-xs text-secundario"
           >
             {activa ? "Archivar" : "Reactivar"}
           </button>
@@ -1009,7 +1038,7 @@ export function BorrarPersona({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-metadato underline decoration-filete underline-offset-4 transition-colors hover:text-mal"
+        className="accion accion-riesgo text-xs text-metadato"
       >
         Borrar
       </button>
@@ -1038,6 +1067,76 @@ export function BorrarPersona({
 
             <div className="flex gap-2">
               <Boton>Borrar definitivamente</Boton>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                className="rounded-md border border-filete bg-elevado px-3 py-2 text-sm text-secundario"
+              >
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </Formulario>
+    </div>
+  );
+}
+
+/**
+ * Corregir el correo de alguien que no ha entrado nunca.
+ *
+ * Solo aparece hasta el primer acceso. Después el correo es su identidad y
+ * cambiarlo la dejaría fuera, así que en su lugar se explica qué hacer: dar
+ * de alta el nuevo y archivar este.
+ */
+export function CorregirCorreo({
+  id,
+  email,
+  editable,
+}: {
+  id: string;
+  email: string;
+  editable: boolean;
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!editable) {
+    return (
+      <span className="text-xs text-metadato">
+        El correo ya no se cambia: ha entrado con él
+      </span>
+    );
+  }
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion text-xs text-secundario"
+      >
+        Corregir el correo
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 w-full border-t border-filete pt-3">
+      <Formulario accion={corregirCorreo} onOk={() => setAbierto(false)}>
+        {(resultado) => (
+          <>
+            <input type="hidden" name="id" value={id} />
+
+            <Campo
+              etiqueta="Correo"
+              ayuda="Se puede cambiar porque esta persona todavía no ha entrado"
+              error={!resultado.ok ? resultado.campos?.email : undefined}
+            >
+              <Texto name="email" type="email" defaultValue={email} required />
+            </Campo>
+
+            <div className="flex gap-2">
+              <Boton>Corregir</Boton>
               <button
                 type="button"
                 onClick={() => setAbierto(false)}

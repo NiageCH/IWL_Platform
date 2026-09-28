@@ -64,7 +64,7 @@ export function EstablecerSesion() {
         </p>
         <Link
           href="/entrar"
-          className="mt-4 inline-block text-sm text-acento-texto underline underline-offset-4"
+          className="enlace mt-4 inline-block text-sm text-acento-texto"
         >
           Pedir uno nuevo
         </Link>

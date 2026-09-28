@@ -88,7 +88,7 @@ export function RegistroRapidoHoras({
         <button
           type="button"
           onClick={() => setAbierto(true)}
-          className="text-sm text-acento-texto underline underline-offset-4"
+          className="accion text-sm text-acento-texto"
         >
           Registrar horas
         </button>

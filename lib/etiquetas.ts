@@ -108,3 +108,25 @@ export function variacionKpi(
     mejora: direccion === "baja" ? delta < 0 : direccion === "sube" ? delta > 0 : null,
   };
 }
+
+type Papel = Database["public"]["Enums"]["company_member_role"];
+
+/**
+ * El papel de una persona dentro de una compañía.
+ *
+ * Estaba escrito en cada pantalla, y no igual: «Coordina» en personas y
+ * «coordina» en compañías. Son la misma cosa y tienen que leerse igual en
+ * los dos sitios.
+ */
+export const PAPELES: Record<Papel, string> = {
+  fundadora: "Equipo fundador",
+  responsable_iwl: "Responsable IWL",
+  revisor_niage: "Revisora Niage",
+  mentor_principal: "Coordina",
+  mentor_secundario: "Apoyo",
+  mentor: "Mentoría (obsoleto)",
+};
+
+export function papel(valor: Papel | string): string {
+  return PAPELES[valor as Papel] ?? valor;
+}

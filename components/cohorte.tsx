@@ -71,7 +71,7 @@ export function Embudo({
                       {i > 0 ? " · " : ""}
                       <Link
                         href={`/cartera/${c.slug}`}
-                        className="underline-offset-4 hover:underline"
+                        className="enlace"
                       >
                         {c.nombre}
                       </Link>{" "}
@@ -134,7 +134,7 @@ export function MapaIntervencion({ mapa }: { mapa: DemandaDimension[] }) {
                     {i > 0 ? " · " : ""}
                     <Link
                       href={`/cartera/${c.slug}/tecnico`}
-                      className="underline-offset-4 hover:underline"
+                      className="enlace"
                     >
                       {c.nombre}
                     </Link>{" "}

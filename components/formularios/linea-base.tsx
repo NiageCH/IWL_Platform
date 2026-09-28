@@ -32,7 +32,7 @@ export function CongelarLineaBase({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-acento-texto underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-acento-texto"
       >
         {tieneInicial ? "Congelar otra línea base" : "Congelar la línea base"}
       </button>

@@ -113,7 +113,7 @@ export default async function Comparativa() {
                     <th key={c.compania.id} className="px-4 py-2 font-medium">
                       <Link
                         href={`/cartera/${c.compania.slug}/tecnico`}
-                        className="text-titular underline-offset-4 hover:underline"
+                        className="enlace text-titular"
                       >
                         {c.compania.name}
                       </Link>

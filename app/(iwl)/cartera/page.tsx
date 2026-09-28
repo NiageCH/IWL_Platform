@@ -177,7 +177,7 @@ export default async function Cartera() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/cartera/${c.compania.slug}`}
-                      className="font-medium text-titular underline-offset-4 hover:underline"
+                      className="enlace enlace-destacado font-medium text-titular"
                     >
                       {c.compania.name}
                     </Link>
@@ -266,7 +266,7 @@ export default async function Cartera() {
                       <td className="px-4 py-3">
                         <Link
                           href={`/cartera/${c.slug}/aportacion`}
-                          className="font-medium text-titular underline-offset-4 hover:underline"
+                          className="enlace enlace-destacado font-medium text-titular"
                         >
                           {c.nombre}
                         </Link>
@@ -305,7 +305,7 @@ export default async function Cartera() {
                 <div className="flex flex-wrap items-baseline gap-3">
                   <Link
                     href={`/cartera/${c.compania.slug}`}
-                    className="text-sm font-medium text-titular underline-offset-4 hover:underline"
+                    className="enlace enlace-destacado text-sm font-medium text-titular"
                   >
                     {c.compania.name}
                   </Link>

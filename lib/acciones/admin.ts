@@ -206,10 +206,28 @@ const PAPELES = [
   "mentor_secundario",
 ] as const;
 
+/*
+ * Las áreas llegan como una línea separada por comas y se guardan como
+ * array. Escribirlas de una en una en siete campos es un formulario que
+ * nadie rellena; buscarlas por subcadena en un texto libre es un filtro que
+ * no funciona. La coma es el punto medio.
+ */
+const areas = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v) =>
+    (v ?? "")
+      .split(",")
+      .map((a) => a.trim())
+      .filter((a) => a.length > 0),
+  );
+
 const esquemaPersona = z.object({
   email: z.string().trim().email("Eso no parece un correo."),
   full_name: textoObligatorio(2, "¿Cómo se llama?"),
   role: z.enum(ROLES),
+  job_title: textoOpcional,
+  expertise: areas,
   company_id: idOpcional,
   member_role: z
     .union([z.enum(PAPELES), z.literal(""), z.null(), z.undefined()])
@@ -269,7 +287,12 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
 
   const { error: falloPerfil } = await servicio
     .from("profiles")
-    .update({ full_name: datos.full_name, role: datos.role })
+    .update({
+      full_name: datos.full_name,
+      role: datos.role,
+      job_title: datos.job_title,
+      expertise: datos.expertise,
+    })
     .eq("id", usuarioId!);
 
   if (falloPerfil) return traducirError(falloPerfil);
@@ -770,6 +793,9 @@ const esquemaEditarPersona = z.object({
   id: uuid,
   full_name: textoObligatorio(2, "¿Cómo se llama?"),
   role: z.enum(ROLES),
+  job_title: textoOpcional,
+  expertise: areas,
+  bio: textoOpcional,
 });
 
 export async function editarPersona(formData: FormData): Promise<Resultado> {
@@ -777,15 +803,82 @@ export async function editarPersona(formData: FormData): Promise<Resultado> {
   if (fallo) return fallo;
 
   const supabase = await clienteServidor();
+  const { id, ...cambios } = datos;
+
   const { error: falloBase } = await supabase
     .from("profiles")
-    .update({ full_name: datos.full_name, role: datos.role })
-    .eq("id", datos.id);
+    .update(cambios)
+    .eq("id", id);
 
   if (falloBase) return traducirError(falloBase);
 
   refrescar();
   return ok("Datos actualizados.");
+}
+
+/**
+ * Corregir el correo de alguien que no ha entrado nunca.
+ *
+ * El correo es la identidad en `auth.users`, así que cambiarlo después de
+ * que alguien lo use la dejaría fuera. Pero al dar de alta a un equipo
+ * entero se teclean correos, y un error de escritura no puede obligar a
+ * borrar la cuenta y crearla otra vez. La base comprueba que no ha habido
+ * ningún acceso; la interfaz solo lo consulta para no ofrecer lo imposible.
+ */
+const esquemaCorreo = z.object({
+  id: uuid,
+  email: z.string().trim().email("Eso no parece un correo."),
+});
+
+export async function corregirCorreo(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaCorreo, formData);
+  if (fallo) return fallo;
+
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+  if (persona.role !== "admin_iwl") {
+    return error("Cambiar un correo es de la dirección de IWL.");
+  }
+
+  const supabase = await clienteServidor();
+  const { data: editable, error: falloConsulta } = await supabase.rpc(
+    "puede_cambiar_correo",
+    { target_profile: datos.id },
+  );
+
+  if (falloConsulta) return traducirError(falloConsulta);
+
+  if (!editable) {
+    return error(
+      "Esta persona ya ha entrado alguna vez, así que su correo es su identidad y cambiarlo la dejaría fuera. Da de alta el nuevo y archiva este.",
+    );
+  }
+
+  const servicio = clienteServicio();
+  const { error: falloAuth } = await servicio.auth.admin.updateUserById(datos.id, {
+    email: datos.email,
+    email_confirm: true,
+  });
+
+  if (falloAuth) {
+    if (/already|registered|exists/i.test(falloAuth.message)) {
+      return error("Ese correo ya está dado de alta.", {
+        email: "Correo ocupado.",
+      });
+    }
+    return error(falloAuth.message);
+  }
+
+  // `auth.users` es la fuente; el perfil lleva copia para poder listarlo
+  const { error: falloPerfil } = await servicio
+    .from("profiles")
+    .update({ email: datos.email })
+    .eq("id", datos.id);
+
+  if (falloPerfil) return traducirError(falloPerfil);
+
+  refrescar();
+  return ok("Correo corregido. Ya se le puede mandar su enlace de entrada.");
 }
 
 /**

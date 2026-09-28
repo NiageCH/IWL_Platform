@@ -290,3 +290,91 @@ select {
     margin: 16mm 14mm;
   }
 }
+
+/* =========================================================================
+ * Qué se puede pulsar
+ *
+ * Los enlaces solo se subrayaban al pasar el ratón, así que en reposo no se
+ * distinguían del texto: había que ir probando. Con un tipo de letra sobrio
+ * y sin color en el cuerpo, el subrayado es lo único que queda para decir
+ * «esto lleva a otro sitio», y tiene que estar siempre.
+ *
+ * La convención del proyecto:
+ *   · `.enlace`  — navega. Subrayado fino permanente, que se enciende al
+ *                  pasar por encima.
+ *   · `.accion`  — hace algo aquí mismo, sin cambiar de página. Subrayado
+ *                  discontinuo, para que no se confunda con navegar.
+ *   · botón      — la acción principal de un formulario. Tiene fondo.
+ *
+ * Y todo lo que se pulsa lleva foco visible: quien navega con el teclado
+ * necesita saber dónde está igual que quien usa el ratón.
+ * ========================================================================= */
+
+.enlace {
+  text-decoration: underline;
+  text-decoration-color: var(--color-filete-fuerte);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 120ms ease, color 120ms ease;
+}
+
+.enlace:hover {
+  text-decoration-color: currentColor;
+  color: var(--color-titular);
+}
+
+/* El que además es el titular de su bloque va en el acento al pasar */
+.enlace-destacado:hover {
+  color: var(--color-acento-texto);
+}
+
+.accion {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: var(--color-filete-fuerte);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 120ms ease, color 120ms ease;
+}
+
+.accion:hover {
+  text-decoration-color: currentColor;
+  color: var(--color-titular);
+}
+
+/* La acción que destruye algo se tiñe al acercarse, no antes */
+.accion-riesgo:hover {
+  color: var(--color-mal);
+}
+
+/*
+ * Foco visible en todo lo que se pulsa.
+ *
+ * El navegador lo pone por defecto y muchos diseños lo quitan «porque
+ * ensucia». Aquí se redefine para que encaje, no para que desaparezca.
+ */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Una fila entera clicable se marca al pasar, para que se vea que lo es */
+.fila-enlace {
+  transition: background-color 120ms ease;
+}
+
+.fila-enlace:hover {
+  background-color: var(--color-elevado);
+}
+
+@media print {
+  /* En papel, un subrayado que no lleva a ninguna parte solo estorba */
+  .enlace,
+  .accion {
+    text-decoration: none;
+  }
+}

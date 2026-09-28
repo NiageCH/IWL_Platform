@@ -399,3 +399,41 @@ Lo mismo con las personas: quien ha imputado horas o validado algo se archiva. U
 Lo encontró el test de archivado: se archivaba una compañía y seguía en `/cartera` con todos sus datos.
 
 IWL sigue viéndolas desde administración, porque el archivo es suyo. Pero la cartera es la lista de proyectos vivos: una graduada de hace dos años arrastrando el score de su último mes ensucia todas las medias de la cohorte.
+
+## 2026-09-28 · Qué se puede pulsar se ve sin pasar el ratón
+
+Los enlaces solo se subrayaban al hacer hover, así que en reposo eran texto normal: había que ir probando dónde. Con una tipografía sobria y sin color en el cuerpo, el subrayado es lo único que queda para decir «esto lleva a otro sitio».
+
+La convención, en `globals.css`: `.enlace` navega y lleva subrayado fino permanente; `.accion` hace algo en la misma página y lleva subrayado discontinuo; el botón con fondo es la acción principal de un formulario. Todo lo pulsable tiene foco visible, que el navegador ya daba y muchos diseños quitan.
+
+Lo señaló Rodrigo mirando la aplicación: «es difícil darse cuenta de qué es clicable».
+
+## 2026-09-28 · Cada persona lleva su cargo y en qué entra
+
+Asignar mentoría era elegir un nombre de una lista y acordarse de a qué se dedica. Ahora el perfil guarda cargo y áreas, y las áreas van en un array y no en una frase: la pregunta al montar un equipo es «quién sabe de fondeo», y eso no se responde buscando subcadenas.
+
+Al elegir a alguien se ve además cuántos proyectos lleva y cuántas horas tiene comprometidas. Poner a alguien en su quinto proyecto es una decisión distinta de ponerla en el primero.
+
+## 2026-09-28 · El equipo se monta desde el proyecto
+
+Asignar solo se podía desde la ficha de cada persona, de una en una: para poner a cuatro mentoras en un proyecto había que recorrer la lista entera cuatro veces. La pregunta real es «quién lleva este proyecto» y se hace mirando el proyecto.
+
+Las dos vías coexisten, porque la pregunta inversa —«qué lleva esta persona»— también es real y se hace desde su ficha.
+
+## 2026-09-28 · El correo se corrige hasta el primer acceso
+
+El correo es la identidad en `auth.users`, así que cambiarlo después de que alguien entre la dejaría fuera. Pero al dar de alta a un equipo entero se teclean correos, y un error de escritura no puede obligar a borrar la cuenta y crearla otra vez.
+
+La base comprueba `last_sign_in_at`. Hasta el primer acceso no hay nada que romper; después, la interfaz explica por qué no se puede y qué hacer en cambio.
+
+## 2026-09-28 · Faltaban las convenciones del proyecto
+
+`CLAUDE.md` contenía una sola línea, `@AGENTS.md`: una importación de algo que nunca llegó a escribirse. Y no podía escribirse, porque AGENTS.md está en `.gitignore` desde el principio —Next 16 lo regenera en cada arranque— así que aunque se hubiera creado no habría llegado al repositorio.
+
+La decisión original ya estaba tomada y anotada en `next.config.ts`: las convenciones van en CLAUDE.md, a mano, con `agentRules: false` para que Next no lo pise. Simplemente no se llegó a hacer. La especificación lo pedía en su §12 y llevaba sin cumplirse desde el primer commit, sin que se notara porque el trabajo seguía saliendo.
+
+## 2026-09-28 · Las etiquetas de los enums, en un solo sitio
+
+La misma etiqueta se escribía distinta en cada pantalla: «Coordina» en personas y «coordina» en compañías. Lo encontró una prueba que buscaba una y encontraba la otra.
+
+Están en `lib/etiquetas.ts`, junto a las de etapa, perfil y estado de entrada, que ya se habían duplicado antes por lo mismo.

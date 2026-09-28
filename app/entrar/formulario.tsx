@@ -86,7 +86,7 @@ export function FormularioEntrada() {
               href={BANDEJA_LOCAL}
               target="_blank"
               rel="noreferrer"
-              className="cifra text-acento-texto underline underline-offset-4"
+              className="enlace cifra text-acento-texto"
             >
               abrir la bandeja
             </a>
@@ -96,7 +96,7 @@ export function FormularioEntrada() {
         <button
           type="button"
           onClick={() => setEstado("inicial")}
-          className="mt-4 text-sm text-secundario underline underline-offset-4 transition-colors hover:text-titular"
+          className="accion mt-4 text-sm text-secundario"
         >
           Pedir otro enlace
         </button>
@@ -142,7 +142,7 @@ export function FormularioEntrada() {
             href={BANDEJA_LOCAL}
             target="_blank"
             rel="noreferrer"
-            className="text-acento-texto underline underline-offset-4"
+            className="enlace text-acento-texto"
           >
             bandeja de desarrollo
           </a>

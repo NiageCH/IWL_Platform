@@ -28,7 +28,7 @@ export function EnlacesInforme({
           rel="noreferrer"
           className="group flex flex-wrap items-baseline gap-x-3 gap-y-0.5"
         >
-          <span className="text-sm text-acento-texto underline decoration-filete underline-offset-4 group-hover:decoration-current">
+          <span className="enlace text-sm text-acento-texto">
             {INFORMES[tipo].titulo}
           </span>
           <span className="text-xs text-secundario">{INFORMES[tipo].resumen}</span>

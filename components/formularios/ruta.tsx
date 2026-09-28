@@ -280,7 +280,7 @@ export function EditorEtapa({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         Editar la etapa
       </button>
@@ -337,7 +337,7 @@ export function NuevoHito({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         Añadir un hito a esta etapa
       </button>
@@ -427,7 +427,7 @@ export function NuevoAvance({
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="text-xs text-secundario underline decoration-filete underline-offset-4 transition-colors hover:text-titular"
+        className="accion text-xs text-secundario"
       >
         {etiqueta}
       </button>
@@ -500,7 +500,7 @@ export function BorrarAvance({ slug, id }: { slug: string; id: string }) {
           <input type="hidden" name="id" value={id} />
           <button
             type="submit"
-            className="text-xs text-metadato underline decoration-filete underline-offset-4 transition-colors hover:text-mal"
+            className="accion accion-riesgo text-xs text-metadato"
           >
             Quitar
           </button>
