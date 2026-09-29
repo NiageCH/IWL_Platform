@@ -65,8 +65,17 @@ En el panel de Supabase, **Authentication → Sign In / Providers**:
 - **Email** activado
 - **Confirm email** desactivado — las cuentas las crea la dirección de IWL y
   ya nacen confirmadas
-- **Allow new users to sign up** **desactivado**. Esto es importante: aquí
-  está el due diligence de la cohorte y no puede haber autoservicio
+- **Allow new users to sign up** **desactivado**. Esto es lo primero que hay
+  que tocar, antes de desplegar nada: un proyecto de Supabase **nace con el
+  registro abierto**, y aquí está el due diligence de la cohorte. Se
+  comprueba sin entrar al panel:
+
+  ```bash
+  curl -s "$NEXT_PUBLIC_SUPABASE_URL/auth/v1/settings" \
+    -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" | grep disable_signup
+  ```
+
+  Tiene que decir `"disable_signup": true`
 
 En **Authentication → URL Configuration**:
 
