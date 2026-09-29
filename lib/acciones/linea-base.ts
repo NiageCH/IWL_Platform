@@ -121,8 +121,11 @@ export async function congelarLineaBase(formData: FormData): Promise<Resultado> 
      * El tipo generado para una columna jsonb es `Json`, una estructura
      * recursiva de valores planos. Los objetos de aquí arriba son JSON válido
      * pero TypeScript no lo deduce de una interfaz, así que hay que decírselo.
+     *
+     * `NonNullable` porque la columna es `not null`: el generador lo refleja
+     * desde que se actualizó el CLI, y `Json` a secas admite `null`.
      */
-    content: contenido as unknown as Json,
+    content: contenido as unknown as NonNullable<Json>,
     notes: datos.notes,
   });
 

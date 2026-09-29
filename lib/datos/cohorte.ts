@@ -33,7 +33,13 @@ export async function leerBandas(): Promise<Banda[]> {
     .eq("key", "bandas_preparacion")
     .maybeSingle();
 
-  const bandas = data?.value as Banda[] | null;
+  /*
+   * Por `unknown`: `value` es una columna jsonb, y su tipo generado no se
+   * solapa con `Banda[]` lo bastante para que TypeScript acepte el cast
+   * directo. Lo que de verdad comprueba la forma es la línea siguiente, que
+   * cae a las bandas por defecto si no hay un array con contenido.
+   */
+  const bandas = data?.value as unknown as Banda[] | null;
   return Array.isArray(bandas) && bandas.length > 0 ? bandas : BANDAS_POR_DEFECTO;
 }
 

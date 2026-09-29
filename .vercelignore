@@ -12,18 +12,22 @@
 .altas-locales.json
 
 # Proyectos reales con condiciones comerciales
-supabase/seed/local/
+/supabase/seed/local/
 
 # Informes generados, con datos de compañías reales
-informes/
+/informes/
 
-# La base de datos no se construye en Vercel
-supabase/
+# La base de datos no se construye en Vercel.
+#
+# Con la barra delante. Sin ella el patrón casa a cualquier nivel y se lleva
+# también `lib/supabase/`, que es el cliente de la aplicación: el despliegue
+# falla con «Can't resolve '@/lib/supabase/servidor'».
+/supabase/
 
 # Pruebas y sus resultados
-tests/
-test-results/
-playwright-report/
+/tests/
+/test-results/
+/playwright-report/
 playwright.config.ts
 vitest.config.mts
 vitest.rls.config.mts
