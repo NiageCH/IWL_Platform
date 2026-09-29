@@ -572,3 +572,11 @@ Y los únicos índices únicos de esa tabla son `(bucket_id, name, version)` y d
 Se arregla actualizando el CLI, que es quien elige las imágenes: v1.72.1 → v1.77.5. La versión queda fijada en `package.json` para que no dependa de lo que tenga cada portátil en la caché.
 
 Lo importante es que **no afectaba a la nube**: allí el servicio va al día. Se comprobó subiendo y borrando un fichero contra el Storage del proyecto antes de tocar nada en local, precisamente para no salir a arreglar un problema que no existía.
+
+## 2026-09-29 · El mínimo de doce caracteres no estaba puesto donde se lee
+
+`config.toml` tenía `minimum_password_length = 12` bajo `[auth.email]`, con un comentario explicando por qué doce. Gotrue no lee esa clave de ahí: solo la de `[auth]`, que seguía en 6. El CLI la acepta sin quejarse, así que no había nada que lo avisara.
+
+Se vio mirando el entorno del contenedor —`GOTRUE_PASSWORD_MIN_LENGTH=6`— en vez de fiarse de lo que decía el fichero. La validación del formulario de administración sí exigía doce, o sea que en la práctica nadie llegó a poner una corta por esa vía, pero el suelo del servicio estaba donde no tocaba y cualquier otro camino lo habría saltado.
+
+Queda como costumbre: **un ajuste de configuración se comprueba en lo que corre, no en lo que está escrito.**
