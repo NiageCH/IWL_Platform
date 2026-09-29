@@ -1,0 +1,33 @@
+# Qué no se sube a Vercel al desplegar desde la línea de comandos.
+#
+# Sin este fichero, Vercel se guía por .gitignore, que ya excluye todo esto.
+# Se pone explícito igual: aquí hay claves y nombres reales, y «funciona
+# porque otro fichero lo cubre» no es una garantía que convenga heredar.
+#
+# Nada de esto hace falta para construir la aplicación.
+
+# Claves de la instancia de la nube y tabla de contraseñas
+.env*
+.accesos-nube.md
+.altas-locales.json
+
+# Proyectos reales con condiciones comerciales
+supabase/seed/local/
+
+# Informes generados, con datos de compañías reales
+informes/
+
+# La base de datos no se construye en Vercel
+supabase/
+
+# Pruebas y sus resultados
+tests/
+test-results/
+playwright-report/
+playwright.config.ts
+vitest.config.mts
+vitest.rls.config.mts
+
+# Documentación del proyecto
+*.md
+!README.md
