@@ -807,3 +807,27 @@ from (values
 join roadmap_templates t on t.code = v.plantilla
 join roadmap_template_stages s on s.template_id = t.id and s.code = v.etapa
 on conflict (template_stage_id, order_index) do nothing;
+
+
+-- =============================================================================
+-- Organizaciones y cohorte
+--
+-- Estaban en el seed de compañías de demostración, que no se carga en una
+-- instalación con proyectos reales: sin ellas, la primera compañía que se
+-- insertaba fallaba por clave ajena. Son estructura del programa y su sitio
+-- es este.
+-- =============================================================================
+
+insert into organizations (id, name, slug) values
+  ('00000000-0000-0000-0001-000000000001', 'Inception Woman Lab', 'iwl'),
+  ('00000000-0000-0000-0001-000000000002', 'Niage Technology', 'niage')
+on conflict (id) do nothing;
+
+insert into cohorts (
+  id, organization_id, name, start_date, end_date, investable_target
+) values (
+  '00000000-0000-0000-0003-000000000001',
+  '00000000-0000-0000-0001-000000000001',
+  'Cohorte 2026', '2026-03-01', '2027-03-01', 2
+)
+on conflict (id) do nothing;

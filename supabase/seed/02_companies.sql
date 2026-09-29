@@ -9,14 +9,9 @@
 -- mágico y no hay contraseñas.
 -- =============================================================================
 
--- -----------------------------------------------------------------------------
--- Organizaciones
--- -----------------------------------------------------------------------------
-
-insert into organizations (id, name, slug) values
-  ('00000000-0000-0000-0001-000000000001', 'Inception Woman Lab', 'iwl'),
-  ('00000000-0000-0000-0001-000000000002', 'Niage Technology', 'niage')
-on conflict (id) do nothing;
+-- Las organizaciones y la cohorte están en 01_config.sql: son estructura del
+-- programa y hacen falta también cuando este fichero no se carga, que es lo
+-- que pasa en una instalación con proyectos reales.
 
 -- -----------------------------------------------------------------------------
 -- Personas. El trigger on_auth_user_created crea el perfil con su rol
@@ -83,11 +78,7 @@ where email in ('revisor@niage.test', 'revisor2@niage.test');
 -- Cohorte
 -- -----------------------------------------------------------------------------
 
-insert into cohorts (id, organization_id, name, start_date, end_date, investable_target) values
-  ('00000000-0000-0000-0003-000000000001',
-   '00000000-0000-0000-0001-000000000001',
-   'Cohorte 2026', '2026-03-01', '2027-03-01', 2)
-on conflict (id) do nothing;
+-- La cohorte también está en 01_config.sql, por lo mismo.
 
 -- -----------------------------------------------------------------------------
 -- Compañías

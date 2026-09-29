@@ -537,3 +537,38 @@ Ahora genera una —tres palabras y un número— y la imprime al terminar, o ac
 Y el `<details>` tampoco se anunciaba: el triángulo que pone el navegador es diminuto y del color del texto, y sobre el lienzo negro no se ve. Ahora lleva una flecha propia en el acento que gira al abrir.
 
 Para que no haya una cuarta vuelta, hay una prueba que **recorre todos los botones y desplegables de una página** y falla si alguno no tiene ni fondo, ni borde, ni subrayado. Es la única forma de que esto no dependa de acordarse.
+
+## 2026-09-29 · La contraseña del seed no puede viajar a la nube
+
+Los seeds locales crean al equipo de IWL con `crypt('iwl-local-2026')`: la misma contraseña para las siete cuentas, dos de ellas de dirección, y escrita en claro en el propio fichero. En el portátil de cada cual eso es cómodo y no expone nada, porque la base solo escucha en `localhost`.
+
+Al sembrar el proyecto de la nube esa contraseña se fue con los datos. La base pasó a tener una dirección pública y siete cuentas abiertas con una clave que está en un archivo.
+
+La respuesta no es quitar la contraseña del seed —hace falta para entrar en local sin montar el envío de correo—, sino que **sembrar la nube obligue a rotarlas antes de dar la dirección a nadie**. Eso es `scripts/claves.mjs`: pone una contraseña distinta a cada cuenta y deja la tabla en `.accesos-nube.md`, que está en `.gitignore` y se borra después de repartirla. El script de siembra lo avisa al terminar y la guía de despliegue lo pone como paso obligatorio, no como recomendación.
+
+Las cuentas de dominio `.test` se saltan: son marcadores de los seeds y no las usa nadie.
+
+## 2026-09-29 · El estado de entrada de AgrolabX vive con AgrolabX
+
+`21_proyectos.sql` ponía `entry_state = 'mvp'` a AgrolabX con un `update ... where slug = 'agrolabx'`, y lo hacía desde ahí para no tocar el fichero que lleva sus condiciones comerciales. Funcionaba mientras AgrolabX se cargaba en `10_agrolabx.sql`, antes.
+
+Al renombrarlo a `30_agrolabx.sql` —para que la configuración y el equipo entren primero— el orden se invirtió: el `update` pasó a ejecutarse cuando la compañía todavía no existía, no encontraba fila, y AgrolabX se quedaba sin estado. No falló nada; simplemente salía en blanco en la nube.
+
+Un `update` a una fila que crea otro fichero depende del orden de los ficheros, y el orden de los ficheros es un nombre que alguien puede cambiar. Ahora el estado se pone en el mismo fichero que crea la compañía.
+
+## 2026-09-29 · Un fallo que parecía nuestro y era del Supabase local
+
+La prueba de subir un documento al data room empezó a fallar con «No se ha podido subir el fichero: database error, code: 42P10». El 42P10 de Postgres es *no hay ninguna restricción única que case con el ON CONFLICT*, así que lo primero fue buscar el upsert en nuestro código. No había ninguno: la acción solo hace `insert`.
+
+El registro del contenedor de Storage dio la consulta entera. La emite el propio servicio:
+
+```
+insert into storage.objects (name, owner, owner_id, bucket_id, metadata, user_metadata, version)
+values (…) on conflict (name, bucket_id) do update set …
+```
+
+Y los únicos índices únicos de esa tabla son `(bucket_id, name, version)` y dos **parciales** —`where archived_at is null` y `where not is_versioned`—. Postgres solo acepta un índice parcial como árbitro si la propia sentencia lleva un `where` que lo implique, y esta no lo lleva. El servicio estaba pidiendo algo que su propio esquema no permite: la imagen `storage-api:v1.72.1` había aplicado las migraciones del esquema versionado pero seguía emitiendo la consulta de antes.
+
+Se arregla actualizando el CLI, que es quien elige las imágenes: v1.72.1 → v1.77.5. La versión queda fijada en `package.json` para que no dependa de lo que tenga cada portátil en la caché.
+
+Lo importante es que **no afectaba a la nube**: allí el servicio va al día. Se comprobó subiendo y borrando un fichero contra el Storage del proyecto antes de tocar nada en local, precisamente para no salir a arreglar un problema que no existía.

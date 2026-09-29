@@ -97,7 +97,12 @@ if (!/^s[ií]$/i.test(respuesta.trim())) {
 for (const fichero of ficheros) {
   process.stdout.write(`\n${fichero} … `);
   try {
-    execFileSync("npx", ["supabase", "db", "execute", "--file", fichero], {
+    /*
+     * `db query --file --linked` ejecuta el fichero contra el proyecto
+     * enlazado, a través de la API de gestión. No hace falta la contraseña
+     * de la base: basta con la sesión de `supabase login`.
+     */
+    execFileSync("npx", ["supabase", "db", "query", "--file", fichero, "--linked"], {
       stdio: ["ignore", "pipe", "pipe"],
       encoding: "utf8",
     });
@@ -115,10 +120,13 @@ for (const fichero of ficheros) {
 
 console.log(
   "\nListo.\n\n" +
-    "Queda dar de alta a la primera persona, que tiene que ser de dirección\n" +
-    "porque es quien puede crear a las demás:\n\n" +
+    "  ATENCIÓN: los seeds locales crean al equipo con una contraseña fija\n" +
+    "  escrita en el propio fichero. En la nube eso es una puerta abierta.\n" +
+    "  Cámbialas ahora, antes de dar la dirección a nadie:\n\n" +
+    "    SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<clave> \\\n" +
+    "      node scripts/claves.mjs\n\n" +
+    "Si la base se ha quedado sin personas, da de alta primero a alguien de\n" +
+    "dirección, que es quien puede crear a las demás:\n\n" +
     "  SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<clave> \\\n" +
-    "    node scripts/alta.mjs tu@correo.com admin_iwl \"\" \"\" \"Tu Nombre\"\n\n" +
-    "Después entra en la plataforma y pon las contraseñas del resto desde\n" +
-    "Administración → Personas.",
+    "    node scripts/alta.mjs tu@correo.com admin_iwl \"\" \"\" \"Tu Nombre\"",
 );

@@ -60,3 +60,6 @@ playwright-report/
 
 # Informes generados en local: llevan datos de compañías reales
 informes/
+
+# Tabla de accesos generada por scripts/claves.mjs. Contraseñas en claro.
+.accesos-nube.md

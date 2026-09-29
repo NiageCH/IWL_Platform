@@ -93,9 +93,34 @@ Te pedirá confirmación y usará el proyecto que enlazaste en el paso 2. Sube:
 estorban, y el repositorio las lleva solo porque las pruebas se apoyan en
 ellas.
 
-Después, entra en la plataforma y pon las contraseñas desde
-**Administración → Personas**. La cuenta de dirección se crea en este paso y
-el script te dirá cuál es su contraseña.
+### Cambiar las contraseñas antes de nada
+
+Los seeds locales crean al equipo con **una contraseña fija escrita en el
+propio fichero**. En el portátil de cada cual eso es cómodo y no expone nada.
+En un proyecto de la nube con dirección pública es una puerta abierta: la
+misma clave para todo el equipo, dirección incluida, y en un archivo.
+
+Así que no se sigue sin pasar por aquí:
+
+```bash
+SUPABASE_URL=https://<referencia>.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=<clave service_role> \
+  node scripts/claves.mjs
+```
+
+Le pone a cada cuenta una contraseña distinta y deja la tabla en
+`.accesos-nube.md`, que está en `.gitignore`. Repártela y **borra el
+fichero**. Cada persona puede cambiar la suya desde Mi cuenta, y desde
+**Administración → Personas** se le puede poner otra.
+
+Si no hay seeds locales y la base se queda vacía de personas, la primera
+cuenta —que tiene que ser de dirección, porque es quien puede crear a las
+demás— se da de alta así:
+
+```bash
+SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… \
+  node scripts/alta.mjs tu@correo.com admin_iwl "" "" "Tu Nombre"
+```
 
 ## 5 · La aplicación
 
