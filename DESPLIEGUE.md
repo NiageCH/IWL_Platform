@@ -182,6 +182,11 @@ para eso faltan muchos documentos.
 actividad.** Se reactivan solos al entrar, pero la primera visita después
 tarda. Si la prueba va a durar, el plan Pro son 25 $ al mes y lo quita.
 
+**El plan Hobby de Vercel excluye el uso comercial** en sus condiciones. Para
+enseñar la plataforma a unas cuantas personas da igual; el día que sea la
+herramienta con la que trabaja la incubadora, toca el plan Pro: 20 $ al mes
+por usuario.
+
 ## Lo que falta para dejarlo en producción de verdad
 
 Esto es una prueba. Antes de que entre gente de fuera de IWL:
