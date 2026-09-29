@@ -8,6 +8,17 @@ Tiempo: unos cuarenta minutos, casi todos esperando.
 
 ---
 
+## Esta instalación
+
+| | |
+|---|---|
+| Aplicación | https://iwl-platform.vercel.app |
+| Supabase | proyecto `IWL-Platform`, región `eu-central-1` (Fráncfort) |
+| Vercel | proyecto `iwl-platform`, cuenta `niagech` |
+
+Las claves están en `.env.produccion`, que no se versiona. Se regeneran desde
+**Project Settings → API** del panel de Supabase.
+
 ## Antes de empezar
 
 Necesitas una cuenta en [supabase.com](https://supabase.com) y otra en
