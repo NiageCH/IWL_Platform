@@ -580,3 +580,30 @@ Lo importante es que **no afectaba a la nube**: allí el servicio va al día. Se
 Se vio mirando el entorno del contenedor —`GOTRUE_PASSWORD_MIN_LENGTH=6`— en vez de fiarse de lo que decía el fichero. La validación del formulario de administración sí exigía doce, o sea que en la práctica nadie llegó a poner una corta por esa vía, pero el suelo del servicio estaba donde no tocaba y cualquier otro camino lo habría saltado.
 
 Queda como costumbre: **un ajuste de configuración se comprueba en lo que corre, no en lo que está escrito.**
+
+## 2026-09-29 · El rol de una cuenta lo pedía quien se registraba
+
+Antes de desplegar comprobé qué rol recibe una cuenta que se crea sola, porque el registro en la nube estaba abierto —es como nace todo proyecto de Supabase— y eso decidía si se podía publicar sin cerrarlo primero.
+
+`app.handle_new_user()` sacaba el rol de `raw_user_meta_data`. Ahí es donde gotrue guarda el objeto `data` que manda el cliente en la petición de registro. Lo escribe quien se da de alta. Probado contra la instancia local, con el registro abierto un momento:
+
+```
+POST /auth/v1/signup
+{"email":"…","password":"…","data":{"role":"admin_iwl"}}
+→ 200, y el perfil queda con rol admin_iwl
+```
+
+Eso es la cartera entera y el due diligence de todas las compañías, para cualquiera que diera con la dirección.
+
+Ahora hay dos cierres, y el de la base es el que manda:
+
+1. **El registro cerrado** en la configuración de auth. Es la puerta, y una puerta se puede quedar abierta por un descuido o por una prueba que no se limpia.
+2. **El trigger no lee nada del cliente.** Una cuenta nueva nace con `fundadora`, que es el rol de menos alcance —no uno inofensivo: no da acceso a nada por sí mismo, porque lo que deja ver una compañía es estar en `company_members`—. Quien deba tener otro rol lo recibe después y con la clave de servicio.
+
+Eso último no costó nada porque `scripts/alta.mjs` y la acción de administración **ya** actualizaban `profiles.role` justo después de crear la cuenta: el rol de los metadatos era redundante en los dos. Las únicas que dependían del trigger eran las semillas, que ahora lo ponen con un `update` explícito.
+
+El nombre sí se sigue leyendo de los metadatos. Es presentación: quien se lo invente solo consigue salir con un nombre falso en una pantalla a la que no llega.
+
+Queda en `tests/rls/registro.test.ts`, que crea cuentas pidiendo cada rol elevado y comprueba que todas salen con el de menos alcance, y que una recién creada no ve ninguna compañía.
+
+**Lo general:** un dato que viene del cliente no puede decidir una autorización, por muy de sistema que parezca el sitio donde viaja. `raw_user_meta_data` suena a interno y no lo es.

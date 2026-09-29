@@ -27,7 +27,7 @@ values (
   crypt('iwl-local-2026', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"full_name":"Mentoría comercial","role":"mentor"}'::jsonb,
+  '{"full_name":"Mentoría comercial"}'::jsonb,
   now(), now(),
   '', '', '', '', '', '', '', ''
 )
@@ -47,7 +47,14 @@ values (
 )
 on conflict do nothing;
 
-update profiles set organization_id = '00000000-0000-0000-0001-000000000001'
+/*
+ * El rol lo pone la semilla: desde
+ * 20260929120000_el_rol_no_lo_pone_el_cliente.sql el trigger no lo lee de
+ * los metadatos, porque ahí escribe quien se registra.
+ */
+update profiles
+set organization_id = '00000000-0000-0000-0001-000000000001',
+    role = 'mentor'
 where email = 'mentor2@iwl.test';
 
 /*

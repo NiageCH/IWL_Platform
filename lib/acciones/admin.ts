@@ -279,7 +279,12 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
     email: datos.email,
     email_confirm: true,
     password: clave,
-    user_metadata: { full_name: datos.full_name, role: datos.role },
+    /*
+     * Sin el rol: el trigger ya no lo lee de aquí, porque en un registro
+     * público estos metadatos los escribe quien se registra. El rol se fija
+     * abajo, con la clave de servicio, que es lo que este código ya hacía.
+     */
+    user_metadata: { full_name: datos.full_name },
   });
 
   let usuarioId = creada?.user?.id;

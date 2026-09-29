@@ -107,8 +107,11 @@ const alta = await fetch(`${url}/auth/v1/admin/users`, {
      * pasarla; no se guarda en claro en ninguna parte.
      */
     password: contrasena,
+    /*
+     * Sin el rol: el trigger ya no lo lee de los metadatos, porque en un
+     * registro público los escribe quien se registra. Se fija en el paso 2.
+     */
     user_metadata: {
-      role: rol,
       full_name: nombre || nombreDesdeCorreo(correo),
     },
   }),

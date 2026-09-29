@@ -35,7 +35,7 @@ select
   crypt('iwl-local-2026', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  jsonb_build_object('full_name', v.full_name, 'role', v.app_role),
+  jsonb_build_object('full_name', v.full_name),
   now(),
   now(),
   '', '', '', '', '', '', '', ''
@@ -51,6 +51,21 @@ from (values
   ('00000000-0000-0000-0002-000000000041', 'mentor@iwl.test',       'Mentoría producto',  'mentor')
 ) as v(id, email, full_name, app_role)
 on conflict (id) do nothing;
+
+/*
+ * Y su rol, que el trigger ya no saca de los metadatos: ahí escribe el
+ * cliente, y una cuenta nueva nace siempre con el de menos alcance. Ver
+ * 20260929120000_el_rol_no_lo_pone_el_cliente.sql.
+ */
+update profiles p set role = v.app_role::app_role
+from (values
+  ('admin@iwl.test',      'admin_iwl'),
+  ('programa@iwl.test',   'equipo_iwl'),
+  ('revisor@niage.test',  'revisor_niage'),
+  ('revisor2@niage.test', 'revisor_niage'),
+  ('mentor@iwl.test',     'mentor')
+) as v(email, app_role)
+where p.email = v.email;
 
 -- Identidad de correo, necesaria para el inicio de sesión local
 insert into auth.identities (
