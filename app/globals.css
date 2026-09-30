@@ -345,9 +345,14 @@ body {
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-md);
+  /*
+   * Grande y sin filete. Pequeña y con borde parecía un botón desactivado;
+   * así es la mancha de color suave de las referencias, que es lo que da
+   * carácter sin gritar.
+   */
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-lg);
   /*
    * El tono llega de fuera, y aquí solo se pone el de reserva.
    *
@@ -361,8 +366,16 @@ body {
     var(--tono, var(--color-acento)) 14%,
     transparent
   );
-  border: 1px solid
-    color-mix(in oklab, var(--tono, var(--color-acento)) 22%, transparent);
+}
+
+/* Sobre blanco, la mezcla con transparente se queda en nada: se mezcla con
+   blanco para que la mancha tenga cuerpo */
+[data-tema="claro"] .chip-icono {
+  background-color: color-mix(
+    in oklab,
+    var(--tono, var(--color-acento)) 12%,
+    white
+  );
 }
 
 .chip-icono-sm {
@@ -392,6 +405,35 @@ body {
   );
   border: 1px solid
     color-mix(in oklab, var(--tono, var(--color-secundario)) 20%, transparent);
+}
+
+/*
+ * El enlace de la barra lateral.
+ *
+ * Toda la fila es la zona que se pulsa —icono y rótulo—, no solo la palabra.
+ * Es lo que hace que se lea como navegación y no como una lista de texto.
+ */
+.item-lateral {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-secundario);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.item-lateral:hover {
+  background-color: var(--color-elevado);
+  color: var(--color-titular);
+}
+
+.item-lateral-activo,
+.item-lateral-activo:hover {
+  background-color: var(--color-elevado);
+  color: var(--color-titular);
+  font-weight: 600;
 }
 
 /* El acento con luz propia, para la cifra que manda en cada pantalla */

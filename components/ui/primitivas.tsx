@@ -54,11 +54,21 @@ export function TituloBloque({
   );
 }
 
+/**
+ * La etiqueta pequeña que acompaña a un dato.
+ *
+ * Era monoespaciada, en mayúsculas y con la letra separada. Es el rasgo que
+ * más delataba a la interfaz: puesto encima de cada cifra y en cada esquina
+ * de bloque, convertía la pantalla entera en un panel técnico de los de
+ * plantilla. Ahora es texto normal, que es lo que hacen los paneles que se
+ * leen bien.
+ *
+ * El monoespaciado se queda donde sirve para algo: en las cifras, que se
+ * alinean en columna.
+ */
 export function Metadato({ children }: { children: ReactNode }) {
   return (
-    <span className="cifra text-xs uppercase tracking-wide text-metadato">
-      {children}
-    </span>
+    <span className="text-xs font-medium text-metadato">{children}</span>
   );
 }
 
@@ -102,10 +112,14 @@ export function Cifra({
   const cuerpo = (
     <div className="flex min-w-0 flex-col gap-1">
       <Metadato>{etiqueta}</Metadato>
+      {/*
+        La cifra manda en la tarjeta y tiene que verse desde lejos. Antes era
+        del tamaño de un titular pequeño y competía con su propia etiqueta.
+      */}
       <span
         className={cn(
-          "cifra text-2xl leading-none",
-          destacada ? "brillo-acento text-acento-texto" : "text-titular",
+          "cifra text-[2rem] leading-none tracking-tight",
+          destacada ? "text-acento-texto" : "text-titular",
         )}
       >
         {valor}
@@ -116,13 +130,19 @@ export function Cifra({
 
   if (!Icono) return cuerpo;
 
+  /*
+   * El icono arriba y separado, no pegado al texto: es el patrón de las
+   * referencias y deja que la cifra empiece en el margen, alineada con la
+   * etiqueta. Con el icono delante, número y rótulo quedaban sangrados y la
+   * columna de cifras dejaba de leerse de un vistazo.
+   */
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex flex-col gap-3">
       <span
         aria-hidden="true"
-        className={cn("chip-icono mt-0.5", TONOS_ICONO[tono])}
+        className={cn("chip-icono", TONOS_ICONO[tono])}
       >
-        <Icono className="size-4" strokeWidth={2} />
+        <Icono className="size-5" strokeWidth={2} />
       </span>
       {cuerpo}
     </div>

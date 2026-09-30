@@ -47,8 +47,8 @@ test("el equipo de IWL ve la cohorte completa", async ({ page }) => {
   // El dashboard tiene varias tablas: se apunta a la de la cohorte por su
   // sección, no por ser «la tabla»
   const cohorte = page
-    .locator("section", { hasText: "Fila por compañía" })
-    .getByRole("table");
+    .locator("section", { hasText: "Una por compañía" })
+    .getByRole("list");
 
   /*
    * Con `exact`: cada fila lleva dos enlaces al mismo proyecto, el nombre y
@@ -66,8 +66,8 @@ test("un revisor de Niage solo ve las compañías que lleva", async ({ page }) =
   await entrarComo(page, USUARIOS.revisorVega, "/cartera");
 
   const cohorte = page
-    .locator("section", { hasText: "Fila por compañía" })
-    .getByRole("table");
+    .locator("section", { hasText: "Una por compañía" })
+    .getByRole("list");
   await expect(
     cohorte.getByRole("link", { name: "Vega Predictiva", exact: true }),
   ).toBeVisible();

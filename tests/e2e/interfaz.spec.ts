@@ -13,20 +13,26 @@ import { USUARIOS, entrarComo } from "./entrada";
 test("el menú marca dónde estás y se lee como un control", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera");
 
+  /*
+   * El menú de la consola es la barra lateral, con sus propias clases. Lo
+   * que se comprueba no es el nombre de la clase sino lo que significa: que
+   * la abierta se distingue de las demás y que lo dice también la
+   * accesibilidad, no solo el color.
+   */
   const cartera = page.getByRole("link", { name: "Cartera", exact: true });
-  await expect(cartera).toHaveClass(/pestana-activa/);
+  await expect(cartera).toHaveClass(/item-lateral-activo/);
   await expect(cartera).toHaveAttribute("aria-current", "page");
 
-  // Y las demás son pestañas, no texto suelto
   const comparativa = page.getByRole("link", { name: "Comparativa", exact: true });
-  await expect(comparativa).toHaveClass(/pestana/);
-  await expect(comparativa).not.toHaveClass(/pestana-activa/);
+  await expect(comparativa).toHaveClass(/item-lateral/);
+  await expect(comparativa).not.toHaveClass(/item-lateral-activo/);
+  await expect(comparativa).not.toHaveAttribute("aria-current", "page");
 
   await comparativa.click();
   await expect(page).toHaveURL(/comparativa/);
   await expect(
     page.getByRole("link", { name: "Comparativa", exact: true }),
-  ).toHaveClass(/pestana-activa/);
+  ).toHaveClass(/item-lateral-activo/);
 });
 
 test("las secciones de administración marcan la abierta", async ({ page }) => {
@@ -44,9 +50,8 @@ test("una fila de la cartera entera lleva al proyecto", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera");
 
   const fila = page
-    .locator("tr.fila-enlace")
+    .locator("li.fila-enlace")
     .filter({ has: page.getByRole("link", { name: "Marea Clínica" }) })
-    // Aparece en dos tablas: la de la cohorte y la de compromiso
     .first();
 
   // La flecha existe para anunciar que la fila lleva a algún sitio
@@ -56,9 +61,11 @@ test("una fila de la cartera entera lleva al proyecto", async ({ page }) => {
    * Y la flecha es un enlace de verdad, no un adorno: es el segundo punto
    * por el que entrar, y el que busca el ratón cuando la fila se ilumina.
    *
-   * No se estira el enlace sobre la fila entera porque sobre un `<tr>` esa
-   * técnica no es de fiar: `position: relative` en una fila de tabla no crea
-   * bloque contenedor en todos los navegadores.
+   * La cohorte dejó de ser una tabla y pasó a lista, así que la fila es un
+   * `<li>`. La tabla de compromiso sigue siendo tabla y mantiene su propia
+   * flecha, por el mismo motivo: sobre un `<tr>` el enlace estirado no es
+   * de fiar, porque `position: relative` en una fila no crea bloque
+   * contenedor en todos los navegadores.
    */
   await fila.locator("a.flecha").click();
   await expect(page).toHaveURL(/\/cartera\/marea-clinica$/);

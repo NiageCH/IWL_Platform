@@ -1,4 +1,5 @@
 import { CalendarClock, ShieldAlert, Target, Wallet } from "lucide-react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
@@ -20,7 +21,7 @@ import {
   RunwayCohorte,
 } from "@/components/graficos-cohorte";
 import { bandaDe } from "@/lib/datos/cohorte";
-import { euros, numero, porcentaje } from "@/lib/utils";
+import { cn, euros, numero, porcentaje } from "@/lib/utils";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -36,6 +37,63 @@ const ETAPAS: Record<string, string> = {
  *
  * Debajo, el embudo hacia invertible con el objetivo interno de la cohorte.
  */
+/*
+ * Las iniciales de una compañía, para el chip de su fila.
+ *
+ * Identifican de un vistazo cuando la lista es larga. El tono es decorativo
+ * y va por la longitud del nombre: no informa de nada, y el nombre está al
+ * lado, así que nadie depende del color para saber de quién se trata.
+ */
+function inicialesCompania(nombre: string) {
+  return nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+const TONO_COMPANIA = [
+  "[--tono:var(--color-acento-texto)]",
+  "[--tono:var(--color-cielo)]",
+  "[--tono:var(--color-lila)]",
+  "[--tono:var(--color-menta)]",
+  "[--tono:var(--color-durazno)]",
+] as const;
+
+/**
+ * Un dato de la fila: la cifra grande y su rótulo debajo.
+ *
+ * `oculta` retira el dato por debajo de `xl`. En una pantalla estrecha, MRR
+ * y fecha del último update son lo primero que sobra: la compañía, sus dos
+ * scores y su estado son lo que se recorre.
+ */
+function DatoFila({
+  etiqueta,
+  pie,
+  children,
+  oculta = false,
+}: {
+  etiqueta: string;
+  pie?: string;
+  children: ReactNode;
+  oculta?: boolean;
+}) {
+  return (
+    <span className={cn("flex flex-col", oculta && "hidden xl:flex")}>
+      <span className="cifra text-sm text-titular">{children}</span>
+      <span className="text-[0.6875rem] leading-tight text-metadato">
+        {etiqueta}
+      </span>
+      {pie ? (
+        <span className="text-[0.6875rem] leading-tight text-secundario">
+          {pie}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 export default async function Cartera() {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
@@ -75,27 +133,30 @@ export default async function Cartera() {
   ).length;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-8">
-      <div className="relative mb-6 pl-4">
-        <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
-        <h1 className="text-lg font-semibold tracking-tight text-titular">
+    <main className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-10">
+      {/*
+        El titular, grande y sin el filete lateral.
+        
+        Era del tamaño de un subtítulo y llevaba una raya de acento al lado,
+        que es el recurso que usaba toda la interfaz para señalar dónde
+        empieza algo. Un panel se orienta por el tamaño del titular, no por
+        una marca decorativa.
+      */}
+      <header className="mb-8">
+        <h1 className="titular-marca text-3xl text-titular sm:text-4xl">
           {cohorte?.name ?? "Cartera"}
         </h1>
-        <p className="mt-1 text-sm text-secundario">
+        <p className="mt-2 max-w-3xl text-base leading-relaxed text-secundario">
+          {lectura}
+        </p>
+        <p className="mt-3 text-sm text-metadato">
           {companias.length}{" "}
           {companias.length === 1 ? "compañía en seguimiento" : "compañías en seguimiento"}
         </p>
-      </div>
+      </header>
 
-      {/* La lectura de la cohorte en una frase: qué ha cambiado, dónde está el
-          hueco y cuántas están listas. Se construye con reglas, así que ante
-          los mismos datos dice siempre lo mismo. */}
-      <p className="mb-6 border-y border-filete py-4 text-base leading-relaxed text-titular">
-        {lectura}
-      </p>
-
-      <div className="mb-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Bloque elevacion={2} className="px-4 py-4">
+      <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <Bloque elevacion={2} className="p-6">
           <Cifra
             destacada
             icono={Target}
@@ -109,7 +170,7 @@ export default async function Cartera() {
             }
           />
         </Bloque>
-        <Bloque className="px-4 py-4">
+        <Bloque className="p-6">
           <Cifra
             icono={ShieldAlert}
             tono="mal"
@@ -118,7 +179,7 @@ export default async function Cartera() {
             nota="Bloquea el estado invertible"
           />
         </Bloque>
-        <Bloque className="px-4 py-4">
+        <Bloque className="p-6">
           <Cifra
             icono={Wallet}
             tono="durazno"
@@ -127,7 +188,7 @@ export default async function Cartera() {
             nota="Menos de 6 meses"
           />
         </Bloque>
-        <Bloque className="px-4 py-4">
+        <Bloque className="p-6">
           <Cifra
             icono={CalendarClock}
             tono="cielo"
@@ -162,94 +223,108 @@ export default async function Cartera() {
       </Bloque>
 
       <Bloque>
-        <TituloBloque accion={<Metadato>Fila por compañía</Metadato>}>
+        <TituloBloque accion={<Metadato>Una por compañía</Metadato>}>
           Cohorte
         </TituloBloque>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-sm">
-            <thead>
-              <tr className="border-b border-filete text-left">
-                <th className="px-4 py-2 font-medium text-metadato">Compañía</th>
-                <th className="px-4 py-2 font-medium text-metadato">Fase</th>
-                <th className="px-4 py-2 text-right font-medium text-metadato">Técnico</th>
-                <th className="px-4 py-2 text-right font-medium text-metadato">Preparación</th>
-                <th className="px-4 py-2 font-medium text-metadato">Recorrido</th>
-                <th className="px-4 py-2 text-right font-medium text-metadato">Runway</th>
-                <th className="px-4 py-2 text-right font-medium text-metadato">MRR</th>
-                <th className="px-4 py-2 font-medium text-metadato">Último update</th>
-                <th className="px-4 py-2 font-medium text-metadato">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-filete">
-              {companias.map((c) => (
-                <tr key={c.compania.id} className="fila-enlace align-top">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/cartera/${c.compania.slug}`}
-                      className="enlace enlace-destacado font-medium text-titular"
-                    >
-                      {c.compania.name}
-                    </Link>
-                    <span className="block text-xs text-metadato">
-                      {ETAPAS[c.compania.stage] ?? c.compania.stage}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-secundario">
-                    {c.compania.phases?.name ?? "—"}
-                  </td>
-                  <td className="cifra px-4 py-3 text-right text-titular">
-                    {numero(c.scoreTecnico.valor, 1)}
-                  </td>
-                  <td className="cifra px-4 py-3 text-right text-titular">
-                    {numero(c.scorePreparacion.valor, 1)}
-                    <span className="block text-xs font-normal text-metadato">
-                      {bandaDe(c.scorePreparacion.valor, bandas).nombre}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center gap-2">
-                      {c.movimiento && c.movimiento.seriePreparacion.length > 1 ? (
-                        <Chispa valores={c.movimiento.seriePreparacion} />
-                      ) : null}
-                      <Movimiento
-                        delta={c.movimiento?.deltaPreparacion ?? null}
-                        sufijo=""
-                      />
-                    </span>
-                  </td>
-                  <td className="cifra px-4 py-3 text-right text-secundario">
-                    {c.kpis.derivados.runway_meses === null
-                      ? "—"
-                      : `${numero(c.kpis.derivados.runway_meses, 1)} m`}
-                  </td>
-                  <td className="cifra px-4 py-3 text-right text-secundario">
-                    {euros(c.kpis.valores.mrr)}
-                  </td>
-                  <td className="cifra px-4 py-3 text-secundario">
-                    {c.kpis.periodo?.slice(0, 7) ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center justify-between gap-3">
-                      <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />
-                      {/*
-                        El segundo punto de entrada de la fila, y un enlace
-                        de verdad: así funciona el clic derecho, la rueda del
-                        ratón y el teclado.
-                      */}
-                      <Link
-                        href={`/cartera/${c.compania.slug}`}
-                        aria-label={`Abrir ${c.compania.name}`}
-                        className="flecha cifra px-2 text-acento-texto"
-                      >
-                        →
-                      </Link>
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        {/*
+          Lista, no tabla de nueve columnas.
+
+          La tabla obligaba a 860 px de ancho mínimo y aun así partía los
+          nombres en dos y tres líneas. Nueve cifras en fila no se comparan:
+          se recorren. Aquí cada compañía es una fila con aire, con lo que
+          identifica a la izquierda, lo que mide en el centro y su estado a
+          la derecha; lo secundario se retira en pantallas estrechas en vez
+          de empujar una barra de desplazamiento horizontal.
+        */}
+        <ul className="divide-y divide-filete">
+          {companias.map((c) => (
+            /*
+             * Rejilla, no `flex-wrap`.
+             *
+             * Con flex, cada fila envolvía por un sitio distinto según lo
+             * largo que fuera su nombre o su motivo, y la lista se veía
+             * desordenada. Con columnas declaradas, todas alinean. Por
+             * debajo de `lg` se apilan en una sola columna.
+             */
+            <li
+              key={c.compania.id}
+              className="fila-enlace grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-[minmax(11rem,1.4fr)_4.5rem_6rem_5rem_6rem_6.5rem_minmax(11rem,1fr)] lg:items-center lg:gap-4"
+            >
+              {/* Quién es */}
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "chip-icono chip-icono-sm text-xs font-bold",
+                    TONO_COMPANIA[
+                      c.compania.name.length % TONO_COMPANIA.length
+                    ],
+                  )}
+                >
+                  {inicialesCompania(c.compania.name)}
+                </span>
+                <span className="min-w-0">
+                  <Link
+                    href={`/cartera/${c.compania.slug}`}
+                    className="enlace enlace-destacado block truncate font-medium text-titular"
+                  >
+                    {c.compania.name}
+                  </Link>
+                  <span className="block truncate text-xs text-metadato">
+                    {ETAPAS[c.compania.stage] ?? c.compania.stage}
+                    {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
+                  </span>
+                </span>
+              </div>
+
+              {/* Qué mide */}
+              <DatoFila etiqueta="Técnico">
+                {numero(c.scoreTecnico.valor, 1)}
+              </DatoFila>
+              <DatoFila
+                etiqueta="Preparación"
+                pie={bandaDe(c.scorePreparacion.valor, bandas).nombre}
+              >
+                {numero(c.scorePreparacion.valor, 1)}
+              </DatoFila>
+              <DatoFila etiqueta="Runway">
+                {c.kpis.derivados.runway_meses === null
+                  ? "—"
+                  : `${numero(c.kpis.derivados.runway_meses, 1)} m`}
+              </DatoFila>
+              <DatoFila etiqueta="MRR">{euros(c.kpis.valores.mrr)}</DatoFila>
+
+              {/* Por dónde va */}
+              <span className="flex items-center gap-2">
+                {c.movimiento && c.movimiento.seriePreparacion.length > 1 ? (
+                  <Chispa valores={c.movimiento.seriePreparacion} />
+                ) : null}
+                <Movimiento
+                  delta={c.movimiento?.deltaPreparacion ?? null}
+                  sufijo=""
+                />
+              </span>
+
+              {/* Cómo está, y la puerta */}
+              <span className="flex items-center justify-between gap-2">
+                <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />
+                {/*
+                  El segundo punto de entrada de la fila, y un enlace de
+                  verdad: así funciona el clic derecho, la rueda del ratón y
+                  el teclado.
+                */}
+                <Link
+                  href={`/cartera/${c.compania.slug}`}
+                  aria-label={`Abrir ${c.compania.name}`}
+                  className="flecha cifra shrink-0 px-1 text-acento-texto"
+                >
+                  →
+                </Link>
+              </span>
+            </li>
+          ))}
+        </ul>
       </Bloque>
 
       <div className="mt-6 flex flex-col gap-6">

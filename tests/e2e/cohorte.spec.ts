@@ -23,7 +23,7 @@ test("cada compañía enseña su recorrido desde la medición de partida", async
 }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera");
 
-  const fila = page.locator("tr", { hasText: "Marea Clínica" }).first();
+  const fila = page.locator("li", { hasText: "Marea Clínica" }).first();
 
   // La banda acompaña al número: un 93,9 solo no dice nada
   await expect(fila).toContainText("Preparada");
