@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
 import { BotonSalir } from "./boton-salir";
+import { Oscuro } from "./marco";
 import { NavSecciones } from "./nav-secciones";
 
 const ROLES: Record<string, string> = {
@@ -15,12 +16,17 @@ const ROLES: Record<string, string> = {
 /**
  * Barra de la aplicación. El símbolo W de IWL en magenta y, a la derecha,
  * quién ha entrado y con qué papel.
+ *
+ * Va siempre oscura, también cuando la página es clara: es la franja de la
+ * marca, y separarla del área de trabajo es lo que evita que la pantalla sea
+ * una sola masa. Dentro de `<Oscuro>` los tokens cambian de valor, así que
+ * ni esta barra ni lo que cuelga de ella necesita saberlo.
  */
 export async function BarraSuperior() {
   const persona = await personaActual();
 
   return (
-    <div className="sticky top-0 z-20 border-b border-filete bg-lienzo/80 backdrop-blur-md">
+    <Oscuro className="sticky top-0 z-20 border-b border-filete bg-lienzo text-cuerpo">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
         {/* La marca, como en inceptionwomanlab.es: la W en un cuadro y el
             nombre en la tipografía expandida, en mayúsculas */}
@@ -43,10 +49,20 @@ export async function BarraSuperior() {
             <NavSecciones
               className="mb-0"
               secciones={[
-                { href: "/cartera", nombre: "Cartera" },
-                { href: "/comparativa", nombre: "Comparativa" },
+                { href: "/cartera", nombre: "Cartera", icono: "cartera" },
+                {
+                  href: "/comparativa",
+                  nombre: "Comparativa",
+                  icono: "comparativa",
+                },
                 ...(persona.role === "admin_iwl"
-                  ? [{ href: "/admin", nombre: "Administración" }]
+                  ? [
+                      {
+                        href: "/admin",
+                        nombre: "Administración",
+                        icono: "administracion" as const,
+                      },
+                    ]
                   : []),
               ]}
             />
@@ -64,6 +80,6 @@ export async function BarraSuperior() {
           <BotonSalir />
         </div>
       </div>
-    </div>
+    </Oscuro>
   );
 }

@@ -1,3 +1,4 @@
+import { CalendarClock, ShieldAlert, Target, Wallet } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
@@ -97,6 +98,8 @@ export default async function Cartera() {
         <Bloque elevacion={2} className="px-4 py-4">
           <Cifra
             destacada
+            icono={Target}
+            tono="acento"
             etiqueta="Invertibles"
             valor={`${invertibles} de ${companias.length}`}
             nota={
@@ -108,6 +111,8 @@ export default async function Cartera() {
         </Bloque>
         <Bloque className="px-4 py-4">
           <Cifra
+            icono={ShieldAlert}
+            tono="mal"
             etiqueta="Con hallazgo crítico"
             valor={numero(conCriticos)}
             nota="Bloquea el estado invertible"
@@ -115,6 +120,8 @@ export default async function Cartera() {
         </Bloque>
         <Bloque className="px-4 py-4">
           <Cifra
+            icono={Wallet}
+            tono="durazno"
             etiqueta="Runway bajo umbral"
             valor={numero(runwayBajo)}
             nota="Menos de 6 meses"
@@ -122,6 +129,8 @@ export default async function Cartera() {
         </Bloque>
         <Bloque className="px-4 py-4">
           <Cifra
+            icono={CalendarClock}
+            tono="cielo"
             etiqueta="Updates pendientes"
             valor={numero(companias.filter((c) => !c.updateAlDia).length)}
             nota="Del mes en curso"

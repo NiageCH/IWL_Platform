@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { personaActual } from "@/lib/supabase/servidor";
-import { NavSecciones } from "@/components/nav-secciones";
+import { NavSecciones, type Seccion } from "@/components/nav-secciones";
 import { Metadato } from "@/components/ui/primitivas";
 
 /**
@@ -16,12 +16,12 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
   if (!persona) redirect("/entrar");
   if (persona.role !== "admin_iwl") redirect("/cartera");
 
-  const secciones = [
-    { href: "/admin/companias", nombre: "Compañías y cohortes" },
-    { href: "/admin/personas", nombre: "Personas y accesos" },
-    { href: "/admin/rutas", nombre: "Recorridos" },
-    { href: "/admin/evaluacion", nombre: "Evaluación técnica" },
-    { href: "/admin/programa", nombre: "Programa y umbrales" },
+  const secciones: Seccion[] = [
+    { icono: "companias", href: "/admin/companias", nombre: "Compañías y cohortes" },
+    { icono: "personas", href: "/admin/personas", nombre: "Personas y accesos" },
+    { icono: "ruta", href: "/admin/rutas", nombre: "Recorridos" },
+    { icono: "evaluacion", href: "/admin/evaluacion", nombre: "Evaluación técnica" },
+    { icono: "umbrales", href: "/admin/programa", nombre: "Programa y umbrales" },
   ];
 
   return (

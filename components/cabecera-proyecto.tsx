@@ -40,14 +40,14 @@ export function CabeceraProyecto({
   const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
 
   const secciones = [
-    { codigo: "resumen", nombre: "Resumen", href: base },
-    { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta` },
-    { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa` },
-    { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion` },
-    { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico` },
-    { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia` },
-    { codigo: "plan", nombre: "Business plan", href: `${base}/plan` },
-    { codigo: "kpi", nombre: "KPI y updates", href: `${base}/kpi` },
+    { codigo: "resumen", nombre: "Resumen", href: base, icono: "resumen" },
+    { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta`, icono: "ruta" },
+    { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa`, icono: "programa" },
+    { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion`, icono: "aportacion" },
+    { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico`, icono: "tecnico" },
+    { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia`, icono: "diligencia" },
+    { codigo: "plan", nombre: "Business plan", href: `${base}/plan`, icono: "plan" },
+    { codigo: "kpi", nombre: "KPI y updates", href: `${base}/kpi`, icono: "kpi" },
   ];
 
   return (

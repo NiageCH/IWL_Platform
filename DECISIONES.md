@@ -607,3 +607,37 @@ El nombre sí se sigue leyendo de los metadatos. Es presentación: quien se lo i
 Queda en `tests/rls/registro.test.ts`, que crea cuentas pidiendo cada rol elevado y comprueba que todas salen con el de menos alcance, y que una recién creada no ve ninguna compañía.
 
 **Lo general:** un dato que viene del cliente no puede decidir una autorización, por muy de sistema que parezca el sitio donde viaja. `raw_user_meta_data` suena a interno y no lo es.
+
+## 2026-09-30 · Ni negro puro ni pantalla de un solo tono
+
+Rodrigo pasó cuatro referencias y dijo que la plataforma se veía «demasiado oscura y algo estática/plana». Lo de plana tenía una causa concreta y medible: `--color-lienzo` era **`#000000`**, negro puro, y los tres escalones de superficie iban `#000000` → `#09090b` → `#18181b`. Eso son 9 y 24 puntos de luminancia sobre 255. No se ven.
+
+Con negro de fondo no queda sitio por debajo: una tarjeta solo puede subir, y subía tan poco que no se separaba de nada. Ninguna de las cuatro referencias usa negro —carbón, gris muy oscuro, azul marino, índigo—, y no es una casualidad estética.
+
+Tres cambios en los cimientos:
+
+- **El lienzo oscuro pasa a carbón** (`#0d0d11`), y las superficies se separan de verdad. Además se recuperan las sombras, que en oscuro existían pero en claro eran un píxel al 4 %, o sea nada.
+- **La escala de radios de Tailwind sube** en vez de tocar las clases de cada componente. `rounded-md` aparecía veintiuna veces; redefinir `--radius-md` de 6 a 10 px y `--radius-lg` de 8 a 16 px redondea todo a la vez y deja un solo sitio donde cambiarlo.
+- **Lo oscuro y lo claro conviven en la misma pantalla.** La consola de IWL era oscura de arriba abajo; ahora el área de trabajo es clara —como la de la compañía, donde ya lo era— y lo oscuro se concentra en la barra de navegación, que es la franja de la marca.
+
+Para lo último hizo falta que `oscuro` fuese un selector y no solo el valor de arranque de `@theme`: sin eso no se puede pintar una isla oscura dentro de una página clara. Ahora `<Oscuro>` funciona a cualquier profundidad y ningún componente se entera, que era la regla de siempre.
+
+### Y la regla del color único
+
+Las referencias usan de cuatro a seis colores. La regla dice uno, y existe por una razón concreta: que los gráficos se lean con daltonismo.
+
+Se resolvió separando las dos cosas, que nunca debieron ir juntas. **Los gráficos no han cambiado**: un acento, y las series se distinguen por relleno, trazo y etiqueta. Lo que hay ahora es una paleta funcional —cielo, lila, menta, durazno— **solo para iconos, pastillas y estados**, y con una condición que es la que salva la regla: el color nunca es la única señal. Un chip lleva su palabra dentro, un icono lleva su rótulo al lado. Quien no distinga el tono lee exactamente lo mismo.
+
+Dicho de otro modo: la regla protegía la legibilidad de los datos, no prohibía el color en la decoración. Ya había cuatro tonos cromáticos en los tokens —verde, ámbar, rosa y el magenta— y nadie los contaba como una infracción, precisamente porque siempre iban con texto.
+
+### Un detalle de cascada que costó un rato
+
+`.chip-icono` declaraba `--tono: var(--color-acento)` como valor por defecto, y la utilidad que lo fija desde el marcado tiene **la misma especificidad**. Como `globals.css` va después de las utilidades de Tailwind, ganaba siempre la clase y los cuatro chips salían del mismo rosa.
+
+Un valor por defecto en CSS no se declara: se pone como reserva en el punto de uso, `var(--tono, var(--color-acento))`. Así lo de fuera gana sin depender del orden de la hoja.
+
+### Los iconos no cuestan dependencia
+
+`lucide-react` estaba **instalado y sin usar en ningún sitio**. Se pasan por nombre a `NavSecciones` —quien llama es casi siempre un componente de servidor, y una función no cruza esa frontera— y como componente a `Cifra`, que se renderiza en servidor.
+
+Y van siempre acompañados de su rótulo. Un icono suelto es una adivinanza.

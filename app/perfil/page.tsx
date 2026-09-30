@@ -4,7 +4,6 @@ import { Marco } from "@/components/marco";
 import { BarraSuperior } from "@/components/barra-superior";
 import { CambiarContrasena } from "@/components/formularios/perfil";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
-import { esIwl } from "@/lib/supabase/servidor";
 
 export const metadata = { title: "Mi cuenta · Plataforma IWL" };
 
@@ -23,7 +22,7 @@ export default async function Perfil() {
   if (!persona) redirect("/entrar?siguiente=/perfil");
 
   return (
-    <Marco tema={esIwl(persona.role) ? "oscuro" : "claro"}>
+    <Marco tema="claro">
       <BarraSuperior />
 
       <main className="mx-auto w-full max-w-2xl px-6 py-8">

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -61,20 +62,45 @@ export function Metadato({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Los tonos que puede llevar el icono de una cifra.
+ *
+ * Clasifican, no informan: la etiqueta de la cifra dice siempre de qué se
+ * trata, así que quien no distinga el tono lee exactamente lo mismo. Por eso
+ * esto vale para un icono y no para una serie de un gráfico.
+ */
+const TONOS_ICONO = {
+  acento: "[--tono:var(--color-acento-texto)]",
+  cielo: "[--tono:var(--color-cielo)]",
+  lila: "[--tono:var(--color-lila)]",
+  menta: "[--tono:var(--color-menta)]",
+  durazno: "[--tono:var(--color-durazno)]",
+  bien: "[--tono:var(--color-bien)]",
+  aviso: "[--tono:var(--color-aviso)]",
+  mal: "[--tono:var(--color-mal)]",
+} as const;
+
+export type TonoIcono = keyof typeof TONOS_ICONO;
+
 export function Cifra({
   valor,
   etiqueta,
   nota,
   destacada = false,
+  icono: Icono,
+  tono = "acento",
 }: {
   valor: ReactNode;
   etiqueta: string;
   nota?: ReactNode;
   /** La cifra que manda en la pantalla, con el acento encendido */
   destacada?: boolean;
+  /** Un icono de lucide. Acompaña a la etiqueta, no la sustituye */
+  icono?: LucideIcon;
+  tono?: TonoIcono;
 }) {
-  return (
-    <div className="flex flex-col gap-1">
+  const cuerpo = (
+    <div className="flex min-w-0 flex-col gap-1">
       <Metadato>{etiqueta}</Metadato>
       <span
         className={cn(
@@ -85,6 +111,20 @@ export function Cifra({
         {valor}
       </span>
       {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
+    </div>
+  );
+
+  if (!Icono) return cuerpo;
+
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden="true"
+        className={cn("chip-icono mt-0.5", TONOS_ICONO[tono])}
+      >
+        <Icono className="size-4" strokeWidth={2} />
+      </span>
+      {cuerpo}
     </div>
   );
 }

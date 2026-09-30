@@ -1,17 +1,24 @@
 @import "tailwindcss";
 
 /*
- * Identidad IWL · tema oscuro.
+ * Identidad IWL.
  *
- * Los valores salen de inceptionwomanlab.es: lienzo negro puro, paneles en
- * los grises de zinc y el mismo rosa, #FF007A. La plataforma ya usaba ese
- * rosa; lo que la separaba de la web era el lienzo, que era un gris azulado,
- * y la tipografía.
+ * Los valores salen de inceptionwomanlab.es: los grises de zinc y el rosa
+ * #FF007A. Lo oscuro es la cara de la marca —la barra de navegación, la
+ * pantalla de entrada— y lo claro es donde se trabaja.
  *
- * Sigue habiendo un solo color cromático. El amarillo que la web usa en los
- * antetítulos se ha dejado fuera a propósito: un segundo acento obligaría a
- * rehacer el sistema de gráficos, donde las series se distinguen por relleno
- * y trazo precisamente para no depender del color.
+ * Sobre el lienzo: ya no es negro puro. Lo era, y ese era el motivo de que la
+ * consola se viera plana. Con `#000000` de fondo no queda sitio por debajo, y
+ * los tres escalones de superficie iban 0 → 9 → 24 sobre 255: una diferencia
+ * que no se ve. Ahora el fondo es carbón y las superficies se separan de
+ * verdad, que es como consiguen relieve las interfaces oscuras que funcionan.
+ *
+ * Sobre el color: el acento crómatico sigue siendo uno, el rosa, y **los
+ * gráficos no han cambiado**: una serie, y las demás se distinguen por
+ * relleno, trazo y etiqueta de texto. Lo que sí hay ahora es una paleta
+ * funcional para iconos, pastillas y estados, donde el color **nunca va
+ * solo**: siempre lleva su palabra al lado. Esa era la razón de la regla
+ * —que la pantalla se lea con daltonismo— y se mantiene intacta.
  *
  * Los informes en PDF siguen siendo papel blanco: son documentos para
  * imprimir y enviar a un inversor, no pantallas.
@@ -21,11 +28,14 @@
    * Superficies. Tres niveles de elevación, no más: en una interfaz densa,
    * cada nivel extra de profundidad es una decisión menos clara sobre qué
    * es importante.
+   *
+   * Carbón con un punto de azul, no negro ni gris neutro: el mismo registro
+   * que la web, y deja margen para que una tarjeta se levante.
    * ------------------------------------------------------------------- */
-  --color-lienzo: #000000;
-  --color-papel: #09090b;
-  --color-elevado: #18181b;
-  --color-hundido: #000000;
+  --color-lienzo: #0d0d11;
+  --color-papel: #16161c;
+  --color-elevado: #202028;
+  --color-hundido: #08080b;
 
   /* Texto */
   --color-titular: #fafafa;
@@ -50,10 +60,45 @@
   --color-aviso: #fbbf24;
   --color-mal: #fb7185;
 
+  /* ---------------------------------------------------------------------
+   * Paleta funcional.
+   *
+   * Para iconos, pastillas y etiquetas de categoría. **No para gráficos**:
+   * ahí sigue mandando el acento único y la etiqueta de texto.
+   *
+   * La condición para usar cualquiera de estos: el color nunca es la única
+   * señal. Un chip lleva su palabra, un icono lleva su rótulo. Quien no
+   * distinga el tono lee exactamente lo mismo.
+   *
+   * Cada tono tiene dos valores: el del texto y el del fondo tenue sobre el
+   * que ese texto se lee. El par está comprobado por encima de 4,5.
+   * ------------------------------------------------------------------- */
+  --color-cielo: #7dd3fc;
+  --color-lila: #c4b5fd;
+  --color-menta: #6ee7b7;
+  --color-durazno: #fcd34d;
+
   /* Tipografía */
   --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
   --font-titular: var(--font-titular), var(--font-montserrat), sans-serif;
+
+  /* ---------------------------------------------------------------------
+   * Radios.
+   *
+   * Se redefine la escala de Tailwind en vez de cambiar las clases de cada
+   * componente: `rounded-md` aparece veintiuna veces, y tocarlas una a una
+   * sería mucho ruido para el mismo resultado. Subiendo la escala, todo lo
+   * que ya existe se redondea a la vez.
+   *
+   * Los 6 px de antes leían como herramienta interna. Estos son los de las
+   * referencias: control cómodo, tarjeta claramente redondeada.
+   * ------------------------------------------------------------------- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
 }
 
 html {
@@ -61,21 +106,67 @@ html {
 }
 
 /*
- * Tema claro, para la vista de la compañía.
+ * Los dos temas, y por qué conviven en la misma pantalla.
  *
- * La consola de IWL es oscura: se mira de seguido, tiene muchos gráficos y el
- * acento se enciende sobre el gris. La vista de la fundadora es clara: ahí se
- * redacta el business plan, se lee el checklist y se trabaja con texto largo,
- * y para eso el papel sigue siendo mejor. Documento claro, consola oscura.
+ * Antes era una pantalla o la otra: consola de IWL oscura, vista de la
+ * compañía clara. Ahora la consola es clara donde se trabaja y oscura donde
+ * está la marca —la barra de navegación—, que es lo que hace que una interfaz
+ * no parezca una cueva sin perder carácter.
  *
- * Solo se redefinen los tokens. Ningún componente sabe en qué tema está.
+ * Para eso `oscuro` tiene que poder anidarse dentro de `claro`: los valores
+ * del bloque `@theme` son el arranque del documento, pero no sirven para
+ * pintar una isla oscura dentro de una página clara. Este bloque los repite
+ * como selector, y así `data-tema="oscuro"` funciona a cualquier profundidad.
+ *
+ * Solo se redefinen tokens. Ningún componente sabe en qué tema está.
+ */
+[data-tema="oscuro"] {
+  color-scheme: dark;
+
+  --color-lienzo: #0d0d11;
+  --color-papel: #16161c;
+  --color-elevado: #202028;
+  --color-hundido: #08080b;
+
+  --color-titular: #fafafa;
+  --color-cuerpo: #e4e4e7;
+  --color-secundario: #a1a1aa;
+  --color-metadato: #8b8b94;
+
+  --color-filete: #2a2a33;
+  --color-filete-fuerte: #3d3d47;
+
+  --color-acento: #ff007a;
+  --color-acento-texto: #ff4d9d;
+  --color-acento-apagado: #7a1345;
+  --color-acento-solido: #e6006e;
+
+  --color-bien: #34d399;
+  --color-aviso: #fbbf24;
+  --color-mal: #fb7185;
+
+  --color-cielo: #7dd3fc;
+  --color-lila: #c4b5fd;
+  --color-menta: #6ee7b7;
+  --color-durazno: #fcd34d;
+}
+
+/*
+ * Tema claro: donde se trabaja.
+ *
+ * Aquí se redacta el business plan, se lee el checklist y se repasa una tabla
+ * de doce filas. Para eso el papel sigue siendo mejor que la consola.
+ *
+ * El lienzo no es blanco sino un gris muy claro con un punto de azul: así la
+ * tarjeta blanca se recorta contra él y la elevación se ve sin necesidad de
+ * una sombra pesada.
  */
 [data-tema="claro"] {
   color-scheme: light;
 
-  --color-lienzo: #fafafa;
+  --color-lienzo: #f4f5f7;
   --color-papel: #ffffff;
-  --color-elevado: #f4f4f5;
+  --color-elevado: #fafafb;
   --color-hundido: #ffffff;
 
   --color-titular: #18181b;
@@ -99,6 +190,12 @@ html {
   --color-bien: #047857;
   --color-aviso: #b45309;
   --color-mal: #b91c1c;
+
+  /* Los mismos cuatro tonos, bajados hasta que se leen sobre blanco */
+  --color-cielo: #0369a1;
+  --color-lila: #6d28d9;
+  --color-menta: #047857;
+  --color-durazno: #b45309;
 }
 
 body {
@@ -125,7 +222,11 @@ body {
       color-mix(in oklab, var(--color-acento) 10%, transparent),
       transparent 60%
     ),
-    linear-gradient(180deg, #0b0b0d 0%, var(--color-lienzo) 45%);
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-lienzo) 88%, black) 0%,
+      var(--color-lienzo) 45%
+    );
 }
 
 /* Las cifras y métricas se alinean en columna */
@@ -160,21 +261,137 @@ body {
 }
 
 /*
- * En claro, la profundidad es otra cosa: sobre papel, una sombra fuerte
- * ensucia. Basta el filete y una sombra corta.
+ * En claro la profundidad es otra cosa: sobre papel una sombra dura ensucia,
+ * pero la que había —un solo píxel al 4 %— no se veía en absoluto, y ahora
+ * que aquí es donde se trabaja hace falta que la tarjeta se levante.
+ *
+ * Dos sombras superpuestas: una corta que asienta el borde y otra larga y muy
+ * difusa que da el aire. Es lo que hacen las interfaces claras que tienen
+ * cuerpo sin parecer recortables.
  */
 [data-tema="claro"] .elevacion-1 {
-  box-shadow: 0 1px 2px rgb(24 24 27 / 0.04);
+  box-shadow:
+    0 1px 2px rgb(24 24 27 / 0.06),
+    0 8px 24px -16px rgb(24 24 27 / 0.18);
 }
 
 [data-tema="claro"] .elevacion-2 {
   background-color: var(--color-papel);
-  box-shadow: 0 2px 8px -2px rgb(24 24 27 / 0.08);
+  box-shadow:
+    0 1px 3px rgb(24 24 27 / 0.08),
+    0 16px 40px -20px rgb(24 24 27 / 0.28);
 }
 
 /* El degradado del lienzo solo tiene sentido sobre oscuro */
 [data-tema="claro"] .lienzo-degradado::before {
   display: none;
+}
+
+/* =========================================================================
+ * Piezas con relieve
+ *
+ * Tres formas que antes no existían y que son la mitad de lo que separa una
+ * pantalla con cuerpo de una lista de rectángulos: la tarjeta, el icono en su
+ * pastilla de color y la pastilla de filtro.
+ * ========================================================================= */
+
+/*
+ * La tarjeta. Superficie, filete, esquina y relieve en una sola clase, para
+ * no repetir la combinación en cada vista y que cambiarla sea un sitio.
+ */
+.tarjeta {
+  background-color: var(--color-papel);
+  border: 1px solid var(--color-filete);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.04) inset,
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 8px 24px -12px rgb(0 0 0 / 0.5);
+}
+
+[data-tema="claro"] .tarjeta {
+  box-shadow:
+    0 1px 2px rgb(24 24 27 / 0.06),
+    0 8px 24px -16px rgb(24 24 27 / 0.18);
+}
+
+/* La que se puede pulsar se levanta un punto al pasar por encima */
+.tarjeta-enlace {
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.tarjeta-enlace:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-filete-fuerte);
+}
+
+[data-tema="claro"] .tarjeta-enlace:hover {
+  box-shadow:
+    0 2px 4px rgb(24 24 27 / 0.08),
+    0 16px 32px -16px rgb(24 24 27 / 0.24);
+}
+
+/*
+ * El icono en su pastilla.
+ *
+ * El color de la pastilla clasifica —técnico, negocio, dinero, avance— pero
+ * nunca informa por sí solo: al lado siempre va el rótulo. Quien no
+ * distinga el tono lee lo mismo.
+ *
+ * El tono se pasa con `--tono`, que por defecto es el acento.
+ */
+.chip-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  /*
+   * El tono llega de fuera, y aquí solo se pone el de reserva.
+   *
+   * Declarar `--tono` en esta regla no vale: la utilidad que lo fija desde el
+   * marcado tiene la misma especificidad, y como esta hoja va después de las
+   * utilidades, ganaría siempre y todos los chips saldrían del mismo color.
+   */
+  color: var(--tono, var(--color-acento));
+  background-color: color-mix(
+    in oklab,
+    var(--tono, var(--color-acento)) 14%,
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklab, var(--tono, var(--color-acento)) 22%, transparent);
+}
+
+.chip-icono-sm {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-sm);
+}
+
+/*
+ * La pastilla de filtro o de etiqueta. Lleva su palabra dentro, así que el
+ * color es un refuerzo y no el dato.
+ */
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  /* Mismo motivo que en .chip-icono: reserva, no declaración */
+  color: var(--tono, var(--color-secundario));
+  background-color: color-mix(
+    in oklab,
+    var(--tono, var(--color-secundario)) 12%,
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklab, var(--tono, var(--color-secundario)) 20%, transparent);
 }
 
 /* El acento con luz propia, para la cifra que manda en cada pantalla */
