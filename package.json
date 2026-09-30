@@ -18,6 +18,7 @@
     "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
     "db:env": "node scripts/env-local.mjs",
     "alta": "node scripts/alta.mjs",
+    "claves": "node scripts/claves.mjs",
     "snapshots": "tsx scripts/snapshots.mts",
     "altas:locales": "node scripts/altas-locales.mjs",
     "informes": "node scripts/informes.mjs",
