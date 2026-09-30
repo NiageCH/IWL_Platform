@@ -703,3 +703,25 @@ O sea, el remedio estaba escrito, comentado y explicado, y no hacía lo que dec�
 Ahora el arranque abre un navegador, entra como dirección y como fundadora, y visita las rutas de cada una. Las pasadas pasan a durar lo mismo y la suite pasa dos veces seguidas, que es la condición.
 
 **Lo general:** una mitigación que no se comprueba es una creencia. Si el arranque dice que calienta, hay que mirar si la respuesta que recibe es la página o un 307.
+
+## 2026-09-30 · Estaba lento porque el código corría en Washington
+
+Rodrigo notó que la plataforma iba lenta y propuso moverla a AWS. La causa no era el alojamiento.
+
+La cabecera lo decía:
+
+```
+x-vercel-id: cdg1::iad1::…
+```
+
+`cdg1` es el borde de París, que es el que recibe la petición. Pero **`iad1` es Washington**, y ahí es donde se ejecutaba el código. La base está en Fráncfort. O sea que cada consulta SQL cruzaba el Atlántico: unos 90 ms de ida y vuelta.
+
+Y no es una consulta por página. `leerCartera` resuelve **compañía por compañía** con `leerCompania`, que hace dieciséis consultas cada una. Van en paralelo entre compañías, pero eso siguen siendo dieciséis viajes transatlánticos encadenados por carga de cartera: más de un segundo solo en latencia, antes de calcular nada.
+
+Se arregla con tres líneas en `vercel.json`: `"regions": ["fra1"]`. Medido en `/entrar`, que apenas toca la base, el primer byte pasó de 302 a 231 ms —unos 70 ms, que es justo un viaje ahorrado—, y en las pantallas que consultan de verdad el ahorro se multiplica por dieciséis.
+
+**Mover a AWS no habría arreglado esto**, y podría haberlo empeorado: el problema no era quién aloja, sino que el cómputo y los datos estaban en continentes distintos. Poner la aplicación en AWS Fráncfort daría la misma mejora que estas tres líneas, a cambio de mantener la infraestructura a mano.
+
+Lo que queda por ahí, y es de otra naturaleza: dieciséis consultas por compañía es un patrón N+1. Con la latencia en cinco milisegundos ya no duele, pero el día que la cohorte tenga treinta compañías volverá a doler. Está anotado en el propio `leerCartera`: si crece, pasa a una vista materializada.
+
+**Lo general:** «va lento» tiene casi siempre una causa concreta y medible. Antes de cambiar de plataforma conviene mirar la cabecera.

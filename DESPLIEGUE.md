@@ -180,6 +180,28 @@ ventana privada en `https://<tu-dominio>/entrar`. No debe haber forma.
 
 ---
 
+## Dónde se ejecuta el código
+
+`vercel.json` fija la región en `fra1`, Fráncfort, **al lado de la base**.
+
+No es un detalle. Por defecto Vercel ejecuta las funciones en `iad1`,
+Washington, y la base está en `eu-central-1`: así cada consulta SQL cruzaba
+el Atlántico, unos 90 ms de ida y vuelta. La cartera resuelve compañía por
+compañía, o sea decenas de viajes por carga de página, y se notaba.
+
+El borde que recibe la petición sigue siendo el más cercano a quien entra;
+esto solo mueve dónde corre el código que habla con la base. Se comprueba en
+la cabecera, que tiene la forma `<borde>::<región de la función>`:
+
+```bash
+curl -s -o /dev/null -D - https://iwl-platform.vercel.app/entrar \
+  | grep -i x-vercel-id
+# cdg1::fra1::…   ← borde en París, función en Fráncfort
+```
+
+Si algún día la base se mueve de región, esto se mueve con ella. Una sin la
+otra es peor que las dos juntas en cualquier sitio.
+
 ## Publicar un cambio
 
 **Subir a GitHub no publica nada.** El proyecto de Vercel se creó desde la
