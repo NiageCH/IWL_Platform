@@ -36,7 +36,7 @@ export async function leerCompania(slug: string) {
     .from("companies")
     .select(
       `id, name, slug, sector, one_liner, stage, tech_profile, entry_state, phase_id,
-       female_leadership_pct, founded_on, website,
+       female_leadership_pct, founded_on, website, logo_path,
        phases ( code, name, order_index ),
        cohorts ( name )`,
     )

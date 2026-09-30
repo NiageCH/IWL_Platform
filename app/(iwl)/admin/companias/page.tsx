@@ -1,3 +1,5 @@
+import { LogoCompania } from "@/components/formularios/logo";
+import { firmarLogos } from "@/lib/datos/logos";
 import Link from "next/link";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -75,6 +77,11 @@ export default async function AdminCompanias() {
   const activas = todas.filter((c) => c.archived_at === null);
   const archivadas = todas.filter((c) => c.archived_at !== null);
 
+  // Los logos, firmados de una vez: el bucket es privado
+  const logos = await firmarLogos(
+    (companias.data ?? []).map((c) => c.logo_path),
+  );
+
   const listaFases = (fases.data ?? []).map((f) => ({ id: f.id, name: f.name }));
   const listaCohortes = (cohortes.data ?? []).map((c) => ({
     id: c.id,
@@ -111,6 +118,14 @@ export default async function AdminCompanias() {
 
               return (
                 <li key={c.id} className="px-4 py-4">
+                  <div className="mb-3">
+                    <LogoCompania
+                      companyId={c.id!}
+                      nombre={c.name!}
+                      logo={logos.get(c.logo_path ?? "")}
+                    />
+                  </div>
+
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     {/* Aquí el enlace no se estira: la ficha lleva dentro
                         formularios y otros enlaces, y una capa encima los

@@ -1,6 +1,7 @@
 import { CalendarClock, ShieldAlert, Target, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { ChipCompania } from "@/components/chip-compania";
 import { redirect } from "next/navigation";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
 import { leerCartera } from "@/lib/datos/cartera";
@@ -37,30 +38,6 @@ const ETAPAS: Record<string, string> = {
  *
  * Debajo, el embudo hacia invertible con el objetivo interno de la cohorte.
  */
-/*
- * Las iniciales de una compañía, para el chip de su fila.
- *
- * Identifican de un vistazo cuando la lista es larga. El tono es decorativo
- * y va por la longitud del nombre: no informa de nada, y el nombre está al
- * lado, así que nadie depende del color para saber de quién se trata.
- */
-function inicialesCompania(nombre: string) {
-  return nombre
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-const TONO_COMPANIA = [
-  "[--tono:var(--color-acento-texto)]",
-  "[--tono:var(--color-cielo)]",
-  "[--tono:var(--color-lila)]",
-  "[--tono:var(--color-menta)]",
-  "[--tono:var(--color-durazno)]",
-] as const;
-
 /**
  * Un dato de la fila: la cifra y su rótulo debajo.
  *
@@ -99,6 +76,7 @@ export default async function Cartera() {
 
   const {
     companias,
+    logos,
     cohorte,
     bandas,
     mapa,
@@ -253,17 +231,10 @@ export default async function Cartera() {
              */
             <li key={c.compania.id} className="fila-enlace px-5 py-4">
               <div className="flex items-center gap-3">
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "chip-icono chip-icono-sm text-xs font-bold",
-                    TONO_COMPANIA[
-                      c.compania.name.length % TONO_COMPANIA.length
-                    ],
-                  )}
-                >
-                  {inicialesCompania(c.compania.name)}
-                </span>
+<ChipCompania
+                  nombre={c.compania.name}
+                  logo={logos.get(c.compania.logo_path ?? "")}
+                />
 
                 <span className="min-w-0 flex-1">
                   <Link
@@ -402,32 +373,68 @@ export default async function Cartera() {
           </TituloBloque>
           <ul className="divide-y divide-filete">
             {companias.map((c) => (
-              <li key={c.compania.id} className="fila-enlace px-4 py-3">
-                <div className="flex flex-wrap items-baseline gap-3">
+              /*
+               * La misma forma que la lista de la cohorte.
+               *
+               * Antes el nombre era texto en negrita con un subrayado fino
+               * entre más texto, y no se leía como una entrada a ningún
+               * sitio. Con el chip delante y la flecha al final, la fila
+               * entera se anuncia como lo que es.
+               */
+              <li key={c.compania.id} className="fila-enlace px-5 py-4">
+                <div className="flex items-center gap-3">
+<ChipCompania
+                    nombre={c.compania.name}
+                    logo={logos.get(c.compania.logo_path ?? "")}
+                  />
+
                   <Link
                     href={`/cartera/${c.compania.slug}`}
-                    className="estirado enlace enlace-destacado text-sm font-medium text-titular"
+                    className="estirado enlace enlace-destacado min-w-0 flex-1 truncate font-medium text-titular"
                   >
                     {c.compania.name}
                   </Link>
-                  <Metadato>
+
+                  <span
+                    className={cn(
+                      "pastilla shrink-0",
+                      c.invertible.invertible
+                        ? "[--tono:var(--color-bien)]"
+                        : "[--tono:var(--color-metadato)]",
+                    )}
+                  >
                     {c.invertible.invertible
                       ? "Invertible"
                       : c.invertible.siguientesPasos.length === 1
                         ? "Un paso"
                         : `${c.invertible.siguientesPasos.length} pasos`}
-                  </Metadato>
+                  </span>
+
+                  {/* Decorativa: la fila entera ya es el enlace */}
+                  <span
+                    aria-hidden="true"
+                    className="flecha cifra shrink-0 text-acento-texto"
+                  >
+                    →
+                  </span>
                 </div>
+
                 {c.invertible.siguientesPasos.length > 0 ? (
-                  <ol className="mt-1 flex flex-col gap-0.5">
-                    {c.invertible.siguientesPasos.slice(0, 3).map((paso) => (
-                      <li key={paso} className="text-sm text-secundario">
+                  <ol className="mt-2 flex flex-col gap-1 pl-11">
+                    {c.invertible.siguientesPasos.slice(0, 3).map((paso, i) => (
+                      <li
+                        key={paso}
+                        className="flex gap-2 text-sm text-secundario"
+                      >
+                        <span className="cifra shrink-0 text-xs text-acento-texto">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
                         {paso}
                       </li>
                     ))}
                   </ol>
                 ) : (
-                  <p className="mt-1 text-sm text-secundario">
+                  <p className="mt-2 pl-11 text-sm text-secundario">
                     Cumple la definición de proyecto invertible del programa.
                   </p>
                 )}

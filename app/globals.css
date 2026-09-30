@@ -315,6 +315,22 @@ body {
     0 8px 24px -16px rgb(24 24 27 / 0.18);
 }
 
+/*
+ * Panel con un punto de color.
+ *
+ * Para los scorecards, donde una rejilla de radares idénticos sobre blanco
+ * se leía como una hoja de cálculo. El tinte sale de `--tono` y es muy
+ * suave: da cuerpo y separa una tarjeta de la siguiente sin competir con el
+ * gráfico, que sigue teniendo un solo color de serie.
+ */
+.panel-tinte {
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--tono, var(--color-acento)) 12%, transparent),
+    transparent 62%
+  );
+}
+
 /* La que se puede pulsar se levanta un punto al pasar por encima */
 .tarjeta-enlace {
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;

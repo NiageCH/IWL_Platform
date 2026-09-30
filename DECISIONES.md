@@ -661,3 +661,45 @@ Queda una prueba que recorre **siete anchos** —390, 760, 768, 900, 1024, 1180 
 **La regla:** un diseño no se comprueba en la ventana que uno tiene abierta. Se comprueba en el intervalo donde cambia de forma, y sobre todo justo después de cada punto de corte.
 
 Y la de siempre, otra vez: cuando algo se ve mal, se mide antes de opinar. El culpable se encontró recorriendo el DOM y preguntando qué elemento tiene el borde derecho más allá del ancho de la ventana, no mirando la pantalla.
+
+## 2026-09-30 · El logo de cada compañía
+
+Rodrigo lo pidió para la lista de la cohorte, y tiene sentido más allá de ahí: en los siguientes pasos y en los scorecards cada compañía salía con un cuadro de iniciales, que identifica, pero un logo identifica mejor y es lo que una fundadora reconoce como suyo.
+
+Se guarda **la ruta en Storage, no la dirección**, y el bucket es privado con la dirección firmada al leer, igual que el data room. Un logo no es secreto, pero la lista de quién está en la cohorte sí: un bucket público con rutas predecibles deja enumerarla.
+
+Quién lo pone: **solo IWL**. Una fundadora carga su business plan y sus documentos, pero el logo es un dato de ficha y las fichas las lleva la incubadora. Lo impide la política de Storage, no la pantalla.
+
+La ruta lleva marca de tiempo. Reusar el nombre al cambiar el logo deja el anterior en pantalla hasta que caduca la caché de Storage; con un nombre nuevo el cambio se ve al momento, y el fichero viejo se borra después de que el nuevo entre bien.
+
+Las direcciones se firman **todas de una vez** en `lib/datos/logos.ts`. Una por compañía serían tantas llamadas como filas tenga la cohorte.
+
+### Un formulario no puede vivir dentro de una condición que su propio éxito vuelve falsa
+
+Dos veces el mismo error, en el mismo componente.
+
+El formulario de subir se cerraba solo al acabar bien, con `onOk`. Como el mensaje de resultado vive **dentro** del formulario, cerrarlo lo desmontaba antes de que nadie lo leyera: la subida funcionaba y no decía que hubiera funcionado.
+
+Y el de quitar estaba dentro de un `{logo ? ... : null}`. Quitar el logo deja `logo` en nulo, la rama se desmonta, y otra vez se lleva por delante su propia confirmación. Ahora el formulario se monta siempre y lo que aparece y desaparece es su botón.
+
+Las dos las cogió la prueba, no la vista: en pantalla, con el chip actualizándose detrás, era fácil dar por bueno que «algo había pasado».
+
+## 2026-09-30 · Al recrear una vista, partir de su última definición
+
+`20260930120000_logos.sql` necesitaba añadir una columna a `admin_companias`, y `create or replace view` no deja meterla en medio de la lista. Así que la recreó entera copiando la definición de `20260928140000_vista_personas.sql`, que es donde la vista nació.
+
+Pero `20260928150000_perfiles.sql` la había ampliado después con el cargo, las horas asignadas y las imputadas. Recrearla desde la copia vieja las borró, y la pantalla de equipo pasó a enseñar «0,0 de — h» para todo el mundo.
+
+Nadie lo vio en pantalla: «0,0 de — h» parece un dato vacío legítimo. Lo cogió una prueba que esperaba «de 80 h» después de asignar ochenta horas.
+
+**La regla:** buscar el nombre de una vista devuelve la migración donde nació, que casi nunca es la que manda. Antes de recrearla hay que mirar **todas** las migraciones que la tocan y partir de la última.
+
+## 2026-09-30 · Calentar las rutas sin sesión no calienta nada
+
+Había un calentamiento en el arranque de las pruebas, puesto justamente para que Next compilara las páginas antes de que la primera prueba las pidiera. Pedía las rutas con un `fetch` **sin cookies**: todas devolvían la redirección a `/entrar` y la página de verdad no llegaba a compilarse nunca.
+
+O sea, el remedio estaba escrito, comentado y explicado, y no hacía lo que decía. Los plantones de treinta segundos siguieron saliendo, solo que de tarde en tarde y por eso más difíciles de atribuir: una pasada tardaba 2,2 minutos y la siguiente 5, con dos fallos en sitios distintos.
+
+Ahora el arranque abre un navegador, entra como dirección y como fundadora, y visita las rutas de cada una. Las pasadas pasan a durar lo mismo y la suite pasa dos veces seguidas, que es la condición.
+
+**Lo general:** una mitigación que no se comprueba es una creencia. Si el arranque dice que calienta, hay que mirar si la respuesta que recibe es la página o un 307.

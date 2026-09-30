@@ -1,3 +1,4 @@
+import { firmarLogos } from "./logos";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { leerCompania, type ResumenCompania } from "./compania";
 import { leerMovimientoCartera } from "./movimiento";
@@ -68,15 +69,31 @@ export async function leerCartera() {
     .select("company_id, taken_on, preparation_score")
     .order("taken_on");
 
+  /*
+   * Los logos, firmados de una vez. El bucket es privado y una dirección
+   * firmada caduca, así que se piden al leer la pantalla y no se guardan.
+   */
+  const logos = await firmarLogos(
+    companias.map((c) => c.compania.logo_path),
+  );
+
   return {
     companias,
+    logos,
     cohorte,
     bandas,
     mapa,
     tramos: embudo(companias, bandas),
     evolucion: evolucionCohorte(instantaneas ?? []),
     severidades: hallazgosPorSeveridad(companias),
-    radares: radaresCohorte(companias),
+    // El radar lleva el logo, que ya está firmado unas líneas más arriba
+    radares: radaresCohorte(companias).map((r) => ({
+      ...r,
+      logo: logos.get(
+        companias.find((c) => c.compania.slug === r.slug)?.compania.logo_path ??
+          "",
+      ),
+    })),
     runway: runwayCohorte(companias),
     compromisos: (compromisos ?? [])
       .map((c) => {

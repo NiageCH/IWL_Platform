@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
+import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import {
   error,
@@ -1122,4 +1122,128 @@ function generarClave(): string {
 
   const tres = Array.from({ length: 3 }, () => palabras[azar(palabras.length)]);
   return `${tres.join("-")}-${10 + azar(90)}`;
+}
+
+// -----------------------------------------------------------------------------
+// El logo de una compañía
+// -----------------------------------------------------------------------------
+
+/**
+ * Tipos que aceptamos, y por qué estos.
+ *
+ * PNG y WebP para logos con transparencia, JPEG para los que vienen de una
+ * foto, y SVG porque es lo que suele mandar un estudio de diseño y escala
+ * sin perder nada.
+ */
+const TIPOS_LOGO = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+
+/** Dos megas. Lo que pase de ahí es una foto, no un logo */
+const MAXIMO_LOGO = 2 * 1024 * 1024;
+
+export async function subirLogo(formData: FormData): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Hay que entrar para hacer esto.");
+  if (!esIwl(persona.role)) {
+    return error("El logo de una compañía lo pone el equipo de IWL.");
+  }
+
+  const companyId = String(formData.get("company_id") ?? "");
+  if (!companyId) return error("Falta saber de qué compañía es el logo.");
+
+  const fichero = formData.get("logo");
+  if (!(fichero instanceof File) || fichero.size === 0) {
+    return error("Elige un fichero de imagen.");
+  }
+
+  if (!TIPOS_LOGO.includes(fichero.type)) {
+    return error(
+      "Ese tipo de fichero no vale como logo. Sirven PNG, JPEG, WebP y SVG.",
+    );
+  }
+
+  if (fichero.size > MAXIMO_LOGO) {
+    return error(
+      `El fichero pesa ${(fichero.size / 1024 / 1024).toFixed(1)} MB y el máximo son 2. Prueba a exportarlo más pequeño.`,
+    );
+  }
+
+  const supabase = await clienteServidor();
+
+  /*
+   * La ruta lleva la marca de tiempo.
+   *
+   * Storage cachea por dirección, así que reusar el mismo nombre al cambiar
+   * el logo deja el anterior en pantalla hasta que caduca la caché. Con un
+   * nombre nuevo cada vez, el cambio se ve al momento.
+   */
+  const extension = fichero.name.split(".").pop()?.toLowerCase() ?? "png";
+  const ruta = `${companyId}/${Date.now()}.${extension.replace(/[^a-z0-9]/g, "")}`;
+
+  const { error: falloSubida } = await supabase.storage
+    .from("logos")
+    .upload(ruta, fichero, { contentType: fichero.type });
+
+  if (falloSubida) {
+    return error(`No se ha podido subir el logo: ${falloSubida.message}`);
+  }
+
+  // El anterior, para borrarlo si este entra bien
+  const { data: antes } = await supabase
+    .from("companies")
+    .select("logo_path")
+    .eq("id", companyId)
+    .maybeSingle();
+
+  const { error: falloFicha } = await supabase
+    .from("companies")
+    .update({ logo_path: ruta })
+    .eq("id", companyId);
+
+  if (falloFicha) {
+    // Sin ficha que lo apunte, el fichero solo ocupa sitio
+    await supabase.storage.from("logos").remove([ruta]);
+    return traducirError(falloFicha);
+  }
+
+  if (antes?.logo_path && antes.logo_path !== ruta) {
+    await supabase.storage.from("logos").remove([antes.logo_path]);
+  }
+
+  revalidatePath("/admin/companias");
+  revalidatePath("/cartera");
+  return ok("Logo actualizado.");
+}
+
+export async function quitarLogo(formData: FormData): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Hay que entrar para hacer esto.");
+  if (!esIwl(persona.role)) {
+    return error("El logo de una compañía lo quita el equipo de IWL.");
+  }
+
+  const companyId = String(formData.get("company_id") ?? "");
+  if (!companyId) return error("Falta saber de qué compañía es el logo.");
+
+  const supabase = await clienteServidor();
+
+  const { data: antes } = await supabase
+    .from("companies")
+    .select("logo_path")
+    .eq("id", companyId)
+    .maybeSingle();
+
+  const { error: falloFicha } = await supabase
+    .from("companies")
+    .update({ logo_path: null })
+    .eq("id", companyId);
+
+  if (falloFicha) return traducirError(falloFicha);
+
+  if (antes?.logo_path) {
+    await supabase.storage.from("logos").remove([antes.logo_path]);
+  }
+
+  revalidatePath("/admin/companias");
+  revalidatePath("/cartera");
+  return ok("Logo quitado. La compañía vuelve a salir con sus iniciales.");
 }

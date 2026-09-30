@@ -1,5 +1,7 @@
 "use client";
 
+import { ChipCompania, tonoDe } from "@/components/chip-compania";
+import { cn } from "@/lib/utils";
 import {
   Area,
   AreaChart,
@@ -77,7 +79,14 @@ export function EvolucionCohorte({ puntos }: { puntos: PuntoCohorte[] }) {
   const datos = puntos.map((p) => ({ ...p, mes: p.fecha.slice(0, 7) }));
 
   return (
-    <div className="h-[220px] w-full px-4 py-4">
+    /*
+     * La altura fija es del gráfico, no del bloque.
+     *
+     * Estaba en el contenedor, y como el gráfico ocupa el 100 % de su alto,
+     * el pie quedaba fuera de la caja y se veía cortado.
+     */
+    <div className="w-full px-4 py-4">
+      <div className="h-[220px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={datos} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
           <defs>
@@ -132,7 +141,8 @@ export function EvolucionCohorte({ puntos }: { puntos: PuntoCohorte[] }) {
           />
         </AreaChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-xs text-metadato">
+      </div>
+      <p className="mt-3 text-xs text-metadato">
         Media del score de preparación · la línea discontinua es la primera
         medición de la cohorte
       </p>
@@ -266,6 +276,8 @@ export interface RadarCompania {
   slug: string;
   score: number;
   dimensiones: Array<{ nombre: string; nivel: number; objetivo: number }>;
+  /** Dirección firmada del logo, si la compañía tiene uno */
+  logo?: string | null;
 }
 
 /**
@@ -281,12 +293,27 @@ export function RadaresCohorte({ companias }: { companias: RadarCompania[] }) {
   return (
     <div className="grid gap-4 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
       {companias.map((c) => (
-        <figure key={c.slug} className="m-0">
-          <figcaption className="mb-1 flex items-baseline justify-between gap-2">
-            <span className="truncate text-sm font-medium text-titular">
+        /*
+         * Cada radar en su tarjeta, con un punto de color propio.
+         *
+         * Sueltos sobre el fondo del bloque, seis radares iguales se leían
+         * como una hoja de cálculo. El tinte es decorativo y va por el
+         * nombre: la serie del gráfico sigue siendo una sola y se distingue
+         * por relleno y trazo, no por color.
+         */
+        <figure
+          key={c.slug}
+          className={cn(
+            "tarjeta panel-tinte m-0 overflow-hidden p-3",
+            tonoDe(c.nombre),
+          )}
+        >
+          <figcaption className="mb-2 flex items-center gap-2">
+            <ChipCompania nombre={c.nombre} logo={c.logo} />
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-titular">
               {c.nombre}
             </span>
-            <span className="cifra text-sm text-acento-texto">
+            <span className="cifra shrink-0 text-lg text-acento-texto">
               {formatear(c.score)}
             </span>
           </figcaption>

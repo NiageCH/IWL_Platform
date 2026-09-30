@@ -236,9 +236,13 @@ test("hay un solo menú a la vista, nunca los dos ni ninguno", async ({
    * el ancho, que es cosa de CSS. Lo que no puede pasar es que se vean las
    * dos a la vez, ni que a algún ancho no se vea ninguna.
    */
+  // Se entra una vez y luego solo cambia el ancho: qué menú se ve lo decide
+  // CSS, así que no hace falta volver a cargar la sesión en cada medida.
+  // Entrando cinco veces, la prueba se pasaba del tiempo y fallaba sola.
+  await entrarComo(page, USUARIOS.admin, "/cartera");
+
   for (const w of [390, 760, 768, 1024, 1440]) {
     await page.setViewportSize({ width: w, height: 900 });
-    await entrarComo(page, USUARIOS.admin, "/cartera");
 
     const visibles = await page
       .getByRole("link", { name: "Cartera", exact: true })
