@@ -180,6 +180,38 @@ ventana privada en `https://<tu-dominio>/entrar`. No debe haber forma.
 
 ---
 
+## Publicar un cambio
+
+**Subir a GitHub no publica nada.** El proyecto de Vercel se creó desde la
+línea de comandos y no está conectado al repositorio, así que un `git push`
+deja el código en GitHub y la web sigue sirviendo lo anterior.
+
+Publicar son dos pasos, y el orden importa:
+
+```bash
+npx supabase db push     # 1. la base, primero
+npx vercel --prod        # 2. el código, después
+```
+
+Primero la base porque el código nuevo suele consultar columnas que la
+migración acaba de crear. Al revés, la web queda unos minutos pidiendo algo
+que no existe.
+
+Para comprobar que ha entrado de verdad, sin fiarse de que el despliegue diga
+«Ready», mira algo que haya cambiado en esta versión. Por ejemplo, el color
+del lienzo:
+
+```bash
+CSS=$(curl -s -L https://iwl-platform.vercel.app/entrar \
+  | grep -oE '/_next/static/[^"]*\.css' | head -1)
+curl -s "https://iwl-platform.vercel.app$CSS" | grep -o "color-lienzo:[^;]*"
+```
+
+**Se puede quitar el paso 2** conectando el proyecto al repositorio desde
+Vercel → Project Settings → Git. A partir de ahí, cada push a `main` despliega
+solo. La migración sigue siendo manual, que es lo prudente: una migración no
+se lanza sin mirar.
+
 ## Lo que cuesta
 
 Los planes gratuitos dan de sobra para una cohorte pequeña: 500 MB de base de
