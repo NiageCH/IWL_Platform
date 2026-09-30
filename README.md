@@ -2,14 +2,13 @@
 
 Plataforma de seguimiento de la cohorte de **Inception Woman Lab**. Cada compañía mantiene su business plan vivo y su due diligence vivo, reporta sus KPI cada mes y ve su avance en el programa. El equipo de IWL ve la cartera completa, entra proyecto a proyecto y mide lo que la incubadora aporta.
 
-Dos vistas sobre los mismos datos, con un aislamiento estricto entre compañías que decide la base y no la interfaz.
+Dos vistas sobre los mismos datos, con un aislamiento estricto entre compañías que decide la base y no la interfaz. Se trabaja sobre papel en las dos; lo oscuro se reserva para la barra lateral y la pantalla de entrada, que es donde va la marca.
 
 | Vista | Quién | Ve |
 |---|---|---|
 | Compañía | El equipo fundador | Solo su proyecto. Carga información, responde comentarios, reporta KPI |
 | IWL | Equipo de IWL e ingeniería de Niage Technology | Toda la cartera, dashboard de cohorte, revisión y validación |
 
-En marcha en **https://iwl-platform.vercel.app**. Cómo se levantó, y cómo levantar otra instalación, en `DESPLIEGUE.md`.
 
 ## Tres principios
 
@@ -125,7 +124,7 @@ Fase 1 del documento de alcance completa, más el registro de aportación, la l�
 | Madurez | Completo: pesos configurables, y lo sin medir no rellena huecos |
 | Mentoría | Completo: principal coordina y puntúa, secundario tiene horas y tareas |
 | Informes | Completo: técnico interno, técnico para inversor, aportación y mensual |
-| Administración | Completo: compañías, personas, perfiles, recorridos, archivado |
+| Administración | Completo: compañías, personas, perfiles, recorridos, archivado, logos |
 | Worker de análisis de repositorios | Contrato y orquestador escritos, sin ejecutar todavía |
 
 Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de cohorte con exportaciones, y enlaces de solo lectura para mentores externos.
@@ -135,7 +134,7 @@ Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de 
 | Capa | Elección |
 |---|---|
 | Aplicación | Next.js 16 (App Router) con TypeScript estricto |
-| Interfaz | Tailwind CSS 4 |
+| Interfaz | Tailwind CSS 4, con iconos de lucide |
 | Datos, auth y ficheros | Supabase: Postgres, contraseña y enlace mágico, Storage y Row Level Security. Región UE |
 | Gráficos | Recharts |
 | Informes | Se imprimen desde el navegador, con CSS de impresión |
@@ -146,8 +145,8 @@ Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de 
 
 ```
 app/
-  (fundadora)/     Vista de la compañía, en claro
-  (iwl)/           Consola de cartera y administración, en oscuro
+  (fundadora)/     Vista de la compañía
+  (iwl)/           Consola de cartera y administración, con barra lateral
   informe/         Los cuatro informes, para imprimir
   entrar/ perfil/  Acceso y cuenta propia
 components/
@@ -178,9 +177,12 @@ worker/            Analizador de repositorios. No guarda código
 
 **El rol de una cuenta no lo pide quien se registra.** Toda cuenta nace con el de menos alcance; quien deba tener otro lo recibe después, con la clave de servicio. El porqué está en `DECISIONES.md`, y cuesta poco leerlo.
 
+**Nunca negro puro, y dos registros de color.** El lienzo oscuro es carbón: con `#000000` no queda sitio por debajo y ninguna tarjeta se levanta. Los gráficos usan un solo color cromático y distinguen las series por relleno, trazo y etiqueta; los iconos y chips tienen paleta propia, con la condición de que el color nunca sea la única señal.
+
+**Los logos viven en un bucket privado.** Se guarda la ruta y la dirección se firma al leer, como el data room. Un logo no es secreto, pero la lista de quién está en la cohorte sí: un bucket público con rutas predecibles deja enumerarla.
+
 **El worker no almacena código.** Clona en un contenedor efímero, analiza y borra en un `finally`. De un secreto detectado se guarda el tipo y la ubicación, nunca el valor.
 
-**Un solo color cromático.** Los gráficos usan el acento como única serie y diferencian por etiqueta de texto; las referencias van en trazo discontinuo gris. La paleta se valida contra cada superficie antes de usarla.
 
 ## Base de datos
 
@@ -198,6 +200,23 @@ Los datos semilla, en `supabase/seed`:
 - `08_mentoria.sql` · mentores cruzados, con horas y tareas
 
 `supabase/seed/local/*.sql` se aplica al final y **no se versiona**: es donde van los proyectos reales, cuyos Anexos llevan importes, tarifas y porcentajes de equity. Ver `supabase/seed/local.LEEME.md`.
+
+## Publicar
+
+En marcha en **https://iwl-platform.vercel.app**, con la base en Supabase,
+región de Fráncfort.
+
+**Un `git push` no publica.** El proyecto de Vercel no está conectado al
+repositorio, así que se despliega a mano y en este orden:
+
+```bash
+npx supabase db push     # la base primero: el código nuevo pide columnas nuevas
+npx vercel --prod        # y después el código
+```
+
+Al revés, la web queda unos minutos pidiendo algo que todavía no existe. Cómo
+comprobar que ha entrado de verdad —sin fiarse de que el despliegue diga
+«Ready»— y cómo levantar otra instalación, en `DESPLIEGUE.md`.
 
 ## Documentación del proyecto
 

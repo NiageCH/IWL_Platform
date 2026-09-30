@@ -91,21 +91,51 @@ valor.
 
 ## Interfaz
 
-Papel blanco para la compañía, consola oscura para IWL. Un solo color de
-acento, el magenta, y solo en filetes, cifras destacadas y gráficos: nunca
-como fondo de un bloque de texto.
+**Se trabaja sobre papel; lo oscuro es la marca.** El área de trabajo va en
+claro en las dos vistas. Lo oscuro se reserva para la barra lateral y la
+pantalla de entrada, que es lo que da carácter sin convertir la pantalla en
+una cueva. Antes la consola de IWL era oscura de arriba abajo y sobre negro
+puro: se veía plana, porque sin sitio por debajo ninguna tarjeta puede
+levantarse.
 
-**En los gráficos, el color nunca es la única señal.** Toda serie lleva
-etiqueta de texto, y se comprueba el contraste para daltonismo antes de usar
-dos colores. Cuando dos series no se distinguen, se usan dos paneles o relleno
-frente a trazo, no dos tonos parecidos.
+Una isla oscura dentro de una página clara se hace con `<Oscuro>`, que
+redefine los tokens. Ningún componente sabe en qué tema está.
 
-**Los valores salen de inceptionwomanlab.es**: lienzo negro, grises de zinc,
-rosa `#FF007A` y titulares en Zalando Sans Expanded, en mayúsculas y
-apretados. Esa tipografía solo va en los titulares grandes: en una tabla o en
-un párrafo largo cansa. El amarillo de los antetítulos de la web se ha dejado
-fuera a propósito, para no romper la regla de un solo color cromático de la
-que dependen los gráficos.
+**Nunca negro puro.** El lienzo oscuro es carbón, `#0d0d11`, y los escalones
+de superficie se separan de verdad. Con `#000000` los tres niveles iban 0 → 9
+→ 24 sobre 255, una diferencia que no se ve.
+
+**Dos registros de color, y no se mezclan:**
+
+- **Los gráficos usan un solo color cromático**, el magenta. Las series se
+  distinguen por relleno, trazo y etiqueta de texto, nunca por tono. Esto no
+  se relaja: es de lo que depende que la pantalla se lea con daltonismo.
+- **Los iconos, chips y estados tienen una paleta funcional** —cielo, lila,
+  menta, durazno— con una condición: **el color nunca es la única señal**. Un
+  chip lleva su palabra dentro, un icono lleva su rótulo al lado. Quien no
+  distinga el tono lee exactamente lo mismo.
+
+**Los valores salen de inceptionwomanlab.es**: grises de zinc, rosa `#FF007A`
+y titulares en Zalando Sans Expanded, en mayúsculas y apretados. Esa
+tipografía solo va en los titulares grandes: en una tabla o en un párrafo
+largo cansa.
+
+Sobre papel, `#FF007A` se queda en 3,8 contra el blanco: vale para un filete
+o una barra, no para leer. Ahí el texto usa `--color-acento-texto` y los
+botones `--color-acento-solido`, que son el mismo tono más oscuro.
+
+**Las etiquetas de dato van en texto normal**, no en mayúscula monoespaciada.
+Lo estuvieron, encima de cada cifra y en cada esquina de bloque, y era el
+rasgo que convertía la pantalla en un panel técnico de plantilla. El
+monoespaciado se queda en las cifras, que es donde sirve para alinear.
+
+**Las piezas con relieve**, en `globals.css`: `.tarjeta` (superficie, filete,
+esquina y sombra), `.chip-icono` (icono en su mancha de color), `.pastilla`
+(etiqueta con su palabra dentro) y `.item-lateral` (enlace de la barra). El
+tono se pasa con `--tono` desde el marcado, y las clases lo toman **como
+valor de reserva en el punto de uso**, no declarándolo: declararlo pierde
+contra la utilidad de Tailwind, que tiene la misma especificidad y va antes
+en la hoja.
 
 Sobre papel, `#FF007A` se queda en 3,8 contra el blanco: vale para un filete
 o una barra, no para leer. Ahí el texto usa `--color-acento-texto` y los
@@ -143,3 +173,8 @@ el código, el problema es el código.
 **Cada cambio termina con las tres suites en verde**, y las pruebas tienen que
 poder pasar dos veces seguidas: la que toca configuración la restaura por fuera
 del camino que prueba, y la que crea datos los limpia.
+
+**Un diseño se comprueba en varios anchos, no en la ventana que uno tenga
+abierta.** Sobre todo justo antes y justo después de cada punto de corte, que
+es donde se rompe: una rejilla de anchos fijos que cabe a 1512 px puede
+solaparse a 1180. Hay pruebas para siete anchos en `tests/e2e/interfaz.spec.ts`.
