@@ -1,3 +1,13 @@
+import {
+  Cpu,
+  FileSignature,
+  FolderCheck,
+  HandCoins,
+  LayoutDashboard,
+  NotebookPen,
+  Route,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { Cifra, Metadato, Semaforo } from "@/components/ui/primitivas";
@@ -40,14 +50,14 @@ export function CabeceraProyecto({
   const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
 
   const secciones = [
-    { codigo: "resumen", nombre: "Resumen", href: base, icono: "resumen" },
-    { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta`, icono: "ruta" },
-    { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa`, icono: "programa" },
-    { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion`, icono: "aportacion" },
-    { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico`, icono: "tecnico" },
-    { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia`, icono: "diligencia" },
-    { codigo: "plan", nombre: "Business plan", href: `${base}/plan`, icono: "plan" },
-    { codigo: "kpi", nombre: "KPI y updates", href: `${base}/kpi`, icono: "kpi" },
+    { codigo: "resumen", nombre: "Resumen", href: base, Icono: LayoutDashboard },
+    { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta`, Icono: Route },
+    { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa`, Icono: FileSignature },
+    { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion`, Icono: HandCoins },
+    { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico`, Icono: Cpu },
+    { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia`, Icono: FolderCheck },
+    { codigo: "plan", nombre: "Business plan", href: `${base}/plan`, Icono: NotebookPen },
+    { codigo: "kpi", nombre: "KPI y updates", href: `${base}/kpi`, Icono: TrendingUp },
   ];
 
   return (
@@ -137,19 +147,30 @@ export function CabeceraProyecto({
         </div>
 
         <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-          {secciones.map((s) => (
-            <Link
-              key={s.codigo}
-              href={s.href}
-              className={
-                s.codigo === seccionActiva
-                  ? "pestana pestana-activa"
-                  : "pestana"
-              }
-            >
-              {s.nombre}
-            </Link>
-          ))}
+          {secciones.map((s) => {
+            const activa = s.codigo === seccionActiva;
+
+            return (
+              <Link
+                key={s.codigo}
+                href={s.href}
+                aria-current={activa ? "page" : undefined}
+                className={
+                  activa
+                    ? "pestana pestana-activa inline-flex items-center gap-2"
+                    : "pestana inline-flex items-center gap-2"
+                }
+              >
+                {/* El icono acompaña al rótulo; el rótulo no se quita nunca */}
+                <s.Icono
+                  aria-hidden="true"
+                  className="size-4 shrink-0"
+                  strokeWidth={activa ? 2.25 : 1.75}
+                />
+                {s.nombre}
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </header>
