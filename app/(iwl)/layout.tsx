@@ -14,7 +14,7 @@ import { Marco } from "@/components/marco";
  * la marca arriba, a la navegación con su icono en el medio y a quién ha
  * entrado abajo, y libera el ancho entero para el contenido.
  *
- * En móvil no cabe una columna fija, así que por debajo de `lg` se esconde y
+ * En móvil no cabe una columna fija, así que por debajo de `md` se esconde y
  * manda la barra compacta de arriba. Son las dos caras del mismo menú, no
  * dos menús: las dos salen de la misma lista.
  */
@@ -25,7 +25,7 @@ export default function LayoutIwl({ children }: { children: ReactNode }) {
         <BarraLateral />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <BarraSuperior />
           </div>
           {children}

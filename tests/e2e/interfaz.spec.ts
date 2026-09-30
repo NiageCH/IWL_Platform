@@ -184,3 +184,66 @@ test("los controles de texto se anuncian, no son párrafos", async ({ page }) =>
 
   expect(sinMarca).toEqual([]);
 });
+
+/*
+ * La consola aguanta cualquier ancho de ventana.
+ *
+ * Esto salió de un fallo concreto y feo: la lista de la cohorte se montó con
+ * una rejilla de siete columnas en rem que sumaban unos 936 px. Con los 240
+ * de la barra lateral, la fila pedía casi 1200 px de ventana. La barra
+ * aparecía a partir de 1024, así que entre 1024 y 1200 las columnas se
+ * aplastaban por debajo de su contenido y los textos se solapaban.
+ *
+ * No se vio porque se probó a un solo ancho, y ancho de sobra. Un diseño no
+ * se comprueba en la ventana que uno tiene abierta: se comprueba en el
+ * intervalo donde cambia de forma, y sobre todo justo después de cada corte.
+ */
+const ANCHOS = [
+  { w: 390, h: 844, nombre: "móvil" },
+  { w: 760, h: 900, nombre: "justo antes de la barra lateral" },
+  { w: 768, h: 900, nombre: "justo cuando aparece la barra lateral" },
+  { w: 900, h: 900, nombre: "portátil estrecho" },
+  { w: 1024, h: 800, nombre: "portátil" },
+  { w: 1180, h: 800, nombre: "el intervalo que se rompía" },
+  { w: 1440, h: 900, nombre: "escritorio" },
+];
+
+for (const { w, h, nombre } of ANCHOS) {
+  test(`la cartera no se desborda a ${w} px (${nombre})`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    await page.waitForLoadState("networkidle");
+
+    const desbordamiento = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    );
+
+    expect(
+      desbordamiento,
+      `La cartera se desborda en horizontal a ${w} px`,
+    ).toBeLessThanOrEqual(1);
+  });
+}
+
+test("hay un solo menú a la vista, nunca los dos ni ninguno", async ({
+  page,
+}) => {
+  /*
+   * La barra lateral y la compacta de arriba son las dos caras del mismo
+   * menú y las dos están siempre en el documento: quién se enseña lo decide
+   * el ancho, que es cosa de CSS. Lo que no puede pasar es que se vean las
+   * dos a la vez, ni que a algún ancho no se vea ninguna.
+   */
+  for (const w of [390, 760, 768, 1024, 1440]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+
+    const visibles = await page
+      .getByRole("link", { name: "Cartera", exact: true })
+      .count();
+
+    expect(visibles, `A ${w} px no hay exactamente un menú visible`).toBe(1);
+  }
+});

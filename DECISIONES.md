@@ -641,3 +641,23 @@ Un valor por defecto en CSS no se declara: se pone como reserva en el punto de u
 `lucide-react` estaba **instalado y sin usar en ningún sitio**. Se pasan por nombre a `NavSecciones` —quien llama es casi siempre un componente de servidor, y una función no cruza esa frontera— y como componente a `Cifra`, que se renderiza en servidor.
 
 Y van siempre acompañados de su rótulo. Un icono suelto es una adivinanza.
+
+## 2026-09-30 · Un ancho fijo siempre encuentra una ventana donde no cabe
+
+Rodrigo abrió la cartera rediseñada y la vio rota: textos superpuestos y el menú todavía arriba. Las dos cosas tenían la misma raíz, y la raíz era mía: **probé el diseño a un solo ancho, y con ventana de sobra.**
+
+La lista de la cohorte se montó con una rejilla de siete columnas declaradas en rem. Sumaban unos 936 px. Con los 256 de la barra lateral, una fila pedía cerca de 1200 px de ventana. Pero la barra lateral aparecía a partir de 1024, así que **entre 1024 y 1200 la barra ya estaba pero la fila no cabía**: las columnas se aplastaban por debajo de su contenido y los textos chocaban. A 1512, que es donde yo miraba, no pasaba nada.
+
+Y el menú arriba era lo mismo por el otro lado: con el corte en `lg`, cualquier ventana de portátil sin maximizar se quedaba con la barra compacta, que es justo lo que el rediseño quería dejar atrás.
+
+Tres cambios:
+
+- **La fila deja de tener anchos fijos.** Dos líneas: arriba quién es y cómo está, abajo lo que mide, en una fila que envuelve. Se coloca sola donde haya sitio.
+- **La barra lateral aparece en `md`**, 768 px, no en `lg`.
+- **La barra compacta envuelve en dos líneas.** A 390 px, marca más tres pastillas más el botón de salir sumaban más que la pantalla y empujaban el documento entero.
+
+Queda una prueba que recorre **siete anchos** —390, 760, 768, 900, 1024, 1180 y 1440— y falla si el documento se desborda en horizontal en cualquiera de ellos, más otra que comprueba que a cada ancho se ve **exactamente un menú**, ni los dos ni ninguno. Los anchos están elegidos a propósito: uno justo antes de cada corte y otro justo después, que es donde se rompe.
+
+**La regla:** un diseño no se comprueba en la ventana que uno tiene abierta. Se comprueba en el intervalo donde cambia de forma, y sobre todo justo después de cada punto de corte.
+
+Y la de siempre, otra vez: cuando algo se ve mal, se mide antes de opinar. El culpable se encontró recorriendo el DOM y preguntando qué elemento tiene el borde derecho más allá del ancho de la ventana, no mirando la pantalla.

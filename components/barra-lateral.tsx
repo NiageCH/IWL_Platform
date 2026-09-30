@@ -35,8 +35,10 @@ function iniciales(nombre: string) {
  * Va oscura sobre el área clara de trabajo. Dentro de `<Oscuro>` los tokens
  * cambian de valor, así que nada de lo que hay aquí necesita saberlo.
  *
- * Por debajo de `lg` no se enseña: en un móvil una columna fija se come la
- * pantalla. Ahí manda la barra compacta de arriba.
+ * Aparece a partir de `md`, 768 px, y no de `lg`: con el corte en 1024 una
+ * ventana de portátil sin maximizar se quedaba con la barra de arriba, que
+ * es justo lo que se quería dejar atrás. Por debajo de 768 no cabe una
+ * columna fija y manda la barra compacta.
  */
 export async function BarraLateral() {
   const persona = await personaActual();
@@ -59,7 +61,7 @@ export async function BarraLateral() {
   const nombre = persona.full_name ?? persona.email ?? "";
 
   return (
-    <Oscuro className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-filete bg-lienzo text-cuerpo lg:flex">
+    <Oscuro className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-filete bg-lienzo text-cuerpo md:flex">
       {/* La marca: la W en su cuadro y el nombre en la tipografía expandida */}
       <Link
         href="/"

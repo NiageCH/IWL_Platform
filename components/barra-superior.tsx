@@ -27,7 +27,14 @@ export async function BarraSuperior() {
 
   return (
     <Oscuro className="sticky top-0 z-20 border-b border-filete bg-lienzo text-cuerpo">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3">
+      {/*
+        Envuelve en dos líneas cuando hace falta.
+        
+        En una línea, a 390 px la marca más tres pastillas de menú más el
+        botón de salir sumaban más que la pantalla y empujaban el documento
+        entero hacia la derecha.
+      */}
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
         {/* La marca, como en inceptionwomanlab.es: la W en un cuadro y el
             nombre en la tipografía expandida, en mayúsculas */}
         <Link href="/" className="flex items-center gap-3">
@@ -39,7 +46,7 @@ export async function BarraSuperior() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 overflow-x-auto">
           {/*
             El menú se lee como un control, no como texto suelto: cambiar
             solo el color al pasar por encima no dice que se pueda pulsar, y

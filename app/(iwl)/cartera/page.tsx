@@ -62,25 +62,23 @@ const TONO_COMPANIA = [
 ] as const;
 
 /**
- * Un dato de la fila: la cifra grande y su rótulo debajo.
+ * Un dato de la fila: la cifra y su rótulo debajo.
  *
- * `oculta` retira el dato por debajo de `xl`. En una pantalla estrecha, MRR
- * y fecha del último update son lo primero que sobra: la compañía, sus dos
- * scores y su estado son lo que se recorre.
+ * Sin ancho propio: va en una fila que envuelve, así que se coloca solo
+ * donde haya sitio. Fijarle un ancho era lo que rompía la lista en las
+ * ventanas intermedias.
  */
 function DatoFila({
   etiqueta,
   pie,
   children,
-  oculta = false,
 }: {
   etiqueta: string;
   pie?: string;
   children: ReactNode;
-  oculta?: boolean;
 }) {
   return (
-    <span className={cn("flex flex-col", oculta && "hidden xl:flex")}>
+    <span className="flex flex-col">
       <span className="cifra text-sm text-titular">{children}</span>
       <span className="text-[0.6875rem] leading-tight text-metadato">
         {etiqueta}
@@ -240,19 +238,21 @@ export default async function Cartera() {
         <ul className="divide-y divide-filete">
           {companias.map((c) => (
             /*
-             * Rejilla, no `flex-wrap`.
+             * Dos líneas, y ninguna con anchos fijos.
              *
-             * Con flex, cada fila envolvía por un sitio distinto según lo
-             * largo que fuera su nombre o su motivo, y la lista se veía
-             * desordenada. Con columnas declaradas, todas alinean. Por
-             * debajo de `lg` se apilan en una sola columna.
+             * Antes era una rejilla de siete columnas en rem. Sumaban unos
+             * 936 px que, con los 256 de la barra lateral, pedían 1192 de
+             * ventana: entre 1024 —donde aparece la barra— y esa cifra, las
+             * columnas se aplastaban por debajo de su contenido y los
+             * textos se solapaban. Un ancho fijo siempre acaba encontrando
+             * una ventana donde no cabe.
+             *
+             * Arriba, quién es y cómo está. Abajo, lo que mide, que fluye y
+             * envuelve según haya sitio. Aguanta cualquier ancho sin
+             * columnas mágicas.
              */
-            <li
-              key={c.compania.id}
-              className="fila-enlace grid grid-cols-1 gap-3 px-5 py-4 lg:grid-cols-[minmax(11rem,1.4fr)_4.5rem_6rem_5rem_6rem_6.5rem_minmax(11rem,1fr)] lg:items-center lg:gap-4"
-            >
-              {/* Quién es */}
-              <div className="flex min-w-0 items-center gap-3">
+            <li key={c.compania.id} className="fila-enlace px-5 py-4">
+              <div className="flex items-center gap-3">
                 <span
                   aria-hidden="true"
                   className={cn(
@@ -264,7 +264,8 @@ export default async function Cartera() {
                 >
                   {inicialesCompania(c.compania.name)}
                 </span>
-                <span className="min-w-0">
+
+                <span className="min-w-0 flex-1">
                   <Link
                     href={`/cartera/${c.compania.slug}`}
                     className="enlace enlace-destacado block truncate font-medium text-titular"
@@ -276,39 +277,9 @@ export default async function Cartera() {
                     {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
                   </span>
                 </span>
-              </div>
 
-              {/* Qué mide */}
-              <DatoFila etiqueta="Técnico">
-                {numero(c.scoreTecnico.valor, 1)}
-              </DatoFila>
-              <DatoFila
-                etiqueta="Preparación"
-                pie={bandaDe(c.scorePreparacion.valor, bandas).nombre}
-              >
-                {numero(c.scorePreparacion.valor, 1)}
-              </DatoFila>
-              <DatoFila etiqueta="Runway">
-                {c.kpis.derivados.runway_meses === null
-                  ? "—"
-                  : `${numero(c.kpis.derivados.runway_meses, 1)} m`}
-              </DatoFila>
-              <DatoFila etiqueta="MRR">{euros(c.kpis.valores.mrr)}</DatoFila>
-
-              {/* Por dónde va */}
-              <span className="flex items-center gap-2">
-                {c.movimiento && c.movimiento.seriePreparacion.length > 1 ? (
-                  <Chispa valores={c.movimiento.seriePreparacion} />
-                ) : null}
-                <Movimiento
-                  delta={c.movimiento?.deltaPreparacion ?? null}
-                  sufijo=""
-                />
-              </span>
-
-              {/* Cómo está, y la puerta */}
-              <span className="flex items-center justify-between gap-2">
                 <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />
+
                 {/*
                   El segundo punto de entrada de la fila, y un enlace de
                   verdad: así funciona el clic derecho, la rueda del ratón y
@@ -321,7 +292,39 @@ export default async function Cartera() {
                 >
                   →
                 </Link>
-              </span>
+              </div>
+
+              {/* Lo que mide, sangrado bajo el nombre */}
+              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 pl-11">
+                <DatoFila etiqueta="Técnico">
+                  {numero(c.scoreTecnico.valor, 1)}
+                </DatoFila>
+                <DatoFila
+                  etiqueta="Preparación"
+                  pie={bandaDe(c.scorePreparacion.valor, bandas).nombre}
+                >
+                  {numero(c.scorePreparacion.valor, 1)}
+                </DatoFila>
+                <DatoFila etiqueta="Runway">
+                  {c.kpis.derivados.runway_meses === null
+                    ? "—"
+                    : `${numero(c.kpis.derivados.runway_meses, 1)} m`}
+                </DatoFila>
+                <DatoFila etiqueta="MRR">{euros(c.kpis.valores.mrr)}</DatoFila>
+                <DatoFila etiqueta="Último update">
+                  {c.kpis.periodo?.slice(0, 7) ?? "—"}
+                </DatoFila>
+
+                <span className="flex items-center gap-2">
+                  {c.movimiento && c.movimiento.seriePreparacion.length > 1 ? (
+                    <Chispa valores={c.movimiento.seriePreparacion} />
+                  ) : null}
+                  <Movimiento
+                    delta={c.movimiento?.deltaPreparacion ?? null}
+                    sufijo=""
+                  />
+                </span>
+              </div>
             </li>
           ))}
         </ul>
