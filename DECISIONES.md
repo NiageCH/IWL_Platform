@@ -788,3 +788,35 @@ No había tal. El `next dev` llevaba horas en marcha y acumulaba treinta y cinco
 Lo que cuesta de esto es que el síntoma apunta a donde uno acaba de tocar. Antes de buscar la causa en el código nuevo conviene descartar el entorno, que es más barato: reiniciar el servidor cuesta treinta segundos y leer un diff de mil líneas buscando un cuello de botella que no existe, una tarde.
 
 Queda en las convenciones, al lado de la regla de pasar dos veces: **si la suite se vuelve lenta y falla en sitios que cambian, reiniciar el servidor de desarrollo antes de sospechar del código.**
+
+## 2026-10-01 · Qué ve la candidata, y por qué dos accesos distintos
+
+El embudo daba control a IWL y dejaba al candidato a oscuras: rellenaba el formulario, leía «recibida» y no volvía a saber nada. Rodrigo preguntó justo por eso.
+
+Dos puertas, y cada una llega cuando hace falta:
+
+**Un enlace privado desde que se presenta.** Una dirección con 192 bits de aleatorio. Sin cuenta ni contraseña: pedirle que se registre para ver si le han leído el pitch es pedirle demasiado, y lo que más pasa después de mandar una candidatura es acordarse de algo que faltaba. Ahí ve en qué punto está y puede añadirlo.
+
+**Una cuenta al firmar el NDA.** Es cuando empieza a entregar material del due diligence, y es cuando un enlace deja de bastar: una dirección se reenvía y no se puede retirar. **Al dar la cuenta, el enlace se anula**, y las dos cosas van juntas en la misma función de la base para que nadie pueda hacer una sin la otra. Tener la puerta buena y la mala abiertas a la vez no es tener dos puertas.
+
+### Cuatro momentos, no nueve pasos
+
+A la candidata no se le enseña el estado interno. «Comité» o «due diligence» son jerga de dentro, y saber el punto exacto no le aporta nada: invita a interpretar silencios. Se agrupa en cuatro —recibida, en estudio, avanzando, cerrada— y cada uno dice en una frase qué toca.
+
+**Y no ve el motivo del descarte.** Está escrito para decidir, no para comunicar: «el equipo no tiene perfil técnico» es una frase útil en un comité y una mala forma de enterarse. Se le dice que el proceso se cerró y que hablaréis; eso se cuenta por teléfono, no en una pantalla. Hay una prueba que comprueba que el motivo no aparece por ninguna parte.
+
+Un enlace inventado y uno anulado dan el mismo 404. Distinguirlos le diría a quien va probando que ha acertado con una dirección real.
+
+### Lo que salió mal, y una lección que ya estaba escrita
+
+**`gen_random_bytes` no estaba donde la función lo buscaba.** Es de pgcrypto, y en Supabase pgcrypto vive en `extensions`, no en `public`. Una función con `search_path` fijado a `public` la tiene delante y no la ve. El error que llegaba a quien se presentaba era «la función no existe», que no señala a ninguna parte.
+
+**Una vista congela sus columnas al crearse.** `embudo_candidaturas` se creó con `c.*`, y las columnas que añadió esta migración no aparecían. Segunda vez en el proyecto; esta vez al menos se recreó desde la definición buena.
+
+**Y la quinta vez del formulario dentro de su propia condición.** Escribí la convención por la mañana y por la tarde construí otro. Este era el peor de todos: **el mensaje llevaba la contraseña**, que se enseña una sola vez. Darle la cuenta hacía falsa la rama que contenía el formulario, y la credencial desaparecía antes de que nadie pudiera copiarla. Arreglado en el componente, no en la prueba: el formulario se monta siempre y lo que aparece y desaparece es su contenido.
+
+Que una regla esté escrita no impide repetirla. Lo que sí la coge es una prueba que mire el mensaje —y en este caso, que mire que la contraseña sigue en pantalla.
+
+### Una aserción que pasaba por el motivo equivocado
+
+`expect(error).not.toBeNull()` después de un `update` que RLS no deja pasar. No falla: una escritura sin política afecta a cero filas, y PostgREST lo devuelve como correcto. La prueba habría seguido pasando el día que la política desapareciera. Ahora comprueba que la fila no cambió.

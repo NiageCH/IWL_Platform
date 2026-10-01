@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   anadirEnlace,
   anotarEvento,
+  darAccesoCandidata,
   crearCandidatura,
   descartarCandidatura,
   firmarCandidatura,
@@ -488,5 +489,108 @@ export function FirmarAcuerdo({
         )}
       </Formulario>
     </Desplegable>
+  );
+}
+
+/**
+ * El acceso de la candidata: el enlace privado y, llegado el NDA, su cuenta.
+ *
+ * El enlace se enseña para copiarlo y mandarlo a mano, porque todavía no hay
+ * envío de correo. El día que lo haya, esto sigue valiendo igual.
+ */
+export function AccesoCandidata({
+  id,
+  token,
+  tieneCuenta,
+  correo,
+  base,
+}: {
+  id: string;
+  token: string | null;
+  tieneCuenta: boolean;
+  correo: string;
+  /** La dirección de la plataforma, para componer el enlace entero */
+  base: string;
+}) {
+  const [copiado, setCopiado] = useState(false);
+  const enlace = token ? `${base}/candidatura/${token}` : null;
+
+  return (
+    <div className="flex flex-col gap-4 px-5 py-4">
+      {tieneCuenta ? (
+        <div>
+          <p className="text-sm text-cuerpo">
+            Entra con <strong>{correo}</strong> y carga su documentación desde
+            la plataforma.
+          </p>
+          <p className="mt-1 text-xs text-metadato">
+            El enlace privado quedó anulado al darle la cuenta: a partir del
+            NDA el acceso tiene que poder retirarse, y una dirección
+            reenviada no se retira.
+          </p>
+        </div>
+      ) : enlace ? (
+        <>
+          <div>
+            <p className="text-sm text-cuerpo">
+              Su enlace privado. Mándaselo tú de momento: todavía no hay
+              envío de correo.
+            </p>
+            <p className="mt-1 text-xs text-metadato">
+              Ahí ve en qué punto está y puede añadir lo que se le olvidó.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-md border border-filete bg-hundido px-3 py-2 text-xs text-secundario">
+              {enlace}
+            </code>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(enlace);
+                setCopiado(true);
+                setTimeout(() => setCopiado(false), 2000);
+              }}
+              className="boton-marca shrink-0 px-4 py-2 text-xs"
+            >
+              {copiado ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="text-sm text-secundario">
+          Esta candidatura no tiene enlace activo ni cuenta.
+        </p>
+      )}
+
+      {/*
+        El formulario se monta siempre, y lo que aparece y desaparece es su
+        contenido.
+
+        Aquí no es solo cuestión de que se lea la confirmación: **el mensaje
+        lleva la contraseña**, y se enseña una sola vez. Si el formulario
+        viviera dentro de la rama `!tieneCuenta`, darle la cuenta la haría
+        falsa y se llevaría la contraseña con ella antes de que nadie
+        pudiera copiarla.
+      */}
+      <Formulario accion={darAccesoCandidata}>
+        {() =>
+          tieneCuenta ? null : (
+            <>
+              <input type="hidden" name="id" value={id} />
+              <p className="text-sm text-secundario">
+                Al firmar el NDA, dale cuenta: se la crea con{" "}
+                <strong>{correo}</strong>, enseña una contraseña{" "}
+                <strong>una sola vez</strong> y anula el enlace privado.
+              </p>
+              <Boton variante="secundario">
+                Darle cuenta para el due diligence
+              </Boton>
+            </>
+          )
+        }
+      </Formulario>
+    </div>
   );
 }

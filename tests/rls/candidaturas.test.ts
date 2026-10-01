@@ -176,3 +176,200 @@ describe("firmar", () => {
     expect(error).not.toBeNull();
   });
 });
+
+describe("qué ve la candidata", () => {
+  /*
+   * Las dos puertas: el enlace privado mientras no tiene cuenta, y la sesión
+   * desde que firma el NDA. Lo que importa aquí es lo que NO se enseña.
+   */
+
+  it("el enlace privado deja ver el estado, pero en cuatro momentos", async () => {
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("token")
+      .eq("id", "00000000-0000-0000-0005-000000000004") // en comité
+      .single();
+
+    const anonimo = clienteAnonimo();
+    const { data } = await anonimo.rpc("ver_candidatura", {
+      p_token: c!.token,
+    });
+    const vista = (data as Record<string, unknown>[])?.[0];
+
+    /*
+     * Está en comité, pero se le dice «en estudio». El punto exacto del
+     * proceso interno no le aporta nada y sí invita a interpretar silencios.
+     */
+    expect(vista?.momento).toBe("en_estudio");
+    expect(vista?.nombre).toBe("Ámbar Educación");
+  });
+
+  it("y no deja ver nada de lo que es asunto de IWL", async () => {
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("token")
+      .eq("id", "00000000-0000-0000-0005-000000000004")
+      .single();
+
+    const anonimo = clienteAnonimo();
+    const { data } = await anonimo.rpc("ver_candidatura", {
+      p_token: c!.token,
+    });
+    const vista = (data as Record<string, unknown>[])?.[0] ?? {};
+
+    // Ni el equity, ni las notas, ni el estado interno, ni el correo
+    expect(Object.keys(vista).sort()).toEqual([
+      "convocatoria",
+      "enlaces",
+      "id",
+      "momento",
+      "nombre",
+      "presentada_on",
+      "puede_subir",
+    ]);
+  });
+
+  it("una descartada no lee su motivo de descarte", async () => {
+    /*
+     * El motivo está escrito para decidir, no para comunicar. Decírselo es
+     * una conversación, no un campo de una pantalla.
+     */
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("token, descartada_motivo")
+      .eq("id", "00000000-0000-0000-0005-000000000006")
+      .single();
+
+    expect(c!.descartada_motivo).toBeTruthy();
+
+    const anonimo = clienteAnonimo();
+    const { data } = await anonimo.rpc("ver_candidatura", {
+      p_token: c!.token,
+    });
+    const vista = (data as Record<string, unknown>[])?.[0];
+
+    expect(vista?.momento).toBe("cerrada");
+    expect(vista?.puede_subir).toBe(false);
+    expect(JSON.stringify(vista)).not.toContain("perfil técnico");
+  });
+
+  it("un testigo inventado no devuelve nada", async () => {
+    const anonimo = clienteAnonimo();
+    const { data } = await anonimo.rpc("ver_candidatura", {
+      p_token: "esto-no-es-un-testigo-de-verdad-aaaa",
+    });
+    expect(data ?? []).toEqual([]);
+  });
+
+  it("con el enlace se puede añadir material, y solo eso", async () => {
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("token")
+      .eq("id", "00000000-0000-0000-0005-000000000001")
+      .single();
+
+    const anonimo = clienteAnonimo();
+    const { error: fallo } = await anonimo.rpc("anadir_enlace_con_token", {
+      p_token: c!.token,
+      p_titulo: "Pitch actualizado",
+      p_url: "https://drive.test/nuevo",
+    });
+    expect(fallo).toBeNull();
+
+    /*
+     * Pero no puede tocar la candidatura.
+     *
+     * Y lo que se comprueba es el efecto, no el error: una escritura que RLS
+     * no deja pasar afecta a cero filas, y eso PostgREST lo devuelve como
+     * correcto. Esperar un error aquí daba un test que pasaba por el motivo
+     * equivocado el día que la política desapareciera.
+     */
+    await anonimo
+      .from("candidaturas")
+      .update({ estado: "preseleccionada" })
+      .eq("id", "00000000-0000-0000-0005-000000000001");
+
+    const { data: despues } = await servicio
+      .from("candidaturas")
+      .select("estado")
+      .eq("id", "00000000-0000-0000-0005-000000000001")
+      .single();
+    expect(despues?.estado).toBe("presentada");
+
+    await servicio
+      .from("candidatura_enlaces")
+      .delete()
+      .eq("url", "https://drive.test/nuevo");
+  });
+
+  it("una dirección que no es http no entra", async () => {
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("token")
+      .eq("id", "00000000-0000-0000-0005-000000000001")
+      .single();
+
+    const anonimo = clienteAnonimo();
+    const { error: fallo } = await anonimo.rpc("anadir_enlace_con_token", {
+      p_token: c!.token,
+      p_titulo: "Trampa",
+      p_url: "javascript:alert(1)",
+    });
+    expect(fallo).not.toBeNull();
+  });
+
+  it("al darle cuenta, el enlace deja de valer", async () => {
+    /*
+     * Es la razón de pasar de enlace a cuenta: una dirección se reenvía y no
+     * se puede retirar, y a partir del NDA lo que entrega es sensible.
+     */
+    const servicio = clienteServicio();
+    const candidatura = "00000000-0000-0000-0005-000000000005"; // en NDA
+
+    const { data: antes } = await servicio
+      .from("candidaturas")
+      .select("token")
+      .eq("id", candidatura)
+      .single();
+
+    const anonimo = clienteAnonimo();
+    const { data: visible } = await anonimo.rpc("ver_candidatura", {
+      p_token: antes!.token,
+    });
+    expect((visible as unknown[])?.length).toBe(1);
+
+    // Se le da cuenta, con el camino que usa la aplicación
+    const iwl = await entrarComo(USUARIOS.admin);
+    const { data: perfil } = await servicio
+      .from("profiles")
+      .select("id")
+      .eq("email", "fundadora@raiz.test")
+      .single();
+
+    const { error: fallo } = await iwl.rpc("dar_acceso_candidatura", {
+      p_candidatura: candidatura,
+      p_profile: perfil!.id,
+    });
+    expect(fallo).toBeNull();
+
+    const { data: despues } = await anonimo.rpc("ver_candidatura", {
+      p_token: antes!.token,
+    });
+    expect(despues ?? []).toEqual([]);
+
+    // Se deja como estaba
+    await servicio
+      .from("candidaturas")
+      .update({ profile_id: null, token_anulado_at: null })
+      .eq("id", candidatura);
+    await servicio
+      .from("profiles")
+      .update({ role: "fundadora" })
+      .eq("id", perfil!.id);
+  });
+});

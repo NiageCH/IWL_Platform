@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
+import { clienteServicio } from "@/lib/supabase/servicio";
+import { generarClave } from "@/lib/claves";
 import {
   error,
   fechaOpcional,
@@ -485,4 +487,135 @@ export async function configurarConvocatoria(
   revalidatePath("/embudo");
   revalidatePath("/presentarse");
   return ok(abierta ? "Convocatoria abierta." : "Convocatoria cerrada.");
+}
+
+// -----------------------------------------------------------------------------
+// El acceso de la candidata
+// -----------------------------------------------------------------------------
+
+/**
+ * Darle cuenta, al firmar el NDA.
+ *
+ * Es el momento en que empieza a entregar material del due diligence, y el
+ * momento en que un enlace deja de bastar: una dirección se reenvía y no se
+ * puede retirar. Al dar la cuenta, el enlace se anula; las dos cosas van
+ * juntas en la misma función de la base para que nadie pueda hacer una sin
+ * la otra.
+ */
+export async function darAccesoCandidata(
+  formData: FormData,
+): Promise<Resultado> {
+  const { fallo } = await soloIwl();
+  if (fallo) return fallo;
+
+  const id = String(formData.get("id") ?? "");
+  if (!id) return error("Falta saber cuál.");
+
+  const supabase = await clienteServidor();
+
+  const { data: candidatura } = await supabase
+    .from("candidaturas")
+    .select("nombre, contacto_email, contacto_nombre, profile_id, estado")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!candidatura) return error("Esa candidatura ya no está.");
+  if (candidatura.profile_id) return error("Esa candidata ya tiene acceso.");
+
+  const servicio = clienteServicio();
+  const clave = generarClave();
+
+  const { data: creada, error: falloAlta } = await servicio.auth.admin.createUser(
+    {
+      email: candidatura.contacto_email!,
+      email_confirm: true,
+      password: clave,
+      user_metadata: { full_name: candidatura.contacto_nombre },
+    },
+  );
+
+  let profileId = creada?.user?.id;
+
+  if (falloAlta) {
+    if (!/already|registered|exists/i.test(falloAlta.message)) {
+      return error(`No se ha podido crear la cuenta: ${falloAlta.message}`);
+    }
+    // Ya tenía cuenta de antes: se reutiliza
+    const { data: existente } = await servicio
+      .from("profiles")
+      .select("id")
+      .eq("email", candidatura.contacto_email!)
+      .maybeSingle();
+    if (!existente) return error("Esa cuenta existe pero no se recupera.");
+    profileId = existente.id;
+  }
+
+  const { error: falloAcceso } = await supabase.rpc("dar_acceso_candidatura", {
+    p_candidatura: id,
+    p_profile: profileId!,
+  });
+
+  if (falloAcceso) return traducirError(falloAcceso);
+
+  refrescar(id);
+  return ok(
+    `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
+  );
+}
+
+/**
+ * La candidata sube un documento a su sala de datos.
+ *
+ * Es lo único que escribe ella, y solo desde que tiene cuenta. Quién puede
+ * subir dónde lo decide la política de Storage: la primera carpeta de la
+ * ruta es el id de su candidatura, y `app.mi_candidatura_id()` resuelve cuál
+ * es la suya. No hay parámetro que manipular.
+ */
+export async function subirDocumentoCandidata(
+  formData: FormData,
+): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Hay que entrar para hacer esto.");
+
+  const fichero = formData.get("documento");
+  if (!(fichero instanceof File) || fichero.size === 0) {
+    return error("Elige un fichero.");
+  }
+
+  if (fichero.size > 50 * 1024 * 1024) {
+    return error(
+      `Ese fichero pesa ${(fichero.size / 1024 / 1024).toFixed(0)} MB y el máximo son 50. Si es un vídeo, mándanos el enlace.`,
+    );
+  }
+
+  const supabase = await clienteServidor();
+
+  /*
+   * La candidatura la resuelve la base por la sesión, no la pantalla. Si
+   * viniera en el formulario, alguien podría cambiarlo por otra.
+   */
+  const { data: candidaturaId } = await supabase.rpc("mi_candidatura_id");
+  if (!candidaturaId) {
+    return error("No encontramos tu candidatura. Escríbenos.");
+  }
+
+  const seguro = fichero.name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 120);
+
+  const ruta = `${candidaturaId}/${Date.now()}-${seguro}`;
+
+  const { error: falloSubida } = await supabase.storage
+    .from("candidaturas")
+    .upload(ruta, fichero, { contentType: fichero.type || undefined });
+
+  if (falloSubida) {
+    return error(`No se ha podido subir: ${falloSubida.message}`);
+  }
+
+  revalidatePath("/candidatura");
+  return ok(`${fichero.name} subido. Gracias.`);
 }

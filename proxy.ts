@@ -42,9 +42,16 @@ export async function proxy(request: NextRequest) {
   const esRutaPublica =
     ruta.startsWith("/entrar") ||
     ruta.startsWith("/auth") ||
-    // El formulario de candidatura: quien se presenta no tiene cuenta, y no
-    // la tendrá hasta que firme. Es la única pantalla que se ve sin entrar.
+    // El formulario de candidatura: quien se presenta no tiene cuenta.
     ruta.startsWith("/presentarse") ||
+    /*
+     * Y su enlace privado, que lleva el testigo en la propia dirección.
+     *
+     * Con la barra: `/candidatura/<testigo>` es público, pero `/candidatura`
+     * a secas es la pantalla de quien ya tiene cuenta y sí pide sesión. Sin
+     * la barra, esta regla abriría las dos.
+     */
+    ruta.startsWith("/candidatura/") ||
     ruta === "/";
 
   if (!user && !esRutaPublica) {

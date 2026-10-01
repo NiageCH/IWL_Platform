@@ -10,6 +10,7 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import {
+  AccesoCandidata,
   AcuerdoCandidatura,
   AnotarEvento,
   DescartarCandidatura,
@@ -57,6 +58,17 @@ export default async function FichaCandidatura({
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
+
+  /*
+   * La dirección de la plataforma, para poder enseñar el enlace entero y
+   * que se pueda copiar. En Vercel llega por `VERCEL_PROJECT_PRODUCTION_URL`;
+   * en local, por lo que haya configurado o localhost.
+   */
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000");
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10 lg:px-10">
@@ -291,6 +303,25 @@ export default async function FichaCandidatura({
                 </div>
               ) : null}
             </dl>
+          </Bloque>
+
+          <Bloque>
+            <TituloBloque
+              accion={
+                <Metadato>
+                  {c.profile_id ? "Con cuenta" : "Con enlace privado"}
+                </Metadato>
+              }
+            >
+              Qué ve ella
+            </TituloBloque>
+            <AccesoCandidata
+              id={c.id!}
+              token={c.token}
+              tieneCuenta={Boolean(c.profile_id)}
+              correo={c.contacto_email ?? ""}
+              base={base}
+            />
           </Bloque>
 
           <Bloque>

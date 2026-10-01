@@ -216,3 +216,34 @@ export async function borrarCuenta(correo: string): Promise<void> {
     });
   }
 }
+
+/**
+ * Lee filas con la clave de servicio.
+ *
+ * Para cuando una prueba necesita un dato que la pantalla no enseña —el
+ * testigo del enlace privado de una candidatura, por ejemplo— y tiene que
+ * sacarlo por fuera del camino que está probando.
+ */
+export async function consultar<T = Record<string, unknown>>(
+  tabla: string,
+  filtro: Record<string, string>,
+  columnas = "*",
+): Promise<T[]> {
+  const { url, clave } = supabase();
+  const consulta = new URLSearchParams({
+    ...Object.fromEntries(Object.entries(filtro).map(([k, v]) => [k, v])),
+    select: columnas,
+  });
+
+  const respuesta = await fetch(`${url}/rest/v1/${tabla}?${consulta}`, {
+    headers: { apikey: clave, Authorization: `Bearer ${clave}` },
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(
+      `No se ha podido leer ${tabla}: ${respuesta.status} ${await respuesta.text()}`,
+    );
+  }
+
+  return respuesta.json() as Promise<T[]>;
+}

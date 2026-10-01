@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { error, ok, validar, type Resultado } from "./resultado";
@@ -128,4 +129,60 @@ export async function presentarse(formData: FormData): Promise<Resultado> {
   }
 
   return ok("Recibida. Gracias.");
+}
+
+/**
+ * Añadir un documento desde el enlace privado.
+ *
+ * Vive aquí, con el formulario público, y no con las acciones del embudo:
+ * todo lo de allí exige ser de IWL y esto es justo lo contrario.
+ *
+ * Lo que decide si vale es el testigo, y lo comprueba la base: la función
+ * busca la candidatura por su llave y se niega si está anulada o si el
+ * proceso ya se cerró.
+ */
+const esquemaMaterial = z.object({
+  token: z.string().trim().min(10),
+  titulo: z.string().trim().min(1, "¿Qué es este documento?").max(120),
+  url: z.string().trim().min(1, "Falta el enlace.").max(500),
+});
+
+export async function anadirMaterial(formData: FormData): Promise<Resultado> {
+  const validado = validar(esquemaMaterial, formData);
+  if (validado.fallo) return validado.fallo;
+  const datos = validado.datos;
+
+  const url = enlaceValido(datos.url);
+  if (!url) {
+    return error("Eso no parece una dirección web.", {
+      url: "Tiene que empezar por https://",
+    });
+  }
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } },
+  );
+
+  const { error: fallo } = await supabase.rpc("anadir_enlace_con_token", {
+    p_token: datos.token,
+    p_titulo: datos.titulo,
+    p_url: url,
+  });
+
+  if (fallo) {
+    if (fallo.message.includes("ya no está activo")) {
+      return error(
+        "Este enlace ya no admite documentos. Si sigues en el proceso, escríbenos y te decimos por dónde.",
+      );
+    }
+    if (fallo.message.includes("muchos documentos")) {
+      return error(fallo.message);
+    }
+    return error("No hemos podido guardarlo. Vuelve a intentarlo.");
+  }
+
+  revalidatePath(`/candidatura/${datos.token}`);
+  return ok("Añadido. Gracias.");
 }
