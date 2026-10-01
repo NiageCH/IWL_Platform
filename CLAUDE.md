@@ -12,10 +12,15 @@
 
 # Plataforma IWL · convenciones del proyecto
 
-Seguimiento de la cohorte de Inception Woman Lab. Dos vistas sobre los mismos
-datos: la compañía ve su proyecto, IWL ve la cartera. El due diligence técnico
-—que hace Niage— es el módulo central, y todo se evalúa contra la etapa de
-cada compañía, no contra un ideal.
+Seguimiento de la cohorte de Inception Woman Lab, desde que una startup se
+presenta hasta que se gradúa. Dos vistas sobre los mismos datos: la compañía ve
+su proyecto, IWL ve la cartera. El due diligence técnico —que hace Niage— es el
+módulo central, y todo se evalúa contra la etapa de cada compañía, no contra un
+ideal.
+
+Antes de la cartera está el **embudo**: convocatoria, candidaturas, comité,
+NDA, due diligence y acuerdo. Una candidatura no es una compañía —la mayoría no
+llegan— así que vive en sus propias tablas y crea la compañía al firmar.
 
 La especificación completa está en
 `IWL_Doc_EspecPlataformaSeguimiento_ES_v2_20260923.md`. Las decisiones tomadas
@@ -59,6 +64,26 @@ components/     vistas/ (compuestas) · formularios/ (cliente) · ui/ (primitiva
 supabase/       migrations/ (ordenadas) · seed/ (versionado) · seed/local/ (no)
 ```
 
+### Las tres pantallas sin sesión
+
+Casi todo pide cuenta. Tres no, y conviene saber por qué cada una:
+
+- `/entrar` — la puerta.
+- `/presentarse` — el formulario de candidatura. Quien se presenta no tiene
+  cuenta y no la tendrá hasta que firme el NDA, si llega.
+- `/candidatura/<testigo>` — el enlace privado de una candidata. El testigo
+  lleva 192 bits de aleatorio y va en la propia dirección.
+
+Las dos últimas **no escriben por una política para `anon`**. Lo hacen por
+funciones `security definer` que reciben solo los campos del formulario y
+ponen ellas la cohorte, el estado y las fechas. Con una política de `insert`,
+cualquiera con la clave pública —que va en el navegador— podría darse de alta
+ya preseleccionado.
+
+El proxy las deja pasar por nombre, y `/candidatura/` lleva barra a propósito:
+sin ella abriría también `/candidatura`, que es la pantalla de quien ya tiene
+cuenta.
+
 ## Reglas que no se rompen
 
 **Quien autoriza es la base.** Toda escritura va con el cliente de sesión. La
@@ -66,6 +91,16 @@ interfaz esconde lo que la base prohíbe, nunca al revés: si discrepan, manda l
 base y en pantalla solo se vería un botón que da error. La única excepción es
 crear cuentas en `auth.users`, que necesita la clave de servicio; ahí se
 comprueba la autorización a mano y está comentado por qué.
+
+**Una política no se salta el RLS de las tablas que consulta.** Las políticas
+no son `security definer`: una subconsulta dentro de un `using (...)` pasa por
+las políticas de la tabla que lee, así que desde una fundadora puede estar
+mirando una tabla vacía y dar falso siempre. Cuando una política necesita
+preguntar algo sobre otra tabla, la pregunta va en una función
+`security definer` que responde eso y nada más —`app.can_read_company`,
+`app.puede_ver_expediente`—. Y se prueba **entrando como quien tiene menos
+permisos**: una prueba que solo entra como IWL pasa en verde con la política
+rota.
 
 **Nadie valida su propio trabajo.** Una fundadora no puntúa ni valida sus
 puntos. Es criterio de aceptación y no se relaja. Para el mentor que coordina
@@ -182,6 +217,11 @@ el código, el problema es el código.
 **Cada cambio termina con las tres suites en verde**, y las pruebas tienen que
 poder pasar dos veces seguidas: la que toca configuración la restaura por fuera
 del camino que prueba, y la que crea datos los limpia.
+
+**Restaurar y borrar no son lo mismo.** Lo que la prueba creó se borra —cuentas
+incluidas, que viven en `auth.users` y no se van con el perfil—; lo que
+encontró se deja como estaba. Un `delete` sobre una fila de la semilla hace
+fallar a otra prueba, de otro fichero, por un motivo sin relación aparente.
 
 **Si la suite se vuelve lenta y falla en sitios que cambian de una pasada a
 otra, reinicia `next dev` antes de sospechar del código.** Un servidor que

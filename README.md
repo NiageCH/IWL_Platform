@@ -1,6 +1,8 @@
 # Plataforma IWL
 
-Plataforma de seguimiento de la cohorte de **Inception Woman Lab**. Cada compañía mantiene su business plan vivo y su due diligence vivo, reporta sus KPI cada mes y ve su avance en el programa. El equipo de IWL ve la cartera completa, entra proyecto a proyecto y mide lo que la incubadora aporta.
+Plataforma de seguimiento de la cohorte de **Inception Woman Lab**, desde que una startup se presenta hasta que se gradúa.
+
+Antes de la cartera está el **embudo**: convocatoria, candidaturas, comité, NDA, due diligence y acuerdo. Al firmar, la candidatura crea su compañía. A partir de ahí cada compañía mantiene su business plan vivo y su due diligence vivo, reporta sus KPI cada mes y ve su avance; el equipo de IWL ve la cartera completa, entra proyecto a proyecto y mide lo que la incubadora aporta.
 
 Dos vistas sobre los mismos datos, con un aislamiento estricto entre compañías que decide la base y no la interfaz. Se trabaja sobre papel en las dos; lo oscuro se reserva para la barra lateral y la pantalla de entrada, que es donde va la marca.
 
@@ -51,8 +53,22 @@ iwl-local-2026
 | `fundadora@raiz.test` | fundadora | Raíz Sensórica |
 | `mentor@iwl.test` | mentor | Coordina Marea Clínica, apoya en Raíz Sensórica |
 | `mentor2@iwl.test` | mentor | Coordina Raíz Sensórica, apoya en Marea Clínica |
+| `fundadora@agrolabx.test` | fundadora | AgrolabX, si tienes las semillas locales |
+| `cto@marea.test` | fundadora | Marea Clínica, como segunda persona del equipo |
 
 Los dos mentores están cruzados a propósito: el papel va en la asignación, no en la persona, y esa es la situación que hay que poder probar.
+
+Hay un séptimo rol, **`candidata`**, que no tiene cuenta en la semilla: se crea sobre la marcha cuando una candidatura firma el NDA, y desaparece cuando firma el acuerdo y pasa a ser equipo fundador. Para verlo, da acceso a una candidatura desde el embudo.
+
+### Las pantallas que se ven sin cuenta
+
+Tres, y cada una por un motivo:
+
+| Dirección | Quién la ve |
+|---|---|
+| `/entrar` | Todo el mundo |
+| `/presentarse` | Quien quiere presentar su startup. Solo admite candidaturas si hay convocatoria abierta, que se abre desde **Embudo** |
+| `/candidatura/<testigo>` | Una candidata, con su enlace privado. El testigo se copia desde su ficha en el embudo |
 
 También hay enlace de entrada por correo, para quien no recuerde su contraseña. **No sale a internet**: Supabase lo intercepta y lo deja en una bandeja que corre junto a la base, en **http://127.0.0.1:54324**. La pantalla de entrada enlaza a ella cuando detecta que estás en local.
 
@@ -125,6 +141,8 @@ Fase 1 del documento de alcance completa, más el registro de aportación, la l�
 | Mentoría | Completo: principal coordina y puntúa, secundario tiene horas y tareas |
 | Informes | Completo: técnico interno, técnico para inversor, aportación y mensual |
 | Administración | Completo: compañías, personas, perfiles, recorridos, archivado, logos |
+| Embudo de selección | Completo: convocatoria, formulario público, pasos con comité, NDA, acuerdo y firma, que crea la compañía |
+| Lo que ve la candidata | Completo: enlace privado desde que se presenta, cuenta al firmar el NDA, y su expediente de due diligence |
 | Worker de análisis de repositorios | Contrato y orquestador escritos, sin ejecutar todavía |
 
 Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de cohorte con exportaciones, y enlaces de solo lectura para mentores externos.
@@ -146,8 +164,10 @@ Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de 
 ```
 app/
   (fundadora)/     Vista de la compañía
-  (iwl)/           Consola de cartera y administración, con barra lateral
+  (iwl)/           Consola de cartera, embudo y administración
   informe/         Los cuatro informes, para imprimir
+  presentarse/     El formulario de candidatura, sin cuenta
+  candidatura/     Lo que ve una candidata: por enlace o con sesión
   entrar/ perfil/  Acceso y cuenta propia
 components/
   vistas/          Una por módulo, compartidas entre las dos vistas
@@ -181,6 +201,10 @@ worker/            Analizador de repositorios. No guarda código
 
 **Los logos viven en un bucket privado.** Se guarda la ruta y la dirección se firma al leer, como el data room. Un logo no es secreto, pero la lista de quién está en la cohorte sí: un bucket público con rutas predecibles deja enumerarla.
 
+**Una candidatura no es una compañía.** La mayoría no llegan, no tienen equipo con cuenta, y lo que importa de ellas —por qué se descartó y en qué paso— no cabe en la ficha de una compañía. Viven en sus propias tablas y crean la compañía al firmar, por la misma puerta que el alta manual.
+
+**Lo entregado en la selección no se copia.** Al firmar, la ficha de la compañía lee del expediente de su candidatura: `candidatura_peticiones.item_template_id` y `dd_items.template_id` salen del mismo catálogo, así que cada punto reconoce lo suyo. Copiar duplicaría el almacenamiento y crearía dos copias que divergen.
+
 **El worker no almacena código.** Clona en un contenedor efímero, analiza y borra en un `finally`. De un secreto detectado se guarda el tipo y la ubicación, nunca el valor.
 
 
@@ -198,6 +222,8 @@ Los datos semilla, en `supabase/seed`:
 - `06_avances.sql` · avances de los dos lados y partidas de aportación
 - `07_anexos.sql` · Anexos firmados, con sus compromisos
 - `08_mentoria.sql` · mentores cruzados, con horas y tareas
+
+Y, dentro de `02_companies.sql`, seis candidaturas de demostración: una en cada punto del embudo, más una firmada y una descartada con su informe de comité. Hacen falta para que el embudo se pueda mirar y para que las pruebas tengan sobre qué trabajar.
 
 `supabase/seed/local/*.sql` se aplica al final y **no se versiona**: es donde van los proyectos reales, cuyos Anexos llevan importes, tarifas y porcentajes de equity. Ver `supabase/seed/local.LEEME.md`.
 

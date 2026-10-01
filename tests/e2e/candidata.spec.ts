@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, actualizar, borrar, consultar, entrarComo } from "./entrada";
+import {
+  USUARIOS,
+  actualizar,
+  borrar,
+  borrarCuenta,
+  consultar,
+  entrarComo,
+} from "./entrada";
 
 /**
  * Lo que ve quien se presentó.
@@ -120,18 +127,14 @@ test.afterAll(async () => {
   );
 
   /*
-   * Y la cuenta que se creó vuelve a su rol.
+   * Y la cuenta que se creó se borra entera.
    *
-   * La primera versión solo desligaba la candidatura y dejaba el perfil
-   * como `candidata` para siempre: basura que se acumula pasada a pasada y
-   * que un día hace fallar a otra prueba por un motivo que no tiene nada
-   * que ver.
+   * Dar acceso a una candidata crea una cuenta en `auth.users`, y la
+   * semilla no la tiene: dejarla puesta —aunque sea con el rol cambiado—
+   * es una persona de más en los desplegables y una fila que no debería
+   * existir. Una candidata que no firma no tiene cuenta.
    */
-  await actualizar(
-    "profiles",
-    { email: "eq.hola@brota.test" },
-    { role: "fundadora" },
-  );
+  await borrarCuenta("hola@brota.test");
   await borrar("candidatura_enlaces", {
     url: "https://drive.test/plan-nuevo",
   });
