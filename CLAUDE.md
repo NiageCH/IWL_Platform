@@ -223,11 +223,13 @@ incluidas, que viven en `auth.users` y no se van con el perfil—; lo que
 encontró se deja como estaba. Un `delete` sobre una fila de la semilla hace
 fallar a otra prueba, de otro fichero, por un motivo sin relación aparente.
 
-**Si la suite se vuelve lenta y falla en sitios que cambian de una pasada a
-otra, reinicia `next dev` antes de sospechar del código.** Un servidor que
-lleva horas puesto se degrada, y el síntoma apunta siempre a lo último que
-se tocó. Matarlo, borrar `.next/cache` y arrancarlo de nuevo cuesta treinta
-segundos; buscar un cuello de botella que no existe cuesta una tarde.
+**La suite de interfaz corre contra una compilación**, no contra
+`next dev`: `npm run build` y `next start` en el puerto 3100, cada vez. Se
+hizo porque un servidor de desarrollo que lleva horas puesto se degrada —la
+suite pasó de minuto y medio a ocho, fallando en sitios distintos en cada
+pasada— y el síntoma apunta siempre a lo último que se tocó. Con la
+compilación la suite tarda lo mismo siempre, y de paso destapó un fallo que
+solo existía en producción: una página pública que se prerrenderizaba.
 
 **Un diseño se comprueba en varios anchos, no en la ventana que uno tenga
 abierta.** Sobre todo justo antes y justo después de cada punto de corte, que

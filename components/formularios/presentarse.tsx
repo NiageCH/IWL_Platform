@@ -136,10 +136,10 @@ export function FormularioPresentarse() {
           </Campo>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Sector">
+            <Campo etiqueta="Sector" error={r.ok ? undefined : r.campos?.sector}>
               <Texto name="sector" placeholder="Salud, logística…" />
             </Campo>
-            <Campo etiqueta="País">
+            <Campo etiqueta="País" error={r.ok ? undefined : r.campos?.pais}>
               <Texto name="pais" autoComplete="country-name" />
             </Campo>
           </div>
@@ -147,6 +147,7 @@ export function FormularioPresentarse() {
           <Campo
             etiqueta="¿En qué punto estáis?"
             ayuda="Lo comprobamos después contigo; esto solo nos ayuda a situaros."
+            error={r.ok ? undefined : r.campos?.estado_declarado}
           >
             <Seleccion name="estado_declarado" defaultValue="">
               <option value="">Prefiero no decirlo</option>
@@ -159,12 +160,16 @@ export function FormularioPresentarse() {
           </Campo>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Cuántas personas sois">
+            <Campo
+              etiqueta="Cuántas personas sois"
+              error={r.ok ? undefined : r.campos?.equipo_personas}
+            >
               <Texto name="equipo_personas" inputMode="numeric" />
             </Campo>
             <Campo
               etiqueta="Liderazgo femenino (%)"
               ayuda="Qué parte del equipo fundador y de dirección."
+              error={r.ok ? undefined : r.campos?.liderazgo_femenino_pct}
             >
               <Texto name="liderazgo_femenino_pct" inputMode="decimal" />
             </Campo>
@@ -179,7 +184,10 @@ export function FormularioPresentarse() {
             >
               <Texto name="contacto_nombre" required autoComplete="name" />
             </Campo>
-            <Campo etiqueta="Tu cargo">
+            <Campo
+              etiqueta="Tu cargo"
+              error={r.ok ? undefined : r.campos?.contacto_cargo}
+            >
               <Texto name="contacto_cargo" placeholder="CEO, CTO…" />
             </Campo>
             <Campo
@@ -193,7 +201,10 @@ export function FormularioPresentarse() {
                 autoComplete="email"
               />
             </Campo>
-            <Campo etiqueta="Teléfono">
+            <Campo
+              etiqueta="Teléfono"
+              error={r.ok ? undefined : r.campos?.contacto_telefono}
+            >
               <Texto name="contacto_telefono" autoComplete="tel" />
             </Campo>
           </div>
@@ -207,18 +218,30 @@ export function FormularioPresentarse() {
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Enlace al pitch o la presentación">
+            <Campo
+              etiqueta="Enlace al pitch o la presentación"
+              error={r.ok ? undefined : r.campos?.enlace_1}
+            >
               <Texto name="enlace_1" placeholder="https://" />
             </Campo>
-            <Campo etiqueta="Enlace al caso de negocio">
+            <Campo
+              etiqueta="Enlace al caso de negocio"
+              error={r.ok ? undefined : r.campos?.enlace_2}
+            >
               <Texto name="enlace_2" placeholder="https://" />
             </Campo>
           </div>
-          <Campo etiqueta="Algo más que quieras enseñarnos">
+          <Campo
+            etiqueta="Algo más que quieras enseñarnos"
+            error={r.ok ? undefined : r.campos?.enlace_3}
+          >
             <Texto name="enlace_3" placeholder="https://" />
           </Campo>
 
-          <Campo etiqueta="¿Cómo nos has conocido?">
+          <Campo
+            etiqueta="¿Cómo nos has conocido?"
+            error={r.ok ? undefined : r.campos?.origen}
+          >
             <Texto name="origen" />
           </Campo>
 

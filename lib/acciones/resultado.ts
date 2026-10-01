@@ -20,6 +20,31 @@ export function ok(mensaje?: string): Resultado {
 }
 
 /**
+ * Cómo se llama cada campo cuando hay que nombrarlo en un mensaje.
+ *
+ * No están todos a propósito: las columnas van en inglés y un diccionario
+ * de ciento y pico entradas no se mantiene. Están los del formulario
+ * público, que es el que rellena gente de fuera y donde más caro sale un
+ * mensaje que no se entiende.
+ */
+const ETIQUETAS: Record<string, string> = {
+  one_liner: "en una frase, qué hacéis",
+  contacto_nombre: "tu nombre",
+  contacto_email: "tu correo",
+  contacto_cargo: "tu cargo",
+  contacto_telefono: "teléfono",
+  equipo_personas: "cuántas personas sois",
+  liderazgo_femenino_pct: "liderazgo femenino",
+  estado_declarado: "en qué punto estáis",
+  enlace_1: "enlace al pitch",
+  enlace_2: "enlace al caso de negocio",
+  enlace_3: "el enlace adicional",
+  website: "la web",
+  nombre: "el nombre",
+  pais: "el país",
+};
+
+/**
  * Valida el formulario con un esquema de Zod y devuelve o los datos o un
  * resultado listo para enseñar.
  */
@@ -40,10 +65,30 @@ export function validar<T extends z.ZodTypeAny>(
     if (campo && !campos[campo]) campos[campo] = problema.message;
   }
 
-  return {
-    datos: null,
-    fallo: error("Revisa los campos marcados.", campos),
-  };
+  return { datos: null, fallo: error(mensajeDeCampos(campos), campos) };
+}
+
+/**
+ * El mensaje de cabecera cuando la validación falla.
+ *
+ * Nombra los campos en vez de decir «los marcados». Un formulario puede
+ * tener un campo cuyo error no se esté enseñando —pasó con el porcentaje
+ * del formulario de candidatura— y entonces «revisa los campos marcados» no
+ * marca ninguno y deja a la persona mirando la pantalla sin saber dónde.
+ *
+ * Solo los nombra si sabe decirlos todos en castellano: enseñar
+ * `evidence_url` es peor que no decir nada, porque además suena a avería.
+ */
+export function mensajeDeCampos(campos: Record<string, string>): string {
+  const nombres = Object.keys(campos);
+
+  if (nombres.length === 0) return "Revisa lo que has escrito.";
+  if (!nombres.every((c) => ETIQUETAS[c])) return "Revisa los campos marcados.";
+
+  const lista = nombres.map((c) => ETIQUETAS[c]).join(", ");
+  return nombres.length === 1
+    ? `Revisa este campo: ${lista}.`
+    : `Revisa estos campos: ${lista}.`;
 }
 
 /**

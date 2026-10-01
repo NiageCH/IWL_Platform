@@ -7,6 +7,7 @@ import {
   error,
   fechaOpcional,
   idOpcional,
+  mensajeDeCampos,
   ok,
   textoObligatorio,
   textoOpcional,
@@ -63,7 +64,7 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
       const campo = p.path.join(".");
       if (campo && !campos[campo]) campos[campo] = p.message;
     }
-    return error("Revisa los campos marcados.", campos);
+    return error(mensajeDeCampos(campos), campos);
   }
 
   const datos = parseo.data;

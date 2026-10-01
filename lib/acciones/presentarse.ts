@@ -19,6 +19,36 @@ import { error, ok, validar, type Resultado } from "./resultado";
  * puede darse de alta ya preseleccionada.
  */
 
+/**
+ * Un número tal y como lo escribe una persona.
+ *
+ * Nadie teclea «50» en una casilla que pide un porcentaje: teclea «50 %»,
+ * o «33,3» con la coma decimal española. `Number("50%")` es NaN, así que la
+ * primera versión rechazaba las dos cosas y, como el campo no enseñaba su
+ * error, el formulario decía «revisa los campos marcados» sin marcar
+ * ninguno. Alguien rellenó quince campos y se quedó mirando.
+ *
+ * Se limpia lo que sobra antes de convertir: símbolos de porcentaje,
+ * espacios y la coma decimal. Lo que ya no se parezca a un número sí se
+ * rechaza, y ahora el campo lo dice.
+ */
+function numeroEscritoAMano(min: number, max: number, mensaje: string) {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      const limpio = (v ?? "")
+        .replace(/[%\s]/g, "")
+        .replace(",", ".")
+        .trim();
+      return limpio === "" ? null : Number(limpio);
+    })
+    .refine(
+      (v) => v === null || (Number.isFinite(v) && v >= min && v <= max),
+      mensaje,
+    );
+}
+
 const esquema = z.object({
   nombre: z.string().trim().min(1, "¿Cómo se llama tu startup?").max(120),
   contacto_nombre: z.string().trim().min(1, "¿Cómo te llamas?").max(120),
@@ -33,22 +63,16 @@ const esquema = z.object({
     .enum(["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"])
     .nullable()
     .catch(null),
-  equipo_personas: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : Number.parseInt(v, 10)))
-    .refine(
-      (v) => v === null || (Number.isInteger(v) && v >= 0 && v <= 10_000),
-      "Escribe un número de personas.",
-    ),
-  liderazgo_femenino_pct: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : Number(v)))
-    .refine(
-      (v) => v === null || (Number.isFinite(v) && v >= 0 && v <= 100),
-      "Un porcentaje, entre 0 y 100.",
-    ),
+  equipo_personas: numeroEscritoAMano(
+    0,
+    10_000,
+    "Escribe cuántas personas sois, en número.",
+  ),
+  liderazgo_femenino_pct: numeroEscritoAMano(
+    0,
+    100,
+    "Un porcentaje entre 0 y 100.",
+  ),
   origen: z.string().trim().max(200).optional(),
   enlace_1: z.string().trim().max(500).optional(),
   enlace_2: z.string().trim().max(500).optional(),

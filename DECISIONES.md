@@ -961,3 +961,29 @@ Ahora, al abrir la convocatoria, el embudo enseña la dirección entera con su b
 La composición de la dirección vive en `lib/direccion.ts`, porque hacía falta en dos sitios —ese enlace y el privado de cada candidata— y ya estaba duplicada. En Vercel sale de `VERCEL_PROJECT_PRODUCTION_URL`, que apunta siempre al dominio de producción aunque se esté mirando un despliegue de vista previa: el enlace que se reparte no puede ser el de una rama.
 
 Hay una prueba que falla si deja de verse.
+
+## 2026-10-02 · Un formulario que se vacía al fallar
+
+Rodrigo rellenó el formulario público entero —una startup llamada dronesec—, pulsó enviar, y se encontró con «revisa los campos marcados», **ninguno marcado**, y el formulario en blanco. Todo lo escrito, perdido.
+
+Tres fallos encadenados, y los tres daban la misma sensación de que la plataforma se había tragado el trabajo:
+
+### Un porcentaje se escribe como lo escribe una persona
+
+El campo pide un porcentaje y él puso `50 %`. También habría puesto `33,3`. `Number()` devuelve `NaN` con las dos cosas, así que la validación lo rechazaba sin más.
+
+Ahora hay `numeroEscritoAMano()`: quita el signo de porcentaje y los espacios, cambia la coma por el punto, y entonces convierte. Si después de eso sigue sin ser un número, es que de verdad no lo es. Pedirle a alguien que escriba un número «bien» cuando el ordenador puede entenderlo es trasladarle un problema nuestro.
+
+### Si algo falla, se dice cuál
+
+El mensaje decía «revisa los campos marcados» y no había ninguno marcado: los `<Campo>` del formulario público no estaban conectados a sus errores. Dos arreglos: los once campos llevan ya el suyo, y el mensaje de cabecera **nombra los campos**, con las palabras de la pantalla y no con el nombre de la columna. «Revisa este campo: liderazgo femenino» sirve aunque el marcado se pierda de vista al hacer scroll.
+
+Solo los nombra si sabe decirlos **todos** en castellano, y si no vuelve al genérico. Las columnas van en inglés —es la convención de Postgres— y un diccionario de ciento y pico entradas no se mantiene; enseñar `evidence_url` sería peor que no decir nada, porque además suena a avería. Están los del formulario público, que es el que rellena gente de fuera.
+
+### Y lo escrito se queda donde estaba
+
+Esto no era de esta pantalla: **React 19 reinicia un formulario no controlado después de cada acción**. Es lo que se quiere cuando la acción va bien —el formulario queda limpio para lo siguiente— y es lo peor que puede pasar cuando va mal.
+
+`<Formulario>` guarda ahora lo enviado y lo devuelve a su sitio cuando el resultado no es `ok`. Los ficheros no: el navegador no deja escribir el valor de un `input[type=file]`, así que ese sí hay que volver a elegirlo.
+
+Va en el componente común a propósito. Era un agujero de **todos** los formularios de la plataforma, no del público, y arreglarlo en uno solo habría dejado los otros quince esperando a que alguien se encontrara con lo mismo.

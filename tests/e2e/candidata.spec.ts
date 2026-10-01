@@ -271,6 +271,80 @@ test("a quien da de alta IWL se le pide que se presente, no se le dan las gracia
   ).toBeVisible();
 });
 
+test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
+  page,
+}) => {
+  /*
+   * Lo que pasó de verdad: alguien rellenó el formulario entero, escribió
+   * «50 %» donde se pide el porcentaje, y al enviar se encontró con «revisa
+   * los campos marcados» —sin ninguno marcado— y el formulario en blanco.
+   *
+   * Tres cosas a la vez, y las tres se comprueban aquí: que un porcentaje
+   * escrito como lo escribe una persona vale, que cuando algo falla se dice
+   * cuál, y que lo escrito se queda donde estaba.
+   */
+  await actualizar(
+    "cohorts",
+    { id: `eq.${COHORTE}` },
+    { convocatoria_abierta: true, convocatoria_cierra: null },
+  );
+
+  const correo = `e2e.porcentaje.${Date.now()}@ejemplo.test`;
+  CORREOS.push(correo);
+
+  // 1. Con el signo y el espacio puestos, entra
+  await page.goto("/presentarse");
+  await page.locator('input[name="nombre"]').fill("Escrito A Mano");
+  await page.locator('textarea[name="one_liner"]').fill("Sensores agrícolas.");
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page.locator('input[name="contacto_email"]').fill(correo);
+  await page.locator('input[name="liderazgo_femenino_pct"]').fill("50 %");
+  await page.locator('input[name="equipo_personas"]').fill("6");
+  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
+
+  await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
+
+  // Y llega como número, no como texto
+  const [fila] = await consultar<{ liderazgo_femenino_pct: number }>(
+    "candidaturas",
+    { contacto_email: `eq.${correo}` },
+    "liderazgo_femenino_pct",
+  );
+  expect(Number(fila.liderazgo_femenino_pct)).toBe(50);
+
+  // 2. Y cuando de verdad no es un número, se dice cuál y no se borra nada
+  await page.goto("/presentarse");
+  await page.locator('input[name="nombre"]').fill("La Que Se Equivoca");
+  await page
+    .locator('textarea[name="one_liner"]')
+    .fill("Una frase que costó escribir.");
+  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page
+    .locator('input[name="contacto_email"]')
+    .fill(`e2e.mal.${Date.now()}@ejemplo.test`);
+  await page.locator('input[name="liderazgo_femenino_pct"]').fill("la mitad");
+  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
+
+  // Se nombra el campo, en las palabras de la pantalla
+  await expect(page.getByText(/Revisa este campo: liderazgo femenino/)).toBeVisible();
+  await expect(page.getByText("Un porcentaje entre 0 y 100.")).toBeVisible();
+
+  // Y lo demás sigue escrito: React reinicia el formulario tras cada acción
+  await expect(page.locator('input[name="nombre"]')).toHaveValue(
+    "La Que Se Equivoca",
+  );
+  await expect(page.locator('textarea[name="one_liner"]')).toHaveValue(
+    "Una frase que costó escribir.",
+  );
+
+  await actualizar(
+    "cohorts",
+    { id: `eq.${COHORTE}` },
+    { convocatoria_abierta: false },
+  );
+});
+
 test.afterAll(async () => {
   /*
    * Se deja todo como estaba, por fuera del camino que se prueba. El enlace
