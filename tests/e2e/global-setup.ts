@@ -26,6 +26,8 @@ import { USUARIOS, entrarComo } from "./entrada";
  */
 const RUTAS = [
   "/cartera",
+  "/embudo",
+  "/embudo/00000000-0000-0000-0005-000000000001",
   "/comparativa",
   "/admin/companias",
   "/admin/personas",
@@ -60,8 +62,12 @@ export default async function prepararBase() {
 
   const base = process.env.BASE_URL ?? "http://localhost:3000";
 
-  // La de entrada no necesita sesión, y es la puerta de todo lo demás
-  await fetch(`${base}/entrar`, { redirect: "manual" }).catch(() => undefined);
+  // Las que no necesitan sesión: la entrada y el formulario de candidatura
+  for (const ruta of ["/entrar", "/presentarse"]) {
+    await fetch(`${base}${ruta}`, { redirect: "manual" }).catch(
+      () => undefined,
+    );
+  }
 
   const navegador = await chromium.launch();
 

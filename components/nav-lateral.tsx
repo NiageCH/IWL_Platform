@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  Filter,
   LayoutGrid,
   Settings,
   type LucideIcon,
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const ICONOS = {
   cartera: LayoutGrid,
+  embudo: Filter,
   comparativa: BarChart3,
   administracion: Settings,
 } satisfies Record<string, LucideIcon>;

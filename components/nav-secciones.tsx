@@ -6,6 +6,7 @@ import {
   BarChart3,
   Building2,
   Cpu,
+  Filter,
   FolderCheck,
   Gauge,
   HandCoins,
@@ -33,6 +34,7 @@ import { cn } from "@/lib/utils";
  */
 const ICONOS = {
   cartera: LayoutGrid,
+  embudo: Filter,
   comparativa: BarChart3,
   administracion: Settings,
   resumen: LayoutDashboard,

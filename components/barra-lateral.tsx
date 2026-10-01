@@ -46,6 +46,7 @@ export async function BarraLateral() {
 
   const entradas: EntradaLateral[] = [
     { href: "/cartera", nombre: "Cartera", icono: "cartera" },
+    { href: "/embudo", nombre: "Embudo", icono: "embudo" },
     { href: "/comparativa", nombre: "Comparativa", icono: "comparativa" },
     ...(persona.role === "admin_iwl"
       ? [

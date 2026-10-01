@@ -57,6 +57,7 @@ export async function BarraSuperior() {
               className="mb-0"
               secciones={[
                 { href: "/cartera", nombre: "Cartera", icono: "cartera" },
+                { href: "/embudo", nombre: "Embudo", icono: "embudo" },
                 {
                   href: "/comparativa",
                   nombre: "Comparativa",

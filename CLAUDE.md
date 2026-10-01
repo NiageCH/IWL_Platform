@@ -158,6 +158,15 @@ navegadores y la capa acaba en otro sitio.
 
 Todo lo pulsable tiene foco visible. Quitarlo no es una opción.
 
+**Un formulario no vive dentro de una condición que su propio éxito vuelve
+falsa.** El mensaje de resultado está dentro del `<Formulario>`: si al
+acabar se desmonta —porque el panel se cierra solo, o porque la rama que lo
+envolvía deja de cumplirse— se lleva su propia confirmación y la acción
+parece no haber hecho nada. O el formulario se queda montado, o **el acuse
+es la pantalla cambiada**, y entonces es eso lo que comprueba la prueba, no
+un mensaje que ya no existe. Ha pasado tres veces: con el logo, al firmar
+una candidatura y al descartarla.
+
 **Los estados vacíos dicen qué hacer**, no que no hay nada. Y los errores se
 escriben como se los diría una persona a otra: qué ha pasado y qué hacer, sin
 signos de exclamación.
@@ -173,6 +182,12 @@ el código, el problema es el código.
 **Cada cambio termina con las tres suites en verde**, y las pruebas tienen que
 poder pasar dos veces seguidas: la que toca configuración la restaura por fuera
 del camino que prueba, y la que crea datos los limpia.
+
+**Si la suite se vuelve lenta y falla en sitios que cambian de una pasada a
+otra, reinicia `next dev` antes de sospechar del código.** Un servidor que
+lleva horas puesto se degrada, y el síntoma apunta siempre a lo último que
+se tocó. Matarlo, borrar `.next/cache` y arrancarlo de nuevo cuesta treinta
+segundos; buscar un cuello de botella que no existe cuesta una tarde.
 
 **Un diseño se comprueba en varios anchos, no en la ventana que uno tenga
 abierta.** Sobre todo justo antes y justo después de cada punto de corte, que

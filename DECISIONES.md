@@ -725,3 +725,66 @@ Se arregla con tres líneas en `vercel.json`: `"regions": ["fra1"]`. Medido en `
 Lo que queda por ahí, y es de otra naturaleza: dieciséis consultas por compañía es un patrón N+1. Con la latencia en cinco milisegundos ya no duele, pero el día que la cohorte tenga treinta compañías volverá a doler. Está anotado en el propio `leerCartera`: si crece, pasa a una vista materializada.
 
 **Lo general:** «va lento» tiene casi siempre una causa concreta y medible. Antes de cambiar de plataforma conviene mirar la cabecera.
+
+## 2026-10-01 · El embudo de selección: todo lo que pasa antes de ser compañía
+
+La plataforma empezaba cuando una startup ya estaba dentro. Pero el trabajo empieza mucho antes: se abre una convocatoria, se presentan, se revisa lo que mandan, hay una reunión, hay un comité que escribe un informe y decide, se firma un NDA, se hace el due diligence, se propone un acuerdo con su equity, y solo entonces —si se firma— hay compañía. Todo eso vivía en Drive y en la cabeza de quien lo llevaba.
+
+### Tabla aparte, no compañía desde el día cero
+
+Fue la decisión de arquitectura, y hay tres razones:
+
+- **La mayoría de las candidaturas no llegan a compañía.** Meterlas en `companies` llenaría la cartera de proyectos que no existen, y la cartera es la lista de lo que IWL acompaña.
+- **Una candidata no tiene equipo con cuenta.** Todo el aislamiento se apoya en `company_members`, y ahí no habría a quién dar acceso.
+- **Lo que se quiere saber de una candidata** —por qué se descartó, en qué paso, cuánto tardó— no tiene sitio en la ficha de una compañía.
+
+Al firmar, la candidatura crea su compañía con `app.crear_compania`, que es la misma puerta que el alta manual, y se queda apuntando a ella. Así una compañía nacida del embudo es idéntica a cualquier otra, y de cualquiera se puede llegar a cómo entró.
+
+### El descarte guarda desde dónde se cayó
+
+`descartada_desde` además del motivo. Sin eso, «descartada» solo dice que no entró; con eso se puede ver que la mitad se caen antes del comité, que es el tipo de cosa por la que se cambia un proceso. La pantalla lo enseña agregado.
+
+### El formulario público no es un `insert` con política para `anon`
+
+Es la parte delicada. Quien se presenta no tiene cuenta, así que hace falta dejar escribir a `anon`. Una política de `insert` sobre la tabla dejaría a cualquiera con la clave pública —que va en el navegador de todo el mundo— darse de alta **ya preseleccionada**, o con un equity pactado, o en una cohorte cerrada.
+
+En su lugar hay una función `security definer` que recibe solo los campos del formulario y pone ella la cohorte, el estado inicial y las fechas. `anon` tiene permiso sobre esa función y sobre nada más: no puede leer ni su propia candidatura.
+
+Las envolturas públicas de esas dos funciones van en `security definer`, al revés que el resto. `anon` no tiene USAGE sobre el esquema `app` y no conviene dárselo: le abriría todas las funciones de ahí.
+
+Hay además una trampa para robots —un campo invisible— y, si viene relleno, se responde que todo ha ido bien sin guardar nada. Decirle que se le ha visto solo le enseña a esquivarla.
+
+### El histórico lo escribe la base
+
+Los cambios de paso los registra un disparador, no la pantalla. Así el recorrido de una candidatura está completo aunque alguien la mueva desde otro sitio, y «cuánto lleva en comité» es un dato y no una reconstrucción.
+
+### Lo que encontré por el camino
+
+**`numeroOpcional` no toleraba que el campo faltara.** `z.string()` con un campo que el formulario no envía recibe `undefined` y falla, y el formulario entero devolvía «revisa los campos marcados» sin marcar ninguno. `.optional()` va antes del transform, igual que en `textoOpcional`.
+
+**El constraint `firmada_tiene_compania` hizo bien su trabajo y rompió mi limpieza.** Borrar la compañía deja `company_id` en nulo por la clave ajena, y entonces la candidatura sigue siendo `firmada` sin compañía. Había que borrar la candidatura primero. La regla estaba bien; el orden, mal.
+
+## 2026-10-01 · Un formulario no vive dentro de una condición que su propio éxito vuelve falsa
+
+Cuatro veces el mismo fallo en dos días: el logo al subirlo, el logo al quitarlo, firmar una candidatura y descartarla.
+
+El mensaje de resultado vive **dentro** del `<Formulario>`. Si al acabar bien el formulario se desmonta —porque el panel se cierra solo, o porque la rama que lo envolvía deja de cumplirse— se lleva su propia confirmación. La acción funciona y parece no haber hecho nada.
+
+Y es un patrón que aparece solo: un panel de «descartar» se enseña a las que no están descartadas, uno de «firmar» a las que no han firmado. El éxito de la acción es exactamente lo que hace falsa la condición.
+
+Dos salidas, y las dos valen:
+
+- **El formulario se queda montado** y lo que aparece y desaparece es su botón. Es lo que se hizo con el logo.
+- **El acuse es la pantalla cambiada.** Después de firmar sale el bloque «Firmada» con el enlace a su ficha; después de descartar, el motivo y desde dónde se cayó. Eso informa mejor que un mensaje, y entonces **es eso lo que comprueba la prueba**, no un texto que ya no existe.
+
+Queda en las convenciones. Lo caro no fue arreglarlo: fue encontrarlo cuatro veces, porque en pantalla —con la página actualizándose detrás— es facilísimo dar por bueno que algo ha pasado.
+
+## 2026-10-01 · Un servidor de desarrollo que lleva horas puesto miente
+
+Después de añadir el embudo, la suite de navegador pasó de 2,7 a entre 7 y 9 minutos, con dos o tres fallos por pasada, siempre en pruebas distintas y siempre esperas de treinta segundos. Añadir cinco pruebas no triplica una suite, así que parecía que algo del módulo nuevo había ensuciado el conjunto.
+
+No había tal. El `next dev` llevaba horas en marcha y acumulaba treinta y cinco minutos de CPU. Matarlo, borrar `.next/cache` y volver a arrancarlo dejó la suite en **114 pruebas en 2,5 minutos, dos pasadas seguidas**.
+
+Lo que cuesta de esto es que el síntoma apunta a donde uno acaba de tocar. Antes de buscar la causa en el código nuevo conviene descartar el entorno, que es más barato: reiniciar el servidor cuesta treinta segundos y leer un diff de mil líneas buscando un cuello de botella que no existe, una tarde.
+
+Queda en las convenciones, al lado de la regla de pasar dos veces: **si la suite se vuelve lenta y falla en sitios que cambian, reiniciar el servidor de desarrollo antes de sospechar del código.**

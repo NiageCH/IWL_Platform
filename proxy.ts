@@ -42,6 +42,9 @@ export async function proxy(request: NextRequest) {
   const esRutaPublica =
     ruta.startsWith("/entrar") ||
     ruta.startsWith("/auth") ||
+    // El formulario de candidatura: quien se presenta no tiene cuenta, y no
+    // la tendrá hasta que firme. Es la única pantalla que se ve sin entrar.
+    ruta.startsWith("/presentarse") ||
     ruta === "/";
 
   if (!user && !esRutaPublica) {

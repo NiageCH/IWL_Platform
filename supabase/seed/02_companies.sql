@@ -191,3 +191,76 @@ values
   ('00000000-0000-0000-0004-000000000003', 'Inversión semilla', 'inversor', 30.000, 'Ronda de 2025'),
   ('00000000-0000-0000-0004-000000000003', 'Programa público', 'inversor', 15.000, 'Préstamo participativo convertido')
 on conflict do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Candidaturas de demostración
+--
+-- El embudo con algo dentro: una en cada punto del recorrido, una firmada y
+-- una descartada. Hacen falta para que la pantalla se pueda mirar y para que
+-- las pruebas tengan sobre qué trabajar.
+-- -----------------------------------------------------------------------------
+
+insert into candidaturas (
+  id, cohort_id, nombre, sector, one_liner, website,
+  contacto_nombre, contacto_email, estado, estado_declarado, origen
+)
+select
+  v.id::uuid,
+  '00000000-0000-0000-0003-000000000001',
+  v.nombre, v.sector, v.one_liner, v.website,
+  v.contacto, v.email, v.estado::estado_candidatura,
+  v.declarado::estado_entrada, v.origen
+from (values
+  ('00000000-0000-0000-0005-000000000001', 'Brota Analítica', 'Agrotecnología',
+   'Predicción de cosecha con sensores de suelo.', 'https://brota.test',
+   'Fundadora Brota', 'hola@brota.test', 'presentada', 'prototipo', 'Formulario'),
+  ('00000000-0000-0000-0005-000000000002', 'Cauce Salud', 'Salud digital',
+   'Seguimiento de pacientes crónicos desde casa.', 'https://cauce.test',
+   'Fundadora Cauce', 'hola@cauce.test', 'en_revision', 'mvp', 'Recomendación'),
+  ('00000000-0000-0000-0005-000000000003', 'Duna Logística', 'Logística',
+   'Reparto de última milla en zonas rurales.', null,
+   'Fundadora Duna', 'hola@duna.test', 'reunion', 'idea', 'Evento'),
+  ('00000000-0000-0000-0005-000000000004', 'Ámbar Educación', 'Educación',
+   'Formación profesional con realidad aumentada.', null,
+   'Fundadora Ámbar', 'hola@ambar.test', 'comite', 'mvp', 'Formulario'),
+  ('00000000-0000-0000-0005-000000000005', 'Risco Energía', 'Energía',
+   'Autoconsumo compartido para comunidades de vecinos.', null,
+   'Fundadora Risco', 'hola@risco.test', 'nda', 'primeros_clientes', 'Formulario')
+) as v(id, nombre, sector, one_liner, website, contacto, email, estado, declarado, origen)
+on conflict (id) do nothing;
+
+-- Una descartada, con su motivo y desde dónde se cayó
+insert into candidaturas (
+  id, cohort_id, nombre, sector, contacto_nombre, contacto_email,
+  estado, descartada_desde, descartada_motivo, descartada_at, origen
+) values (
+  '00000000-0000-0000-0005-000000000006',
+  '00000000-0000-0000-0003-000000000001',
+  'Vela Fintech', 'Finanzas', 'Fundadora Vela', 'hola@vela.test',
+  'descartada', 'comite',
+  'El comité ve el mercado bien atendido y el equipo sin perfil técnico. Se le sugiere volver con un socio de producto.',
+  now() - interval '20 days', 'Formulario'
+) on conflict (id) do nothing;
+
+insert into candidatura_enlaces (candidatura_id, titulo, url, tipo)
+select v.cid::uuid, v.titulo, v.url, v.tipo
+from (values
+  ('00000000-0000-0000-0005-000000000001', 'Pitch deck', 'https://drive.test/brota-pitch', 'Presentación'),
+  ('00000000-0000-0000-0005-000000000002', 'Caso de negocio', 'https://drive.test/cauce-caso', 'Documento'),
+  ('00000000-0000-0000-0005-000000000002', 'Pitch deck', 'https://drive.test/cauce-pitch', 'Presentación'),
+  ('00000000-0000-0000-0005-000000000004', 'Pitch deck', 'https://drive.test/ambar-pitch', 'Presentación')
+) as v(cid, titulo, url, tipo)
+on conflict do nothing;
+
+insert into candidatura_eventos (candidatura_id, tipo, ocurrido_on, titulo, detalle)
+values
+  ('00000000-0000-0000-0005-000000000003', 'reunion', current_date - 10,
+   'Primera conversación',
+   'Equipo de dos, las dos técnicas. La idea está clara pero no han hablado con ningún cliente todavía. Se les pide volver con cinco entrevistas.'),
+  ('00000000-0000-0000-0005-000000000004', 'comite', current_date - 4,
+   'Pasa a preselección con condiciones',
+   'El comité ve recorrido en formación industrial. Condición: enseñar una carta de intención antes del NDA.'),
+  ('00000000-0000-0000-0005-000000000006', 'comite', current_date - 20,
+   'No pasa',
+   'Mercado bien atendido por tres actores con financiación. El equipo no tiene perfil técnico y la ventaja que plantean es comercial.')
+on conflict do nothing;
