@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/primitivas";
 import { NuevaCandidatura } from "@/components/formularios/candidatura";
 import { Convocatoria } from "@/components/formularios/convocatoria";
+import { EnlacePublico } from "@/components/formularios/enlace-publico";
+import { direccionBase } from "@/lib/direccion";
 import { PASOS_ABIERTOS, nombrePaso, paso, tonoPaso } from "@/lib/embudo";
 import { cn, numero, porcentaje } from "@/lib/utils";
 
@@ -48,6 +50,7 @@ export default async function Embudo() {
 
   const cohortes = await leerCohortes();
   const abierta = cohortes.find((c) => c.convocatoria_abierta);
+  const base = direccionBase();
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-10">
@@ -73,6 +76,27 @@ export default async function Embudo() {
           </p>
         </div>
       </header>
+
+      {/*
+        La dirección donde se presenta la gente, a la vista.
+        
+        Estaba solo en el código: para repartirla había que acordarse de la
+        ruta y escribirla a mano. Es el enlace que va a un correo o a
+        LinkedIn, así que vive aquí, al lado de dónde se abre y se cierra.
+      */}
+      {abierta ? (
+        <div className="tarjeta mb-8 p-5">
+          <p className="mb-1 text-sm font-medium text-titular">
+            Reparte esta dirección
+          </p>
+          <p className="mb-3 text-xs text-metadato">
+            Ahí se presentan las startups. Mientras la convocatoria esté
+            abierta, admite candidaturas; al cerrarla, dice que no hay
+            ninguna en curso.
+          </p>
+          <EnlacePublico base={base} />
+        </div>
+      ) : null}
 
       <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Bloque elevacion={2} className="p-6">

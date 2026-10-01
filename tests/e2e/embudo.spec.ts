@@ -258,6 +258,19 @@ test("la convocatoria se abre y se cierra desde el embudo", async ({ page }) => 
     )
     .toBe(true);
 
+  /*
+   * Y la dirección donde se presenta la gente está a la vista.
+   *
+   * Rodrigo abrió la convocatoria y no encontró por dónde entrar al
+   * formulario: la ruta solo existía en el código. Es el enlace que se
+   * reparte por correo o en LinkedIn, así que tiene que verse y poder
+   * copiarse desde donde se abre la convocatoria.
+   */
+  await expect(page.getByText("Reparte esta dirección")).toBeVisible();
+  await expect(
+    page.getByText(/\/presentarse$/).first(),
+  ).toBeVisible();
+
   // Con la convocatoria abierta, el formulario público admite candidaturas
   await page.goto("/presentarse");
   await expect(

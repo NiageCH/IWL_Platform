@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
 import { leerCandidatura } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
+import { direccionBase } from "@/lib/direccion";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
   Bloque,
@@ -61,16 +62,7 @@ export default async function FichaCandidatura({
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
 
-  /*
-   * La dirección de la plataforma, para poder enseñar el enlace entero y
-   * que se pueda copiar. En Vercel llega por `VERCEL_PROJECT_PRODUCTION_URL`;
-   * en local, por lo que haya configurado o localhost.
-   */
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000");
+  const base = direccionBase();
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10 lg:px-10">

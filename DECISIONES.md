@@ -949,3 +949,15 @@ Encontrarlo costó un rato largo, y lo que más lo alargó fue dar por hecho que
 ### Y de paso, un fallo silencioso de verdad
 
 `configurarConvocatoria` hacía el `update` y devolvía «Convocatoria abierta» sin mirar si había cambiado algo. Un `update` que una política no deja pasar afecta a cero filas y **no devuelve error**. Ahora pide `select` y comprueba que volvió una fila: si no, lo dice. Es la peor forma de fallar, la que parece que ha funcionado, y es la segunda vez que aparece en este proyecto.
+
+## 2026-10-02 · La dirección que se reparte tiene que verse
+
+Rodrigo abrió la convocatoria y no encontró por dónde se entra al formulario. Normal: **no había ningún enlace a `/presentarse` en toda la plataforma**. La ruta existía en el código y en el comentario de un panel, y para repartirla había que acordarse y escribirla a mano.
+
+Es un error de bulto por mi parte, y de una clase concreta: construir una pantalla pública y no preguntarse cómo llega nadie hasta ella. Una página sin cuenta no sale en ningún menú —por definición, quien la usa no ha entrado— así que la única forma de que exista para el equipo es ponerla donde el equipo la va a buscar.
+
+Ahora, al abrir la convocatoria, el embudo enseña la dirección entera con su botón de copiar y un «abrir». Está al lado de donde se abre y se cierra, que es donde se piensa en ella.
+
+La composición de la dirección vive en `lib/direccion.ts`, porque hacía falta en dos sitios —ese enlace y el privado de cada candidata— y ya estaba duplicada. En Vercel sale de `VERCEL_PROJECT_PRODUCTION_URL`, que apunta siempre al dominio de producción aunque se esté mirando un despliegue de vista previa: el enlace que se reparte no puede ser el de una rama.
+
+Hay una prueba que falla si deja de verse.
