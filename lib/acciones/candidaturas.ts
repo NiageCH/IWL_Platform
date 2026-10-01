@@ -473,16 +473,33 @@ export async function configurarConvocatoria(
   const { cohort_id, abierta, cierra, texto } = validado.datos;
 
   const supabase = await clienteServidor();
-  const { error: falloConvocatoria } = await supabase
+
+  /*
+   * Con `select`, para saber si de verdad ha cambiado algo.
+   *
+   * Un `update` que una política no deja pasar afecta a cero filas y
+   * **no devuelve error**: PostgREST lo da por correcto. Sin esta
+   * comprobación, la pantalla decía «convocatoria abierta» y la
+   * convocatoria seguía cerrada, que es la peor forma de fallar: la que
+   * parece que ha funcionado.
+   */
+  const { data: tocadas, error: falloConvocatoria } = await supabase
     .from("cohorts")
     .update({
       convocatoria_abierta: abierta,
       convocatoria_cierra: cierra,
       convocatoria_texto: texto,
     })
-    .eq("id", cohort_id);
+    .eq("id", cohort_id)
+    .select("id");
 
   if (falloConvocatoria) return traducirError(falloConvocatoria);
+
+  if (!tocadas || tocadas.length === 0) {
+    return error(
+      "No se ha podido cambiar la convocatoria. Puede que esa cohorte ya no exista o que tu cuenta no tenga permiso.",
+    );
+  }
 
   revalidatePath("/embudo");
   revalidatePath("/presentarse");

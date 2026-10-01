@@ -5,7 +5,10 @@ import {
   CandidaturaPublica,
   type VistaCandidata,
 } from "@/components/vistas/candidatura-publica";
-import { AnadirMaterial } from "@/components/formularios/candidatura-publica";
+import {
+  AnadirMaterial,
+  CompletarFicha,
+} from "@/components/formularios/candidatura-publica";
 
 export const metadata = {
   title: "Tu candidatura · Inception Woman Lab",
@@ -46,7 +49,23 @@ export default async function PorEnlace({
   return (
     <Marco tema="oscuro">
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
-        <CandidaturaPublica vista={vista}>
+        <CandidaturaPublica
+          vista={vista}
+          ficha={
+            vista.puede_subir ? (
+              <div className="tarjeta p-6">
+                <h2 className="mb-1 text-base font-semibold text-titular">
+                  Vuestra ficha
+                </h2>
+                <p className="mb-5 text-sm text-secundario">
+                  Esto es lo que sabemos de vosotros. Complétalo o corrígelo
+                  cuando quieras.
+                </p>
+                <CompletarFicha token={token} ficha={vista} />
+              </div>
+            ) : null
+          }
+        >
           <AnadirMaterial token={token} />
         </CandidaturaPublica>
 

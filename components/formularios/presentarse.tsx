@@ -31,22 +31,70 @@ const ESTADOS = [
  * «gracias» se lee menos que la confirmación donde estaba mirando.
  */
 export function FormularioPresentarse() {
+  const [enlace, setEnlace] = useState<string | null>(null);
   const [enviada, setEnviada] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
   if (enviada) {
+    const completo =
+      typeof window !== "undefined" && enlace
+        ? `${window.location.origin}${enlace}`
+        : enlace;
+
     return (
       <div>
         <p className="text-base text-titular">Recibida. Gracias.</p>
         <p className="mt-2 text-sm text-secundario">
-          La revisamos y te escribimos al correo que nos has dejado. Si te
-          falta algo por mandarnos, respóndenos a ese mismo hilo.
+          La revisamos y te escribimos al correo que nos has dejado.
         </p>
+
+        {/*
+          Y su enlace, que es lo que faltaba.
+          
+          Sin esto se quedaba sin forma de volver: le decíamos «te
+          escribimos al correo» y su candidatura desaparecía de su vista en
+          cuanto cerrara la pestaña.
+        */}
+        {completo ? (
+          <div className="mt-5">
+            <p className="text-sm text-titular">
+              Guarda esta dirección. Es tuya y privada: ahí puedes ver cómo va
+              y añadir lo que se te haya quedado por mandar.
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded-md border border-filete bg-hundido px-3 py-2 text-xs text-secundario">
+                {completo}
+              </code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(completo);
+                  setCopiado(true);
+                  setTimeout(() => setCopiado(false), 2000);
+                }}
+                className="boton-marca shrink-0 px-4 py-2 text-xs"
+              >
+                {copiado ? "Copiada" : "Copiar"}
+              </button>
+            </div>
+            <a href={enlace!} className="enlace mt-3 inline-block text-sm text-acento-texto">
+              Abrir mi candidatura
+            </a>
+          </div>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <Formulario accion={presentarse} onOk={() => setEnviada(true)}>
+    <Formulario
+      accion={async (datos) => {
+        const r = await presentarse(datos);
+        if (r.ok && r.enlace) setEnlace(r.enlace);
+        return r;
+      }}
+      onOk={() => setEnviada(true)}
+    >
       {(r) => (
         <>
           {/*

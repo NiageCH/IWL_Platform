@@ -219,15 +219,46 @@ describe("qué ve la candidata", () => {
     });
     const vista = (data as Record<string, unknown>[])?.[0] ?? {};
 
-    // Ni el equity, ni las notas, ni el estado interno, ni el correo
+    /*
+     * Lo que se comprueba es que no se escapa nada de IWL, enumerado a
+     * mano: así, el día que alguien añada un campo a la función, esta
+     * prueba le obliga a mirar si ese campo es asunto de la candidata.
+     */
+    for (const prohibido of [
+      "estado",
+      "equity_pct",
+      "aportacion_propuesta",
+      "notas",
+      "descartada_motivo",
+      "descartada_desde",
+      "estado_verificado",
+      "cohort_id",
+      "company_id",
+      "contacto_email",
+      "token",
+    ]) {
+      expect(Object.keys(vista)).not.toContain(prohibido);
+    }
+
+    // Y la lista entera, para que añadir uno sin querer se note
     expect(Object.keys(vista).sort()).toEqual([
+      "contacto_cargo",
+      "contacto_telefono",
       "convocatoria",
       "enlaces",
+      "equipo_personas",
+      "estado_declarado",
       "id",
+      "le_toca_a_ella",
+      "liderazgo_femenino_pct",
       "momento",
       "nombre",
+      "one_liner",
+      "pais",
       "presentada_on",
       "puede_subir",
+      "sector",
+      "website",
     ]);
   });
 

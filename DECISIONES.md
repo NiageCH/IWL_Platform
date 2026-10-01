@@ -912,3 +912,40 @@ O sea: la plataforma ya publicada estaba sirviendo «no hay ninguna convocatoria
 Arreglado con `export const dynamic = "force-dynamic"`. Es una página que se pide poco y tiene que decir la verdad: renderizarla en cada petición no cuesta nada comparado con eso.
 
 **Contra `next dev` esto no se ve nunca**, porque ahí todo es dinámico. Es exactamente la clase de fallo que solo aparece cuando se prueba lo que de verdad se publica, y la razón por la que el cambio mereció la pena el mismo día.
+
+## 2026-10-02 · Faltaba el paso en que la candidata se presenta
+
+Rodrigo abrió el enlace de una candidata y le daba las gracias por un material que no había mandado. Tenía razón: faltaba el paso.
+
+Había **dos caminos** y solo uno estaba construido.
+
+El del formulario público funcionaba: ella rellena, se crea la candidatura con lo que escribió. Pero **al terminar no recibía su enlace**: la pantalla le decía «te escribimos al correo» y no hay envío de correo montado, así que su candidatura desaparecía de su vista al cerrar la pestaña. Ahora se le enseña la dirección para que la guarde, con su botón de copiar.
+
+El de la invitación no estaba. IWL conoce a alguien en un evento, la da de alta a mano con el nombre y un correo, y le manda el enlace. Ella llegaba a una pantalla que le agradecía algo que no había hecho y **no tenía dónde contar quién es**: la ficha la había escrito IWL con dos campos. Ahora el enlace lleva el mismo juego de campos que el formulario público, y la cabecera cambia: en vez de «Recibida, gracias» dice «Cuéntanos quiénes sois».
+
+### Lo que distingue un camino del otro no son los campos
+
+La primera versión miraba si faltaban datos. No sirve: una candidatura dada de alta a mano puede tener sector y descripción —escritos por IWL— y aun así ella no haber mandado nada.
+
+Lo que lo distingue es **quién la creó**. `created_by` va relleno cuando la da de alta alguien de IWL y vacío cuando entra por el formulario público, donde lo escribió ella. Esa es la señal.
+
+### Un `update` parcial no borra lo que ya estaba
+
+`app.completar_candidatura` actualiza solo los campos que llegan con algo. Si IWL apuntó el sector al darla de alta y ella deja ese campo vacío, el sector se queda. Vaciar un campo a propósito es una conversación, no un descuido de formulario.
+
+## 2026-10-02 · Una prueba que pasaba porque la fila ya estaba como ella quería
+
+La prueba de abrir la convocatoria llevaba días pasando y empezó a fallar en cuanto otro fichero dejó la fila cerrada antes de que le tocara.
+
+La secuencia era: pulsar Guardar, esperar al mensaje, leer la fila. El mensaje aparece en cuanto la acción devuelve, pero la fila tarda un instante más en verse desde otra conexión. O sea que la lectura era una carrera —y la ganaba solo porque la convocatoria ya estaba abierta de la pasada anterior.
+
+Dos lecciones, y la segunda es la que cuesta:
+
+- **Una aserción sobre un sistema externo después de una acción de interfaz se espera, no se supone.** `expect.poll` en vez de una lectura directa.
+- **Una prueba que depende del estado que dejó la anterior pasa por el motivo equivocado.** Esta llevaba días en verde sin comprobar nada: la fila ya valía lo que ella esperaba.
+
+Encontrarlo costó un rato largo, y lo que más lo alargó fue dar por hecho que el mensaje y la fila van a la vez. Separar «la acción terminó bien» de «el dato quedó escrito» es lo que hizo que el fallo señalara a dónde mirar.
+
+### Y de paso, un fallo silencioso de verdad
+
+`configurarConvocatoria` hacía el `update` y devolvía «Convocatoria abierta» sin mirar si había cambiado algo. Un `update` que una política no deja pasar afecta a cero filas y **no devuelve error**. Ahora pide `select` y comprueba que volvió una fila: si no, lo dice. Es la peor forma de fallar, la que parece que ha funcionado, y es la segunda vez que aparece en este proyecto.

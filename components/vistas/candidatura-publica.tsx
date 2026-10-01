@@ -23,6 +23,33 @@ export type VistaCandidata = {
   convocatoria: string | null;
   puede_subir: boolean;
   enlaces: { titulo: string; url: string }[];
+  /** Si todavía le toca a ella presentarse */
+  le_toca_a_ella?: boolean;
+  sector?: string | null;
+  one_liner?: string | null;
+  website?: string | null;
+  pais?: string | null;
+  contacto_cargo?: string | null;
+  contacto_telefono?: string | null;
+  estado_declarado?: string | null;
+  equipo_personas?: number | null;
+  liderazgo_femenino_pct?: number | null;
+};
+
+/*
+ * Cuando todavía le toca a ella.
+ *
+ * Una candidatura que dio de alta IWL —en un evento, por recomendación—
+ * llega aquí sin que la startup haya contado nada. Darle las gracias por un
+ * material que no ha mandado es una forma rara de empezar, y además no le
+ * dice lo único que importa: que le toca.
+ */
+const LE_TOCA = {
+  titulo: "Cuéntanos quiénes sois",
+  cuerpo:
+    "Te hemos dado de alta para que no tengas que empezar de cero, pero la parte importante la tienes que contar tú. Rellena lo de abajo y déjanos tu material: con eso valoramos la candidatura.",
+  icono: Sparkles,
+  tono: "[--tono:var(--color-acento-texto)]",
 };
 
 const MOMENTOS: Record<
@@ -68,13 +95,20 @@ const MOMENTOS: Record<
 
 export function CandidaturaPublica({
   vista,
+  ficha,
   children,
 }: {
   vista: VistaCandidata;
+  /** El formulario donde ella cuenta quién es */
+  ficha?: ReactNode;
   /** El formulario para añadir material, si procede */
   children?: ReactNode;
 }) {
-  const momento = MOMENTOS[vista.momento] ?? MOMENTOS.recibida;
+  const abierta = vista.momento !== "cerrada" && vista.momento !== "dentro";
+  const momento =
+    vista.le_toca_a_ella && abierta
+      ? LE_TOCA
+      : (MOMENTOS[vista.momento] ?? MOMENTOS.recibida);
   const Icono = momento.icono;
 
   return (
@@ -107,7 +141,9 @@ export function CandidaturaPublica({
         </div>
       </div>
 
-      <div className="tarjeta p-6">
+      {ficha}
+
+      <div className="tarjeta mt-6 p-6">
         <h2 className="mb-1 text-base font-semibold text-titular">
           Lo que nos has mandado
         </h2>

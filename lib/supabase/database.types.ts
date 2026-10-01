@@ -3895,6 +3895,9 @@ isOneToOne: false
 "compania_tiene_actividad":
 { Args: { "target_company": string }; Returns: boolean
                            },
+"completar_candidatura":
+{ Args: { "p_contacto_cargo"?: string,"p_contacto_telefono"?: string,"p_equipo_personas"?: number,"p_estado_declarado"?: Database["public"]['Enums']["estado_entrada"],"p_liderazgo_femenino_pct"?: number,"p_one_liner"?: string,"p_pais"?: string,"p_sector"?: string,"p_token": string,"p_website"?: string }; Returns: undefined
+                           },
 "convocatoria_abierta":
 { Args: Record<PropertyKey, never>; Returns: {
               "cierra": string,"nombre": string,"texto": string
@@ -3940,9 +3943,12 @@ isOneToOne: false
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined
                            },
+"testigo_de_candidatura":
+{ Args: { "p_id": string }; Returns: string
+                           },
 "ver_candidatura":
 { Args: { "p_token": string }; Returns: {
-              "convocatoria": string,"enlaces": Json,"id": string,"momento": string,"nombre": string,"presentada_on": string,"puede_subir": boolean
+              "contacto_cargo": string,"contacto_telefono": string,"convocatoria": string,"enlaces": Json,"equipo_personas": number,"estado_declarado": Database["public"]['Enums']["estado_entrada"],"id": string,"le_toca_a_ella": boolean,"liderazgo_femenino_pct": number,"momento": string,"nombre": string,"one_liner": string,"pais": string,"presentada_on": string,"puede_subir": boolean,"sector": string,"website": string
             }[]
                            }
           }

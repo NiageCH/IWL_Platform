@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, actualizar, borrar, entrarComo } from "./entrada";
+import {
+  USUARIOS,
+  actualizar,
+  borrar,
+  consultar,
+  entrarComo,
+} from "./entrada";
 
 /**
  * El embudo de selección, de punta a punta.
@@ -226,6 +232,31 @@ test("la convocatoria se abre y se cierra desde el embudo", async ({ page }) => 
   await form.getByRole("button", { name: "Guardar" }).click();
 
   await expect(page.getByText("Convocatoria abierta.")).toBeVisible();
+
+  /*
+   * Y se comprueba en la base, no solo el mensaje. Son dos cosas distintas:
+   * el mensaje dice que la acción terminó bien, la fila dice que la
+   * convocatoria quedó abierta.
+   *
+   * Con `poll` y no con una lectura directa. El mensaje aparece en cuanto
+   * la acción devuelve, pero la fila tarda un instante más en verse desde
+   * otra conexión, y leer de inmediato era una carrera: el fichero pasaba
+   * cuando se ejecutaba solo —porque la fila ya estaba abierta de la pasada
+   * anterior— y fallaba en cuanto algo la dejaba cerrada antes.
+   */
+  await expect
+    .poll(
+      async () => {
+        const [c] = await consultar<{ convocatoria_abierta: boolean }>(
+          "cohorts",
+          { id: `eq.${COHORTE}` },
+          "convocatoria_abierta",
+        );
+        return c.convocatoria_abierta;
+      },
+      { timeout: 10_000 },
+    )
+    .toBe(true);
 
   // Con la convocatoria abierta, el formulario público admite candidaturas
   await page.goto("/presentarse");

@@ -20,6 +20,10 @@ import {
 const BROTA = "00000000-0000-0000-0005-000000000001"; // presentada
 const AMBAR = "00000000-0000-0000-0005-000000000004"; // en comité
 const VELA = "00000000-0000-0000-0005-000000000006"; // descartada
+const COHORTE = "00000000-0000-0000-0003-000000000001";
+
+/** Los correos que crean estas pruebas, para limpiarlos al acabar */
+const CORREOS: string[] = [];
 
 /** El testigo de una candidatura, por fuera de la pantalla */
 async function tokenDe(id: string): Promise<string> {
@@ -150,6 +154,123 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   ).toBeVisible();
 });
 
+test("quien se presenta por el formulario recibe su enlace", async ({
+  page,
+}) => {
+  /*
+   * Sin esto se quedaba sin forma de volver: la pantalla le decía «te
+   * escribimos al correo» y no hay envío de correo montado, así que su
+   * candidatura desaparecía de su vista al cerrar la pestaña.
+   */
+  await actualizar(
+    "cohorts",
+    { id: `eq.${COHORTE}` },
+    { convocatoria_abierta: true, convocatoria_cierra: null },
+  );
+
+  const correo = `e2e.presenta.${Date.now()}@ejemplo.test`;
+  CORREOS.push(correo);
+
+  await page.goto("/presentarse");
+  await page.locator('input[name="nombre"]').fill("Startup Que Se Presenta");
+  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page.locator('input[name="contacto_email"]').fill(correo);
+  /*
+   * Se rellena la descripción y el punto en que están, que es lo que hace
+   * que la candidatura esté completa. Sin eso, el enlace le pediría —con
+   * razón— que terminara de presentarse, y entonces esta prueba no estaría
+   * comprobando lo que dice comprobar.
+   */
+  await page
+    .locator('textarea[name="one_liner"]')
+    .fill("Hacemos seguimiento de cultivos.");
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
+
+  await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
+
+  // Y con su enlace a la vista, para guardarlo
+  await expect(page.getByText(/Guarda esta dirección/)).toBeVisible();
+  await page.getByRole("link", { name: "Abrir mi candidatura" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Startup Que Se Presenta" }),
+  ).toBeVisible();
+
+  /*
+   * Y como se presentó ella, no se le pide que se presente: se le da las
+   * gracias. Es la diferencia con el camino de la invitación.
+   */
+  await expect(page.getByText("Recibida", { exact: true })).toBeVisible();
+  await expect(page.getByText("Cuéntanos quiénes sois")).toHaveCount(0);
+
+  /*
+   * Y se cierra aquí mismo, no en el `afterAll`.
+   *
+   * La convocatoria es configuración compartida: mientras esté abierta,
+   * cualquier otra prueba que mire el formulario público ve algo distinto.
+   * Dejarlo para el `afterAll` parecía suficiente y no lo era —los ganchos
+   * de un fichero no se disparan necesariamente antes de que empiece el
+   * siguiente—, así que otra prueba de otro fichero encontraba la
+   * convocatoria cerrada a media ejecución.
+   */
+  await actualizar(
+    "cohorts",
+    { id: `eq.${COHORTE}` },
+    { convocatoria_abierta: false },
+  );
+});
+
+test("a quien da de alta IWL se le pide que se presente, no se le dan las gracias", async ({
+  page,
+}) => {
+  /*
+   * El camino de la invitación: IWL conoce a alguien en un evento, la da de
+   * alta con el nombre y un correo, y le manda el enlace. Ella no ha
+   * mandado nada todavía, así que agradecérselo es raro y además no le dice
+   * lo único que importa, que le toca a ella.
+   */
+  const correo = `e2e.invitada.${Date.now()}@ejemplo.test`;
+  CORREOS.push(correo);
+
+  await entrarComo(page, USUARIOS.admin, "/embudo");
+  await page.getByText("Dar de alta una candidatura a mano").click();
+  const alta = page.locator("form", {
+    has: page.locator('select[name="cohort_id"]'),
+  });
+  await alta.locator('input[name="nombre"]').fill("Invitada A Dedo");
+  await alta.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await alta.locator('input[name="contacto_email"]').fill(correo);
+  await alta.getByRole("button", { name: "Dar de alta" }).click();
+  await expect(page.getByText(/entra en el embudo/)).toBeVisible();
+
+  const [fila] = await consultar<{ token: string }>(
+    "candidaturas",
+    { contacto_email: `eq.${correo}` },
+    "token",
+  );
+
+  await page.goto(`/candidatura/${fila.token}`);
+
+  await expect(page.getByText("Cuéntanos quiénes sois")).toBeVisible();
+  await expect(page.getByText("Recibida", { exact: true })).toHaveCount(0);
+
+  // Y tiene dónde contarlo
+  const ficha = page.locator("form", {
+    has: page.locator('textarea[name="one_liner"]'),
+  });
+  await ficha
+    .locator('textarea[name="one_liner"]')
+    .fill("Hacemos sensores para invernaderos.");
+  await ficha.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await ficha.getByRole("button", { name: "Guardar" }).click();
+
+  await expect(page.getByText("Guardado. Gracias.")).toBeVisible();
+  await expect(
+    page.getByText("Hacemos sensores para invernaderos."),
+  ).toBeVisible();
+});
+
 test.afterAll(async () => {
   /*
    * Se deja todo como estaba, por fuera del camino que se prueba. El enlace
@@ -170,6 +291,9 @@ test.afterAll(async () => {
    * es una persona de más en los desplegables y una fila que no debería
    * existir. Una candidata que no firma no tiene cuenta.
    */
+  for (const correo of CORREOS) {
+    await borrar("candidaturas", { contacto_email: correo });
+  }
   await borrarCuenta("hola@brota.test");
   await borrarCuenta("hola@ambar.test");
   await actualizar(
