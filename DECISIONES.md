@@ -820,3 +820,37 @@ Que una regla esté escrita no impide repetirla. Lo que sí la coge es una prueb
 ### Una aserción que pasaba por el motivo equivocado
 
 `expect(error).not.toBeNull()` después de un `update` que RLS no deja pasar. No falla: una escritura sin política afecta a cero filas, y PostgREST lo devuelve como correcto. La prueba habría seguido pasando el día que la política desapareciera. Ahora comprueba que la fila no cambió.
+
+## 2026-10-01 · Cómo entrega una candidata la documentación del due diligence
+
+Rodrigo preguntó dónde se carga la información cuando una candidatura llega a due diligence, y la pregunta destapó que había construido media funcionalidad: la candidata podía subir ficheros a su sala de datos, pero **IWL no los veía en ninguna parte** y **nadie le decía qué mandar**. Una subida sin el otro lado es tanto como no tenerla.
+
+### Se reutiliza el checklist que ya existe
+
+La plataforma ya tenía un catálogo de due diligence: 7 áreas y 29 puntos, el que se aplica a las compañías. Al pasar una candidatura a NDA se instancia ese mismo catálogo.
+
+No se inventó una lista nueva a propósito. Si la información que hace falta para decidir es la misma, la lista tiene que ser la misma: dos catálogos paralelos se desincronizan el primer mes, y entonces nadie sabe cuál es el bueno.
+
+Se pide **al entrar en NDA**, con un disparador y no con un botón: el NDA es exactamente el momento en que se puede pedir —antes no hay confidencialidad que lo cubra— y una lista que llega tarde es una semana de correos preguntando qué hace falta.
+
+### Cada punto lleva su propia subida
+
+En la pantalla de la candidata, cada documento pedido tiene su propio campo. Un único «sube aquí tus documentos» obligaría a las dos partes a adivinar qué responde a qué: a ella a nombrar bien los ficheros, y a IWL a abrirlos para saberlo.
+
+Y lo que falta va arriba. Lo entregado se queda, pero apagado: lo que se mira al abrir esa página es qué queda por hacer.
+
+### Lo que no puede hacer la candidata
+
+**Pedirse cosas a sí misma.** Lo que hay que entregar lo decide quien evalúa; si la candidata pudiera escribir su propia lista, «qué falta» dejaría de significar nada.
+
+**Retirar lo entregado.** Si se equivoca de fichero sube el bueno y lo dice. Dejar que borre convierte el expediente en algo que no se puede citar en un comité.
+
+### Las direcciones se firman al pulsar, no al pintar
+
+Un documento entregado se abre con una dirección firmada que dura cinco minutos, generada al hacer clic. No se pintan enlaces firmados en la página: estarían en el HTML de todas las fichas abiertas, y una dirección a documentación de due diligence que vive en una pestaña olvidada es una dirección que acaba reenviada.
+
+### Lo que queda, y es una decisión de verdad
+
+Cuando la candidata firma, esos documentos **no pasan a la sala de datos de la compañía**. Hoy se le volvería a pedir lo mismo, y eso choca de frente con el primer principio del proyecto: un dato se introduce una vez.
+
+No se ha hecho aquí porque copiar veintinueve ficheros entre buckets dentro de una acción de servidor roza el límite de tiempo del plan de Vercel, y conviene pensarlo antes: o se copian en segundo plano, o la ficha de la compañía lee del expediente de su candidatura sin copiar nada. Queda anotado y sin resolver.

@@ -118,6 +118,20 @@ test.afterAll(async () => {
     { id: `eq.${BROTA}` },
     { profile_id: null, token_anulado_at: null },
   );
+
+  /*
+   * Y la cuenta que se creó vuelve a su rol.
+   *
+   * La primera versión solo desligaba la candidatura y dejaba el perfil
+   * como `candidata` para siempre: basura que se acumula pasada a pasada y
+   * que un día hace fallar a otra prueba por un motivo que no tiene nada
+   * que ver.
+   */
+  await actualizar(
+    "profiles",
+    { email: "eq.hola@brota.test" },
+    { role: "fundadora" },
+  );
   await borrar("candidatura_enlaces", {
     url: "https://drive.test/plan-nuevo",
   });

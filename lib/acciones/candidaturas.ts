@@ -564,12 +564,15 @@ export async function darAccesoCandidata(
 }
 
 /**
- * La candidata sube un documento a su sala de datos.
+ * La candidata entrega un documento.
  *
- * Es lo único que escribe ella, y solo desde que tiene cuenta. Quién puede
- * subir dónde lo decide la política de Storage: la primera carpeta de la
- * ruta es el id de su candidatura, y `app.mi_candidatura_id()` resuelve cuál
- * es la suya. No hay parámetro que manipular.
+ * El fichero va a su carpeta de Storage y el metadato a la base, apuntando
+ * —si procede— al punto del checklist que responde. Las dos cosas: el
+ * fichero suelto en un bucket no permite contestar «qué falta», que es la
+ * pregunta que se hace todos los días mientras dura un due diligence.
+ *
+ * Qué candidatura es lo resuelve la base por la sesión, no el formulario.
+ * Si viniera en el formulario, alguien podría cambiarlo por otra.
  */
 export async function subirDocumentoCandidata(
   formData: FormData,
@@ -588,12 +591,10 @@ export async function subirDocumentoCandidata(
     );
   }
 
+  const peticion = String(formData.get("peticion_id") ?? "") || null;
+
   const supabase = await clienteServidor();
 
-  /*
-   * La candidatura la resuelve la base por la sesión, no la pantalla. Si
-   * viniera en el formulario, alguien podría cambiarlo por otra.
-   */
   const { data: candidaturaId } = await supabase.rpc("mi_candidatura_id");
   if (!candidaturaId) {
     return error("No encontramos tu candidatura. Escríbenos.");
@@ -601,7 +602,7 @@ export async function subirDocumentoCandidata(
 
   const seguro = fichero.name
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9._-]/g, "-")
     .replace(/-+/g, "-")
     .slice(0, 120);
@@ -616,6 +617,85 @@ export async function subirDocumentoCandidata(
     return error(`No se ha podido subir: ${falloSubida.message}`);
   }
 
+  const { error: falloFicha } = await supabase
+    .from("candidatura_documentos")
+    .insert({
+      candidatura_id: candidaturaId,
+      peticion_id: peticion,
+      nombre: fichero.name,
+      storage_path: ruta,
+      mime: fichero.type || null,
+      bytes: fichero.size,
+      created_by: persona.id,
+    });
+
+  if (falloFicha) {
+    // Sin metadato, el fichero no se encuentra: no se deja suelto
+    await supabase.storage.from("candidaturas").remove([ruta]);
+    return traducirError(falloFicha);
+  }
+
   revalidatePath("/candidatura");
-  return ok(`${fichero.name} subido. Gracias.`);
+  return ok(`${fichero.name} entregado. Gracias.`);
+}
+
+/**
+ * IWL abre un documento entregado.
+ *
+ * El bucket es privado, así que se firma una dirección que dura un rato.
+ * No se deja fija: una dirección permanente a documentación de due
+ * diligence es una dirección que acaba en un correo reenviado.
+ */
+export async function abrirDocumentoCandidata(
+  formData: FormData,
+): Promise<Resultado & { url?: string }> {
+  const { fallo } = await soloIwl();
+  if (fallo) return fallo;
+
+  const ruta = String(formData.get("storage_path") ?? "");
+  if (!ruta) return error("Falta saber cuál.");
+
+  const supabase = await clienteServidor();
+  const { data, error: falloFirma } = await supabase.storage
+    .from("candidaturas")
+    .createSignedUrl(ruta, 300);
+
+  if (falloFirma || !data) {
+    return error("No se ha podido abrir el documento.");
+  }
+
+  return { ok: true, url: data.signedUrl };
+}
+
+/** IWL pide algo que no está en la plantilla */
+const esquemaPeticion = z.object({
+  candidatura_id: uuid,
+  titulo: textoObligatorio(1, "¿Qué le pides?"),
+  detalle: textoOpcional,
+});
+
+export async function pedirDocumento(formData: FormData): Promise<Resultado> {
+  const { fallo, persona } = await soloIwl();
+  if (fallo) return fallo;
+
+  const validado = validar(esquemaPeticion, formData);
+  if (validado.fallo) return validado.fallo;
+  const datos = validado.datos;
+
+  const supabase = await clienteServidor();
+  const { error: falloPeticion } = await supabase
+    .from("candidatura_peticiones")
+    .insert({
+      ...datos,
+      area: "A medida",
+      // Al final de la lista: lo que se pide sobre la marcha va después de
+      // lo que se pide siempre
+      orden: 9999,
+      created_by: persona!.id,
+    });
+
+  if (falloPeticion) return traducirError(falloPeticion);
+
+  refrescar(datos.candidatura_id);
+  return ok("Pedido. Lo verá en su lista.");
 }

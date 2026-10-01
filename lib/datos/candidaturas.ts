@@ -80,7 +80,7 @@ export async function leerCandidatura(id: string) {
 
   if (!candidatura) return null;
 
-  const [enlaces, eventos] = await Promise.all([
+  const [enlaces, eventos, peticiones, documentos] = await Promise.all([
     supabase
       .from("candidatura_enlaces")
       .select("*")
@@ -92,12 +92,40 @@ export async function leerCandidatura(id: string) {
       .eq("candidatura_id", id)
       .order("ocurrido_on", { ascending: false })
       .order("created_at", { ascending: false }),
+    // Lo que se le ha pedido, y cuánto ha entregado de cada cosa
+    supabase
+      .from("candidatura_entregas")
+      .select("*")
+      .eq("candidatura_id", id)
+      .order("orden"),
+    supabase
+      .from("candidatura_documentos")
+      .select("*")
+      .eq("candidatura_id", id)
+      .order("created_at", { ascending: false }),
   ]);
+
+  const listaPeticiones = peticiones.data ?? [];
+  const obligatorias = listaPeticiones.filter((p) => p.obligatoria);
 
   return {
     candidatura,
     enlaces: enlaces.data ?? [],
     eventos: eventos.data ?? [],
+    peticiones: listaPeticiones,
+    documentos: documentos.data ?? [],
+    /*
+     * Cuánto lleva entregado de lo obligatorio. Es el número que se mira
+     * mientras dura un due diligence, y por eso se calcula aquí y no en la
+     * pantalla: si lo calculara cada vista, acabarían discrepando.
+     */
+    avance:
+      obligatorias.length === 0
+        ? null
+        : {
+            cumplidas: obligatorias.filter((p) => (p.documentos ?? 0) > 0).length,
+            total: obligatorias.length,
+          },
   };
 }
 

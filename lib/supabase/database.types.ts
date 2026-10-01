@@ -409,6 +409,61 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"candidatura_documentos": {
+                  Row: {
+                    "bytes": number | null,"candidatura_id": string,"created_at": string,"created_by": string | null,"id": string,"mime": string | null,"nombre": string,"peticion_id": string | null,"storage_path": string
+                  }
+                  Insert: {
+                    "bytes"?: number | null,"candidatura_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre": string,"peticion_id"?: string | null,"storage_path": string
+                  }
+                  Update: {
+                    "bytes"?: number | null,"candidatura_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre"?: string,"peticion_id"?: string | null,"storage_path"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "candidatura_documentos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_peticion_id_fkey"
+      columns: ["peticion_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_entregas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_peticion_id_fkey"
+      columns: ["peticion_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_peticiones"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"candidatura_enlaces": {
                   Row: {
                     "candidatura_id": string,"created_at": string,"created_by": string | null,"id": string,"tipo": string | null,"titulo": string,"url": string
@@ -492,6 +547,55 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"candidatura_peticiones": {
+                  Row: {
+                    "area": string | null,"candidatura_id": string,"created_at": string,"created_by": string | null,"detalle": string | null,"id": string,"item_template_id": string | null,"obligatoria": boolean,"orden": number,"titulo": string
+                  }
+                  Insert: {
+                    "area"?: string | null,"candidatura_id": string,"created_at"?: string,"created_by"?: string | null,"detalle"?: string | null,"id"?: string,"item_template_id"?: string | null,"obligatoria"?: boolean,"orden"?: number,"titulo": string
+                  }
+                  Update: {
+                    "area"?: string | null,"candidatura_id"?: string,"created_at"?: string,"created_by"?: string | null,"detalle"?: string | null,"id"?: string,"item_template_id"?: string | null,"obligatoria"?: boolean,"orden"?: number,"titulo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_item_template_id_fkey"
+      columns: ["item_template_id"]
+isOneToOne: false
+      referencedRelation: "dd_item_templates"
       referencedColumns: ["id"]
     }
                   ]
@@ -3399,6 +3503,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"candidatura_entregas": {
+                  Row: {
+                    "area": string | null,"candidatura_id": string | null,"detalle": string | null,"documentos": number | null,"id": string | null,"obligatoria": boolean | null,"orden": number | null,"titulo": string | null
+                  }
+                  Insert: {
+                           "area"?: string | null,"candidatura_id"?: string | null,"detalle"?: string | null,"documentos"?: never,"id"?: string | null,"obligatoria"?: boolean | null,"orden"?: number | null,"titulo"?: string | null
+                         }
+                        Update: {
+                           "area"?: string | null,"candidatura_id"?: string | null,"detalle"?: string | null,"documentos"?: never,"id"?: string | null,"obligatoria"?: boolean | null,"orden"?: number | null,"titulo"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"commitment_counter": {
                   Row: {
                     "annex_id": string | null,"cash_pct": number | null,"committed_cash": number | null,"committed_hours": number | null,"company_id": string | null,"deliverables_count": number | null,"delivered_hours": number | null,"delivered_hours_value": number | null,"delivered_market_value": number | null,"disbursed_cash": number | null,"equity_pct": number | null,"hours_pct": number | null,"introductions_closed": number | null,"introductions_made": number | null,"justified_cash": number | null
@@ -3723,6 +3852,14 @@ isOneToOne: false
                            },
 "mi_candidatura_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"mis_peticiones":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "area": string,"detalle": string,"entregados": number,"id": string,"obligatoria": boolean,"titulo": string
+            }[]
+                           },
+"pedir_due_diligence":
+{ Args: { "p_candidatura": string }; Returns: number
                            },
 "persona_tiene_actividad":
 { Args: { "target_profile": string }; Returns: boolean

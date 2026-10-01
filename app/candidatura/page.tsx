@@ -23,7 +23,10 @@ export default async function MiCandidatura() {
   if (persona.role !== "candidata") redirect("/");
 
   const supabase = await clienteServidor();
-  const { data } = await supabase.rpc("mi_candidatura");
+  const [{ data }, { data: peticiones }] = await Promise.all([
+    supabase.rpc("mi_candidatura"),
+    supabase.rpc("mis_peticiones"),
+  ]);
   const vista = (data as VistaCandidata[] | null)?.[0];
 
   if (!vista) redirect("/sin-compania");
@@ -42,12 +45,12 @@ export default async function MiCandidatura() {
             <h2 className="mb-1 text-base font-semibold text-titular">
               Documentación del due diligence
             </h2>
-            <p className="mb-4 text-sm text-secundario">
+            <p className="mb-5 text-sm text-secundario">
               Aquí sí se sube el fichero, no un enlace: a partir del NDA la
               información es confidencial y se queda en la plataforma, no en
               una carpeta compartida.
             </p>
-            <SalaDeDatosCandidata candidaturaId={vista.id} />
+            <SalaDeDatosCandidata peticiones={peticiones ?? []} />
           </div>
         ) : null}
       </main>

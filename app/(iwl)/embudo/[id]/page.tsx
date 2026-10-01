@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
 import { leerCandidatura } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
+import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
   Bloque,
   Metadato,
@@ -48,7 +49,8 @@ export default async function FichaCandidatura({
   const datos = await leerCandidatura(id);
   if (!datos) notFound();
 
-  const { candidatura: c, enlaces, eventos } = datos;
+  const { candidatura: c, enlaces, eventos, peticiones, documentos, avance } =
+    datos;
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
@@ -193,6 +195,32 @@ export default async function FichaCandidatura({
                 }))}
               />
             </div>
+          </Bloque>
+
+          {/*
+            El expediente del due diligence.
+            
+            Va antes del histórico porque mientras dura un due diligence, lo
+            que se mira al abrir una ficha es qué falta por entregar.
+          */}
+          <Bloque>
+            <TituloBloque
+              accion={
+                <Metadato>
+                  {avance
+                    ? `${avance.cumplidas} de ${avance.total} obligatorios`
+                    : "Se pide al firmar el NDA"}
+                </Metadato>
+              }
+            >
+              Documentación del due diligence
+            </TituloBloque>
+            <ExpedienteCandidata
+              candidaturaId={c.id!}
+              peticiones={peticiones}
+              documentos={documentos}
+              avance={avance}
+            />
           </Bloque>
 
           <Bloque>
