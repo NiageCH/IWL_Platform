@@ -854,3 +854,37 @@ Un documento entregado se abre con una dirección firmada que dura cinco minutos
 Cuando la candidata firma, esos documentos **no pasan a la sala de datos de la compañía**. Hoy se le volvería a pedir lo mismo, y eso choca de frente con el primer principio del proyecto: un dato se introduce una vez.
 
 No se ha hecho aquí porque copiar veintinueve ficheros entre buckets dentro de una acción de servidor roza el límite de tiempo del plan de Vercel, y conviene pensarlo antes: o se copian en segundo plano, o la ficha de la compañía lee del expediente de su candidatura sin copiar nada. Queda anotado y sin resolver.
+
+## 2026-10-01 · Lo entregado en la selección no se vuelve a pedir
+
+Al firmar, una candidatura se convierte en compañía y la compañía estrena su checklist de due diligence: los mismos veintinueve puntos que ya había entregado siendo candidata. Pedírselos otra vez choca con el primer principio del proyecto.
+
+Rodrigo eligió, entre las dos salidas, **no copiar nada**: la ficha de la compañía lee del expediente de su candidatura.
+
+Es la buena. Copiar veintinueve ficheros entre buckets dentro de una acción de servidor roza el límite de tiempo del alojamiento, duplica el almacenamiento y crea dos copias que pueden divergir. Y conceptualmente el expediente de la candidatura **es** el sitio donde pasó: es su procedencia, no un trasto heredado.
+
+El puente lo da el catálogo. `candidatura_peticiones.item_template_id` y `dd_items.template_id` salen de la misma tabla de plantillas, así que el punto del checklist de la compañía y lo que entregó siendo candidata se reconocen sin inventar ninguna correspondencia. En la pantalla de due diligence, cada punto que ya se entregó lo dice y enlaza con el documento.
+
+### Una política no se salta el RLS de las tablas que consulta
+
+La primera versión de la política era una subconsulta directa:
+
+```sql
+using (exists (select 1 from candidaturas c where c.id = ... and app.can_read_company(c.company_id)))
+```
+
+Y no funcionaba desde una fundadora. Las políticas **no** son `security definer`: la subconsulta a `candidaturas` pasa por el RLS de `candidaturas`, que solo deja a IWL. Desde una fundadora, ese `exists` mira una tabla vacía y da falso siempre.
+
+La salida es la que ya usaba el resto del proyecto sin que yo hubiera entendido del todo por qué: una función `security definer` que responde la pregunta concreta —`app.puede_ver_expediente`— y nada más. Es el mismo patrón de `app.can_read_company`.
+
+Lo cogió una prueba que entra como fundadora de la compañía resultante. Una que solo probara con IWL habría pasado.
+
+### Y la otra mitad: lo que no firmó sigue cerrado
+
+Abrir el expediente al equipo de la compañía no puede abrir de paso el de las candidaturas que se quedaron por el camino. Hay una prueba que lo comprueba: una fundadora no ve los documentos de una candidatura sin firmar.
+
+### Una limpieza que borraba la semilla
+
+El `afterAll` de la prueba nueva hacía `delete` sobre Cauce Salud, que es una fila de la semilla. La pasada siguiente no la encontraba y fallaba **otra** prueba, de otro bloque, por un motivo sin relación aparente.
+
+Restaurar y borrar no son lo mismo: lo que la prueba creó se borra, lo que encontró se deja como estaba.

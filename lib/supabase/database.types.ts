@@ -430,6 +430,12 @@ isOneToOne: false
       foreignKeyName: "candidatura_documentos_candidatura_id_fkey"
       columns: ["candidatura_id"]
 isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "candidatura_documentos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
       referencedRelation: "embudo_candidaturas"
       referencedColumns: ["id"]
     },{
@@ -485,6 +491,12 @@ isOneToOne: false
       foreignKeyName: "candidatura_enlaces_candidatura_id_fkey"
       columns: ["candidatura_id"]
 isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "candidatura_enlaces_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
       referencedRelation: "embudo_candidaturas"
       referencedColumns: ["id"]
     },{
@@ -528,6 +540,12 @@ isOneToOne: false
       foreignKeyName: "candidatura_eventos_candidatura_id_fkey"
       columns: ["candidatura_id"]
 isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "candidatura_eventos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
       referencedRelation: "embudo_candidaturas"
       referencedColumns: ["id"]
     },{
@@ -567,6 +585,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "candidaturas"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
     },{
       foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
       columns: ["candidatura_id"]
@@ -3524,6 +3548,12 @@ isOneToOne: false
       foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
       columns: ["candidatura_id"]
 isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "candidatura_peticiones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
       referencedRelation: "embudo_candidaturas"
       referencedColumns: ["id"]
     }
@@ -3593,6 +3623,43 @@ isOneToOne: false
       foreignKeyName: "contribution_items_company_id_fkey"
       columns: ["company_id"]
 isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    }
+                  ]
+                },"documentos_de_seleccion": {
+                  Row: {
+                    "bytes": number | null,"candidatura_id": string | null,"company_id": string | null,"created_at": string | null,"id": string | null,"item_template_id": string | null,"nombre": string | null,"storage_path": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "candidatura_peticiones_item_template_id_fkey"
+      columns: ["item_template_id"]
+isOneToOne: false
+      referencedRelation: "dd_item_templates"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: true
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: true
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "candidaturas_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: true
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: true
       referencedRelation: "tech_score_input"
       referencedColumns: ["company_id"]
     }

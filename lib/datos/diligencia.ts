@@ -17,6 +17,7 @@ export async function leerDiligencia(companyId: string) {
       .select(
         `id, title, description, status, is_required, due_date, expires_on,
          notes, validated_at,
+         template_id,
          dd_areas ( code, name, order_index ),
          dd_item_templates ( order_index )`,
       )
@@ -35,6 +36,30 @@ export async function leerDiligencia(companyId: string) {
       .eq("company_id", companyId)
       .order("folder"),
   ]);
+
+  /*
+   * Lo que entregó mientras era candidatura.
+   *
+   * No se copió nada al firmar: se lee del expediente de su candidatura,
+   * que es donde pasó. Así no se le pide dos veces lo mismo, que es el
+   * primer principio del proyecto.
+   *
+   * Si la compañía no vino de una candidatura, esto sale vacío y no
+   * aparece nada en pantalla.
+   */
+  const { data: deSeleccion } = await supabase
+    .from("documentos_de_seleccion")
+    .select("*")
+    .eq("company_id", companyId);
+
+  const heredados = new Map<string, NonNullable<typeof deSeleccion>>();
+  for (const d of deSeleccion ?? []) {
+    if (!d.item_template_id) continue;
+    heredados.set(d.item_template_id, [
+      ...(heredados.get(d.item_template_id) ?? []),
+      d,
+    ]);
+  }
 
   // Áreas con su id, para el formulario de subida
   const { data: areasCatalogo } = await supabase
@@ -60,6 +85,8 @@ export async function leerDiligencia(companyId: string) {
         NonNullable<typeof puntos.data>[number] & {
           caducado: boolean;
           estadoEfectivo: string;
+          /** Lo que entregó para este punto siendo candidatura */
+          deSeleccion: NonNullable<typeof deSeleccion>;
         }
       >;
     }
@@ -83,6 +110,10 @@ export async function leerDiligencia(companyId: string) {
       ...punto,
       caducado: vencido,
       estadoEfectivo: vencido ? "pendiente" : punto.status,
+      // Lo que ya entregó para este mismo punto siendo candidatura
+      deSeleccion: punto.template_id
+        ? (heredados.get(punto.template_id) ?? [])
+        : [],
     });
   }
 

@@ -488,3 +488,150 @@ describe("la documentación del due diligence", () => {
     await servicio.from("profiles").update({ role: "fundadora" }).eq("id", perfil!.id);
   });
 });
+
+describe("lo entregado en la selección llega a la compañía", () => {
+  /*
+   * El primer principio del proyecto es que un dato se introduce una vez.
+   * Al firmar, la compañía estrena el mismo checklist que la candidata ya
+   * entregó; si no se viera lo entregado, se le pediría dos veces.
+   *
+   * No se copia nada: la ficha de la compañía lee del expediente de su
+   * candidatura. Lo que hay que comprobar es que el equipo de la compañía
+   * llega a ese expediente, y que el de las candidaturas que no firmaron
+   * sigue siendo solo de IWL.
+   */
+  const CAUCE = "00000000-0000-0000-0005-000000000002";
+  let companyId: string | null = null;
+  let documentoId: string | null = null;
+
+  beforeAll(async () => {
+    const servicio = clienteServicio();
+    const iwl = await entrarComo(USUARIOS.admin);
+
+    // Se le pide el checklist y entrega un documento
+    await iwl.from("candidaturas").update({ estado: "nda" }).eq("id", CAUCE);
+
+    const { data: peticion } = await servicio
+      .from("candidatura_peticiones")
+      .select("id, item_template_id")
+      .eq("candidatura_id", CAUCE)
+      .not("item_template_id", "is", null)
+      .limit(1)
+      .single();
+
+    const { data: doc } = await servicio
+      .from("candidatura_documentos")
+      .insert({
+        candidatura_id: CAUCE,
+        peticion_id: peticion!.id,
+        nombre: "escritura.pdf",
+        storage_path: `${CAUCE}/escritura.pdf`,
+      })
+      .select("id")
+      .single();
+    documentoId = doc!.id;
+
+    // Y firma
+    const { data: nueva } = await iwl.rpc("firmar_candidatura", {
+      p_candidatura: CAUCE,
+      p_slug: `rls-cauce-${Date.now()}`,
+      p_stage: "pre_semilla",
+      p_tech_profile: "software",
+    });
+    companyId = nueva as string;
+  });
+
+  afterAll(async () => {
+    /*
+     * Se restaura, no se borra.
+     *
+     * La primera versión hacía `delete` sobre Cauce Salud, que es una fila
+     * de la semilla: la pasada siguiente no la encontraba y fallaba una
+     * prueba de otro bloque por un motivo que no tenía nada que ver.
+     *
+     * El estado y la compañía se quitan en la misma sentencia: dejar
+     * `firmada` sin compañía lo prohíbe el constraint, con razón.
+     */
+    const servicio = clienteServicio();
+
+    await servicio
+      .from("candidaturas")
+      .update({ estado: "en_revision", company_id: null })
+      .eq("id", CAUCE);
+
+    if (companyId) await servicio.from("companies").delete().eq("id", companyId);
+
+    await servicio.from("candidatura_documentos").delete().eq("candidatura_id", CAUCE);
+    await servicio.from("candidatura_peticiones").delete().eq("candidatura_id", CAUCE);
+  });
+
+  it("la compañía ve lo que entregó siendo candidatura", async () => {
+    const iwl = await entrarComo(USUARIOS.admin);
+    const { data } = await iwl
+      .from("documentos_de_seleccion")
+      .select("*")
+      .eq("company_id", companyId!);
+
+    expect(data?.length).toBe(1);
+    expect(data?.[0].nombre).toBe("escritura.pdf");
+    // Y sabe a qué punto del checklist responde
+    expect(data?.[0].item_template_id).toBeTruthy();
+  });
+
+  it("y su equipo fundador también, aunque no fuera quien lo subió", async () => {
+    const servicio = clienteServicio();
+    const { data: fundadora } = await servicio
+      .from("profiles")
+      .select("id")
+      .eq("email", "fundadora@marea.test")
+      .single();
+
+    await servicio.from("company_members").insert({
+      company_id: companyId,
+      profile_id: fundadora!.id,
+      member_role: "fundadora",
+    });
+
+    const equipo = await entrarComo(USUARIOS.fundadoraMarea);
+    const { data } = await equipo
+      .from("candidatura_documentos")
+      .select("id")
+      .eq("id", documentoId!);
+
+    expect(data?.length).toBe(1);
+
+    await servicio
+      .from("company_members")
+      .delete()
+      .eq("company_id", companyId)
+      .eq("profile_id", fundadora!.id);
+  });
+
+  it("pero el expediente de una que no firmó sigue siendo solo de IWL", async () => {
+    /*
+     * Es la mitad importante de esta política: abrir el expediente al
+     * equipo de la compañía no puede abrir de paso el de las candidaturas
+     * que se quedaron por el camino.
+     */
+    const servicio = clienteServicio();
+    const { data: doc } = await servicio
+      .from("candidatura_documentos")
+      .insert({
+        candidatura_id: "00000000-0000-0000-0005-000000000001", // sin firmar
+        nombre: "no-deberia-verse.pdf",
+        storage_path: `00000000-0000-0000-0005-000000000001/no.pdf`,
+      })
+      .select("id")
+      .single();
+
+    const fundadora = await entrarComo(USUARIOS.fundadoraMarea);
+    const { data } = await fundadora
+      .from("candidatura_documentos")
+      .select("id")
+      .eq("id", doc!.id);
+
+    expect(data ?? []).toEqual([]);
+
+    await servicio.from("candidatura_documentos").delete().eq("id", doc!.id);
+  });
+});

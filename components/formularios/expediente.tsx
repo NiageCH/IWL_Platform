@@ -91,3 +91,56 @@ export function PedirDocumento({ candidaturaId }: { candidaturaId: string }) {
     </Desplegable>
   );
 }
+
+/**
+ * Un documento que la compañía entregó siendo candidatura.
+ *
+ * Se abre igual que los del expediente: dirección firmada al pulsar. Lo que
+ * cambia es dónde se enseña —en el punto del checklist de la compañía al
+ * que responde— y para qué: para que nadie vuelva a pedirlo.
+ */
+export function DocumentoDeSeleccion({
+  documento,
+}: {
+  documento: {
+    id: string | null;
+    nombre: string | null;
+    storage_path: string | null;
+    created_at: string | null;
+  };
+}) {
+  const [abriendo, setAbriendo] = useState(false);
+  const [fallo, setFallo] = useState<string | null>(null);
+
+  return (
+    <span className="mt-1 flex flex-wrap items-baseline gap-2">
+      <span className="pastilla [--tono:var(--color-menta)]">
+        Entregado en la selección
+      </span>
+      <button
+        type="button"
+        disabled={abriendo}
+        onClick={async () => {
+          setAbriendo(true);
+          setFallo(null);
+          const datos = new FormData();
+          datos.set("storage_path", documento.storage_path ?? "");
+          const r = await abrirDocumentoCandidata(datos);
+          setAbriendo(false);
+          if (r.ok && r.url) window.open(r.url, "_blank", "noopener");
+          else setFallo(r.ok ? "No se ha podido abrir." : r.error);
+        }}
+        className="accion inline-flex items-center gap-1.5 text-xs text-acento-texto disabled:opacity-50"
+      >
+        <Download aria-hidden="true" className="size-3.5" />
+        {abriendo ? "Abriendo" : (documento.nombre ?? "Documento")}
+      </button>
+      {documento.created_at ? (
+        <span className="text-xs text-metadato">
+          {documento.created_at.slice(0, 10)}
+        </span>
+      ) : null}
+      {fallo ? <span className="text-xs text-mal">{fallo}</span> : null}
+    </span>
+  );
+}

@@ -1,3 +1,4 @@
+import { DocumentoDeSeleccion } from "@/components/formularios/expediente";
 import { leerDiligencia } from "@/lib/datos/diligencia";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
@@ -101,6 +102,20 @@ export async function VistaDiligencia({
                     {punto.notes ? (
                       <span className="mt-1 block border-l-2 border-acento pl-2 text-xs text-secundario">
                         {punto.notes}
+                      </span>
+                    ) : null}
+                    {/*
+                      Lo que ya entregó siendo candidatura.
+                      
+                      No se copió al firmar: se lee del expediente de su
+                      candidatura, que es donde pasó. Enseñarlo aquí es lo
+                      que evita pedirle dos veces lo mismo.
+                    */}
+                    {punto.deSeleccion.length > 0 ? (
+                      <span className="mt-1 block">
+                        {punto.deSeleccion.map((d) => (
+                          <DocumentoDeSeleccion key={d.id} documento={d} />
+                        ))}
                       </span>
                     ) : null}
                   </span>
