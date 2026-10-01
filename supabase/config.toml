@@ -175,6 +175,10 @@ site_url = "http://localhost:3000"
 additional_redirect_urls = [
   "http://localhost:3000/auth/confirmar",
   "http://127.0.0.1:3000/auth/confirmar",
+  # El puerto de las pruebas de interfaz, que corren contra una compilación
+  # de producción para no depender de `next dev`
+  "http://localhost:3100/auth/confirmar",
+  "http://127.0.0.1:3100/auth/confirmar",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

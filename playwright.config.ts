@@ -1,3 +1,6 @@
+/** Dónde escuchan las pruebas. No es 3000: ahí vive `npm run dev` */
+const BASE = process.env.BASE_URL ?? "http://localhost:3100";
+
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -21,7 +24,7 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: BASE,
     trace: "retain-on-failure",
   },
   projects: [
@@ -36,10 +39,29 @@ export default defineConfig({
       testMatch: /movil\.spec\.ts/,
     },
   ],
+  /*
+   * Las pruebas corren contra una compilación de producción, en su propio
+   * puerto, y nunca contra `next dev`.
+   *
+   * Con el servidor de desarrollo pasaban dos cosas, las dos malas. Una,
+   * que Next compila cada página la primera vez que alguien la pide, y esa
+   * espera se la comía la primera prueba que tocara cada ruta: hacía falta
+   * un calentamiento que visitara veintitantas rutas con sesión antes de
+   * empezar. Y dos, que un `next dev` de varias horas se degrada: la misma
+   * suite pasaba de 2,5 a 9 minutos y empezaba a fallar en sitios distintos
+   * en cada pasada, siempre apuntando a lo último que se hubiera tocado.
+   *
+   * Contra una compilación no hay nada que compilar sobre la marcha ni
+   * estado que se ensucie, y además se prueba lo que de verdad se publica.
+   * Cuesta una compilación —unos cuarenta segundos— al empezar.
+   *
+   * En su propio puerto para no pelearse con el `npm run dev` que suele
+   * estar abierto mientras se trabaja.
+   */
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000/entrar",
-    reuseExistingServer: true,
-    timeout: 120_000,
+    command: "npm run build && npx next start --port 3100",
+    url: `${BASE}/entrar`,
+    reuseExistingServer: false,
+    timeout: 240_000,
   },
 });

@@ -2,6 +2,21 @@ import { createClient } from "@supabase/supabase-js";
 import { Marco } from "@/components/marco";
 import { FormularioPresentarse } from "@/components/formularios/presentarse";
 
+/*
+ * Se renderiza en cada petición, no en la compilación.
+ *
+ * Sin esto Next la prerenderiza: no usa cookies ni nada dinámico, así que
+ * la da por estática y la congela con el estado que tuviera la convocatoria
+ * el día del despliegue. Abrirla desde el embudo no cambiaba la página
+ * pública, y quien recibiera el enlace leería «no hay convocatoria abierta»
+ * para siempre.
+ *
+ * Lo cogió una prueba, pero solo al pasar las pruebas a correr contra una
+ * compilación de producción: contra `next dev` todo es dinámico y esto no
+ * se ve nunca.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Presentar tu startup · Inception Woman Lab",
   description:

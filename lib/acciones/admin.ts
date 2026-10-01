@@ -189,6 +189,14 @@ const ROLES = [
   "fundadora",
   "mentor",
   "lector_externo",
+  /*
+   * `candidata` se asigna desde el embudo, al dar acceso para el due
+   * diligence, no desde esta pantalla. Está en la lista igualmente porque
+   * sin ella, editar a una candidata desde Personas le cambiaba el rol sin
+   * que nadie se lo pidiera: el desplegable no tenía su valor y mandaba
+   * otro.
+   */
+  "candidata",
 ] as const;
 
 /*

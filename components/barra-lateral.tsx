@@ -11,6 +11,7 @@ const ROLES: Record<string, string> = {
   fundadora: "Equipo fundador",
   mentor: "Mentoría",
   lector_externo: "Acceso de lectura",
+  candidata: "Candidatura en curso",
 };
 
 /** Las iniciales, para el círculo de la persona */

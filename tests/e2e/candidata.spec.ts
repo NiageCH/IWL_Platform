@@ -114,6 +114,42 @@ test("al darle cuenta, el enlace deja de valer", async ({ page }) => {
   expect(respuesta?.status()).toBe(404);
 });
 
+test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía»", async ({
+  page,
+}) => {
+  /*
+   * El agujero que esto cubre: se le daba cuenta al firmar el NDA, entraba,
+   * y la raíz la mandaba a `/proyecto` —que es la vista de una compañía—
+   * para acabar en «no tienes compañía». Verdad, pero inútil: todavía no la
+   * tiene, y lo suyo estaba en otra dirección que nadie le había dicho.
+   */
+  // Se le da cuenta desde el embudo, que es el único camino
+  await entrarComo(page, USUARIOS.admin, `/embudo/${AMBAR}`);
+  await page
+    .getByRole("button", { name: /Darle cuenta para el due diligence/ })
+    .click();
+  await expect(page.getByText(/Acceso dado a/)).toBeVisible();
+
+  // La contraseña se enseña una vez: se saca del propio mensaje
+  const mensaje = await page.getByText(/Acceso dado a/).innerText();
+  const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
+  expect(clave).toBeTruthy();
+
+  // Y entra con ella, por la puerta de siempre
+  await page.getByRole("button", { name: "Salir" }).first().click();
+  await page.waitForURL(/\/entrar/);
+
+  await page.locator('input[type="email"]').fill("hola@ambar.test");
+  await page.locator('input[type="password"]').fill(clave!);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+
+  // Aterriza en su candidatura, con su nombre y lo que le piden
+  await expect(page).toHaveURL(/\/candidatura$/);
+  await expect(
+    page.getByRole("heading", { name: "Ámbar Educación" }),
+  ).toBeVisible();
+});
+
 test.afterAll(async () => {
   /*
    * Se deja todo como estaba, por fuera del camino que se prueba. El enlace
@@ -135,6 +171,12 @@ test.afterAll(async () => {
    * existir. Una candidata que no firma no tiene cuenta.
    */
   await borrarCuenta("hola@brota.test");
+  await borrarCuenta("hola@ambar.test");
+  await actualizar(
+    "candidaturas",
+    { id: `eq.${AMBAR}` },
+    { profile_id: null, token_anulado_at: null },
+  );
   await borrar("candidatura_enlaces", {
     url: "https://drive.test/plan-nuevo",
   });

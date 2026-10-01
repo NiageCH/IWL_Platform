@@ -46,10 +46,16 @@ export async function entrarComo(page: Page, email: string, destino = "/") {
     throw new Error(`Supabase no ha devuelto enlace de entrada para ${email}`);
   }
 
+  /*
+   * El enlace tiene que volver al servidor de las pruebas, que no es el de
+   * desarrollo: corren contra una compilación de producción en otro puerto.
+   */
+  const base = process.env.BASE_URL ?? "http://localhost:3100";
+
   const enlace = new URL(action_link);
   enlace.searchParams.set(
     "redirect_to",
-    `http://localhost:3000/auth/confirmar?siguiente=${encodeURIComponent(destino)}`,
+    `${base}/auth/confirmar?siguiente=${encodeURIComponent(destino)}`,
   );
 
   await page.goto(enlace.toString());

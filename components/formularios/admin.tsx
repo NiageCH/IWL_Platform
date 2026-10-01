@@ -59,6 +59,7 @@ const ROLES = [
   { valor: "revisor_niage", texto: "Ingeniería Niage · compañías asignadas" },
   { valor: "mentor", texto: "Mentoría · compañías asignadas" },
   { valor: "lector_externo", texto: "Lectura externa" },
+  { valor: "candidata", texto: "Candidata · se asigna desde el embudo" },
 ];
 
 /*

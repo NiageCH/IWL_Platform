@@ -888,3 +888,27 @@ Abrir el expediente al equipo de la compañía no puede abrir de paso el de las 
 El `afterAll` de la prueba nueva hacía `delete` sobre Cauce Salud, que es una fila de la semilla. La pasada siguiente no la encontraba y fallaba **otra** prueba, de otro bloque, por un motivo sin relación aparente.
 
 Restaurar y borrar no son lo mismo: lo que la prueba creó se borra, lo que encontró se deja como estaba.
+
+## 2026-10-01 · Las pruebas de interfaz corren contra una compilación, no contra `next dev`
+
+Tercera vez que la suite se degradaba: pasaba de dos minutos y medio a nueve, con dos o cinco fallos por pasada, siempre en pruebas distintas y siempre esperas de treinta segundos. La causa estaba identificada —un `next dev` de varias horas se ensucia— y el remedio era reiniciarlo a mano, que no es un remedio.
+
+Las pruebas reutilizaban el servidor de desarrollo (`reuseExistingServer: true`), que es justamente el que se degrada. Ahora levantan **una compilación de producción en el puerto 3100**, y nunca tocan el 3000 donde vive `npm run dev`.
+
+Lo que se gana:
+
+- **De 3,5–8 minutos a 1,3.** Y estable: dos pasadas seguidas sin un fallo.
+- **Se va el calentamiento entero.** Existía porque `next dev` compila cada ruta la primera vez que se pide; había que mantener una lista de veintitantas rutas y acordarse de ampliarla con cada pantalla nueva. Contra una compilación no hay nada que compilar. Quitar la causa salió más barato que sostener el remedio.
+- **Se prueba lo que se publica.** Que es lo que encontró el fallo de abajo.
+
+Cuesta una compilación al empezar, unos cuarenta segundos. Barato.
+
+### Y lo que apareció en cuanto se hizo
+
+`/presentarse` salía como `○` en la compilación: **prerenderizada**. No usa cookies ni nada dinámico, así que Next la daba por estática y la congelaba con el estado que tuviera la convocatoria el día del despliegue.
+
+O sea: la plataforma ya publicada estaba sirviendo «no hay ninguna convocatoria abierta» de forma permanente. Abrirla desde el embudo no habría cambiado la página pública. Rodrigo lo habría descubierto repartiendo un enlace que no funcionaba.
+
+Arreglado con `export const dynamic = "force-dynamic"`. Es una página que se pide poco y tiene que decir la verdad: renderizarla en cada petición no cuesta nada comparado con eso.
+
+**Contra `next dev` esto no se ve nunca**, porque ahí todo es dinámico. Es exactamente la clase de fallo que solo aparece cuando se prueba lo que de verdad se publica, y la razón por la que el cambio mereció la pena el mismo día.
