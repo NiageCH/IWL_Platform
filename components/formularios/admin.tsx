@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { KeyRound } from "lucide-react";
 import {
   archivarPersona,
   asignarACompania,
@@ -1170,91 +1172,154 @@ export function CorregirCorreo({
 }
 
 /**
- * Poner o cambiar la contraseña de alguien.
+ * Poner o restablecer la contraseña de alguien.
  *
  * Se enseña mientras se escribe, porque hay que copiarla para pasarla: una
  * contraseña que la dirección acaba de poner y no puede leer no sirve de
  * nada. Y hay un generador, porque quien da de alta a siete personas
  * seguidas se inventa siete variantes de la misma.
+ *
+ * **Lleva icono y las otras acciones de la fila no.** No es capricho: a las
+ * demás se llega estando ya aquí, y a esta se viene buscándola, normalmente
+ * con alguien al teléfono que no puede entrar. Estaba escrita igual que las
+ * otras cuatro y no se encontraba; que destaque es el arreglo.
  */
 export function Contrasena({
   id,
   email,
+  haEntrado,
+  esMia,
 }: {
   id: string;
   email: string;
+  /** Si ya entró alguna vez. Cambia el verbo: se pone una vez, se restablece después */
+  haEntrado: boolean;
+  /** Si esta fila es la de quien está mirando la pantalla */
+  esMia: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const [clave, setClave] = useState("");
+  const [copiada, setCopiada] = useState(false);
+
+  const rotulo = haEntrado ? "Restablecer contraseña" : "Poner contraseña";
+
+  /*
+   * La propia no se cambia desde aquí.
+   *
+   * Esto pasa por la clave de servicio, y cambiar así una contraseña
+   * invalida las sesiones de esa persona. Si esa persona eres tú, el
+   * servidor te echa en el mismo momento en que se guarda: la contraseña
+   * nueva queda puesta y no llega a enseñarse nunca. Te quedas fuera de tu
+   * propia cuenta con una clave que no sabe nadie.
+   *
+   * En Mi cuenta va por el cliente de sesión, que la renueva sin tirarte.
+   */
+  if (esMia) {
+    return (
+      <Link href="/perfil" className="enlace text-xs text-secundario">
+        Tu contraseña se cambia en Mi cuenta
+      </Link>
+    );
+  }
 
   if (!abierto) {
     return (
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="accion text-xs text-secundario"
+        className="accion inline-flex items-center gap-1.5 text-xs font-medium text-titular"
       >
-        Poner contraseña
+        <KeyRound aria-hidden="true" className="size-3.5 text-acento-texto" />
+        {rotulo}
       </button>
     );
   }
 
   return (
     <div className="mt-2 w-full border-t border-filete pt-3">
-      <Formulario
-        accion={fijarContrasena}
-        onOk={() => {
-          setAbierto(false);
-          setClave("");
-        }}
-      >
-        {(resultado) => (
-          <>
-            <input type="hidden" name="id" value={id} />
-            <input type="hidden" name="email" value={email} />
+      {/*
+        El panel NO se cierra solo al guardar.
+      
+        Lo hacía, y se llevaba por delante las dos únicas cosas que
+        importaban: el acuse y la contraseña. Quien pulsaba «Generar» y
+        luego «Guardar» veía cerrarse el panel sin más, y se quedaba con
+        una cuenta cuya contraseña no sabía nadie. Parecía que no había
+        funcionado; había funcionado del todo, que es peor.
+      
+        Ahora se queda puesto hasta que se pulsa Hecho, con la contraseña a
+        la vista para copiarla o dictarla.
+      */}
+      <Formulario accion={fijarContrasena}>
+        {(resultado) => {
+          const guardada = resultado.ok && Boolean(resultado.mensaje);
 
-            <Campo
-              etiqueta="Contraseña"
-              ayuda="Al menos 12 caracteres. Cópiala antes de guardar: no se vuelve a enseñar"
-              error={!resultado.ok ? resultado.campos?.password : undefined}
-            >
+          return (
+            <>
+              <input type="hidden" name="id" value={id} />
+              <input type="hidden" name="email" value={email} />
+
+              <Campo
+                etiqueta={guardada ? "Esta es la contraseña" : "Contraseña"}
+                ayuda={
+                  guardada
+                    ? "Cópiala o dictala ahora. Al cerrar esto no se vuelve a enseñar."
+                    : "Al menos 12 caracteres. Se queda a la vista hasta que cierres."
+                }
+                error={!resultado.ok ? resultado.campos?.password : undefined}
+              >
+                <div className="flex gap-2">
+                  <Texto
+                    name="password"
+                    type="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    minLength={12}
+                    required
+                    readOnly={guardada}
+                    value={clave}
+                    onChange={(e) => setClave(e.currentTarget.value)}
+                    className="flex-1 font-mono"
+                  />
+                  {guardada ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(clave);
+                        setCopiada(true);
+                        setTimeout(() => setCopiada(false), 2000);
+                      }}
+                      className="shrink-0 rounded-full border border-filete bg-elevado px-3 py-2 text-xs text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
+                    >
+                      {copiada ? "Copiada" : "Copiar"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setClave(claveSugerida())}
+                      className="shrink-0 rounded-full border border-filete bg-elevado px-3 py-2 text-xs text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
+                    >
+                      Generar
+                    </button>
+                  )}
+                </div>
+              </Campo>
+
               <div className="flex gap-2">
-                <Texto
-                  name="password"
-                  type="text"
-                  autoComplete="off"
-                  spellCheck={false}
-                  minLength={12}
-                  required
-                  value={clave}
-                  onChange={(e) => setClave(e.currentTarget.value)}
-                  className="flex-1 font-mono"
-                />
+                {guardada ? null : <Boton>Guardar contraseña</Boton>}
                 <button
                   type="button"
-                  onClick={() => setClave(claveSugerida())}
-                  className="rounded-full border border-filete bg-elevado px-3 py-2 text-xs text-secundario transition-colors hover:border-filete-fuerte hover:text-titular"
+                  onClick={() => {
+                    setAbierto(false);
+                    setClave("");
+                  }}
+                  className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
                 >
-                  Generar
+                  {guardada ? "Hecho" : "Cancelar"}
                 </button>
               </div>
-            </Campo>
-
-            <div className="flex gap-2">
-              <Boton>Guardar contraseña</Boton>
-              <button
-                type="button"
-                onClick={() => {
-                  setAbierto(false);
-                  setClave("");
-                }}
-                className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
-              >
-                Cancelar
-              </button>
-            </div>
-          </>
-        )}
+            </>
+          );
+        }}
       </Formulario>
     </div>
   );

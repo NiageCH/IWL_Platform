@@ -987,3 +987,55 @@ Esto no era de esta pantalla: **React 19 reinicia un formulario no controlado de
 `<Formulario>` guarda ahora lo enviado y lo devuelve a su sitio cuando el resultado no es `ok`. Los ficheros no: el navegador no deja escribir el valor de un `input[type=file]`, así que ese sí hay que volver a elegirlo.
 
 Va en el componente común a propósito. Era un agujero de **todos** los formularios de la plataforma, no del público, y arreglarlo en uno solo habría dejado los otros quince esperando a que alguien se encontrara con lo mismo.
+
+## 2026-10-02 · Restablecer una contraseña: estaba, no se encontraba, y no funcionaba
+
+Rodrigo dijo que no había forma de resetear contraseñas desde el panel. La
+había —`/admin/personas`, en la fila de cada persona— y eso ya es un fallo:
+una función que no se encuentra no existe. Pero al mirarla de cerca había dos
+cosas peores.
+
+### Escrita igual que las otras cuatro
+
+«Poner contraseña» era uno de cinco enlaces grises de 12 px —Editar, Corregir
+el correo, Poner contraseña, Archivar, Borrar— y en la primera fila caía justo
+detrás de una frase explicativa igual de gris. El ojo pasaba por encima.
+
+Ahora lleva icono de llave en magenta y el texto en el color del titular. Es
+la única de la fila que destaca, **a propósito**: a las demás se llega estando
+ya aquí, y a esta se viene buscándola, normalmente con alguien al teléfono que
+no puede entrar.
+
+Y cambia el verbo según el caso: «Poner contraseña» si no ha entrado nunca,
+«Restablecer contraseña» si ya entró. Es la palabra que uno busca, y el dato
+ya estaba —`correo_editable` es exactamente `last_sign_in_at is null`.
+
+### El panel se cerraba y se llevaba la contraseña
+
+Cuarta vez que aparece el mismo fallo, y la más cara. El `<Formulario>` vivía
+dentro de `if (abierto)` y el `onOk` hacía `setAbierto(false)`: al guardar se
+desmontaba y se llevaba por delante el acuse **y la contraseña recién
+generada**. Pulsabas Generar, pulsabas Guardar, y el panel se cerraba sin
+decir nada. Parecía que no había funcionado; había funcionado del todo, que es
+peor: la cuenta quedaba con una contraseña que no sabía nadie.
+
+Ahora el panel se queda puesto hasta que se pulsa Hecho, con la contraseña a
+la vista, en monoespaciado y con botón de copiar.
+
+### Y la propia no se cambia desde ahí
+
+Al probarlo salió una tercera, que no se buscaba. Restablecerse **la propia**
+contraseña desde el panel te echa: va por la clave de servicio, y cambiar así
+una contraseña invalida las sesiones de esa persona. El servidor te saca en el
+mismo instante en que se guarda, así que la contraseña nueva queda puesta y no
+se enseña nunca. Te quedas fuera de tu propia cuenta —y si eres la única
+dirección, no hay quien te la vuelva a poner.
+
+En esa fila ya no sale el botón: sale «Tu contraseña se cambia en Mi cuenta»,
+que va por el cliente de sesión y la renueva sin tirarte.
+
+### Lo que sigue sin haber
+
+No hay «he olvidado mi contraseña». Hace falta un proveedor de correo, que se
+dejó para más adelante a propósito. Mientras tanto, quien se queda fuera se lo
+pide a la dirección y esto es lo que la dirección usa.

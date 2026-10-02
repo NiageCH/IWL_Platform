@@ -199,8 +199,15 @@ acabar se desmonta —porque el panel se cierra solo, o porque la rama que lo
 envolvía deja de cumplirse— se lleva su propia confirmación y la acción
 parece no haber hecho nada. O el formulario se queda montado, o **el acuse
 es la pantalla cambiada**, y entonces es eso lo que comprueba la prueba, no
-un mensaje que ya no existe. Ha pasado tres veces: con el logo, al firmar
-una candidatura y al descartarla.
+un mensaje que ya no existe. Ha pasado cuatro veces: con el logo, al firmar
+una candidatura, al descartarla y al restablecer una contraseña —esta la
+peor, porque el mensaje llevaba la contraseña y el panel se lo llevaba al
+cerrarse: quedaba una cuenta con una clave que no sabía nadie.
+
+**Lo que se enseña una sola vez se cierra a mano.** Una contraseña recién
+puesta, un testigo, cualquier cosa que no se pueda volver a consultar: el
+panel se queda puesto con un botón de Hecho, nunca se cierra solo al
+guardar.
 
 **Los estados vacíos dicen qué hacer**, no que no hay nada. Y los errores se
 escriben como se los diría una persona a otra: qué ha pasado y qué hacer, sin

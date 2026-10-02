@@ -118,6 +118,102 @@ test("sin contraseña se genera una y se enseña", async ({ page }) => {
   await borrarCuenta(correo);
 });
 
+test("la dirección restablece la contraseña de alguien que ya entró", async ({
+  page,
+}) => {
+  /*
+   * El camino que faltaba, y donde estaba el fallo: no dar de alta con
+   * contraseña —eso ya se probaba— sino restablecérsela a quien lleva
+   * tiempo dentro y se ha quedado fuera.
+   *
+   * El panel se cerraba solo al guardar y se llevaba el acuse y la
+   * contraseña recién generada. Quedaba una cuenta con una contraseña que
+   * no sabía nadie, y en pantalla parecía que no había pasado nada.
+   */
+  const correo = `reset.${Date.now()}@iwl.test`;
+
+  await entrarComo(page, USUARIOS.admin, "/admin/personas");
+  await page.getByText("Dar de alta a una persona").click();
+  const alta = page.locator("form", { has: page.locator('input[name="email"]') });
+  await alta.locator('input[name="email"]').fill(correo);
+  await alta.locator('input[name="full_name"]').fill("Se queda fuera");
+  await alta.locator('select[name="role"]').selectOption("mentor");
+  await alta.locator('input[name="password"]').fill("la-de-siempre-77");
+  await alta.getByRole("button", { name: "Dar de alta" }).click();
+  await expect(page.getByText(/la-de-siempre-77/)).toBeVisible();
+
+  // Entra una vez: a partir de aquí ya no es un alta, es un restablecimiento
+  await page.getByRole("button", { name: "Salir" }).click();
+  await page.goto("/entrar");
+  await page.getByLabel("Correo").fill(correo);
+  await page.getByLabel("Contraseña").fill("la-de-siempre-77");
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page).not.toHaveURL(/\/entrar/);
+  await page.getByRole("button", { name: "Salir" }).click();
+
+  // Y la dirección se la restablece
+  await entrarComo(page, USUARIOS.admin, "/admin/personas");
+  const fila = page.locator("li").filter({ hasText: correo }).last();
+
+  // El verbo cambia: ya no se «pone», se «restablece»
+  await fila.getByRole("button", { name: "Restablecer contraseña" }).click();
+  await fila.getByRole("button", { name: "Generar" }).click();
+
+  const campo = fila.locator('input[name="password"]');
+  const nueva = await campo.inputValue();
+  expect(nueva).toMatch(/^[a-z]+-[a-z]+-[a-z]+-\d+$/);
+
+  await fila.getByRole("button", { name: "Guardar contraseña" }).click();
+
+  /*
+   * Lo que no puede pasar: que el panel se cierre y se lleve las dos cosas
+   * que hacen falta para que esto sirva de algo.
+   */
+  await expect(page.getByText(/Contraseña puesta para/)).toBeVisible();
+  await expect(campo).toHaveValue(nueva);
+  await expect(fila.getByRole("button", { name: "Hecho" })).toBeVisible();
+
+  // Y la contraseña nueva entra
+  await page.getByRole("button", { name: "Salir" }).click();
+  await page.goto("/entrar");
+  await page.getByLabel("Correo").fill(correo);
+  await page.getByLabel("Contraseña").fill(nueva);
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page).not.toHaveURL(/\/entrar/);
+
+  await borrarCuenta(correo);
+});
+
+test("la dirección no se restablece su propia contraseña desde el panel", async ({
+  page,
+}) => {
+  /*
+   * Por qué no se deja, que no es por purismo.
+   *
+   * El panel va con la clave de servicio, y cambiar así una contraseña
+   * invalida las sesiones de esa persona. Si esa persona eres tú, el
+   * servidor te echa en el mismo instante en que se guarda: la contraseña
+   * nueva queda puesta y no llega a enseñarse. Te quedas fuera de tu propia
+   * cuenta con una clave que no sabe nadie —y si eres la única dirección,
+   * no hay quien te la vuelva a poner.
+   *
+   * En Mi cuenta va por el cliente de sesión, que la renueva sin tirarte.
+   */
+  await entrarComo(page, USUARIOS.admin, "/admin/personas");
+
+  const mia = page.locator("li").filter({ hasText: USUARIOS.admin }).first();
+
+  await expect(
+    mia.getByRole("button", { name: /contraseña/ }),
+  ).toHaveCount(0);
+
+  // Y en su lugar se dice dónde sí
+  const salida = mia.getByRole("link", { name: /Mi cuenta/ });
+  await expect(salida).toBeVisible();
+  await salida.click();
+  await expect(page).toHaveURL(/\/perfil/);
+});
+
 test("cada persona cambia su propia contraseña", async ({ page }) => {
   const correo = `cambio.${Date.now()}@iwl.test`;
 

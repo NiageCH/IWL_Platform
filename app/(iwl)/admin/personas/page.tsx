@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { clienteServidor } from "@/lib/supabase/servidor";
+import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import {
   ArchivarPersona,
   Asignar,
@@ -40,6 +40,7 @@ interface Asignacion {
 
 export default async function AdminPersonas() {
   const supabase = await clienteServidor();
+  const yo = await personaActual();
 
   const [personas, companias] = await Promise.all([
     supabase.from("admin_personas").select("*").order("role").order("email"),
@@ -164,7 +165,12 @@ export default async function AdminPersonas() {
             email={p.email!}
             editable={p.correo_editable ?? false}
           />
-          <Contrasena id={p.id!} email={p.email!} />
+          <Contrasena
+            id={p.id!}
+            email={p.email!}
+            haEntrado={!(p.correo_editable ?? false)}
+            esMia={p.id === yo?.id}
+          />
           <ArchivarPersona id={p.id!} activa={p.is_active ?? false} />
           <BorrarPersona
             persona={{

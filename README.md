@@ -95,6 +95,16 @@ npm run alta -- ana@compania.com fundadora marea-clinica fundadora
 
 Genera una contraseña y la imprime al terminar. Contra un proyecto remoto, exporta antes `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
 
+### Restablecer la contraseña de alguien
+
+**Administración → Personas**, y en la fila de esa persona, **Restablecer contraseña** —con icono de llave, que es la única acción de la fila que destaca—. Hay un botón de generar que saca tres palabras y un número, para poder dictarla por teléfono.
+
+El panel se queda abierto con la contraseña a la vista hasta que se pulsa **Hecho**: cópiala o díctala antes, porque no se vuelve a enseñar. En el registro de actividad queda que se cambió y para quién, nunca el valor.
+
+**La tuya no se cambia ahí.** En tu propia fila sale un enlace a *Mi cuenta*, y es a propósito: el panel va con la clave de servicio, y cambiar así una contraseña invalida la sesión de esa persona. Si esa persona eres tú, te echa en el mismo instante en que se guarda y la contraseña nueva no llega a enseñarse.
+
+Quien no recuerde la suya también puede pedir un **enlace de entrada** desde la propia pantalla de acceso. En la nube eso depende de que haya un proveedor de correo configurado; mientras no lo haya, el camino es pedírselo a la dirección.
+
 ## Comandos
 
 ```bash
