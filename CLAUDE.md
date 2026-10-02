@@ -49,6 +49,12 @@ http://127.0.0.1:54324. Las personas de prueba están en el README.
 **Tras cambiar una migración**: `npm run db:reset` y `npm run db:types`. Sin lo
 segundo, TypeScript sigue con el esquema viejo.
 
+**Una vista se recrea desde su última definición**, no desde la primera que
+aparezca al buscarla. `admin_personas` se rehízo una vez a partir de una
+versión vieja y perdió por el camino las horas asignadas y las imputadas;
+la pantalla del equipo se quedó enseñando «0,0 de — h» sin que fallara
+nada.
+
 ## Cómo está montado
 
 - **Next 16** con App Router y Server Actions. `proxy.ts`, no `middleware.ts`.
@@ -106,6 +112,11 @@ rota.
 puntos. Es criterio de aceptación y no se relaja. Para el mentor que coordina
 sí se relajó, a propósito y documentado.
 
+**De un módulo `"use client"` no se llama a una función desde el servidor.**
+Next lo rechaza en ejecución, no al compilar: el tipado no avisa y la
+pantalla se cae con un error de servidor. Lo compartido entre los dos lados
+—mapas, constantes, funciones puras— vive en `lib/`, como `lib/secciones.ts`.
+
 **El cálculo vive en `lib/scoring`.** Una sola vez. Las instantáneas y los
 informes lo reutilizan; no se reimplementa en SQL ni en un componente.
 
@@ -155,6 +166,11 @@ y titulares en Zalando Sans Expanded, en mayúsculas y apretados. Esa
 tipografía solo va en los titulares grandes: en una tabla o en un párrafo
 largo cansa.
 
+El amarillo de la web vive en `--color-filete-marca` y es **solo un filete
+de 1 px** bajo el título de cada bloque. No entra en ningún gráfico: no
+lleva información, es el acabado de un borde, y así la regla del color
+único en los gráficos queda intacta.
+
 Sobre papel, `#FF007A` se queda en 3,8 contra el blanco: vale para un filete
 o una barra, no para leer. Ahí el texto usa `--color-acento-texto` y los
 botones `--color-acento-solido`, que son el mismo tono más oscuro.
@@ -181,7 +197,9 @@ botones `--color-acento-solido`, que son el mismo tono más oscuro.
 
 - `.enlace` — lleva a otra página. Subrayado permanente, en `currentColor` al
   60 %: con un gris fijo desaparecía sobre el lienzo negro.
-- `.accion` — hace algo aquí mismo. Subrayado discontinuo.
+- `.accion` — hace algo aquí mismo. Cápsula con borde y superficie,
+  visible sin pasar el ratón. Fue un subrayado discontinuo y no bastaba:
+  distingue un enlace de un párrafo, no un control de un enlace.
 - `.fila-enlace` — una fila o tarjeta que lleva a otro sitio: se ilumina al
   pasar y enciende una flecha, que es un enlace de verdad.
 - `.pestana` — navegación. La abierta lleva fondo y color de acento.
@@ -190,6 +208,12 @@ botones `--color-acento-solido`, que son el mismo tono más oscuro.
 `.estirado` cubre el contenedor entero, pero **solo en listas**: sobre un
 `<tr>`, `position: relative` no crea bloque contenedor en todos los
 navegadores y la capa acaba en otro sitio.
+
+**Que algo se pueda pulsar no puede depender de que haya un ratón.** Las
+pestañas y las acciones llevan borde y superficie en reposo. Se intentó dos
+veces con señales que solo aparecían al pasar por encima —texto gris que
+cambiaba de color, subrayado discontinuo— y las dos veces Rodrigo dijo que
+no se notaban. En una pantalla táctil no hay `hover` que valga.
 
 Todo lo pulsable tiene foco visible. Quitarlo no es una opción.
 

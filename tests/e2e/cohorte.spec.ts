@@ -77,14 +77,31 @@ test("la comparativa mide a cada compañía contra el objetivo de su etapa", asy
 
   await expect(page.getByRole("heading", { name: "Comparativa" })).toBeVisible();
 
-  // La etapa va en la cabecera de cada columna: sin ella, comparar niveles
-  // brutos entre etapas distintas sería engañoso
-  const tabla = page.locator("table").first();
-  await expect(tabla).toContainText("Semilla");
-  await expect(tabla).toContainText("Pre-semilla");
+  /*
+   * La página contesta preguntas, no enseña una hoja de cálculo.
+   *
+   * Eran dos tablas anchas de las que había que sacar las conclusiones a
+   * ojo. Ahora cada bloque lleva su pregunta por título y un gráfico que la
+   * responde.
+   */
+  await expect(page.getByText("¿Quién va por delante?")).toBeVisible();
+  await expect(page.getByText("¿Dónde flojea la cohorte?")).toBeVisible();
 
-  // Y las dimensiones que no aplican se dicen, no se dejan en blanco
-  await expect(tabla.getByText("No aplica").first()).toBeVisible();
+  /*
+   * Y lo que de verdad hay que no perder: cada una se mide contra el
+   * objetivo de SU etapa, no contra un ideal común. Un 2 en pre-semilla y
+   * un 2 en serie A no significan lo mismo, así que el eje es el
+   * porcentaje de lo que exige su etapa, donde 100 es llegar.
+   */
+  await expect(page.getByText("% del objetivo de su etapa")).toBeVisible();
+  await expect(
+    page.getByText(/un 2 en pre-semilla y un 2 en serie A no significan/i),
+  ).toBeVisible();
+
+  // Las cifras exactas no se pierden: bajan al final
+  const tabla = page.locator("table").first();
+  await expect(page.getByText("Las cifras, una a una")).toBeVisible();
+  await expect(tabla).toContainText("Preparación");
 });
 
 test("la fundadora no llega a la comparativa de la cohorte", async ({ page }) => {

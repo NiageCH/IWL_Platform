@@ -1,14 +1,17 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
 import { leerCartera } from "@/lib/datos/cartera";
 import {
   Bloque,
-  Etiqueta,
   Metadato,
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import {
+  AvanceSobreObjetivo,
+  BrechaDeLaCohorte,
+  RunwayCohorte,
+} from "@/components/graficos-cohorte";
 import { euros, numero, porcentaje } from "@/lib/utils";
 
 export const metadata = { title: "Comparativa · Plataforma IWL" };
@@ -88,6 +91,50 @@ export default async function Comparativa() {
       : Number(fila.value);
   };
 
+  /*
+   * Cuánto lleva cada una de lo que exige SU etapa.
+   *
+   * Es la única forma honesta de ponerlas en la misma barra: comparar
+   * niveles brutos entre una pre-semilla y una serie A no dice nada. Se
+   * suma sobre las dimensiones que aplican y están evaluadas; las que no,
+   * no cuentan ni a favor ni en contra, que lo sin medir no es un cero.
+   */
+  const avance = companias.map((c) => {
+    const medidas = c.scoreTecnico.dimensiones.filter(
+      (d) => d.aplica && d.evaluada && d.objetivo > 0,
+    );
+    const alcanzado = medidas.reduce(
+      (a, d) => a + Math.min(d.nivel ?? 0, d.objetivo),
+      0,
+    );
+    const exigido = medidas.reduce((a, d) => a + d.objetivo, 0);
+
+    return {
+      nombre: c.compania.name,
+      slug: c.compania.slug,
+      etapa: ETAPAS[c.compania.stage] ?? c.compania.stage,
+      pctObjetivo: exigido > 0 ? (alcanzado / exigido) * 100 : null,
+      sinEvaluar: c.scoreTecnico.sinEvaluar.length,
+    };
+  });
+
+  /* Y dónde falla la cohorte entera, que es otra pregunta distinta */
+  const brechas = [...dimensiones.entries()].map(([codigo, nombre]) => {
+    const aplicables = companias
+      .map((c) => c.scoreTecnico.dimensiones.find((d) => d.codigo === codigo))
+      .filter((d) => d && d.aplica && d.evaluada);
+
+    const porDebajo = aplicables.filter((d) => (d?.brecha ?? 0) > 0).length;
+    const suma = aplicables.reduce((a, d) => a + (d?.brecha ?? 0), 0);
+
+    return {
+      nombre,
+      brechaMedia: aplicables.length > 0 ? suma / aplicables.length : 0,
+      porDebajo,
+      total: aplicables.length,
+    };
+  });
+
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-8">
         <div className="relative mb-6 pl-4">
@@ -96,103 +143,60 @@ export default async function Comparativa() {
             Comparativa
           </h1>
           <p className="mt-1 text-sm text-secundario">
-            {companias.length} compañías, sobre la misma vara.
+            {companias.length} compañías, cada una contra el objetivo de su
+            etapa.
           </p>
         </div>
 
         <Bloque className="mb-6">
-          <TituloBloque accion={<Metadato>Nivel · objetivo de su etapa</Metadato>}>
-            Dimensiones técnicas
+          <TituloBloque
+            accion={<Metadato>100 es llegar a lo que pide su etapa</Metadato>}
+          >
+            ¿Quién va por delante?
           </TituloBloque>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-sm">
-              <thead>
-                <tr className="border-b border-filete text-left">
-                  <th className="px-4 py-2 font-medium text-metadato">Dimensión</th>
-                  {companias.map((c) => (
-                    <th key={c.compania.id} className="px-4 py-2 font-medium">
-                      <Link
-                        href={`/cartera/${c.compania.slug}/tecnico`}
-                        className="enlace text-titular"
-                      >
-                        {c.compania.name}
-                      </Link>
-                      <span className="block text-xs font-normal text-metadato">
-                        {ETAPAS[c.compania.stage] ?? c.compania.stage}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-filete">
-                {[...dimensiones.entries()].map(([codigo, nombre]) => (
-                  <tr key={codigo}>
-                    <td className="px-4 py-2.5 text-titular">{nombre}</td>
-                    {companias.map((c) => {
-                      const d = c.scoreTecnico.dimensiones.find(
-                        (x) => x.codigo === codigo,
-                      );
-
-                      if (!d || !d.aplica) {
-                        return (
-                          <td key={c.compania.id} className="px-4 py-2.5 text-metadato">
-                            No aplica
-                          </td>
-                        );
-                      }
-
-                      return (
-                        <td key={c.compania.id} className="px-4 py-2.5">
-                          <span className="cifra text-titular">
-                            {d.evaluada ? d.nivel : "—"}{" "}
-                            <span className="text-metadato">/ {d.objetivo}</span>
-                          </span>
-                          {d.brecha > 0 ? (
-                            <span className="ml-2 text-xs text-mal">
-                              −{d.brecha}
-                            </span>
-                          ) : d.objetivo === 0 ? (
-                            /* Un objetivo de 0 no es un aprobado: es que la
-                               etapa no exige nada todavía en esa dimensión */
-                            <span className="ml-2 text-xs text-metadato">
-                              sin exigencia en su etapa
-                            </span>
-                          ) : (
-                            <span className="ml-2 text-xs text-metadato">
-                              en objetivo
-                            </span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-
-                <tr className="bg-elevado">
-                  <td className="px-4 py-2.5 font-medium text-titular">
-                    Score técnico
-                  </td>
-                  {companias.map((c) => (
-                    <td key={c.compania.id} className="cifra px-4 py-2.5 text-titular">
-                      {numero(c.scoreTecnico.valor, 1)}
-                      {!c.scoreTecnico.completo ? (
-                        <Etiqueta>
-                          {c.scoreTecnico.sinEvaluar.length} sin evaluar
-                        </Etiqueta>
-                      ) : null}
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <AvanceSobreObjetivo filas={avance} />
+          <p className="border-t border-filete px-4 py-2.5 text-xs text-metadato">
+            Cada una contra el objetivo de su propia etapa, no contra las
+            demás: un 2 en pre-semilla y un 2 en serie A no significan lo
+            mismo. Lo que no se ha evaluado no cuenta, ni a favor ni en contra.
+          </p>
         </Bloque>
 
+        <Bloque className="mb-6">
+          <TituloBloque accion={<Metadato>Lo peor arriba</Metadato>}>
+            ¿Dónde flojea la cohorte?
+          </TituloBloque>
+          <BrechaDeLaCohorte filas={brechas} />
+          <p className="border-t border-filete px-4 py-2.5 text-xs text-metadato">
+            Si fallan varias en lo mismo, es trabajo de programa; si falla una
+            sola, es trabajo de su mentoría.
+          </p>
+        </Bloque>
+
+        <Bloque className="mb-6">
+          <TituloBloque accion={<Metadato>Meses de caja</Metadato>}>
+            ¿A quién se le acaba el dinero?
+          </TituloBloque>
+          <RunwayCohorte
+            filas={companias.map((c) => ({
+              nombre: c.compania.name,
+              meses: c.kpis.derivados.runway_meses,
+            }))}
+          />
+        </Bloque>
+
+        {/*
+          La tabla se queda, pero debajo y como detalle.
+          
+          Los gráficos responden a las preguntas; la tabla sirve para el
+          momento en que hace falta la cifra exacta. Arriba estorbaba: era
+          lo primero que se veía y no contestaba nada.
+        */}
         <Bloque className="mb-6">
           <TituloBloque
             accion={<Metadato>{periodo ? periodo.slice(0, 7) : "Sin datos"}</Metadato>}
           >
-            KPI comunes
+            Las cifras, una a una
           </TituloBloque>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">

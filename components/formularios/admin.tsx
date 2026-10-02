@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { KeyRound } from "lucide-react";
+import { FileText, KeyRound } from "lucide-react";
 import {
+  abrirCv,
   archivarPersona,
+  subirCv,
   asignarACompania,
   borrarPersona,
   cambiarRol,
@@ -1339,4 +1341,101 @@ function claveSugerida(): string {
   };
   const tres = Array.from({ length: 3 }, () => palabras[azar(palabras.length)]);
   return `${tres.join("-")}-${10 + azar(90)}`;
+}
+
+/**
+ * El CV de una persona: adjuntarlo y abrirlo.
+ *
+ * Se guarda tal cual, sin extraer nada. La idea de que una IA lo leyera y
+ * rellenara el cargo y las áreas se dejó para más adelante; esto resuelve
+ * lo inmediato, que es no tener que buscar el CV en un correo de hace
+ * meses cuando alguien pregunta quién es esta persona.
+ */
+export function CvDePersona({
+  profileId,
+  tieneCv,
+}: {
+  profileId: string;
+  tieneCv: boolean;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [pendiente, empezar] = useTransition();
+
+  return (
+    <div className="px-4 py-4">
+      <div className="flex flex-wrap items-center gap-3">
+        {tieneCv ? (
+          <button
+            type="button"
+            disabled={pendiente}
+            onClick={() =>
+              empezar(async () => {
+                const r = await abrirCv(profileId);
+                if (r.ok && r.url) window.open(r.url, "_blank", "noopener");
+              })
+            }
+            className="accion text-xs disabled:opacity-50"
+          >
+            <FileText aria-hidden="true" className="size-3.5 text-acento-texto" />
+            {pendiente ? "Abriendo…" : "Abrir el CV"}
+          </button>
+        ) : (
+          <p className="text-sm text-secundario">Sin CV adjunto.</p>
+        )}
+
+        {abierto ? null : (
+          <button
+            type="button"
+            onClick={() => setAbierto(true)}
+            className="accion text-xs"
+          >
+            {tieneCv ? "Subir otro" : "Adjuntar un CV"}
+          </button>
+        )}
+      </div>
+
+      {abierto ? (
+        <div className="mt-3 border-t border-filete pt-3">
+          <Formulario accion={subirCv} className="gap-3">
+            {(resultado) => {
+              const subido = resultado.ok && Boolean(resultado.mensaje);
+
+              return (
+                <>
+                  <input type="hidden" name="profile_id" value={profileId} />
+
+                  {subido ? null : (
+                    <Campo
+                      etiqueta="El fichero"
+                      ayuda="PDF o Word, hasta 10 MB. Lo ve IWL y la propia persona"
+                      error={!resultado.ok ? resultado.campos?.cv : undefined}
+                    >
+                      <input
+                        type="file"
+                        name="cv"
+                        required
+                        accept=".pdf,.doc,.docx"
+                        className="text-sm text-secundario file:mr-3 file:border file:border-filete file:bg-papel file:px-3 file:py-1.5 file:text-sm file:text-titular"
+                      />
+                    </Campo>
+                  )}
+
+                  <div className="flex gap-2">
+                    {subido ? null : <Boton>Adjuntar</Boton>}
+                    <button
+                      type="button"
+                      onClick={() => setAbierto(false)}
+                      className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+                    >
+                      {subido ? "Hecho" : "Cancelar"}
+                    </button>
+                  </div>
+                </>
+              );
+            }}
+          </Formulario>
+        </div>
+      ) : null}
+    </div>
+  );
 }

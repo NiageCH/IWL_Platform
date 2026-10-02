@@ -41,9 +41,18 @@ test("una mentora coordina un proyecto y apoya en otro", async ({ page }) => {
   await expect(marea.getByText("Coordina", { exact: true })).toBeVisible();
   await expect(raiz.getByText("Apoyo", { exact: true })).toBeVisible();
 
-  // Con sus horas acordadas y las que lleva puestas en cada uno
-  await expect(marea.getByText(/70,0 de 120 h/)).toBeVisible();
-  await expect(raiz.getByText(/0,0 de 60 h/)).toBeVisible();
+  /*
+   * Las horas, en su ficha.
+   *
+   * En la lista estorban: ahí se viene a encontrar a alguien y a darle o
+   * quitarle acceso, no a leer su dedicación proyecto a proyecto.
+   */
+  await producto.getByRole("link", { name: "Mentoría producto" }).click();
+
+  const fichaMarea = page.locator("li", { hasText: "Marea Clínica" }).first();
+  const fichaRaiz = page.locator("li", { hasText: "Raíz Sensórica" }).first();
+  await expect(fichaMarea.getByText(/70,0 de 120 h/)).toBeVisible();
+  await expect(fichaRaiz.getByText(/0,0 de 60 h/)).toBeVisible();
 });
 
 test("el papel de mentoría a secas ya no se ofrece", async ({ page }) => {

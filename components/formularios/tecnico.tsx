@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import {
+  abrirEvaluacion,
   cambiarEstadoHallazgo,
   cambiarEstadoPuntoPlan,
   crearPuntoPlan,
+  publicarEvaluacion,
   puntuarDimension,
   registrarHallazgo,
   responderCuestionario,
@@ -439,6 +441,104 @@ export function RespuestaCuestionario({
             />
             <div>
               <Boton variante="secundario">Guardar respuesta</Boton>
+            </div>
+          </>
+        )}
+      </Formulario>
+    </div>
+  );
+}
+
+/**
+ * Abrir la evaluación técnica, cuando no hay ninguna.
+ *
+ * Sin esto la sección era un callejón: decía que no había evaluación
+ * publicada y no ofrecía empezar una. Solo lo ve quien puede evaluar.
+ */
+export function AbrirEvaluacion({
+  slug,
+  companyId,
+}: {
+  slug: string;
+  companyId: string;
+}) {
+  return (
+    <Formulario accion={abrirEvaluacion}>
+      {() => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="company_id" value={companyId} />
+          <Boton>Abrir la evaluación técnica</Boton>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Publicar la evaluación en curso.
+ *
+ * El resumen y las fortalezas se escriben aquí porque es cuando se tienen:
+ * al acabar de puntuar, no al empezar.
+ */
+export function PublicarEvaluacion({
+  slug,
+  assessmentId,
+  summary,
+  strengths,
+}: {
+  slug: string;
+  assessmentId: string;
+  summary: string | null;
+  strengths: string | null;
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion text-xs"
+      >
+        Publicar la evaluación
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full px-4 py-4">
+      <Formulario accion={publicarEvaluacion}>
+        {(resultado) => (
+          <>
+            <input type="hidden" name="slug" value={slug} />
+            <input type="hidden" name="assessment_id" value={assessmentId} />
+
+            <Campo
+              etiqueta="Resumen"
+              ayuda="Lo que se lleva quien solo lea un párrafo"
+            >
+              <AreaTexto name="summary" rows={3} defaultValue={summary ?? ""} />
+            </Campo>
+            <Campo etiqueta="Fortalezas">
+              <AreaTexto
+                name="strengths"
+                rows={2}
+                defaultValue={strengths ?? ""}
+              />
+            </Campo>
+
+            <div className="flex gap-2">
+              {resultado.ok && resultado.mensaje ? null : (
+                <Boton>Publicar</Boton>
+              )}
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+              >
+                {resultado.ok && resultado.mensaje ? "Hecho" : "Cancelar"}
+              </button>
             </div>
           </>
         )}

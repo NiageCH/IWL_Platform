@@ -231,7 +231,7 @@ export function ArchivarCompania({ compania }: { compania: FichaCompania }) {
             </p>
 
             <Campo etiqueta="Motivo" ayuda="Para saber por qué dentro de un año">
-              <Texto name="motivo" placeholder="Graduada, cierre, salida del programa…" />
+              <Texto name="motivo" placeholder="Fin del programa, cierre, salida…" />
             </Campo>
 
             <div className="flex gap-2">

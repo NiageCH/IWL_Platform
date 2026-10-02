@@ -1233,3 +1233,124 @@ export async function quitarLogo(formData: FormData): Promise<Resultado> {
   revalidatePath("/cartera");
   return ok("Logo quitado. La compañía vuelve a salir con sus iniciales.");
 }
+
+/** Lo que vale como CV: un PDF o un Word */
+const TIPOS_CV = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+];
+const MAXIMO_CV = 10 * 1024 * 1024;
+
+/**
+ * Adjuntar el CV de una persona.
+ *
+ * Se guarda tal cual, sin extraer nada: se valoró que una IA lo leyera y
+ * rellenara el cargo y las áreas, y se decidió que no compensa todavía. Lo
+ * que resuelve esto es no tener que buscar el CV en un correo de hace meses
+ * cuando alguien pregunta quién es esta persona.
+ *
+ * Lo sube IWL o la propia persona. No lo ve nadie más: un CV es un documento
+ * personal, no un dato del programa, y eso lo impone la política del bucket.
+ */
+export async function subirCv(formData: FormData): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Hay que entrar para hacer esto.");
+
+  const profileId = String(formData.get("profile_id") ?? "");
+  if (!profileId) return error("Falta saber de quién es el CV.");
+
+  if (!esIwl(persona.role) && persona.id !== profileId) {
+    return error("Un CV lo sube su dueña o el equipo de IWL.");
+  }
+
+  const fichero = formData.get("cv");
+  if (!(fichero instanceof File) || fichero.size === 0) {
+    return error("Elige un fichero.", { cv: "Falta el fichero." });
+  }
+
+  if (!TIPOS_CV.includes(fichero.type)) {
+    return error("Ese tipo de fichero no vale como CV.", {
+      cv: "Sirve un PDF o un Word.",
+    });
+  }
+
+  if (fichero.size > MAXIMO_CV) {
+    return error(
+      `El fichero pesa ${(fichero.size / 1024 / 1024).toFixed(1)} MB y el máximo son 10.`,
+      { cv: "Como mucho 10 MB." },
+    );
+  }
+
+  const supabase = await clienteServidor();
+
+  // Nombre nuevo cada vez, por la caché de Storage: ver `subirLogo`
+  const extension = fichero.name.split(".").pop()?.toLowerCase() ?? "pdf";
+  const ruta = `${profileId}/${Date.now()}.${extension.replace(/[^a-z0-9]/g, "")}`;
+
+  const { error: falloSubida } = await supabase.storage
+    .from("personas")
+    .upload(ruta, fichero, { contentType: fichero.type });
+
+  if (falloSubida) {
+    return error(`No se ha podido subir el CV: ${falloSubida.message}`);
+  }
+
+  const { data: antes } = await supabase
+    .from("profiles")
+    .select("cv_path")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  const { data: hecho, error: falloFicha } = await supabase
+    .from("profiles")
+    .update({ cv_path: ruta })
+    .eq("id", profileId)
+    .select("id");
+
+  if (falloFicha) {
+    await supabase.storage.from("personas").remove([ruta]);
+    return traducirError(falloFicha);
+  }
+
+  /*
+   * Un `update` que una política no deja pasar afecta a cero filas y no
+   * devuelve error. Sin esto diría «CV adjuntado» sin haber adjuntado nada,
+   * que es la peor forma de fallar y ya ha aparecido dos veces aquí.
+   */
+  if (!hecho || hecho.length === 0) {
+    await supabase.storage.from("personas").remove([ruta]);
+    return error("No se ha podido guardar: no te deja tocar esa ficha.");
+  }
+
+  if (antes?.cv_path && antes.cv_path !== ruta) {
+    await supabase.storage.from("personas").remove([antes.cv_path]);
+  }
+
+  revalidatePath(`/admin/personas/${profileId}`);
+  return ok("CV adjuntado.");
+}
+
+/** Abre el CV con un enlace firmado de un minuto, como el data room */
+export async function abrirCv(profileId: string): Promise<Resultado & { url?: string }> {
+  const persona = await personaActual();
+  if (!persona) return error("Hay que entrar para hacer esto.");
+
+  const supabase = await clienteServidor();
+
+  const { data: ficha } = await supabase
+    .from("profiles")
+    .select("cv_path")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (!ficha?.cv_path) return error("Esa persona no tiene CV adjunto.");
+
+  const { data, error: fallo } = await supabase.storage
+    .from("personas")
+    .createSignedUrl(ficha.cv_path, 60);
+
+  if (fallo || !data) return error("No se ha podido abrir el CV.");
+
+  return { ...ok(), url: data.signedUrl };
+}

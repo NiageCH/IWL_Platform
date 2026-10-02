@@ -50,6 +50,9 @@ const esquema = z.object({
   dd_item_id: idOpcional,
   expires_on: fechaOpcional,
   description: textoOpcional,
+  /* «business_plan» cuando el documento ES el business plan, y la pantalla
+     del plan lo enseña arriba. Vacío para el resto del data room */
+  kind: z.enum(["business_plan"]).optional(),
 });
 
 export async function subirDocumento(formData: FormData): Promise<Resultado> {
@@ -99,6 +102,19 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
 
   if (!area) return error("Esa área de due diligence no existe.");
 
+  /*
+   * Si ya había uno de este tipo, se va: «el business plan» es singular, y
+   * subir uno nuevo es reemplazar, no acumular. El índice único lo impide,
+   * así que sin esto la segunda subida daría un error de base en bruto.
+   */
+  if (datos.kind) {
+    await supabase
+      .from("documents")
+      .delete()
+      .eq("company_id", datos.company_id)
+      .eq("kind", datos.kind);
+  }
+
   // El documento primero, para tener su id en la ruta del fichero
   const { data: documento, error: falloDocumento } = await supabase
     .from("documents")
@@ -109,6 +125,7 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
       description: datos.description,
       folder: area.code,
       expires_on: datos.expires_on,
+      kind: datos.kind ?? null,
       created_by: persona.id,
     })
     .select("id")
@@ -141,13 +158,19 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
 
   if (falloVersion) return traducirError(falloVersion);
 
-  // Enlazar con su punto del checklist y darlo por entregado
+  /*
+   * Enlazar con su punto del checklist y pasarlo a revisión.
+   *
+   * No a «entregado»: entregar y que alguien lo mire son dos cosas, y la
+   * segunda es la que le interesa saber a quien ha subido el fichero. Desde
+   * «en revisión» solo lo mueve IWL, y eso lo impone la base.
+   */
   if (datos.dd_item_id) {
     await supabase
       .from("dd_items")
       .update({
         document_id: documento.id,
-        status: "entregado",
+        status: "en_revision",
         expires_on: datos.expires_on,
       })
       .eq("id", datos.dd_item_id);

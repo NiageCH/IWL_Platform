@@ -45,7 +45,7 @@ export function TituloBloque({
   accion?: ReactNode;
 }) {
   return (
-    <header className="flex items-baseline justify-between gap-4 border-b border-filete px-4 py-3">
+    <header className="titulo-bloque flex items-baseline justify-between gap-4 px-4 py-3">
       <h2 className="text-sm font-semibold tracking-tight text-titular">
         {children}
       </h2>

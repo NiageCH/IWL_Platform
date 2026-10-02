@@ -12,6 +12,7 @@ import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { Cifra, Metadato, Semaforo } from "@/components/ui/primitivas";
 import { Movimiento } from "@/components/evolucion";
+import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
 import { numero } from "@/lib/utils";
 
 /**
@@ -49,7 +50,12 @@ export function CabeceraProyecto({
 }) {
   const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
 
-  const secciones = [
+  const secciones: {
+    codigo: NombreIcono;
+    nombre: string;
+    href: string;
+    Icono: typeof LayoutDashboard;
+  }[] = [
     { codigo: "resumen", nombre: "Resumen", href: base, Icono: LayoutDashboard },
     { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta`, Icono: Route },
     { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa`, Icono: FileSignature },
@@ -146,7 +152,7 @@ export function CabeceraProyecto({
           </div>
         </div>
 
-        <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+        <nav className="mt-6 flex flex-wrap gap-2">
           {secciones.map((s) => {
             const activa = s.codigo === seccionActiva;
 
@@ -155,17 +161,16 @@ export function CabeceraProyecto({
                 key={s.codigo}
                 href={s.href}
                 aria-current={activa ? "page" : undefined}
-                className={
-                  activa
-                    ? "pestana pestana-activa inline-flex items-center gap-2"
-                    : "pestana inline-flex items-center gap-2"
-                }
+                className={activa ? "pestana pestana-activa" : "pestana"}
               >
                 {/* El icono acompaña al rótulo; el rótulo no se quita nunca */}
                 <s.Icono
                   aria-hidden="true"
-                  className="size-4 shrink-0"
-                  strokeWidth={activa ? 2.25 : 1.75}
+                  className="icono-seccion size-4 shrink-0"
+                  style={
+                    { "--tono": tonoSeccion(s.codigo) } as React.CSSProperties
+                  }
+                  strokeWidth={activa ? 2.5 : 2}
                 />
                 {s.nombre}
               </Link>

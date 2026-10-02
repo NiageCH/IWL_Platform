@@ -11,11 +11,13 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import {
+  AbrirEvaluacion,
   EstadoHallazgo,
   EstadoPuntoPlan,
   FormularioHallazgo,
   FormularioPuntoPlan,
   FormularioPuntuacion,
+  PublicarEvaluacion,
   RespuestaCuestionario,
 } from "@/components/formularios/tecnico";
 import { euros, fecha, numero } from "@/lib/utils";
@@ -53,10 +55,17 @@ export async function VistaTecnico({
 
   const [evaluacion, puntuaciones, hallazgos, plan, sesiones] = await Promise.all([
     supabase
+      /*
+       * Sin filtrar por «publicada»: manda RLS.
+       *
+       * Quien evalúa ve también el borrador —si no, no podría puntuarlo— y
+       * la compañía solo ve lo publicado, porque la política no le deja ver
+       * lo otro. Filtrar aquí por estado escondía el borrador a su propio
+       * autor, que es lo que dejaba la sección sin forma de empezar.
+       */
       .from("tech_assessments")
       .select("id, assessed_on, summary, strengths, stage, status, profiles:reviewer_id ( full_name )")
       .eq("company_id", companyId)
-      .eq("status", "publicada")
       .order("assessed_on", { ascending: false })
       .limit(1)
       .maybeSingle(),
@@ -125,9 +134,15 @@ export async function VistaTecnico({
       <Bloque>
         <TituloBloque>Due diligence tecnológico</TituloBloque>
         <SinDatos>
-          Todavía no hay una evaluación técnica publicada. La primera la realiza
-          la ingeniería de Niage durante la fase de due diligence conjunto.
+          {permisos.puedeValidar
+            ? "Todavía no hay evaluación. Ábrela y queda en borrador: puntúas las dimensiones, registras hallazgos y la publicas cuando esté. Hasta entonces no la ve la compañía."
+            : "Todavía no hay una evaluación técnica publicada. La primera la realiza la ingeniería de Niage durante la fase de due diligence conjunto."}
         </SinDatos>
+        {permisos.puedeValidar ? (
+          <div className="px-4 pb-4">
+            <AbrirEvaluacion slug={compania.slug} companyId={companyId} />
+          </div>
+        ) : null}
       </Bloque>
     );
   }
@@ -141,10 +156,35 @@ export async function VistaTecnico({
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <Bloque>
           <TituloBloque
-            accion={<Metadato>Evaluación de {fecha(evaluacionActual.assessed_on)}</Metadato>}
+            accion={
+              evaluacionActual.status === "borrador" ? (
+                <PublicarEvaluacion
+                  slug={compania.slug}
+                  assessmentId={evaluacionActual.id}
+                  summary={evaluacionActual.summary}
+                  strengths={evaluacionActual.strengths}
+                />
+              ) : (
+                <Metadato>
+                  Evaluación de {fecha(evaluacionActual.assessed_on)}
+                </Metadato>
+              )
+            }
           >
             Scorecard técnico
           </TituloBloque>
+
+          {/*
+            Un borrador se dice que lo es, y se dice quién no lo ve. Sin eso
+            se puntúa una evaluación creyendo que la compañía ya la está
+            leyendo, o al revés.
+          */}
+          {evaluacionActual.status === "borrador" ? (
+            <p className="border-b border-filete bg-elevado px-4 py-2 text-xs text-secundario">
+              En borrador. Solo lo ve quien evalúa; la compañía no, hasta que
+              se publique.
+            </p>
+          ) : null}
           <div className="px-4 py-4">
             <ScorecardRadar dimensiones={scoreTecnico.dimensiones} />
           </div>

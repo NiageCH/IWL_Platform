@@ -20,6 +20,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -49,9 +50,7 @@ const ICONOS = {
   personas: Users,
   evaluacion: Gauge,
   umbrales: SlidersHorizontal,
-} satisfies Record<string, LucideIcon>;
-
-export type NombreIcono = keyof typeof ICONOS;
+} satisfies Record<NombreIcono, LucideIcon>;
 
 export type Seccion = {
   href: string;
@@ -89,16 +88,14 @@ export function NavSecciones({
             key={s.href}
             href={s.href}
             aria-current={activa ? "page" : undefined}
-            className={cn(
-              "inline-flex items-center gap-2",
-              activa ? "pestana pestana-activa" : "pestana",
-            )}
+            className={cn(activa ? "pestana pestana-activa" : "pestana")}
           >
-            {Icono ? (
+            {Icono && s.icono ? (
               <Icono
                 aria-hidden="true"
-                className="size-4 shrink-0"
-                strokeWidth={activa ? 2.25 : 1.75}
+                className="icono-seccion size-4 shrink-0"
+                style={{ "--tono": tonoSeccion(s.icono) } as React.CSSProperties}
+                strokeWidth={activa ? 2.5 : 2}
               />
             ) : null}
             {s.nombre}

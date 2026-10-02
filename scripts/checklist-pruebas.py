@@ -244,9 +244,15 @@ add(M, "/cartera/<slug>", "programa@iwl.test", "Entrar en una compañía",
 
 # --- Comparativa
 M = "9. Comparativa"
-add(M, "/comparativa", "programa@iwl.test", "Comparar la cohorte dimensión a dimensión",
-    "Abrir Comparativa y recorrerla.",
-    "Cada compañía frente al objetivo de SU etapa, no contra un ideal común.")
+add(M, "/comparativa", "programa@iwl.test", "¿Quién va por delante?",
+    "Mirar el primer gráfico.",
+    "Barras con el % del objetivo de SU etapa alcanzado. 100 es llegar. No niveles brutos.")
+add(M, "/comparativa", "programa@iwl.test", "¿Dónde flojea la cohorte?",
+    "Mirar el segundo gráfico.",
+    "Dimensiones ordenadas por brecha media, lo peor arriba, con cuántas compañías están por debajo.")
+add(M, "/comparativa", "programa@iwl.test", "Las cifras exactas siguen estando",
+    "Bajar al final de la página.",
+    "La tabla «Las cifras, una a una» está ahí para cuando hace falta el dato exacto.")
 add(M, "/comparativa", "programa@iwl.test", "Runway, MRR y preparación",
     "Mirar los tres bloques de tracción.",
     "Cuadran con lo cargado en KPI de cada compañía.")
@@ -334,6 +340,15 @@ add(M, "/proyecto/aportacion", "fundadora@marea.test", "La fundadora ve lo que h
 
 # --- DD técnico
 M = "14. Due diligence técnico"
+add(M, "/cartera/<slug>/tecnico", "revisor@niage.test", "Abrir una evaluación donde no había ninguna",
+    "En una compañía recién creada: Due diligence técnico → «Abrir la evaluación técnica».",
+    "Aparece el scorecard con el aviso «En borrador». Antes aquí no había por dónde empezar.")
+add(M, "/proyecto/tecnico", "la fundadora", "La compañía NO ve el borrador",
+    "Con la evaluación en borrador, mirar la sección como fundadora.",
+    "Sigue diciendo que no hay evaluación publicada. El borrador es solo de quien evalúa.")
+add(M, "/cartera/<slug>/tecnico", "revisor@niage.test", "Publicar la evaluación",
+    "Puntuar al menos una dimensión, escribir el resumen y publicar.",
+    "Se publica y la compañía ya la ve. Sin nada puntuado NO deja publicar.")
 add(M, "/cartera/<slug>/tecnico", "revisor@niage.test", "Puntuar una dimensión",
     "Ajustar puntuación de una dimensión con su evidencia. Guardar.",
     "Se guarda y el score técnico se mueve.")
@@ -370,9 +385,18 @@ add(M, "/cartera/<slug>/diligencia", "programa@iwl.test", "La checklist sale ins
 add(M, "/cartera/<slug>/diligencia", "programa@iwl.test", "Cambiar el estado de un punto",
     "Marcar un punto como entregado o como no aplica.",
     "Cambia y la cuenta de pendientes se mueve.")
-add(M, "/proyecto/diligencia", "fundadora@marea.test", "Subir un documento",
-    "Subir el fichero que pide un punto de la checklist.",
-    "El punto pasa a entregado solo, y el documento queda privado.")
+add(M, "/proyecto/diligencia", "fundadora@marea.test", "Subir desde la propia línea",
+    "En la línea de un punto, pulsar «Subir» y elegir el fichero. Sin bajar al final de la página.",
+    "Se sube ahí mismo, sin volver a elegir área ni punto, y el panel se cierra con Hecho.")
+add(M, "/proyecto/diligencia", "fundadora@marea.test", "Al subir, el punto pasa a EN REVISIÓN",
+    "Mirar el estado del punto justo después de subir.",
+    "Dice «En revisión», no «Entregado». Y donde había un desplegable ahora hay una etiqueta.")
+add(M, "/proyecto/diligencia", "fundadora@marea.test", "La compañía no saca un punto de revisión",
+    "Intentar devolver a pendiente un punto que ya está en revisión.",
+    "No puede: no hay control. Y si se forzara, la base lo rechaza.")
+add(M, "/cartera/<slug>/diligencia", "revisor@niage.test", "IWL sí lo mueve",
+    "Sobre ese mismo punto, pasarlo a validado.",
+    "Cambia. El estado a partir de revisión es una valoración, y las valoraciones son de IWL.")
 add(M, "/cartera/<slug>/diligencia", "programa@iwl.test", "Registrar un hallazgo general",
     "Registrar un hallazgo del due diligence general.",
     "Queda con su gravedad y se ve en la lista.")
@@ -382,6 +406,12 @@ add(M, "/cartera/<slug>/diligencia", "programa@iwl.test", "Un documento con cadu
 
 # --- Business plan
 M = "16. Business plan"
+add(M, "/proyecto/plan", "fundadora@marea.test", "Adjuntar el business plan ya escrito",
+    "Arriba del todo: «Adjuntar el business plan», elegir un PDF.",
+    "Queda adjunto con su fecha y se abre con un clic. NO rellena las secciones: eso sigue siendo a mano.")
+add(M, "/proyecto/plan", "fundadora@marea.test", "Subir otra versión reemplaza",
+    "Adjuntar un segundo fichero.",
+    "Sustituye al anterior. «El business plan» es singular, no una pila.")
 add(M, "/proyecto/plan", "fundadora@marea.test", "Escribir una sección",
     "Rellenar una sección del business plan y guardar.",
     "Se guarda y se ve desde IWL.")
@@ -445,6 +475,15 @@ add(M, "/admin/personas", "admin@iwl.test", "El verbo cambia según el caso",
 add(M, "/admin/personas", "admin@iwl.test", "La propia NO se cambia desde el panel",
     "Buscar el botón de contraseña en tu propia fila.",
     "No está. En su lugar, «Tu contraseña se cambia en Mi cuenta», que lleva a /perfil. Desde el panel te echaría la sesión.")
+add(M, "/admin/personas", "admin@iwl.test", "La lista se puede recorrer",
+    "Mirar la lista entera de personas.",
+    "Por cada una: nombre, posición, correo y dónde está asignada. Ni áreas ni biografía: eso está en su ficha.")
+add(M, "/admin/personas/<id>", "admin@iwl.test", "La ficha de una persona",
+    "Pulsar sobre el nombre de alguien.",
+    "Se abre su ficha: proyectos, horas imputadas, tareas abiertas, áreas, descripción y asignaciones con detalle.")
+add(M, "/admin/personas/<id>", "admin@iwl.test", "Adjuntar un CV",
+    "En «Quién es», adjuntar un PDF y luego abrirlo.",
+    "Se guarda y se abre con enlace firmado. Lo ve IWL y la propia persona; nadie más.")
 add(M, "/admin/personas", "admin@iwl.test", "Asignar a una compañía y cambiar el papel",
     "Asignar una persona a una compañía, cambiarle el papel y quitar la asignación.",
     "Las tres funcionan. El papel va en la asignación, no en la persona.")
@@ -520,9 +559,18 @@ add(M, "Todas", "—", "Varios anchos de ventana",
 add(M, "Todas", "—", "En el móvil",
     "Abrir la plataforma en el teléfono y recorrer tres o cuatro pantallas.",
     "Se usa de verdad: se lee, se pulsa y los formularios se rellenan.")
-add(M, "Todas", "—", "Qué se puede pulsar se ve sin pasar el ratón",
-    "Mirar una pantalla cualquiera quieto, sin mover el ratón.",
-    "Enlaces subrayados, acciones con subrayado discontinuo, filas con su flecha.")
+add(M, "Todas", "—", "Qué se puede pulsar se ve SIN pasar el ratón",
+    "Mirar una pantalla quieto, sin mover el ratón. Y probarlo en el móvil, donde no hay ratón.",
+    "Las pestañas de sección y las acciones (Editar, Archivar…) llevan cápsula con borde. No hace falta pasar por encima.")
+add(M, "Todas", "—", "Los iconos de sección llevan color",
+    "Mirar la fila de pestañas de una compañía y la de administración.",
+    "Cada icono con su tono, y el de la sección abierta en magenta. El rótulo va siempre al lado.")
+add(M, "Todas", "—", "El filete amarillo de los bloques",
+    "Mirar el título de cualquier bloque.",
+    "Lleva un pelo amarillo debajo. No aparece en ningún gráfico: ahí manda un solo color.")
+add(M, "Todas", "—", "No queda «graduación» por ninguna parte",
+    "Buscar la palabra en fases, motivos de archivo y desplegables.",
+    "Ahora pone «Fin del programa».")
 add(M, "Todas", "—", "Moverse solo con el teclado",
     "Recorrer una pantalla con el tabulador.",
     "Siempre se ve dónde está el foco. Nada queda inalcanzable.")

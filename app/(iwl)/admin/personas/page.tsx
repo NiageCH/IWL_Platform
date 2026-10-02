@@ -19,7 +19,7 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { nombrePersona, papel } from "@/lib/etiquetas";
-import { numero } from "@/lib/utils";
+
 
 export const metadata = { title: "Personas · Administración" };
 
@@ -61,27 +61,25 @@ export default async function AdminPersonas() {
 
     return (
       <li className="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-4 py-4">
+        {/*
+          Nombre, posición y correo. Nada más.
+          
+          Aquí llevaba también las áreas, la biografía y el detalle de cada
+          asignación, y con diecinueve personas era un muro de texto por el
+          que no se podía buscar a nadie. En una lista se busca; lo que esa
+          persona es se lee en su ficha.
+        */}
         <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-sm font-medium text-titular">
+          <Link
+            href={`/admin/personas/${p.id}`}
+            className="enlace enlace-destacado text-sm font-medium text-titular"
+          >
             {nombrePersona(p)}
-          </span>
+          </Link>
           {p.job_title ? (
             <span className="text-xs text-secundario">{p.job_title}</span>
           ) : null}
           <Metadato>{p.email}</Metadato>
-          {p.organization_name ? (
-            <Metadato>{p.organization_name}</Metadato>
-          ) : null}
-
-          {(p.expertise ?? []).length > 0 ? (
-            <ul className="flex w-full flex-wrap gap-1.5">
-              {(p.expertise ?? []).map((area) => (
-                <li key={area}>
-                  <Etiqueta>{area}</Etiqueta>
-                </li>
-              ))}
-            </ul>
-          ) : null}
         </div>
 
         <CambiarRol
@@ -94,58 +92,35 @@ export default async function AdminPersonas() {
           <p className="w-full text-xs text-metadato">
             {p.role === "admin_iwl" || p.role === "equipo_iwl"
               ? "Sin asignaciones. No le hacen falta: IWL ve toda la cartera."
-              : "Sin asignaciones, así que no ve ninguna compañía. El rol dice qué puede hacer; la asignación, dónde."}
+              : "Sin asignaciones, así que no ve ninguna compañía."}
           </p>
         ) : (
-          <ul className="w-full divide-y divide-filete border-l-2 border-filete pl-3">
-            {asignaciones.map((a) => {
-              const pct =
-                a.assigned_hours && a.assigned_hours > 0
-                  ? Math.round((a.imputadas / a.assigned_hours) * 100)
-                  : null;
-
-              return (
-                <li
-                  key={`${a.company_id}-${a.member_role}`}
-                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5"
+          /*
+            Dónde está y con qué papel, en una línea. Las horas, las tareas
+            y las fechas se leen en su ficha: aquí solo estorban para lo que
+            se viene a hacer, que es encontrar a alguien y darle o quitarle
+            acceso.
+          */
+          <ul className="flex w-full flex-wrap items-center gap-x-4 gap-y-1.5">
+            {asignaciones.map((a) => (
+              <li
+                key={`${a.company_id}-${a.member_role}`}
+                className="flex items-baseline gap-2"
+              >
+                <Link
+                  href={`/cartera/${a.company_slug}`}
+                  className="enlace text-sm text-cuerpo"
                 >
-                  <Link
-                    href={`/cartera/${a.company_slug}`}
-                    className="enlace text-sm text-cuerpo"
-                  >
-                    {a.company_name}
-                  </Link>
-                  <Etiqueta>{papel(a.member_role)}</Etiqueta>
-                  {a.title ? <Metadato>{a.title}</Metadato> : null}
-                  {a.archivada ? <Metadato>compañía archivada</Metadato> : null}
-
-                  {a.assigned_hours !== null ? (
-                    <span
-                      className={`cifra text-xs ${
-                        pct !== null && pct > 100 ? "text-aviso" : "text-metadato"
-                      }`}
-                    >
-                      {numero(a.imputadas, 1)} de {numero(a.assigned_hours, 0)} h
-                      {pct === null ? "" : ` · ${pct} %`}
-                    </span>
-                  ) : null}
-
-                  {a.tareas_abiertas > 0 ? (
-                    <Metadato>
-                      {a.tareas_abiertas}{" "}
-                      {a.tareas_abiertas === 1 ? "tarea" : "tareas"}
-                    </Metadato>
-                  ) : null}
-
-                  <span className="flex-1" />
-                  <QuitarAsignacion
-                    profileId={p.id!}
-                    companyId={a.company_id}
-                    memberRole={a.member_role}
-                  />
-                </li>
-              );
-            })}
+                  {a.company_name}
+                </Link>
+                <Etiqueta>{papel(a.member_role)}</Etiqueta>
+                <QuitarAsignacion
+                  profileId={p.id!}
+                  companyId={a.company_id}
+                  memberRole={a.member_role}
+                />
+              </li>
+            ))}
           </ul>
         )}
 

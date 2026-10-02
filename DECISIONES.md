@@ -1039,3 +1039,130 @@ que va por el cliente de sesión y la renueva sin tirarte.
 No hay «he olvidado mi contraseña». Hace falta un proveedor de correo, que se
 dejó para más adelante a propósito. Mientras tanto, quien se queda fuera se lo
 pide a la dirección y esto es lo que la dirección usa.
+
+## 2026-10-02 · Nueve correcciones de Rodrigo, probando la plataforma
+
+### Lo pulsable, por tercera vez
+
+«Siguen sin parecer botones, solo te das cuenta si pones el mouse arriba.»
+Dicho para la ficha de empresa y para administración, que resultaron ser la
+misma clase CSS.
+
+Dos convenciones no bastaban. `.pestana` inactiva era texto gris suelto y
+`.accion` era un subrayado discontinuo: las dos solo se delataban al pasar
+el ratón, y **en una pantalla táctil no hay ratón que pasar**. Ahora las dos
+llevan cápsula con borde y superficie, visibles en reposo.
+
+La lección, que ya iba por la tercera vuelta: un subrayado distingue un
+enlace de un párrafo, pero no distingue un control de un enlace. Cuando hay
+cinco acciones seguidas en una fila, lo que hace falta es que se vean cinco
+controles.
+
+Y los iconos de sección llevan tono propio —cielo, lila, menta, durazno—
+que se pasa al acento cuando la pestaña está abierta. Decorativo y nada
+más: el rótulo va siempre al lado.
+
+### El amarillo de la web, de vuelta, con una condición
+
+Se dejó fuera en su día para no meter un segundo color cromático en los
+gráficos. Vuelve como `--color-filete-marca`, un pelo de 1 px bajo el
+título de cada bloque, y **no entra en ningún gráfico**. No lleva
+información: es el acabado de un borde, así que la regla de los gráficos
+—una sola serie cromática, el resto por relleno, trazo y etiqueta— queda
+intacta.
+
+### «Graduación» no era la palabra
+
+La fase 3 se llamaba «Cierre y graduación». Esto no es una escuela y lo que
+termina es un proceso de aceleración. Pasa a «Fin del programa», en una
+migración y no solo en la semilla: la semilla inserta con `on conflict do
+nothing` y en la nube no habría cambiado nada.
+
+### El due diligence técnico era un callejón sin salida
+
+Rodrigo preguntó cómo se carga la información de esa sección. La respuesta
+era: no se puede. La pantalla decía «todavía no hay una evaluación técnica
+publicada» y no había forma de abrir una; las tres que existían venían de la
+semilla, así que **cualquier compañía nueva se quedaba con el módulo central
+muerto para siempre**.
+
+Faltaban dos cosas y sobraba una. Faltaban abrir y publicar. Y sobraba un
+filtro: la vista leía solo `status = 'publicada'`, así que escondía el
+borrador a su propio autor. Ahora no filtra y manda RLS, que ya decía
+exactamente lo que había que decir —quien evalúa ve el borrador, la
+compañía no—.
+
+Al abrirla se repitió por **quinta vez** el formulario que vive dentro de
+una condición que su propio éxito vuelve falsa. Aquí la salida buena es la
+documentada: el acuse es la pantalla cambiada. Donde había un hueco aparece
+el scorecard con su aviso de borrador, y eso es lo que comprueba la prueba.
+
+### Subir un documento desde su propia línea
+
+El data room tenía un único formulario al final de la página donde había que
+volver a elegir el área y el punto que ya estabas mirando. En una checklist
+de treinta líneas, eso es bajar y buscar treinta veces.
+
+Y la transición cambia: subir deja el punto **en revisión**, no en
+«entregado». Entregar y que alguien lo mire son dos cosas, y la segunda es
+la que le interesa saber a quien acaba de subir el fichero. Desde ahí solo
+lo mueve IWL, y lo impone un disparador, no la pantalla.
+
+El disparador lleva `auth.uid() is not null`: sin sesión no hay a quién
+restringir, y la clave de servicio ya se salta el RLS entero por diseño.
+Bloquearla no protegía nada y sí impedía que una prueba dejase las cosas
+como las encontró.
+
+Sobre apuntar todos a un Drive con una carpeta por candidato: no hace
+falta. El data room ya es privado, con enlace firmado por consulta, versiones
+y registro de accesos. Un Drive compartido da menos y hay que mantenerlo a
+mano.
+
+### La comparativa eran dos hojas de cálculo
+
+«Poco clara», y con razón: dos tablas anchas de las que había que sacar las
+conclusiones a ojo. Ahora son tres gráficos, cada uno con una pregunta por
+título:
+
+- **¿Quién va por delante?** — no niveles brutos, sino **cuánto lleva cada
+  una de lo que exige su etapa**, en porcentaje. Es la única forma honesta
+  de ponerlas en la misma barra: un 2 en pre-semilla y un 2 en serie A no
+  significan lo mismo. 100 es llegar.
+- **¿Dónde flojea la cohorte?** — brecha media por dimensión, lo peor
+  arriba, con cuántas compañías están por debajo. Si fallan varias en lo
+  mismo es trabajo de programa; si falla una, de su mentoría.
+- **¿A quién se le acaba el dinero?** — el gráfico de runway que ya existía.
+
+La tabla no se borra: baja al final como «Las cifras, una a una». Los
+gráficos contestan preguntas; la tabla sirve para cuando hace falta el dato
+exacto. Arriba estorbaba porque era lo primero que se veía y no contestaba
+nada.
+
+### Administración de personas: una lista para buscar, una ficha para leer
+
+La lista llevaba dentro todo lo que se sabe de cada persona —cargo, áreas,
+biografía, cada asignación con sus horas, sus tareas y sus fechas— y con
+diecinueve personas era un muro por el que no se podía buscar a nadie.
+
+La lista se queda con nombre, posición, correo y dónde está asignada. Todo
+lo demás vive en `/admin/personas/<id>`. En una lista se busca; lo que esa
+persona es se lee cuando ya la has encontrado.
+
+### Adjuntar, no extraer
+
+Rodrigo pidió cargar un business plan ya hecho y que el sistema extrajera la
+información a sus secciones, y lo mismo con un CV o un LinkedIn. Se le
+ofrecieron tres caminos y eligió el de adjuntar sin IA.
+
+Es la decisión correcta por ahora: extraer necesita una IA leyendo
+documentos, con su dependencia, su clave y su coste por uso, y lo que
+resuelve de verdad —no volver a buscar el documento en un correo de hace
+meses— se consigue adjuntándolo.
+
+Dos sitios distintos porque son dos cosas distintas. El business plan es de
+una compañía y vive en `documents`, que ya tiene versiones, caducidad y
+registro de accesos; solo le faltaba una columna `kind` para poder decir
+«este documento es EL business plan», con índice único porque es singular.
+El CV es de una persona, y `documents` cuelga de una compañía: va a su
+propio bucket con la misma forma que el logo. Lo ve IWL y su dueña, nadie
+más: un CV es un documento personal, no un dato del programa.

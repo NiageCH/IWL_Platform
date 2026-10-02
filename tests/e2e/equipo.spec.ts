@@ -108,10 +108,24 @@ test("el cargo y las áreas se cargan al dar de alta y se ven después", async (
   await alta.locator('input[name="expertise"]').fill("Fondeo, Legal, Impacto social");
   await alta.getByRole("button", { name: "Dar de alta" }).click();
 
-  const ficha = page.locator("li", { hasText: CORREO }).first();
-  await expect(ficha.getByText("Directora de algo")).toBeVisible();
-  await expect(ficha.getByText("Fondeo")).toBeVisible();
-  await expect(ficha.getByText("Impacto social")).toBeVisible();
+  /*
+   * El cargo se ve en la lista, porque es lo que distingue a una persona de
+   * otra cuando la buscas. Las áreas ya no: se leen en su ficha.
+   *
+   * La lista llevaba dentro todo lo que se sabe de cada una y con
+   * diecinueve personas era un muro por el que no se podía buscar a nadie.
+   */
+  const fila = page.locator("li", { hasText: CORREO }).first();
+  await expect(fila.getByText("Directora de algo")).toBeVisible();
+  await expect(fila.getByText("Impacto social")).toHaveCount(0);
+
+  await fila.getByRole("link", { name: "Persona de prueba" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Persona de prueba" }),
+  ).toBeVisible();
+  await expect(page.getByText("Fondeo")).toBeVisible();
+  await expect(page.getByText("Impacto social")).toBeVisible();
 });
 
 test("el correo se corrige mientras esa persona no haya entrado", async ({

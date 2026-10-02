@@ -450,3 +450,240 @@ export function HallazgosPorSeveridad({ filas }: { filas: FilaSeveridad[] }) {
 function formatear(valor: number): string {
   return new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 }).format(valor);
 }
+
+// -----------------------------------------------------------------------------
+// Comparativa · un gráfico por pregunta
+// -----------------------------------------------------------------------------
+
+export interface FilaAvance {
+  nombre: string;
+  slug: string;
+  etapa: string;
+  /** Lo alcanzado sobre lo que exige su etapa, en porcentaje. 100 es llegar */
+  pctObjetivo: number | null;
+  sinEvaluar: number;
+}
+
+/**
+ * ¿Quién va por delante?
+ *
+ * No compara niveles brutos: compara **cuánto de lo que exige su etapa**
+ * lleva cada una. Un 2 en pre-semilla y un 2 en serie A no significan lo
+ * mismo, y ponerlos en la misma barra sería mentir. Así, 100 es llegar, y
+ * las tres se leen en la misma vara aunque estén en etapas distintas.
+ *
+ * Esto sustituye a una tabla de nueve filas por tres columnas en la que
+ * había que comparar cifras a mano.
+ */
+export function AvanceSobreObjetivo({ filas }: { filas: FilaAvance[] }) {
+  const datos = filas
+    .filter((f): f is FilaAvance & { pctObjetivo: number } => f.pctObjetivo !== null)
+    .sort((a, b) => b.pctObjetivo - a.pctObjetivo);
+
+  if (datos.length === 0) {
+    return (
+      <p className="px-4 py-6 text-sm text-secundario">
+        Ninguna tiene todavía dimensiones evaluadas. Sin evaluar no es un cero:
+        es que aún no se ha mirado.
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className="w-full px-4 py-4"
+      style={{ height: `${Math.max(150, datos.length * 46 + 64)}px` }}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={datos}
+          layout="vertical"
+          margin={{ top: 4, right: 64, bottom: 18, left: 8 }}
+          barCategoryGap={12}
+        >
+          <XAxis
+            type="number"
+            domain={[0, (max: number) => Math.max(110, Math.ceil(max / 10) * 10)]}
+            tick={{ fill: NEUTRO, fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: FILETE }}
+            label={{
+              value: "% del objetivo de su etapa",
+              position: "insideBottom",
+              offset: -8,
+              fill: NEUTRO,
+              fontSize: 11,
+            }}
+          />
+          <YAxis
+            type="category"
+            dataKey="nombre"
+            tick={{ fill: TEXTO, fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+            width={132}
+          />
+          <ReferenceLine
+            x={100}
+            stroke={NEUTRO}
+            strokeDasharray="4 3"
+            label={{
+              value: "objetivo",
+              position: "top",
+              fill: NEUTRO,
+              fontSize: 11,
+            }}
+          />
+          <Tooltip
+            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const d = payload[0].payload as FilaAvance & { pctObjetivo: number };
+              return (
+                <Caja>
+                  <p className="text-titular">{d.nombre}</p>
+                  <p className="text-xs text-metadato">{d.etapa}</p>
+                  <p className="cifra mt-1 text-secundario">
+                    {Math.round(d.pctObjetivo)} % de lo que exige su etapa
+                  </p>
+                  {d.sinEvaluar > 0 ? (
+                    <p className="mt-1 text-xs text-metadato">
+                      {d.sinEvaluar} dimensiones sin evaluar
+                    </p>
+                  ) : null}
+                </Caja>
+              );
+            }}
+          />
+          <Bar dataKey="pctObjetivo" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+            {datos.map((d) => (
+              <Cell
+                key={d.slug}
+                /* Llegar al objetivo se pinta lleno; no llegar, apagado.
+                   La cifra va escrita al lado, así que el relleno es un
+                   refuerzo y nunca la única señal */
+                fill={d.pctObjetivo >= 100 ? ACENTO : ACENTO_APAGADO}
+              />
+            ))}
+            <LabelList
+              dataKey="pctObjetivo"
+              position="right"
+              fill={TEXTO}
+              fontSize={11}
+              formatter={(v) => (typeof v === "number" ? `${Math.round(v)} %` : "")}
+            />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export interface FilaBrecha {
+  nombre: string;
+  /** Media de lo que le falta a la cohorte en esta dimensión */
+  brechaMedia: number;
+  /** Cuántas compañías están por debajo del objetivo de su etapa */
+  porDebajo: number;
+  total: number;
+}
+
+/**
+ * ¿Dónde flojea la cohorte?
+ *
+ * La pregunta por la que se decide en qué formación invertir, o qué
+ * contenido preparar: si las tres fallan en lo mismo, eso es trabajo de
+ * programa y no de mentoría una a una.
+ *
+ * Ordenado por lo peor arriba, que es como se lee una lista de problemas.
+ */
+export function BrechaDeLaCohorte({ filas }: { filas: FilaBrecha[] }) {
+  const datos = filas
+    .filter((f) => f.brechaMedia > 0)
+    .sort((a, b) => b.brechaMedia - a.brechaMedia);
+
+  if (datos.length === 0) {
+    return (
+      <p className="px-4 py-6 text-sm text-secundario">
+        Ninguna dimensión queda por debajo del objetivo en la cohorte. O han
+        llegado todas, o falta evaluarlas.
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className="w-full px-4 py-4"
+      style={{ height: `${Math.max(160, datos.length * 34 + 64)}px` }}
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={datos}
+          layout="vertical"
+          margin={{ top: 4, right: 120, bottom: 18, left: 8 }}
+          barCategoryGap={8}
+        >
+          <XAxis
+            type="number"
+            tick={{ fill: NEUTRO, fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: FILETE }}
+            label={{
+              value: "niveles por debajo del objetivo, de media",
+              position: "insideBottom",
+              offset: -8,
+              fill: NEUTRO,
+              fontSize: 11,
+            }}
+          />
+          <YAxis
+            type="category"
+            dataKey="nombre"
+            tick={{ fill: TEXTO, fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+            width={150}
+          />
+          <Tooltip
+            cursor={{ fill: "rgba(255,255,255,0.04)" }}
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const d = payload[0].payload as FilaBrecha;
+              return (
+                <Caja>
+                  <p className="text-titular">{d.nombre}</p>
+                  <p className="cifra mt-1 text-secundario">
+                    {formatear(d.brechaMedia)} niveles por debajo
+                  </p>
+                  <p className="mt-1 text-xs text-metadato">
+                    {d.porDebajo} de {d.total} compañías
+                  </p>
+                </Caja>
+              );
+            }}
+          />
+          <Bar
+            dataKey="brechaMedia"
+            radius={[0, 4, 4, 0]}
+            fill={ACENTO}
+            isAnimationActive={false}
+          >
+            {/* La cuenta escrita al lado: es el dato que decide si esto es
+                trabajo de programa o de una mentoría concreta */}
+            <LabelList
+              dataKey="porDebajo"
+              position="right"
+              fill={NEUTRO}
+              fontSize={11}
+              formatter={(v) =>
+                typeof v === "number"
+                  ? `${v} ${v === 1 ? "compañía" : "compañías"}`
+                  : ""
+              }
+            />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

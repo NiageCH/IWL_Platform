@@ -32,7 +32,7 @@ export async function leerCartera() {
      *
      * Siguen siendo visibles para IWL —el histórico de una compañía que pasó
      * por el programa es lo que justifica la participación— pero la cartera
-     * es la lista de proyectos vivos. Una graduada de hace dos años
+     * es la lista de proyectos vivos. Una que terminó el programa hace dos años
      * arrastrando el score de su último mes ensucia todas las medias.
      */
     .is("archived_at", null)

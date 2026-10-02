@@ -8,6 +8,10 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { EditorSeccion, NuevoComentario } from "@/components/formularios/plan";
+import {
+  AbrirDocumento,
+  AdjuntarBusinessPlan,
+} from "@/components/formularios/documentos";
 import { fecha } from "@/lib/utils";
 
 /**
@@ -40,7 +44,8 @@ export async function VistaPlan({
   const companyId = resumen.compania.id;
   const { permisos, compania } = resumen;
 
-  const [secciones, hipotesis, comentarios] = await Promise.all([
+  const [secciones, hipotesis, comentarios, original, areaPlan] =
+    await Promise.all([
     supabase
       .from("bp_sections")
       .select(
@@ -59,6 +64,18 @@ export async function VistaPlan({
       .eq("company_id", companyId)
       .eq("entity", "bp_section")
       .order("created_at"),
+    /* El business plan ya escrito, si lo han adjuntado */
+    supabase
+      .from("documents")
+      .select("id, name, created_at")
+      .eq("company_id", companyId)
+      .eq("kind", "business_plan")
+      .maybeSingle(),
+    supabase
+      .from("dd_areas")
+      .select("id")
+      .eq("code", "comercial_traccion")
+      .maybeSingle(),
   ]);
 
   const ordenadas = (secciones.data ?? []).sort(
@@ -85,6 +102,46 @@ export async function VistaPlan({
 
   return (
     <div className="flex flex-col gap-6">
+      {/*
+        El documento de siempre, arriba.
+        
+        Casi todas llegan con un business plan ya escrito en PDF o en Word.
+        Antes había que volver a teclearlo aquí sección a sección para que
+        la plataforma tuviera algo; ahora se adjunta y se lee de un clic,
+        y las secciones se van escribiendo cuando toque.
+      */}
+      <Bloque>
+        <TituloBloque
+          accion={
+            areaPlan.data && permisos.puedeEscribir ? (
+              <AdjuntarBusinessPlan
+                slug={compania.slug}
+                companyId={companyId}
+                areaId={areaPlan.data.id}
+                hayUno={Boolean(original.data)}
+              />
+            ) : null
+          }
+        >
+          El documento original
+        </TituloBloque>
+        {original.data ? (
+          <div className="flex flex-wrap items-baseline gap-3 px-4 py-3">
+            <span className="flex-1 text-sm text-titular">
+              {original.data.name}
+            </span>
+            <Metadato>adjuntado el {fecha(original.data.created_at)}</Metadato>
+            <AbrirDocumento documentId={original.data.id} />
+          </div>
+        ) : (
+          <SinDatos>
+            Si ya tenéis el business plan escrito, adjuntadlo aquí. Las
+            secciones de abajo se siguen rellenando a mano: el documento es
+            para tenerlo a mano, no lo sustituye.
+          </SinDatos>
+        )}
+      </Bloque>
+
       <Bloque>
         <TituloBloque
           accion={

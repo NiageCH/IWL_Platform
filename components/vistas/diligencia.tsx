@@ -10,7 +10,11 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { EstadoPunto } from "@/components/formularios/diligencia";
-import { AbrirDocumento, SubirDocumento } from "@/components/formularios/documentos";
+import {
+  AbrirDocumento,
+  SubirAlPunto,
+  SubirDocumento,
+} from "@/components/formularios/documentos";
 import { fecha, numero } from "@/lib/utils";
 
 /**
@@ -125,7 +129,35 @@ export async function VistaDiligencia({
                   ) : punto.expires_on ? (
                     <Metadato>Vence {fecha(punto.expires_on)}</Metadato>
                   ) : null}
+                  {/*
+                    Subir desde la propia línea.
+                    
+                    Antes había un único formulario al final de la página
+                    donde había que volver a elegir el área y el punto que
+                    ya estabas mirando. En una checklist de treinta líneas,
+                    eso es bajar y buscar treinta veces.
+                  */}
                   {permisos.puedeEscribir && !punto.caducado ? (
+                    <SubirAlPunto
+                      slug={compania.slug}
+                      companyId={compania.id}
+                      areaId={area.id}
+                      puntoId={punto.id}
+                      titulo={punto.title}
+                    />
+                  ) : null}
+
+                  {/*
+                    Desde que está en manos de IWL, el estado se enseña pero
+                    no se toca: la base lo rechazaría igual, así que un
+                    desplegable solo daría un error.
+                  */}
+                  {permisos.puedeEscribir &&
+                  !punto.caducado &&
+                  (permisos.puedeValidar ||
+                    !["en_revision", "validado", "bloqueante"].includes(
+                      punto.status,
+                    )) ? (
                     <EstadoPunto
                       slug={compania.slug}
                       id={punto.id}

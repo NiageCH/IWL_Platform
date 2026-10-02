@@ -18,7 +18,7 @@ export async function leerDiligencia(companyId: string) {
         `id, title, description, status, is_required, due_date, expires_on,
          notes, validated_at,
          template_id,
-         dd_areas ( code, name, order_index ),
+         dd_areas ( id, code, name, order_index ),
          dd_item_templates ( order_index )`,
       )
       .eq("company_id", companyId),
@@ -78,6 +78,7 @@ export async function leerDiligencia(companyId: string) {
   const areas = new Map<
     string,
     {
+      id: string;
       codigo: string;
       nombre: string;
       orden: number;
@@ -98,6 +99,7 @@ export async function leerDiligencia(companyId: string) {
 
     if (!areas.has(area.code)) {
       areas.set(area.code, {
+        id: area.id,
         codigo: area.code,
         nombre: area.name,
         orden: area.order_index,
