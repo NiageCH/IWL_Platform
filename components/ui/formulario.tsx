@@ -130,17 +130,33 @@ export function Campo({
   etiqueta,
   error,
   ayuda,
+  obligatorio,
   children,
 }: {
   etiqueta: string;
   error?: string;
   ayuda?: string;
+  /**
+   * Marca el campo con un asterisco.
+   *
+   * Va aparte de `required` del input a propósito: el navegador lo usa para
+   * no dejar enviar, y esto es para que se vea antes de intentarlo. Quien
+   * rellena un formulario quiere saber cuánto le queda de obligatorio sin
+   * tener que descubrirlo al final.
+   */
+  obligatorio?: boolean;
   children: ReactNode;
 }) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="cifra text-xs uppercase tracking-wide text-metadato">
         {etiqueta}
+        {obligatorio ? (
+          <span aria-hidden="true" className="ml-1 text-acento-texto">
+            *
+          </span>
+        ) : null}
+        {obligatorio ? <span className="sr-only"> (obligatorio)</span> : null}
       </span>
       {children}
       {ayuda && !error ? (

@@ -120,13 +120,33 @@ export interface EntradaInvertible {
   runwayMeses: number | null;
 }
 
+/** Una sección de la ficha de una compañía, donde se actúa sobre un paso */
+export type SeccionFicha =
+  | "tecnico"
+  | "diligencia"
+  | "programa"
+  | "kpi"
+  | "ruta";
+
+export interface PasoPendiente {
+  texto: string;
+  seccion: SeccionFicha;
+}
+
 export interface ResultadoInvertible {
   invertible: boolean;
   /**
    * Lo que falta, redactado como siguiente paso. Si está vacío, la compañía
    * cumple la definición de proyecto invertible de la sección 3.
    */
-  siguientesPasos: string[];
+  /**
+   * Qué falta para ser invertible, y **dónde se hace**.
+   *
+   * Era una lista de frases sueltas: se leían y no llevaban a ninguna
+   * parte, así que había que buscar a mano la sección donde actuar. Cada
+   * paso sabe ahora a qué sección de la ficha pertenece.
+   */
+  siguientesPasos: PasoPendiente[];
 }
 
 /**

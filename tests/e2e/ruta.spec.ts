@@ -163,3 +163,33 @@ test("un hito del plan sin cumplir bloquea el estado invertible", async ({
     page.getByText(/Cumplir el hito del Anexo/).first(),
   ).toBeVisible();
 });
+
+test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
+  /*
+   * `borrarEtapa` existía desde el principio y **no tenía botón**: desde la
+   * pantalla, una etapa mal creada se quedaba ahí para siempre. Lo mismo con
+   * `moverHito`.
+   */
+  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/ruta");
+
+  const nombre = `Etapa de prueba ${Date.now()}`;
+  await page.getByText("Añadir una etapa").click();
+  const alta = page.locator("form", {
+    has: page.locator('textarea[name="objective"]'),
+  });
+  await alta.locator('input[name="name"]').fill(nombre);
+  await alta
+    .locator('textarea[name="objective"]')
+    .fill("Comprobar que una etapa se puede borrar.");
+  await alta.getByRole("button", { name: "Añadir etapa" }).click();
+
+  const etapa = page.locator("section").filter({ hasText: nombre }).last();
+  await expect(etapa).toBeVisible();
+
+  // Y ahora se borra, que es lo que no se podía
+  await etapa.getByRole("button", { name: "Borrar la etapa" }).click();
+  await expect(page.getByText(/No tiene hitos/)).toBeVisible();
+  await page.getByRole("button", { name: "Borrar", exact: true }).click();
+
+  await expect(page.getByText(nombre)).toHaveCount(0);
+});

@@ -143,6 +143,15 @@ export function CandidaturaPublica({
 
       {ficha}
 
+      {/*
+        El bloque de documentos no sale si no hay nada que enseñar ni nada
+        que hacer.
+        
+        En una candidatura cerrada decía «todavía no nos has mandado ningún
+        documento» —cierto, y ya da igual: el proceso terminó—. Una caja
+        vacía con un reproche es lo último que tiene que leer.
+      */}
+      {vista.enlaces.length > 0 || vista.puede_subir ? (
       <div className="tarjeta mt-6 p-6">
         <h2 className="mb-1 text-base font-semibold text-titular">
           Lo que nos has mandado
@@ -175,6 +184,7 @@ export function CandidaturaPublica({
 
         {vista.puede_subir ? children : null}
       </div>
+      ) : null}
     </>
   );
 }

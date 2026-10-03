@@ -51,6 +51,19 @@ test("por el enlace privado ve su estado, sin jerga de dentro", async ({
   await expect(page.getByText("En estudio")).toBeVisible();
   await expect(page.getByText(/comité/i)).toHaveCount(0);
 
+  /*
+   * Y no se le pide que se presente.
+   *
+   * Lo hacía siempre que faltara la descripción o el punto en que están,
+   * en cualquier paso. A una que ya ha pasado por una reunión y está en
+   * comité, eso le dice que no hemos mirado su candidatura.
+   */
+  await expect(page.getByText("Cuéntanos quiénes sois")).toHaveCount(0);
+
+  // El formulario sigue estando, por si un dato cambia, pero plegado
+  await expect(page.locator('textarea[name="one_liner"]')).toBeHidden();
+  await expect(page.getByText("Corregir nuestros datos")).toBeVisible();
+
   // Y ve lo que mandó
   await expect(page.getByText("Pitch deck")).toBeVisible();
 });
@@ -75,6 +88,14 @@ test("una descartada no lee el motivo por el que se descartó", async ({
   await page.goto(`/candidatura/${await tokenDe(VELA)}`);
 
   await expect(page.getByText("Proceso cerrado")).toBeVisible();
+
+  /*
+   * Y no se le reprocha un vacío que ya da igual: la caja de documentos no
+   * sale si no hay nada que enseñar ni nada que hacer.
+   */
+  await expect(
+    page.getByText("Todavía no nos has mandado ningún documento."),
+  ).toHaveCount(0);
 
   /*
    * El motivo está escrito para decidir, no para comunicar. Se lo cuenta

@@ -245,6 +245,13 @@ describe("qué ve la candidata", () => {
       "contacto_cargo",
       "contacto_telefono",
       "convocatoria",
+      /*
+       * `en_diligencia` dice solo si el proceso está en el tramo en que se
+       * piden documentos. No es el paso exacto —eso sigue siendo asunto de
+       * IWL—, es lo que necesita la pantalla para no enseñarle una lista de
+       * deberes cuando la candidatura ha vuelto atrás.
+       */
+      "en_diligencia",
       "enlaces",
       "equipo_personas",
       "estado_declarado",

@@ -3,10 +3,12 @@
 import { useState } from "react";
 import {
   borrarAvance,
+  borrarEtapa,
   crearEtapa,
   crearHito,
   disenarHojaDeRuta,
   editarEtapa,
+  moverHito,
   registrarAportacion,
   registrarAvance,
 } from "@/lib/acciones/ruta";
@@ -622,5 +624,114 @@ export function NuevaAportacion({
         }}
       </Formulario>
     </Desplegable>
+  );
+}
+
+/**
+ * Borrar una etapa de la hoja de ruta.
+ *
+ * La acción existía desde el principio y no había botón: desde la pantalla
+ * una etapa mal creada no se podía quitar. Pide confirmación porque es
+ * irreversible, y dice lo que de verdad pasa con los hitos —no se borran,
+ * se quedan sueltos—, que es lo que uno teme al pulsar.
+ */
+export function BorrarEtapa({
+  slug,
+  id,
+  nombre,
+  hitos,
+}: {
+  slug: string;
+  id: string;
+  nombre: string;
+  hitos: number;
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion accion-riesgo self-start text-xs"
+      >
+        Borrar la etapa
+      </button>
+    );
+  }
+
+  return (
+    <Formulario accion={borrarEtapa}>
+      {() => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="id" value={id} />
+          <p className="text-sm text-secundario">
+            Se borra «{nombre}».{" "}
+            {hitos === 0
+              ? "No tiene hitos."
+              : hitos === 1
+                ? "Su hito no se borra: se queda sin etapa, en «Hitos ya acordados»."
+                : `Sus ${hitos} hitos no se borran: se quedan sin etapa, en «Hitos ya acordados».`}
+          </p>
+          <div className="flex gap-2">
+            <Boton>Borrar</Boton>
+            <button
+              type="button"
+              onClick={() => setAbierto(false)}
+              className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+            >
+              Cancelar
+            </button>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Mover un hito a otra etapa.
+ *
+ * Igual que el anterior: la acción estaba y no había por dónde llamarla, así
+ * que un hito creado en el carril equivocado se quedaba ahí.
+ */
+export function MoverHito({
+  slug,
+  id,
+  stageId,
+  etapas,
+}: {
+  slug: string;
+  id: string;
+  stageId: string | null;
+  etapas: Array<{ id: string; nombre: string }>;
+}) {
+  if (etapas.length < 2) return null;
+
+  return (
+    <Formulario accion={moverHito} className="gap-0">
+      {() => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="id" value={id} />
+          <Seleccion
+            key={stageId ?? "sueltos"}
+            name="stage_id"
+            defaultValue={stageId ?? ""}
+            onChange={(e) => e.currentTarget.form?.requestSubmit()}
+            className="py-1 text-xs"
+            aria-label="Mover a otra etapa"
+          >
+            <option value="">Sin etapa</option>
+            {etapas.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.nombre}
+              </option>
+            ))}
+          </Seleccion>
+        </>
+      )}
+    </Formulario>
   );
 }

@@ -119,6 +119,7 @@ export function FormularioPresentarse() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo
               etiqueta="Tu startup"
+              obligatorio
               error={r.ok ? undefined : r.campos?.nombre}
             >
               <Texto name="nombre" required autoComplete="organization" />
@@ -180,6 +181,7 @@ export function FormularioPresentarse() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo
               etiqueta="Tu nombre"
+              obligatorio
               error={r.ok ? undefined : r.campos?.contacto_nombre}
             >
               <Texto name="contacto_nombre" required autoComplete="name" />
@@ -192,6 +194,7 @@ export function FormularioPresentarse() {
             </Campo>
             <Campo
               etiqueta="Tu correo"
+              obligatorio
               error={r.ok ? undefined : r.campos?.contacto_email}
             >
               <Texto

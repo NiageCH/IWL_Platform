@@ -18,6 +18,8 @@ import {
   EditorEtapa,
   NuevaEtapa,
   NuevoAvance,
+  BorrarEtapa,
+  MoverHito,
   NuevoHito,
 } from "@/components/formularios/ruta";
 import {
@@ -174,6 +176,7 @@ export async function VistaRuta({
           <li key={etapa.id}>
             <TarjetaEtapa
               etapa={etapa}
+              etapas={ruta.etapas.map((e) => ({ id: e.id, nombre: e.nombre }))}
               avances={avancesDeEtapa(avances, etapa.id)}
               slug={compania.slug}
               companyId={compania.id}
@@ -205,7 +208,16 @@ export async function VistaRuta({
           <ul className="divide-y divide-filete">
             {ruta.sueltos.map((h) => (
               <li key={h.id} className="px-4 py-3">
-                <Hito hito={h} slug={compania.slug} permisos={permisos} />
+                <Hito
+                  hito={h}
+                  slug={compania.slug}
+                  permisos={permisos}
+                  stageId={null}
+                  etapas={ruta.etapas.map((e) => ({
+                    id: e.id,
+                    nombre: e.nombre,
+                  }))}
+                />
               </li>
             ))}
           </ul>
@@ -217,12 +229,15 @@ export async function VistaRuta({
 
 function TarjetaEtapa({
   etapa,
+  etapas,
   avances,
   slug,
   companyId,
   permisos,
 }: {
   etapa: Etapa;
+  /** Todas, para poder mover un hito de carril */
+  etapas: Array<{ id: string; nombre: string }>;
   avances: Avance[];
   slug: string;
   companyId: string;
@@ -272,7 +287,13 @@ function TarjetaEtapa({
         <ul className="divide-y divide-filete">
           {etapa.hitos.map((h) => (
             <li key={h.id} className="px-4 py-3">
-              <Hito hito={h} slug={slug} permisos={permisos} />
+              <Hito
+                hito={h}
+                slug={slug}
+                permisos={permisos}
+                stageId={etapa.id}
+                etapas={etapas}
+              />
             </li>
           ))}
         </ul>
@@ -305,6 +326,12 @@ function TarjetaEtapa({
               notas: etapa.notas,
             }}
           />
+          <BorrarEtapa
+            slug={slug}
+            id={etapa.id}
+            nombre={etapa.nombre}
+            hitos={etapa.hitos.length}
+          />
         </div>
       ) : null}
     </Bloque>
@@ -315,10 +342,15 @@ function Hito({
   hito,
   slug,
   permisos,
+  stageId = null,
+  etapas = [],
 }: {
   hito: HitoDeEtapa;
   slug: string;
   permisos: NonNullable<ResumenCompania>["permisos"];
+  /** La etapa en la que está ahora, para poder moverlo a otra */
+  stageId?: string | null;
+  etapas?: Array<{ id: string; nombre: string }>;
 }) {
   const hoy = new Date().toISOString().slice(0, 10);
   const vencido =
@@ -362,6 +394,16 @@ function Hito({
         ) : (
           <Etiqueta>{ESTADOS_HITO[hito.estado]}</Etiqueta>
         )}
+        {/* Mover de carril: la acción existía y no había por dónde llamarla,
+            así que un hito creado donde no tocaba se quedaba ahí */}
+        {permisos.esIwl ? (
+          <MoverHito
+            slug={slug}
+            id={hito.id}
+            stageId={stageId}
+            etapas={etapas}
+          />
+        ) : null}
       </div>
     </div>
   );

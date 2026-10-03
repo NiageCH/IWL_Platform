@@ -217,6 +217,11 @@ no se notaban. En una pantalla táctil no hay `hover` que valga.
 
 Todo lo pulsable tiene foco visible. Quitarlo no es una opción.
 
+**Cuando el éxito desmonta el formulario, la acción devuelve `ok()` sin
+mensaje**, y con un comentario diciendo por qué. Un mensaje que nadie puede
+leer es un error que se ve leyendo la acción, en vez de esperar a que
+alguien lo note probando. Ha pasado seis veces.
+
 **Un formulario no vive dentro de una condición que su propio éxito vuelve
 falsa.** El mensaje de resultado está dentro del `<Formulario>`: si al
 acabar se desmonta —porque el panel se cierra solo, o porque la rama que lo
@@ -261,6 +266,19 @@ suite pasó de minuto y medio a ocho, fallando en sitios distintos en cada
 pasada— y el síntoma apunta siempre a lo último que se tocó. Con la
 compilación la suite tarda lo mismo siempre, y de paso destapó un fallo que
 solo existía en producción: una página pública que se prerrenderizaba.
+
+**Una pantalla se prueba con una compañía recién creada, no con las de la
+semilla.** Las de la semilla traen evaluación técnica, Anexo y hoja de ruta,
+así que ninguna enseña su estado inicial —y el estado inicial es justo el
+que ve una compañía nueva—. Han aparecido así dos callejones sin salida: el
+due diligence técnico y el Anexo de Programa, los dos diciendo «todavía no
+hay» sin ofrecer por dónde empezar. Un módulo entero muerto y nadie lo veía.
+
+**Una acción sin botón no existe.** `borrarEtapa` y `moverHito` estaban
+escritas, con sus tipos y su validación, y no se podían llamar desde
+ninguna pantalla. El tipado no lo detecta y la prueba de la acción tampoco:
+solo se encuentra usando la aplicación. Al añadir una acción, se añade su
+punto de entrada en el mismo cambio.
 
 **Un diseño se comprueba en varios anchos, no en la ventana que uno tenga
 abierta.** Sobre todo justo antes y justo después de cada punto de corte, que

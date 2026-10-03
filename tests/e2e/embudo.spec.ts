@@ -117,6 +117,35 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
   // Y existe de verdad
   await page.goto(`/cartera/${SLUG}`);
   await expect(page.getByRole("heading", { name: STARTUP })).toBeVisible();
+
+  /*
+   * Y lo firmado queda congelado.
+   *
+   * Se podía seguir cambiando el equity de una candidatura ya firmada, y el
+   * equity firmado es el documento sobre el que se sostiene todo lo demás.
+   * Lo impide un disparador, así que se comprueba intentándolo de verdad y
+   * no mirando si la pantalla esconde el botón.
+   */
+  await page.goBack();
+  const equity = page.locator('input[name="equity_pct"]');
+
+  if ((await equity.count()) > 0) {
+    await equity.first().fill("99");
+    await page
+      .locator("form", { has: equity })
+      .getByRole("button", { name: /Guardar/ })
+      .first()
+      .click();
+    await expect(page.getByText(/ya está firmada/)).toBeVisible();
+  }
+
+  // Y de todas formas el equity sigue siendo el que se firmó
+  const [despues] = await consultar<{ equity_pct: number | null }>(
+    "candidaturas",
+    { nombre: `eq.${STARTUP}` },
+    "equity_pct",
+  );
+  expect(Number(despues.equity_pct ?? 0)).not.toBe(99);
 });
 
 test("descartar pide el motivo y guarda desde dónde se cayó", async ({

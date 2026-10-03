@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { leerMovimiento } from "@/lib/datos/movimiento";
 import { Evolucion } from "@/components/evolucion";
@@ -20,6 +21,12 @@ export async function VistaResumen({
 }) {
   const { invertible, kpis, hallazgos, scorePreparacion } = resumen;
   const movimiento = await leerMovimiento(resumen.compania.id);
+
+  /* El mismo prefijo que usa la cabecera: la fundadora ve `/proyecto`, IWL
+     la ficha de esa compañía dentro de la cartera */
+  const base = resumen.permisos.esIwl
+    ? `/cartera/${resumen.compania.slug}`
+    : "/proyecto";
 
   const criticos = hallazgos.filter((h) => h.severidad === "critico");
   const altos = hallazgos.filter((h) => h.severidad === "alto");
@@ -44,13 +51,31 @@ export async function VistaResumen({
             condiciones de levantar ronda.
           </SinDatos>
         ) : (
+          /*
+            Cada paso lleva a donde se hace.
+            
+            Eran frases sueltas: se leían y no llevaban a ninguna parte, así
+            que había que buscar a mano la sección donde actuar. Ahora la
+            fila entera es una entrada, con su flecha al final.
+          */
           <ol className="divide-y divide-filete">
             {invertible.siguientesPasos.map((paso, i) => (
-              <li key={paso} className="flex gap-4 px-4 py-3">
+              <li key={paso.texto} className="fila-enlace flex gap-4 px-4 py-3">
                 <span className="cifra text-xs text-metadato">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="text-sm text-titular">{paso}</span>
+                <Link
+                  href={`${base}/${paso.seccion}`}
+                  className="estirado enlace min-w-0 flex-1 text-sm text-titular"
+                >
+                  {paso.texto}
+                </Link>
+                <span
+                  aria-hidden="true"
+                  className="flecha cifra shrink-0 text-acento-texto"
+                >
+                  →
+                </span>
               </li>
             ))}
           </ol>

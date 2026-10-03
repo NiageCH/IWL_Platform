@@ -7,6 +7,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { AbrirAnexo, EditarAnexo } from "@/components/formularios/programa";
 import { euros, fecha, numero } from "@/lib/utils";
 
 /**
@@ -29,6 +30,7 @@ export async function VistaPrograma({
   const supabase = await clienteServidor();
   const companyId = resumen.compania.id;
   const { compania } = resumen;
+  const esIwl = resumen.permisos.esIwl;
 
   const [anexo, hitos, fases, pilares] = await Promise.all([
     supabase
@@ -169,6 +171,14 @@ export async function VistaPrograma({
             </p>
           ) : null}
 
+          {/*
+            Un borrador se rellena aquí mismo. Firmado, solo se lee: la base
+            deja de aceptar cambios en horas, dinero y equity.
+          */}
+          {esIwl && anexo.data.status === "borrador" ? (
+            <EditarAnexo slug={compania.slug} anexo={anexo.data} />
+          ) : null}
+
           {(pilares.data ?? []).length > 0 ? (
             <div className="border-t border-filete px-4 py-3">
               <Metadato>Pilares activos</Metadato>
@@ -197,9 +207,19 @@ export async function VistaPrograma({
         <Bloque>
           <TituloBloque>Anexo de Programa</TituloBloque>
           <SinDatos>
-            Todavía no hay Anexo firmado. Se firma al terminar el due diligence
-            conjunto y es donde se acuerdan los pilares, la duración y los hitos.
+            {esIwl
+              ? "Todavía no hay Anexo. Ábrelo y queda en borrador: pones la duración, lo que IWL compromete y el equity, y lo firmas cuando esté acordado. Sin Anexo no se pueden imputar horas."
+              : "Todavía no hay Anexo firmado. Se firma al terminar el due diligence conjunto y es donde se acuerdan los pilares, la duración y los hitos."}
           </SinDatos>
+          {esIwl ? (
+            <div className="px-4 pb-4">
+              <AbrirAnexo
+                slug={compania.slug}
+                companyId={companyId}
+                hayFirmado={false}
+              />
+            </div>
+          ) : null}
         </Bloque>
       )}
 

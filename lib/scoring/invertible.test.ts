@@ -62,7 +62,7 @@ describe("evaluarInvertible", () => {
     const resultado = evaluarInvertible(entrada);
 
     expect(resultado.invertible).toBe(false);
-    expect(resultado.siguientesPasos[0]).toBe(
+    expect(resultado.siguientesPasos[0].texto).toBe(
       "Resolver el hallazgo crítico: Credencial de producción en el historial de git",
     );
   });
@@ -86,7 +86,7 @@ describe("evaluarInvertible", () => {
     const resultado = evaluarInvertible(entrada);
 
     expect(resultado.invertible).toBe(false);
-    expect(resultado.siguientesPasos).toContain(
+    expect(resultado.siguientesPasos.map((p) => p.texto)).toContain(
       "Completar la puntuación de la dimensión técnica que queda sin evaluar",
     );
   });
@@ -111,7 +111,7 @@ describe("evaluarInvertible", () => {
     const resultado = evaluarInvertible(entrada);
 
     expect(resultado.invertible).toBe(false);
-    expect(resultado.siguientesPasos).toEqual([
+    expect(resultado.siguientesPasos.map((p) => p.texto)).toEqual([
       "Cumplir el hito del Anexo: Tres clientes de pago",
     ]);
   });
@@ -123,7 +123,7 @@ describe("evaluarInvertible", () => {
     const resultado = evaluarInvertible(entrada);
 
     expect(resultado.invertible).toBe(false);
-    expect(resultado.siguientesPasos).toContain(
+    expect(resultado.siguientesPasos.map((p) => p.texto)).toContain(
       "Llevar el runway de 3 a 6 meses",
     );
   });
@@ -135,7 +135,7 @@ describe("evaluarInvertible", () => {
       { id: "f1", severidad: "critico", titulo: "Sin cesión de derechos del código", origen: "tecnico" },
     ];
 
-    for (const paso of evaluarInvertible(entrada).siguientesPasos) {
+    for (const { texto: paso } of evaluarInvertible(entrada).siguientesPasos) {
       expect(paso).toMatch(/^(Resolver|Completar|Subir|Desbloquear|Cumplir|Llevar)/);
       expect(paso).not.toMatch(/pendiente de corregir|ayuda|apoyo/i);
     }
@@ -185,5 +185,33 @@ describe("calcularSemaforo", () => {
     const entrada = entradaLimpia();
     const { motivo } = calcularSemaforo(entrada);
     expect(motivo.length).toBeGreaterThan(0);
+  });
+
+  it("cada paso dice en qué sección se hace", () => {
+    /*
+     * Eran frases sueltas que no llevaban a ninguna parte: se leían y había
+     * que buscar a mano dónde actuar. Si alguien añade un paso nuevo y se
+     * olvida de la sección, esto lo para.
+     */
+    const entrada = entradaLimpia();
+    entrada.hallazgosAbiertos = [
+      {
+        id: "f9",
+        severidad: "critico",
+        titulo: "Secretos en el repositorio",
+        origen: "tecnico",
+      },
+    ];
+    entrada.scoreTecnico.completo = false;
+    entrada.scoreTecnico.sinEvaluar = ["seguridad"];
+
+    const pasos = evaluarInvertible(entrada).siguientesPasos;
+
+    expect(pasos.length).toBeGreaterThan(0);
+    for (const paso of pasos) {
+      expect(["tecnico", "diligencia", "programa", "kpi", "ruta"]).toContain(
+        paso.seccion,
+      );
+    }
   });
 });

@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { error, ok, validar, type Resultado } from "./resultado";
+import {
+  error,
+  numeroEscritoAMano,
+  ok,
+  validar,
+  type Resultado,
+} from "./resultado";
 
 /**
  * El alta desde el formulario público.
@@ -18,36 +24,6 @@ import { error, ok, validar, type Resultado } from "./resultado";
  * las fechas. Aunque alguien llame a la API a mano con la clave pública, no
  * puede darse de alta ya preseleccionada.
  */
-
-/**
- * Un número tal y como lo escribe una persona.
- *
- * Nadie teclea «50» en una casilla que pide un porcentaje: teclea «50 %»,
- * o «33,3» con la coma decimal española. `Number("50%")` es NaN, así que la
- * primera versión rechazaba las dos cosas y, como el campo no enseñaba su
- * error, el formulario decía «revisa los campos marcados» sin marcar
- * ninguno. Alguien rellenó quince campos y se quedó mirando.
- *
- * Se limpia lo que sobra antes de convertir: símbolos de porcentaje,
- * espacios y la coma decimal. Lo que ya no se parezca a un número sí se
- * rechaza, y ahora el campo lo dice.
- */
-function numeroEscritoAMano(min: number, max: number, mensaje: string) {
-  return z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((v) => {
-      const limpio = (v ?? "")
-        .replace(/[%\s]/g, "")
-        .replace(",", ".")
-        .trim();
-      return limpio === "" ? null : Number(limpio);
-    })
-    .refine(
-      (v) => v === null || (Number.isFinite(v) && v >= min && v <= max),
-      mensaje,
-    );
-}
 
 const esquema = z.object({
   nombre: z.string().trim().min(1, "¿Cómo se llama tu startup?").max(120),

@@ -9,6 +9,8 @@ import {
   AnadirMaterial,
   CompletarFicha,
 } from "@/components/formularios/candidatura-publica";
+import { Desplegable } from "@/components/ui/formulario";
+import { CORREO_CONTACTO } from "@/lib/contacto";
 
 export const metadata = {
   title: "Tu candidatura · Inception Woman Lab",
@@ -51,8 +53,17 @@ export default async function PorEnlace({
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
         <CandidaturaPublica
           vista={vista}
+          /*
+            El formulario está abierto mientras de verdad le toca a ella, y
+            plegado después.
+            
+            Salía entero en cualquier paso: una candidatura en comité se
+            encontraba diez campos pidiéndole que contara quién es, que es
+            una forma de decirle que no la hemos mirado. Plegado sigue
+            estando —un dato puede cambiar— pero no es lo primero que ve.
+          */
           ficha={
-            vista.puede_subir ? (
+            !vista.puede_subir ? null : vista.le_toca_a_ella ? (
               <div className="tarjeta p-6">
                 <h2 className="mb-1 text-base font-semibold text-titular">
                   Vuestra ficha
@@ -63,7 +74,13 @@ export default async function PorEnlace({
                 </p>
                 <CompletarFicha token={token} ficha={vista} />
               </div>
-            ) : null
+            ) : (
+              <div className="tarjeta p-6">
+                <Desplegable titulo="Corregir nuestros datos">
+                  <CompletarFicha token={token} ficha={vista} />
+                </Desplegable>
+              </div>
+            )
           }
         >
           <AnadirMaterial token={token} />
@@ -71,7 +88,14 @@ export default async function PorEnlace({
 
         <p className="mt-6 text-xs leading-relaxed text-metadato">
           Esta dirección es tuya y privada. Guárdala para volver a entrar; si
-          la pierdes, escríbenos y te mandamos otra.
+          la pierdes, escríbenos a{" "}
+          <a
+            href={`mailto:${CORREO_CONTACTO}`}
+            className="enlace text-acento-texto"
+          >
+            {CORREO_CONTACTO}
+          </a>{" "}
+          y te mandamos otra.
         </p>
       </main>
     </Marco>

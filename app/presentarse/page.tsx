@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { Marco } from "@/components/marco";
+import { CORREO_CONTACTO } from "@/lib/contacto";
 import { FormularioPresentarse } from "@/components/formularios/presentarse";
 
 /*
@@ -76,7 +77,15 @@ export default async function Presentarse() {
             </p>
             <p className="mt-2 text-sm text-secundario">
               Cuando abramos la siguiente, esta misma página admitirá
-              candidaturas. Si quieres que te avisemos, escríbenos.
+              candidaturas. Si quieres que te avisemos cuando se abra la
+              siguiente, escríbenos a{" "}
+              <a
+                href={`mailto:${CORREO_CONTACTO}`}
+                className="enlace text-acento-texto"
+              >
+                {CORREO_CONTACTO}
+              </a>
+              .
             </p>
           </div>
         ) : (

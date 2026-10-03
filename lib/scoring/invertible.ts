@@ -2,8 +2,7 @@ import type {
   EntradaInvertible,
   ResultadoInvertible,
   Semaforo,
-  Umbrales,
-} from "./tipos";
+  Umbrales, PasoPendiente } from "./tipos";
 
 /**
  * Umbrales del estado invertible. Se exponen para que la administración los
@@ -30,43 +29,51 @@ export function evaluarInvertible(
   entrada: EntradaInvertible,
   umbrales: Umbrales = UMBRALES_INVERTIBLE,
 ): ResultadoInvertible {
-  const siguientesPasos: string[] = [];
+  const siguientesPasos: PasoPendiente[] = [];
 
   // Un hallazgo crítico abierto bloquea el estado invertible (§4.4, §11)
   const criticos = entrada.hallazgosAbiertos.filter(
     (h) => h.severidad === "critico",
   );
   for (const hallazgo of criticos) {
-    siguientesPasos.push(`Resolver el hallazgo crítico: ${hallazgo.titulo}`);
+    siguientesPasos.push({
+      texto: `Resolver el hallazgo crítico: ${hallazgo.titulo}`,
+      seccion: "tecnico",
+    });
   }
 
   // La evaluación técnica tiene que estar terminada para significar algo
   if (!entrada.scoreTecnico.completo) {
     const pendientes = entrada.scoreTecnico.sinEvaluar.length;
-    siguientesPasos.push(
-      pendientes === 1
-        ? "Completar la puntuación de la dimensión técnica que queda sin evaluar"
-        : `Completar la puntuación de las ${pendientes} dimensiones técnicas sin evaluar`,
-    );
+    siguientesPasos.push({
+      texto:
+        pendientes === 1
+          ? "Completar la puntuación de la dimensión técnica que queda sin evaluar"
+          : `Completar la puntuación de las ${pendientes} dimensiones técnicas sin evaluar`,
+      seccion: "tecnico",
+    });
   } else if (entrada.scoreTecnico.valor < umbrales.scoreTecnicoMinimo) {
-    siguientesPasos.push(
-      `Subir el score técnico de ${entrada.scoreTecnico.valor} a ${umbrales.scoreTecnicoMinimo}, el mínimo para la etapa`,
-    );
+    siguientesPasos.push({
+      texto: `Subir el score técnico de ${entrada.scoreTecnico.valor} a ${umbrales.scoreTecnicoMinimo}, el mínimo para la etapa`,
+      seccion: "tecnico",
+    });
   }
 
   if (entrada.scorePreparacion.valor < umbrales.scorePreparacionMinimo) {
-    siguientesPasos.push(
-      `Subir el score de preparación de ${entrada.scorePreparacion.valor} a ${umbrales.scorePreparacionMinimo}`,
-    );
+    siguientesPasos.push({
+      texto: `Subir el score de preparación de ${entrada.scorePreparacion.valor} a ${umbrales.scorePreparacionMinimo}`,
+      seccion: "diligencia",
+    });
   }
 
   const bloqueantes = entrada.scorePreparacion.areas.filter(
     (a) => a.bloqueantes > 0,
   );
   for (const area of bloqueantes) {
-    siguientesPasos.push(
-      `Desbloquear ${area.bloqueantes === 1 ? "el punto bloqueante" : `los ${area.bloqueantes} puntos bloqueantes`} de ${area.nombre}`,
-    );
+    siguientesPasos.push({
+      texto: `Desbloquear ${area.bloqueantes === 1 ? "el punto bloqueante" : `los ${area.bloqueantes} puntos bloqueantes`} de ${area.nombre}`,
+      seccion: "diligencia",
+    });
   }
 
   // Hitos de producto y tracción del Anexo
@@ -74,7 +81,10 @@ export function evaluarInvertible(
     (h) => h.condicionaInvertible && h.estado !== "cumplido",
   );
   for (const hito of hitosPendientes) {
-    siguientesPasos.push(`Cumplir el hito del Anexo: ${hito.titulo}`);
+    siguientesPasos.push({
+      texto: `Cumplir el hito del Anexo: ${hito.titulo}`,
+      seccion: "programa",
+    });
   }
 
   // Condiciones reales de sostenerse o levantar ronda
@@ -82,9 +92,10 @@ export function evaluarInvertible(
     entrada.runwayMeses !== null &&
     entrada.runwayMeses < umbrales.runwayMinimoMeses
   ) {
-    siguientesPasos.push(
-      `Llevar el runway de ${entrada.runwayMeses} a ${umbrales.runwayMinimoMeses} meses`,
-    );
+    siguientesPasos.push({
+      texto: `Llevar el runway de ${entrada.runwayMeses} a ${umbrales.runwayMinimoMeses} meses`,
+      seccion: "kpi",
+    });
   }
 
   return { invertible: siguientesPasos.length === 0, siguientesPasos };

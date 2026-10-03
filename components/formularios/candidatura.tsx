@@ -219,20 +219,38 @@ export function AcuerdoCandidatura({
           <input type="hidden" name="id" value={id} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Campo etiqueta="NDA firmado el">
-              <Texto type="date" name="nda_firmado_on" defaultValue={nda ?? ""} />
+              <Texto
+                key={nda ?? "sin-nda"}
+                type="date"
+                name="nda_firmado_on"
+                defaultValue={nda ?? ""}
+              />
             </Campo>
             <Campo etiqueta="Acuerdo propuesto el">
               <Texto
+                key={propuesto ?? "sin-propuesta"}
                 type="date"
                 name="acuerdo_propuesto_on"
                 defaultValue={propuesto ?? ""}
               />
             </Campo>
             <Campo
-              etiqueta="Estado verificado"
-              ayuda="El que sale del due diligence, no el que declaró al presentarse."
+              etiqueta="Etapa, tras el due diligence"
+              ayuda="En qué punto está de verdad, no el que declaró al presentarse. Es la que hereda la compañía al firmar."
             >
-              <Seleccion name="estado_verificado" defaultValue={verificado ?? ""}>
+              {/*
+                La `key` con el valor fuerza a React a volver a montar el
+                desplegable cuando el servidor devuelve otro. Sin ella, un
+                campo no controlado conserva el valor con el que se montó:
+                se guardaba bien y la pantalla seguía enseñando el anterior,
+                que es justo lo que se vio al probar —«si recargas la página
+                sí quedó guardado»—.
+              */}
+              <Seleccion
+                key={verificado ?? "sin-fijar"}
+                name="estado_verificado"
+                defaultValue={verificado ?? ""}
+              >
                 <option value="">Sin fijar</option>
                 {ESTADOS_ENTRADA.map((e) => (
                   <option key={e.codigo} value={e.codigo}>
@@ -246,6 +264,7 @@ export function AcuerdoCandidatura({
               error={r.ok ? undefined : r.campos?.equity_pct}
             >
               <Texto
+                key={equity === null ? "sin-equity" : String(equity)}
                 name="equity_pct"
                 inputMode="decimal"
                 defaultValue={equity === null ? "" : String(equity)}

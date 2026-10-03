@@ -179,3 +179,33 @@ export const uuid = z
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
     "Identificador no válido.",
   );
+
+/**
+ * Un número tal y como lo escribe una persona.
+ *
+ * Nadie teclea «50» en una casilla que pide un porcentaje: teclea «50 %»,
+ * o «33,3» con la coma decimal española. `Number("50%")` es NaN, así que la
+ * primera versión rechazaba las dos cosas y, como el campo no enseñaba su
+ * error, el formulario decía «revisa los campos marcados» sin marcar
+ * ninguno. Alguien rellenó quince campos y se quedó mirando.
+ *
+ * Se limpia lo que sobra antes de convertir: símbolos de porcentaje,
+ * espacios y la coma decimal. Lo que ya no se parezca a un número sí se
+ * rechaza, y ahora el campo lo dice.
+ */
+export function numeroEscritoAMano(min: number, max: number, mensaje: string) {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => {
+      const limpio = (v ?? "")
+        .replace(/[%\s]/g, "")
+        .replace(",", ".")
+        .trim();
+      return limpio === "" ? null : Number(limpio);
+    })
+    .refine(
+      (v) => v === null || (Number.isFinite(v) && v >= min && v <= max),
+      mensaje,
+    );
+}

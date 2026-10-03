@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { cambiarEstadoHito, registrarHoras } from "@/lib/acciones/programa";
+import {
+  abrirAnexo,
+  cambiarEstadoHito,
+  firmarAnexo,
+  guardarAnexo,
+  registrarHoras,
+} from "@/lib/acciones/programa";
 import {
   AreaTexto,
   Boton,
@@ -194,6 +200,211 @@ export function RegistroRapidoHoras({
           </>
         )}
       </Formulario>
+    </div>
+  );
+}
+
+/**
+ * Abrir el Anexo cuando no hay ninguno.
+ *
+ * Sin esto, la sección era un callejón: decía que no había Anexo firmado y
+ * no ofrecía empezar uno. Y sin Anexo no hay horas que imputar, ni
+ * compromiso contra el que medir la aportación, así que se llevaba por
+ * delante media plataforma.
+ */
+export function AbrirAnexo({
+  slug,
+  companyId,
+  hayFirmado,
+}: {
+  slug: string;
+  companyId: string;
+  /** Si ya hubo uno firmado, lo que se abre es la versión siguiente */
+  hayFirmado: boolean;
+}) {
+  return (
+    <Formulario accion={abrirAnexo}>
+      {() => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="company_id" value={companyId} />
+          <Boton>
+            {hayFirmado ? "Abrir una versión nueva" : "Abrir el Anexo"}
+          </Boton>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Rellenar y firmar el Anexo en borrador.
+ *
+ * Dos formularios separados a propósito: guardar es reversible y firmar no.
+ * Al firmar, la base deja de aceptar cambios en las horas, el dinero y el
+ * equity, así que juntarlos en un botón sería invitar a congelar algo a
+ * medio escribir.
+ */
+export function EditarAnexo({
+  slug,
+  anexo,
+}: {
+  slug: string;
+  anexo: {
+    id: string;
+    duration_months: number | null;
+    starts_on: string | null;
+    ends_on: string | null;
+    committed_hours: number | string | null;
+    committed_hours_value: number | string | null;
+    committed_cash: number | string | null;
+    committed_seniors: number | null;
+    equity_pct: number | string | null;
+    other_commitments: string | null;
+  };
+}) {
+  const [firmando, setFirmando] = useState(false);
+  const hoy = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="border-t border-filete px-4 py-4">
+      <Formulario accion={guardarAnexo}>
+        {(resultado) => (
+          <>
+            <input type="hidden" name="slug" value={slug} />
+            <input type="hidden" name="id" value={anexo.id} />
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Campo
+                etiqueta="Duración (meses)"
+                error={!resultado.ok ? resultado.campos?.duration_months : undefined}
+              >
+                <Texto
+                  name="duration_months"
+                  inputMode="numeric"
+                  defaultValue={anexo.duration_months ?? ""}
+                />
+              </Campo>
+              <Campo etiqueta="Empieza el">
+                <Texto name="starts_on" type="date" defaultValue={anexo.starts_on ?? ""} />
+              </Campo>
+              <Campo etiqueta="Termina el">
+                <Texto name="ends_on" type="date" defaultValue={anexo.ends_on ?? ""} />
+              </Campo>
+              <Campo
+                etiqueta="Equity (%)"
+                error={!resultado.ok ? resultado.campos?.equity_pct : undefined}
+              >
+                <Texto
+                  name="equity_pct"
+                  inputMode="decimal"
+                  defaultValue={anexo.equity_pct ?? ""}
+                />
+              </Campo>
+
+              <Campo
+                etiqueta="Horas comprometidas"
+                error={!resultado.ok ? resultado.campos?.committed_hours : undefined}
+              >
+                <Texto
+                  name="committed_hours"
+                  inputMode="decimal"
+                  defaultValue={anexo.committed_hours ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Valoradas en (€)"
+                error={
+                  !resultado.ok ? resultado.campos?.committed_hours_value : undefined
+                }
+              >
+                <Texto
+                  name="committed_hours_value"
+                  inputMode="decimal"
+                  defaultValue={anexo.committed_hours_value ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Financiación directa (€)"
+                error={!resultado.ok ? resultado.campos?.committed_cash : undefined}
+              >
+                <Texto
+                  name="committed_cash"
+                  inputMode="decimal"
+                  defaultValue={anexo.committed_cash ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Perfiles sénior"
+                error={
+                  !resultado.ok ? resultado.campos?.committed_seniors : undefined
+                }
+              >
+                <Texto
+                  name="committed_seniors"
+                  inputMode="numeric"
+                  defaultValue={anexo.committed_seniors ?? ""}
+                />
+              </Campo>
+            </div>
+
+            <Campo etiqueta="Otros compromisos">
+              <AreaTexto
+                name="other_commitments"
+                rows={2}
+                defaultValue={anexo.other_commitments ?? ""}
+              />
+            </Campo>
+
+            <div>
+              <Boton>Guardar el Anexo</Boton>
+            </div>
+          </>
+        )}
+      </Formulario>
+
+      <div className="mt-5 border-t border-filete pt-4">
+        {firmando ? (
+          <Formulario accion={firmarAnexo}>
+            {() => (
+              <>
+                <input type="hidden" name="slug" value={slug} />
+                <input type="hidden" name="id" value={anexo.id} />
+                <Campo
+                  etiqueta="Fecha de la firma"
+                  ayuda="Al firmar, las horas, el dinero y el equity quedan congelados. Para cambiarlos habrá que abrir otra versión"
+                >
+                  <Texto
+                    name="signed_on"
+                    type="date"
+                    required
+                    defaultValue={hoy}
+                    className="w-48"
+                  />
+                </Campo>
+                <div className="flex gap-2">
+                  <Boton>Firmar</Boton>
+                  <button
+                    type="button"
+                    onClick={() => setFirmando(false)}
+                    className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            )}
+          </Formulario>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setFirmando(true)}
+            className="accion text-xs"
+          >
+            Firmar el Anexo
+          </button>
+        )}
+      </div>
     </div>
   );
 }

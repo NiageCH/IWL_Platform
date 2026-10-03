@@ -312,11 +312,11 @@ export async function InformeTecnico({
         ) : (
           <ol className="flex flex-col gap-2">
             {invertible.siguientesPasos.map((paso, i) => (
-              <li key={paso} className="flex gap-3 text-sm text-cuerpo">
+              <li key={paso.texto} className="flex gap-3 text-sm text-cuerpo">
                 <span className="cifra text-xs text-metadato">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                {paso}
+                {paso.texto}
               </li>
             ))}
           </ol>

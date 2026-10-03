@@ -3948,7 +3948,7 @@ isOneToOne: false
                            },
 "ver_candidatura":
 { Args: { "p_token": string }; Returns: {
-              "contacto_cargo": string,"contacto_telefono": string,"convocatoria": string,"enlaces": Json,"equipo_personas": number,"estado_declarado": Database["public"]['Enums']["estado_entrada"],"id": string,"le_toca_a_ella": boolean,"liderazgo_femenino_pct": number,"momento": string,"nombre": string,"one_liner": string,"pais": string,"presentada_on": string,"puede_subir": boolean,"sector": string,"website": string
+              "contacto_cargo": string,"contacto_telefono": string,"convocatoria": string,"en_diligencia": boolean,"enlaces": Json,"equipo_personas": number,"estado_declarado": Database["public"]['Enums']["estado_entrada"],"id": string,"le_toca_a_ella": boolean,"liderazgo_femenino_pct": number,"momento": string,"nombre": string,"one_liner": string,"pais": string,"presentada_on": string,"puede_subir": boolean,"sector": string,"website": string
             }[]
                            }
           }

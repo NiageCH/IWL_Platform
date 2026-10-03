@@ -70,7 +70,7 @@ add(M, "/admin", "programa@iwl.test", "El equipo de IWL no configura el programa
 add(M, "/perfil", "fundadora@marea.test", "Cambiar mi propia contraseña",
     "Abrir Mi cuenta, poner contraseña nueva y guardar. Salir y volver a entrar con ella.",
     "Se guarda y la nueva funciona.")
-add(M, "/sin-compania", "una cuenta sin asignar", "Quien no tiene compañía lo entiende",
+add(M, "/sin-compania", "una cuenta recién creada", "Quien no tiene compañía lo entiende",
     "Entrar con una cuenta recién creada y sin asignar.",
     "Dice qué pasa y a quién pedírselo, no una pantalla en blanco.")
 add(M, "Cualquiera", "—", "Salir",
@@ -90,7 +90,7 @@ add(M, "/presentarse", "sin cuenta", "Con la convocatoria abierta, el formulario
     "Sale el formulario de candidatura, sin pedir cuenta.")
 add(M, "/embudo", "admin@iwl.test", "Cerrar la convocatoria",
     "Desmarcar abierta y guardar. Volver a abrir /presentarse en ventana privada.",
-    "Dice que ahora mismo no hay ninguna convocatoria en curso. No admite candidaturas.")
+    "Dice que no hay convocatoria en curso Y da una dirección de correo para avisar. Antes decía «escríbenos» sin decir dónde.")
 add(M, "/embudo", "admin@iwl.test", "Fecha de cierre",
     "Abrir la convocatoria con una fecha de cierre y mirar el texto de arriba.",
     "Dice hasta cuándo está abierta.")
@@ -102,7 +102,7 @@ add(M, "/presentarse", "sin cuenta", "Presentarse con todo relleno",
     "«Recibida. Gracias.» y debajo el enlace privado con botón de copiar.")
 add(M, "/presentarse", "sin cuenta", "Solo lo obligatorio",
     "Rellenar nombre de la startup, tu nombre y tu correo. Nada más. Enviar.",
-    "Se acepta. Lo demás es opcional de verdad.")
+    "Se acepta. Los tres obligatorios llevan asterisco; el resto es opcional de verdad.")
 add(M, "/presentarse", "sin cuenta", "Un porcentaje escrito a mano (el caso dronesec)",
     "En «Liderazgo femenino (%)» escribir «50 %». También probar «33,3».",
     "Se acepta. Llega como número, no se rechaza por el signo ni por la coma.")
@@ -168,16 +168,22 @@ add(M, "/embudo/<id>", "admin@iwl.test", "Reabrir una descartada",
     "Vuelve a las abiertas, al paso donde estaba.")
 add(M, "/candidatura/<testigo>", "sin cuenta", "La descartada NO lee el motivo",
     "Abrir el enlace de una candidatura descartada.",
-    "Dice «Proceso cerrado» y que se lo contarán. El motivo NO aparece por ningún lado.")
+    "Dice «Proceso cerrado» y que se lo contarán. El motivo NO aparece, y tampoco la caja de documentos vacía reprochándole lo que no mandó.")
 add(M, "/candidatura/<testigo>", "sin cuenta", "La candidata ve momentos, no jerga",
     "Mirar el enlace de una que está en comité.",
-    "Dice «En estudio». No dice «comité», ni «due diligence», ni el paso exacto.")
+    "Dice «En estudio». No dice «comité» ni el paso exacto, y NO le pide que se presente: ya hemos hablado con ella.")
+add(M, "/candidatura/<testigo>", "sin cuenta", "Corregir un dato estando ya avanzada",
+    "En una candidatura en comité, buscar cómo cambiar la web o el teléfono.",
+    "Está plegado bajo «Corregir nuestros datos». Existe, pero no es lo primero que ve.")
 
 # --- NDA y due diligence de la candidata
 M = "6. NDA y DD de candidata"
 add(M, "/embudo/<id>", "admin@iwl.test", "Al llegar al NDA se piden los documentos",
     "Mover una preseleccionada al paso de NDA.",
     "Aparece sola la lista de documentos que hay que pedirle para el due diligence.")
+add(M, "/embudo/<id>", "admin@iwl.test", "Si la candidatura retrocede, los deberes desaparecen",
+    "Con una en due diligence, devolverla a comité y mirar su enlace.",
+    "Ya no le pide documentos. Lo que entregó NO se borra: vuelve a salir si se la devuelve a diligencia.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Pedir un documento concreto de más",
     "Añadir una petición con su nombre y para cuándo.",
     "Se añade a la lista y ella la ve en su pantalla.")
@@ -200,8 +206,8 @@ add(M, "/embudo/<id>", "admin@iwl.test", "IWL abre lo que entregó",
 # --- Acuerdo y firma
 M = "7. Acuerdo y firma"
 add(M, "/embudo/<id>", "admin@iwl.test", "Fijar la etapa tras el due diligence",
-    "Poner en qué punto está de verdad la startup.",
-    "Se guarda y se usa después para evaluarla contra su etapa.")
+    "En el bloque «El acuerdo», el campo «Etapa, tras el due diligence».",
+    "Se guarda y AL RECARGAR sigue puesta: el desplegable ya no vuelve a donde estaba. Es la etapa que hereda la compañía al firmar.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Armar el acuerdo con el equity",
     "Escribir lo que aporta IWL y el equity que se pide. Guardar.",
     "Queda guardado y visible en el bloque de NDA, estado y equity.")
@@ -215,8 +221,8 @@ add(M, "/proyecto/diligencia", "la fundadora", "La compañía lee su expediente 
     "Entrar como la fundadora de la compañía recién creada y buscar sus documentos.",
     "Los ve. NO están duplicados: se leen del expediente, no se copiaron.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Una firmada no se edita",
-    "Intentar cambiar el acuerdo de una ya firmada.",
-    "No deja. Lo firmado está congelado.")
+    "Intentar cambiar el equity de una ya firmada, y guardar.",
+    "Lo rechaza diciendo que ya está firmada. Lo impide la base, no la pantalla: forzarlo tampoco vale.")
 
 # --- Cartera
 M = "8. Cartera y cohorte"
@@ -232,9 +238,9 @@ add(M, "/cartera", "admin@iwl.test", "Quitar un logo",
 add(M, "/cartera", "programa@iwl.test", "Preparación en el tiempo",
     "Mirar el gráfico y su texto de abajo.",
     "Se lee entero, sin recortes. Cada serie lleva etiqueta de texto, no solo color.")
-add(M, "/cartera", "programa@iwl.test", "Siguientes pasos se ven pulsables",
-    "Mirar los títulos de «Siguientes pasos» sin pasar el ratón.",
-    "Se ve que llevan a algún sitio. Al pulsar, abren lo que dicen.")
+add(M, "/cartera", "programa@iwl.test", "Siguientes pasos llevan a donde se hacen",
+    "Pulsar un paso de «Siguientes pasos», en la cartera y en la ficha de una compañía.",
+    "Abre la sección donde se actúa: un hallazgo lleva al DD técnico, un hito del Anexo a Programa, el runway a KPI.")
 add(M, "/cartera", "programa@iwl.test", "Una compañía archivada no sale",
     "Archivar una desde Administración y volver a la cartera.",
     "Deja de aparecer en la cohorte. No se ha borrado nada.")
@@ -287,11 +293,11 @@ add(M, "/admin/rutas", "admin@iwl.test", "Editar la plantilla no toca lo que est
     "Cambiar un hito de la plantilla y volver a la hoja de ruta ya instanciada.",
     "La de la compañía NO cambia. Y al revés tampoco.")
 add(M, "/cartera/<slug>/ruta", "admin@iwl.test", "Crear, editar y borrar una etapa",
-    "Añadir una etapa, renombrarla y borrarla.",
-    "Las tres funcionan y la pantalla se queda coherente.")
+    "Añadir una etapa, renombrarla y borrarla con «Borrar la etapa».",
+    "Las tres funcionan. Al borrar avisa de qué pasa con sus hitos: no se borran, se quedan sueltos.")
 add(M, "/cartera/<slug>/ruta", "admin@iwl.test", "Crear y mover un hito",
-    "Añadir un hito y moverlo de etapa.",
-    "Cambia de carril y conserva lo demás.")
+    "Añadir un hito con «Añadir un hito», y moverlo con el desplegable de su fila.",
+    "Cambia de carril y conserva lo demás. Un hito suelto también se puede colocar en una etapa.")
 add(M, "/cartera/<slug>/ruta", "admin@iwl.test", "Fijar el estado de entrada",
     "Marcar en qué punto entró la compañía.",
     "Queda fijado y sirve de referencia para el avance.")
@@ -307,6 +313,18 @@ add(M, "/cartera/<slug>/ruta", "programa@iwl.test", "Un hito que condiciona el e
 
 # --- Programa y Anexo
 M = "12. Programa y Anexo"
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Abrir el Anexo donde no hay ninguno",
+    "En una compañía recién creada: Programa y Anexo → «Abrir el Anexo».",
+    "Aparece el Anexo en borrador con sus campos. Antes aquí no había por dónde empezar y eso bloqueaba horas y aportación.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Rellenar el Anexo",
+    "Poner duración, horas comprometidas y equity. Probar a escribir «7,5 %» en el equity.",
+    "Se guarda, y el porcentaje con coma y signo se admite.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "No se firma un Anexo vacío",
+    "Abrir otro Anexo y pulsar firmar sin rellenar nada.",
+    "No deja: pide al menos la duración y las horas. Lo firmado ya no se edita.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Firmar el Anexo",
+    "Con la duración y las horas puestas, firmar.",
+    "Pasa a «Firmado el …» y el formulario de edición desaparece. A partir de ahí se abre otra versión, no se edita.")
 add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Los hitos ya acordados del Anexo",
     "Mirar el bloque de hitos del Anexo y cambiar el estado de uno.",
     "Cambia y queda registrado.")

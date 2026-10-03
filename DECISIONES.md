@@ -1166,3 +1166,95 @@ registro de accesos; solo le faltaba una columna `kind` para poder decir
 El CV es de una persona, y `documents` cuelga de una compañía: va a su
 propio bucket con la misma forma que el logo. Lo ve IWL y su dueña, nadie
 más: un CV es un documento personal, no un dato del programa.
+
+## 2026-10-03 · Segunda ronda de pruebas de Rodrigo
+
+Sesenta y ocho filas del checklist rellenadas, cuatro fallos y dos a medias.
+Lo que salió, y lo que se hizo con cada cosa.
+
+### El Anexo era otro callejón sin salida
+
+«En todos me aparece que el Anexo no está firmado pero tampoco veo cómo
+firmarlo.» Y con eso se le cayeron tres módulos de golpe: Programa,
+Aportación y el registro de horas.
+
+Exactamente el mismo agujero que el due diligence técnico de la ronda
+anterior: los tres Anexos de la semilla existían, no había forma de crear
+uno, y cualquier compañía nueva se quedaba sin la mitad de la plataforma.
+Ahora se abre en borrador, se rellena y se firma.
+
+**Dos veces el mismo patrón en dos semanas no es casualidad.** Lo que falla
+es cómo se construyó: primero la semilla con datos completos, después las
+pantallas que los leen. Una pantalla que solo se prueba con datos de semilla
+nunca enseña su estado inicial, y el estado inicial es justo el que ve una
+compañía nueva. Queda apuntado en `CLAUDE.md`: **una pantalla se prueba con
+una compañía recién creada, no con las de la semilla**.
+
+### Y por sexta vez, el formulario que se lleva su propio acuse
+
+Abrir el Anexo y firmarlo volvieron a caer en lo mismo: el formulario vive
+dentro de una condición que su propio éxito vuelve falsa. Van seis, y dos
+las he escrito yo después de documentar la regla.
+
+La regla se endurece: cuando el éxito desmonta el formulario, **la acción
+devuelve `ok()` sin mensaje**, con un comentario diciendo por qué. Un
+mensaje que no se puede leer es un error que se detecta leyendo la acción,
+no esperando a que alguien lo note probando.
+
+### Una candidatura firmada se podía editar
+
+«Una firmada no se edita → Si deja cambiarlo.» `guardarAcuerdo` no miraba el
+estado, así que se podía cambiar el equity de algo ya firmado. Ahora lo
+impide un disparador, no la acción: es la regla «lo congelado no se edita» y
+quien la impone es la base. Mismo patrón que `annexes`.
+
+### A quien ya ha pasado por una reunión no se le pide que se presente
+
+«Aparece todo el formulario de cuéntanos quiénes sois», estando en comité.
+
+`le_toca_a_ella` miraba solo si faltaban datos, en cualquier paso. Pero una
+candidatura en comité ya se ha hablado: pedirle que cuente quién es le dice
+que no la hemos mirado. Ahora solo se le pide mientras está en «presentada»
+o «en revisión», y después el formulario sigue existiendo —un dato puede
+cambiar— pero plegado bajo «Corregir nuestros datos».
+
+### Los siguientes pasos no llevaban a ninguna parte
+
+Eran frases sueltas. Se leían, y había que buscar a mano la sección donde
+actuar. Ahora cada paso sabe a qué sección pertenece —`PasoPendiente`, con
+`texto` y `seccion`— y la fila entera es una entrada con su flecha.
+
+El tipo cambió en `lib/scoring`, que es código puro y probado, así que lo
+pin una prueba: **todo paso tiene que decir en qué sección se hace**. Si
+alguien añade uno y se olvida, falla.
+
+### Dos acciones que existían sin botón
+
+`borrarEtapa` y `moverHito` estaban escritas, probadas por tipos y
+**inalcanzables desde la pantalla**. Una etapa mal creada se quedaba para
+siempre y un hito en el carril equivocado también.
+
+Es una familia de fallo que conviene nombrar: la acción existe, el tipado
+pasa, las pruebas de la acción pasan, y nadie puede llamarla. Solo se
+encuentra usando la aplicación.
+
+### Lo pequeño
+
+- **«Escríbenos» sin decir dónde**, en dos sitios. Un «escríbenos» sin
+  dirección no es una invitación, es un callejón. Sale de
+  `NEXT_PUBLIC_CORREO_CONTACTO`, con un valor por defecto **que hay que
+  confirmar**: si ese buzón no existe, los correos se pierden.
+- **Asterisco en los campos obligatorios** del formulario público. Quien lo
+  rellena quiere saber cuánto le queda sin descubrirlo al enviar.
+- **La caja «lo que nos has mandado» en una candidatura cerrada.** Decía
+  «todavía no nos has mandado ningún documento»: cierto, y ya da igual. Una
+  caja vacía con un reproche es lo último que tiene que leer.
+- **Las peticiones de documentos al retroceder de paso.** No se borran —lo
+  entregado no se tira por un paso atrás— pero dejan de enseñarse mientras
+  el proceso no esté en ese tramo.
+- **El desplegable que volvía atrás tras guardar.** «Si recargas la página
+  sí quedó guardado»: un campo no controlado conserva el valor con el que se
+  montó. La `key` con el valor fuerza el remontaje. Ya estaba resuelto en el
+  checklist de diligencia y faltaba aquí.
+- **«Estado verificado» no se encontraba** porque nadie lo busca con ese
+  nombre. Pasa a «Etapa, tras el due diligence».

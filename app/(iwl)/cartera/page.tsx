@@ -423,13 +423,20 @@ export default async function Cartera() {
                   <ol className="mt-2 flex flex-col gap-1 pl-11">
                     {c.invertible.siguientesPasos.slice(0, 3).map((paso, i) => (
                       <li
-                        key={paso}
+                        key={paso.texto}
                         className="flex gap-2 text-sm text-secundario"
                       >
                         <span className="cifra shrink-0 text-xs text-acento-texto">
                           {String(i + 1).padStart(2, "0")}
                         </span>
-                        {paso}
+                        {/* Cada paso a su sección: la fila entera ya lleva a
+                            la compañía, y esto lleva a donde se actúa */}
+                        <Link
+                          href={`/cartera/${c.compania.slug}/${paso.seccion}`}
+                          className="enlace relative z-10"
+                        >
+                          {paso.texto}
+                        </Link>
                       </li>
                     ))}
                   </ol>
