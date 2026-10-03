@@ -147,11 +147,24 @@ export function FormularioPresentarse() {
 
           <Campo
             etiqueta="¿En qué punto estáis?"
+            obligatorio
             ayuda="Lo comprobamos después contigo; esto solo nos ayuda a situaros."
             error={r.ok ? undefined : r.campos?.estado_declarado}
           >
-            <Seleccion name="estado_declarado" defaultValue="">
-              <option value="">Prefiero no decirlo</option>
+            {/*
+              Sin «prefiero no decirlo».
+              
+              Lo quitó Rodrigo: es la pregunta que sitúa a una startup y
+              dejarla en blanco no ayuda a nadie. Pero la opción vacía se
+              queda como aviso y deshabilitada: si se quitara del todo, el
+              navegador elegiría «Idea» por defecto y apuntaríamos eso de
+              quien ni siquiera miró el desplegable, que es peor que no
+              saberlo.
+            */}
+            <Seleccion name="estado_declarado" defaultValue="" required>
+              <option value="" disabled>
+                Elige una
+              </option>
               {ESTADOS.map((e) => (
                 <option key={e.codigo} value={e.codigo}>
                   {e.nombre}

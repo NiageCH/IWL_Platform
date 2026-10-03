@@ -1354,3 +1354,55 @@ export async function abrirCv(profileId: string): Promise<Resultado & { url?: st
 
   return { ...ok(), url: data.signedUrl };
 }
+
+/** Qué hay dentro de una compañía, para enseñarlo antes de destruirlo */
+export async function contenidoCompania(
+  companyId: string,
+): Promise<Record<string, number>> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase.rpc("contenido_compania", {
+    target_company: companyId,
+  });
+  return (data as Record<string, number>) ?? {};
+}
+
+/**
+ * Borrar una compañía **con todo lo que tenga dentro**.
+ *
+ * El camino normal sigue siendo el de siempre: archivar conserva, y borrar
+ * solo se ofrece en las que están vacías. Eso no cambia, y es lo correcto:
+ * un extracto de aportación justifica una participación y esa prueba tiene
+ * que sobrevivir a que el proyecto salga del programa.
+ *
+ * Esto es la salida para lo otro: probando se crean compañías que en cuanto
+ * tienen una hoja de ruta o un Anexo ya no se pueden quitar, y quedarse sin
+ * forma de limpiar tampoco vale.
+ *
+ * Tres cerrojos: solo la dirección, hay que escribir el identificador
+ * exacto, y antes se enseña la cuenta de lo que se va a destruir. Lo
+ * comprueba la base, no esta función: una comprobación que vive en la
+ * interfaz se salta con una llamada directa, y esto no tiene deshacer.
+ */
+export async function borrarCompaniaConTodo(
+  formData: FormData,
+): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaBorrar, formData);
+  if (fallo) return fallo;
+
+  if (datos.confirmacion.trim() !== datos.slug) {
+    return error(
+      `Para borrarla con todo lo que tiene dentro, escribe «${datos.slug}» exactamente.`,
+      { confirmacion: "No coincide con el identificador." },
+    );
+  }
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("borrar_compania_con_todo", {
+    target_company: datos.id,
+  });
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar();
+  return ok(`${datos.slug} borrada con todo su histórico.`);
+}

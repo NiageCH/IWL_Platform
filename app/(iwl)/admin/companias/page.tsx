@@ -34,6 +34,8 @@ import { fecha, numero } from "@/lib/utils";
 
 export const metadata = { title: "Compañías · Administración" };
 
+
+
 interface Miembro {
   profile_id: string;
   full_name: string | null;
@@ -74,6 +76,26 @@ export default async function AdminCompanias() {
   }));
 
   const todas = companias.data ?? [];
+
+  /*
+   * Qué hay dentro de las que tienen trabajo registrado.
+   *
+   * Solo de esas: de las vacías no hay nada que enseñar, y pedirlo para
+   * todas sería una consulta por compañía sin motivo. Sirve para que
+   * borrar con histórico diga exactamente qué se destruye, en vez de
+   * pedir una confirmación a ciegas.
+   */
+  const conActividad = (companias.data ?? []).filter((c) => c.tiene_actividad);
+  const contenidos = new Map<string, Record<string, number>>(
+    await Promise.all(
+      conActividad.map(async (c) => {
+        const { data } = await supabase.rpc("contenido_compania", {
+          target_company: c.id!,
+        });
+        return [c.id!, (data as Record<string, number>) ?? {}] as const;
+      }),
+    ),
+  );
   const activas = todas.filter((c) => c.archived_at === null);
   const archivadas = todas.filter((c) => c.archived_at !== null);
 
@@ -223,7 +245,10 @@ export default async function AdminCompanias() {
                       cohortes={listaCohortes}
                     />
                     <ArchivarCompania compania={ficha(c)} />
-                    <BorrarCompania compania={ficha(c)} />
+                    <BorrarCompania
+                      compania={ficha(c)}
+                      contenido={contenidos.get(c.id!)}
+                    />
                   </div>
                 </li>
               );
@@ -269,7 +294,10 @@ export default async function AdminCompanias() {
                 </Metadato>
                 <span className="flex-1" />
                 <ArchivarCompania compania={ficha(c)} />
-                <BorrarCompania compania={ficha(c)} />
+                <BorrarCompania
+                      compania={ficha(c)}
+                      contenido={contenidos.get(c.id!)}
+                    />
               </li>
             ))}
           </ul>

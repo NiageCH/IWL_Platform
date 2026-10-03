@@ -101,8 +101,11 @@ add(M, "/presentarse", "sin cuenta", "Presentarse con todo relleno",
     "Rellenar los campos, dejar dos enlaces de Drive y enviar.",
     "«Recibida. Gracias.» y debajo el enlace privado con botón de copiar.")
 add(M, "/presentarse", "sin cuenta", "Solo lo obligatorio",
-    "Rellenar nombre de la startup, tu nombre y tu correo. Nada más. Enviar.",
-    "Se acepta. Los tres obligatorios llevan asterisco; el resto es opcional de verdad.")
+    "Rellenar lo que lleva asterisco: startup, en qué punto estáis, tu nombre y tu correo. Enviar.",
+    "Se acepta. El resto es opcional de verdad.")
+add(M, "/presentarse", "sin cuenta", "La etapa no se puede esquivar",
+    "Mirar el desplegable «¿En qué punto estáis?» e intentar enviar sin tocarlo.",
+    "Ya no existe «Prefiero no decirlo». Pone «Elige una» y no deja enviar sin elegir.")
 add(M, "/presentarse", "sin cuenta", "Un porcentaje escrito a mano (el caso dronesec)",
     "En «Liderazgo femenino (%)» escribir «50 %». También probar «33,3».",
     "Se acepta. Llega como número, no se rechaza por el signo ni por la coma.")
@@ -480,7 +483,16 @@ add(M, "/admin/companias", "admin@iwl.test", "Dar de alta una compañía a mano"
     "Queda lista para trabajar, sin pasos sueltos pendientes.")
 add(M, "/admin/companias", "admin@iwl.test", "Editar, archivar y restaurar",
     "Editar los datos, archivarla y restaurarla.",
-    "Las tres funcionan. Archivar no borra: una con trabajo registrado se archiva, no se borra.")
+    "Las tres funcionan. Archivar saca de la cartera y conserva el histórico entero.")
+add(M, "/admin/companias", "admin@iwl.test", "Borrar una compañía vacía",
+    "Dar de alta una y borrarla sin tocar nada más.",
+    "Sale «Borrar» a secas. Pide escribir el identificador y se va.")
+add(M, "/admin/companias", "admin@iwl.test", "Borrar una con histórico",
+    "En una que tenga Anexo u horas: «Borrar con su histórico».",
+    "Primero recuerda que lo normal es archivar. Luego dice QUÉ destruye («1 Anexo, 3 horas…») y pide el identificador exacto.")
+add(M, "/admin/companias", "admin@iwl.test", "La lista se entera de lo que pasa en otra pantalla",
+    "Abrir un Anexo de una compañía y volver a Compañías pulsando en el menú.",
+    "Ya dice «Borrar con su histórico», no «Borrar» a secas. Si ofreciera el borrado simple, la base lo rechazaría.")
 add(M, "/admin/personas", "admin@iwl.test", "Crear una persona con su contraseña",
     "Dar de alta a una persona. Dejar la contraseña en blanco para que la genere ella.",
     "Se enseña la contraseña generada —tres palabras y un número, dictable por teléfono— con aviso de que no se repite.")

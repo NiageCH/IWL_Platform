@@ -3892,11 +3892,17 @@ isOneToOne: false
 "borrar_compania":
 { Args: { "target_company": string }; Returns: undefined
                            },
+"borrar_compania_con_todo":
+{ Args: { "target_company": string }; Returns: undefined
+                           },
 "compania_tiene_actividad":
 { Args: { "target_company": string }; Returns: boolean
                            },
 "completar_candidatura":
 { Args: { "p_contacto_cargo"?: string,"p_contacto_telefono"?: string,"p_equipo_personas"?: number,"p_estado_declarado"?: Database["public"]['Enums']["estado_entrada"],"p_liderazgo_femenino_pct"?: number,"p_one_liner"?: string,"p_pais"?: string,"p_sector"?: string,"p_token": string,"p_website"?: string }; Returns: undefined
+                           },
+"contenido_compania":
+{ Args: { "target_company": string }; Returns: Json
                            },
 "convocatoria_abierta":
 { Args: Record<PropertyKey, never>; Returns: {

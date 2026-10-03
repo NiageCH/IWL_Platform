@@ -179,6 +179,8 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
   revalidatePath("/proyecto", "layout");
   revalidatePath(`/cartera/${datos.slug}`, "layout");
   revalidatePath("/cartera");
+  // Y administración, que enseña si una compañía se puede borrar
+  revalidatePath("/admin", "layout");
 
   return ok("Documento subido.");
 }

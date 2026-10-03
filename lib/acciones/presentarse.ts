@@ -35,10 +35,18 @@ const esquema = z.object({
   pais: z.string().trim().max(80).optional(),
   contacto_telefono: z.string().trim().max(40).optional(),
   contacto_cargo: z.string().trim().max(80).optional(),
-  estado_declarado: z
-    .enum(["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"])
-    .nullable()
-    .catch(null),
+  /*
+   * Obligatorio desde que se quitó «prefiero no decirlo».
+   *
+   * Y comprobado aquí, no solo con el `required` del navegador: lo del
+   * navegador se salta llamando a la API directamente, y esta es la
+   * pregunta que sitúa a una startup. `.catch(null)` dejaba pasar un envío
+   * vacío sin decir nada.
+   */
+  estado_declarado: z.enum(
+    ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],
+    { message: "Dinos en qué punto estáis." },
+  ),
   equipo_personas: numeroEscritoAMano(
     0,
     10_000,

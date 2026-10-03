@@ -1258,3 +1258,64 @@ encuentra usando la aplicación.
   checklist de diligencia y faltaba aquí.
 - **«Estado verificado» no se encontraba** porque nadie lo busca con ese
   nombre. Pasa a «Etapa, tras el due diligence».
+
+## 2026-10-03 · Borrar compañías, y la pregunta que no se podía esquivar
+
+### «No está la opción de eliminar compañías»
+
+Sí estaba, y solo en las vacías. Eso lo decidió Rodrigo en su día —archivar
+conserva, borrar es para lo creado por error— y la regla sigue siendo buena:
+un extracto de aportación justifica una participación y esa prueba tiene que
+sobrevivir a que el proyecto salga del programa.
+
+Lo que no era bueno es el callejón. Probando se crean compañías que en
+cuanto tienen una hoja de ruta o un Anexo ya no se quitan, y la pantalla se
+limitaba a decir «no se puede borrar: tiene trabajo registrado». Un «no» sin
+salida.
+
+Ahora lo primero que se ofrece sigue siendo archivar, con su explicación. Y
+debajo, plegada, está la salida: **borrar con su histórico**, que enseña la
+cuenta exacta de lo que destruye —«3 horas imputadas, 1 Anexo y 12 valores
+de KPI»— y pide escribir el identificador. Solo la dirección, nunca el
+equipo, y queda en el registro de actividad qué se borró y cuánto llevaba
+dentro.
+
+La comprobación sigue viviendo en la base: `borrar_compania` se niega si hay
+algo, y `borrar_compania_con_todo` es una función aparte que hay que pedir
+expresamente. Una comprobación que vive en la interfaz se salta con una
+llamada directa, y esto no tiene deshacer.
+
+### Lo que cambia la respuesta de una pantalla tiene que invalidarla
+
+Al montarlo salió un fallo de los silenciosos: abrías un Anexo y
+administración seguía ofreciendo «Borrar» a secas, porque `refrescar()` de
+cada módulo invalidaba la cartera y el proyecto pero no `/admin`. La base
+habría rechazado ese borrado, así que no se perdía nada, pero se ofrecía una
+acción que iba a fallar.
+
+Cualquier cosa que se registre sobre una compañía —un Anexo, un hito, un
+documento, horas, un KPI, una línea base— cambia si esa compañía se puede
+borrar, y eso lo enseña administración. Ahora todos los `refrescar`
+invalidan también `/admin`.
+
+De paso, una lección sobre diagnosticar: lo primero que hice fue marcar la
+ruta como `force-dynamic`, convencido de que era caché de Next. No lo era, y
+además la prueba que lo «confirmaba» tenía dentro una carrera —leía la base
+antes de que la acción hubiera terminado— que enmascaraba el resultado. Dos
+hipótesis equivocadas seguidas por no separar los dos fallos. El
+`force-dynamic` está revertido.
+
+### «Prefiero no decirlo» fuera
+
+En el formulario público, la primera opción de «¿en qué punto estáis?» era
+«Prefiero no decirlo». Decisión de Rodrigo: quitarla, porque es la pregunta
+que sitúa a una startup.
+
+No se puede quitar sin más: el navegador elegiría «Idea» por defecto y
+apuntaríamos eso de quien ni siquiera miró el desplegable, que es peor que
+no saberlo. Queda una opción vacía, deshabilitada, que dice «Elige una», con
+`required` y con el campo marcado con asterisco.
+
+Y comprobado **también en el servidor**: el `required` del navegador se
+salta llamando a la API directamente, y el esquema tenía `.catch(null)`, que
+dejaba pasar un envío vacío sin decir nada.

@@ -5,6 +5,7 @@ import {
   archivarCompania,
   asignarACompania,
   borrarCompania,
+  borrarCompaniaConTodo,
   editarCompania,
   restaurarCompania,
 } from "@/lib/acciones/admin";
@@ -258,14 +259,116 @@ export function ArchivarCompania({ compania }: { compania: FichaCompania }) {
  * su lugar se explica por qué no se puede y qué hacer en cambio: un botón
  * deshabilitado sin explicación se lee como un fallo de la aplicación.
  */
-export function BorrarCompania({ compania }: { compania: FichaCompania }) {
+/** Cómo se lee cada cosa que puede haber dentro de una compañía */
+const CONTENIDO: Record<string, [string, string]> = {
+  horas: ["hora imputada", "horas imputadas"],
+  documentos: ["documento", "documentos"],
+  hitos: ["hito", "hitos"],
+  puntuaciones: ["puntuación técnica", "puntuaciones técnicas"],
+  hallazgos: ["hallazgo", "hallazgos"],
+  kpi: ["valor de KPI", "valores de KPI"],
+  lineas_base: ["línea base", "líneas base"],
+  avances: ["avance", "avances"],
+  anexos: ["Anexo", "Anexos"],
+  desembolsos: ["desembolso", "desembolsos"],
+};
+
+function listarContenido(contenido: Record<string, number>): string {
+  const partes = Object.entries(contenido)
+    .filter(([, n]) => n > 0)
+    .map(([clave, n]) => {
+      const nombres = CONTENIDO[clave];
+      if (!nombres) return `${n} ${clave}`;
+      return `${n} ${n === 1 ? nombres[0] : nombres[1]}`;
+    });
+
+  if (partes.length === 0) return "";
+  if (partes.length === 1) return partes[0];
+  return `${partes.slice(0, -1).join(", ")} y ${partes[partes.length - 1]}`;
+}
+
+/**
+ * Borrar una compañía.
+ *
+ * Dos caminos, y el de arriba es el normal: si no tiene nada registrado se
+ * borra sin más. Si tiene, lo que toca casi siempre es archivarla —el
+ * histórico justifica la aportación de IWL y tiene que sobrevivir al
+ * programa—, así que eso es lo que se ofrece primero.
+ *
+ * Pero decir «no se puede» y parar era un callejón: probando se crean
+ * compañías que en cuanto tienen una hoja de ruta ya no se quitan. Así que
+ * debajo, plegada, está la salida de verdad, con la cuenta exacta de lo que
+ * se destruye y el identificador a mano.
+ */
+export function BorrarCompania({
+  compania,
+  contenido,
+}: {
+  compania: FichaCompania;
+  /** Lo que hay dentro, para poder enseñarlo antes de destruirlo */
+  contenido?: Record<string, number>;
+}) {
   const [abierto, setAbierto] = useState(false);
 
   if (compania.tiene_actividad) {
+    const dentro = listarContenido(contenido ?? {});
+
+    if (!abierto) {
+      return (
+        <button
+          type="button"
+          onClick={() => setAbierto(true)}
+          className="accion accion-riesgo text-xs"
+        >
+          Borrar con su histórico
+        </button>
+      );
+    }
+
     return (
-      <span className="text-xs text-metadato">
-        No se puede borrar: tiene trabajo registrado
-      </span>
+      <div className="mt-3 w-full border-t border-mal/40 pt-3">
+        <Formulario accion={borrarCompaniaConTodo}>
+          {(resultado) => (
+            <>
+              <input type="hidden" name="id" value={compania.id} />
+              <input type="hidden" name="slug" value={compania.slug} />
+
+              <p className="text-sm text-secundario">
+                Lo normal con una compañía que tiene trabajo registrado es{" "}
+                <strong className="text-titular">archivarla</strong>: sale de
+                la cartera y su equipo deja de verla, pero el histórico queda
+                entero y se puede restaurar. El extracto de aportación
+                justifica una participación y esa prueba tiene que sobrevivir
+                al programa.
+              </p>
+
+              <p className="text-xs text-mal">
+                Si aun así quieres borrarla, se va con todo:
+                {dentro ? ` ${dentro}.` : " todo lo que tenga dentro."} No
+                tiene vuelta atrás.
+              </p>
+
+              <Campo
+                etiqueta={`Escribe «${compania.slug}» para confirmar`}
+                error={!resultado.ok ? resultado.campos?.confirmacion : undefined}
+              >
+                <Texto name="confirmacion" autoComplete="off" required />
+              </Campo>
+
+              <div className="flex gap-2">
+                <Boton>Borrar con su histórico</Boton>
+                <button
+                  type="button"
+                  onClick={() => setAbierto(false)}
+                  className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </>
+          )}
+        </Formulario>
+      </div>
     );
   }
 
@@ -274,7 +377,7 @@ export function BorrarCompania({ compania }: { compania: FichaCompania }) {
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="accion accion-riesgo text-xs text-metadato"
+        className="accion accion-riesgo text-xs"
       >
         Borrar
       </button>
@@ -282,8 +385,8 @@ export function BorrarCompania({ compania }: { compania: FichaCompania }) {
   }
 
   return (
-    <div className="mt-3 border-t border-mal/40 pt-3">
-      <Formulario accion={borrarCompania} onOk={() => setAbierto(false)}>
+    <div className="mt-3 w-full border-t border-mal/40 pt-3">
+      <Formulario accion={borrarCompania}>
         {(resultado) => (
           <>
             <input type="hidden" name="id" value={compania.id} />

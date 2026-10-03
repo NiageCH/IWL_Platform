@@ -30,6 +30,14 @@ function refrescar(slug: string) {
   revalidatePath("/proyecto", "layout");
   revalidatePath(`/cartera/${slug}`, "layout");
   revalidatePath("/cartera");
+  /*
+   * Y administración, que enseña si una compañía se puede borrar.
+   *
+   * Cualquier cosa que se registre aquí —un Anexo, un hito, un documento,
+   * horas, un KPI— cambia esa respuesta. Sin esto, la lista seguía
+   * ofreciendo un borrado a secas que la base iba a rechazar.
+   */
+  revalidatePath("/admin", "layout");
 }
 
 const esquemaPuntuacion = z.object({

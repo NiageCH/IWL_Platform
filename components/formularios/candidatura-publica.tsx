@@ -126,7 +126,9 @@ export function CompletarFicha({
               name="estado_declarado"
               defaultValue={ficha.estado_declarado ?? ""}
             >
-              <option value="">Prefiero no decirlo</option>
+              <option value="" disabled>
+                Elige una
+              </option>
               <option value="idea">Idea: todavía no hay producto</option>
               <option value="prototipo">
                 Prototipo: algo que se puede enseñar

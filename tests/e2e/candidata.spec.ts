@@ -340,6 +340,8 @@ test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
   await page
     .locator('textarea[name="one_liner"]')
     .fill("Una frase que costó escribir.");
+  // Obligatorio desde que se quitó «prefiero no decirlo»
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
   await page
     .locator('input[name="contacto_email"]')

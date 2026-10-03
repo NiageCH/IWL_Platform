@@ -141,6 +141,8 @@ export async function congelarLineaBase(formData: FormData): Promise<Resultado> 
 
   revalidatePath("/proyecto", "layout");
   revalidatePath(`/cartera/${datos.slug}`, "layout");
+  // Y administración, que enseña si una compañía se puede borrar
+  revalidatePath("/admin", "layout");
   return ok(
     "Línea base congelada. A partir de ahora no se puede editar: el avance se mide contra ella.",
   );
