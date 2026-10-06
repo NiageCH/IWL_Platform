@@ -60,10 +60,30 @@ export function Formulario({
       );
 
       const salida = await accion(formData);
+
       if (salida.ok) {
         enviado.current = null;
-        onOk?.();
+
+        /*
+         * `onOk` solo corre si la acción no tiene nada que decir.
+         *
+         * Casi todos los `onOk` cierran el panel, y cerrar el panel
+         * desmonta este formulario —y con él el mensaje que la acción
+         * acaba de devolver—. Ha pasado siete veces: con el logo, al
+         * firmar y descartar una candidatura, al restablecer una
+         * contraseña, al abrir y firmar el Anexo, y al editar una ficha.
+         * La peor fue la contraseña, porque el mensaje **era** la
+         * contraseña y se perdía sin que nadie la copiara.
+         *
+         * Documentarlo no bastó: lo volví a escribir dos veces después de
+         * escribir la regla. Así que la regla se impone aquí, donde no se
+         * puede olvidar. Si la acción devuelve un mensaje, el formulario se
+         * queda puesto para enseñarlo y lo cierra quien lo lea; si no
+         * devuelve nada, no hay nada que perder y el panel se cierra.
+         */
+        if (!salida.mensaje) onOk?.();
       }
+
       return salida;
     },
     estadoInicial,

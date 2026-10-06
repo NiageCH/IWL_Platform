@@ -217,10 +217,15 @@ no se notaban. En una pantalla táctil no hay `hover` que valga.
 
 Todo lo pulsable tiene foco visible. Quitarlo no es una opción.
 
-**Cuando el éxito desmonta el formulario, la acción devuelve `ok()` sin
-mensaje**, y con un comentario diciendo por qué. Un mensaje que nadie puede
-leer es un error que se ve leyendo la acción, en vez de esperar a que
-alguien lo note probando. Ha pasado seis veces.
+**Lo impone `<Formulario>`: `onOk` solo corre si la acción no devuelve
+mensaje.** Casi todos los `onOk` cierran su panel, y cerrarlo desmonta el
+formulario con el mensaje dentro. Pasó siete veces —la peor, al restablecer
+una contraseña: el mensaje *era* la contraseña—. Escribir la regla aquí no
+bastó, así que vive en el código.
+
+Consecuencia práctica: si una acción devuelve mensaje, su panel **se queda
+abierto** y lo cierra quien lo lee. Si lo que quieres es que se cierre solo,
+devuelve `ok()` sin mensaje y deja que el acuse sea la pantalla cambiada.
 
 **Un formulario no vive dentro de una condición que su propio éxito vuelve
 falsa.** El mensaje de resultado está dentro del `<Formulario>`: si al

@@ -5,6 +5,7 @@ import {
   HandCoins,
   LayoutDashboard,
   NotebookPen,
+  Pencil,
   Route,
   TrendingUp,
 } from "lucide-react";
@@ -77,6 +78,24 @@ export function CabeceraProyecto({
                 {compania.name}
               </h1>
               <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
+              {/*
+                Editar la ficha, desde la ficha.
+                
+                Se podía editar —el nombre, el sector, la etapa— pero solo
+                desde Administración, y había que saber que estaba allí.
+                Desde aquí, que es donde uno está mirando la compañía
+                cuando se da cuenta de que el nombre está mal, no había
+                nada que pulsar.
+              */}
+              {resumen.permisos.esIwl ? (
+                <Link
+                  href={`/admin/companias?editar=${compania.slug}#${compania.slug}`}
+                  className="accion text-xs"
+                >
+                  <Pencil aria-hidden="true" className="size-3.5 text-acento-texto" />
+                  Editar la ficha
+                </Link>
+              ) : null}
             </div>
             <p className="mt-1 max-w-2xl text-sm text-secundario">
               {compania.one_liner ?? "Sin descripción todavía."}

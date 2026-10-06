@@ -120,6 +120,10 @@ export default async function AdminCompanias() {
     tech_profile: c.tech_profile!,
     phase_id: c.phase_id,
     cohort_id: c.cohort_id,
+    website: c.website,
+    founded_on: c.founded_on,
+    female_leadership_pct: c.female_leadership_pct,
+    entry_state: c.entry_state,
     archivada: c.archived_at !== null,
     tiene_actividad: c.tiene_actividad ?? true,
   });
@@ -138,8 +142,14 @@ export default async function AdminCompanias() {
             {activas.map((c) => {
               const equipo = (c.equipo ?? []) as unknown as Miembro[];
 
+              /* El ancla deja que «Editar la ficha», desde la propia
+                 compañía, caiga directamente en su fila */
               return (
-                <li key={c.id} className="px-4 py-4">
+                <li
+                  key={c.id}
+                  id={c.slug ?? undefined}
+                  className="scroll-mt-6 px-4 py-4"
+                >
                   <div className="mb-3">
                     <LogoCompania
                       companyId={c.id!}

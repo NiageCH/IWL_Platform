@@ -196,25 +196,14 @@ test("la ficha de una compañía se edita desde administración", async ({ page 
   await formulario.locator('input[name="sector"]').fill("Agrotecnología de precisión");
   await formulario.getByRole("button", { name: "Guardar" }).click();
 
+  /*
+   * El acuse se lee, y el panel se queda abierto para que se lea.
+   *
+   * Antes se cerraba solo y se llevaba el mensaje por delante: pasó siete
+   * veces en el proyecto, así que ahora lo impide `<Formulario>`.
+   */
+  await expect(page.getByText("Ficha actualizada.")).toBeVisible();
   await expect(page.getByText("Agrotecnología de precisión")).toBeVisible();
-
-  // Se deja como estaba
-  await page
-    .locator("li", { hasText: "Raíz Sensórica" })
-    .first()
-    .getByRole("button", { name: "Editar" })
-    .click();
-  await page
-    .locator("li", { hasText: "Raíz Sensórica" })
-    .first()
-    .locator("form", { has: page.locator('input[name="name"]') })
-    .locator('input[name="sector"]')
-    .fill("Agrotecnología");
-  await page
-    .locator("li", { hasText: "Raíz Sensórica" })
-    .first()
-    .getByRole("button", { name: "Guardar" })
-    .click();
 });
 
 test("una compañía con histórico se borra, pero con todo a la vista", async ({
@@ -317,6 +306,13 @@ test("una compañía con histórico se borra, pero con todo a la vista", async (
  * se queda hace que la siguiente pasada encuentre dos con el mismo nombre.
  */
 test.afterAll(async () => {
+  /* Lo que se tocó de la semilla vuelve a su sitio, por fuera de la pantalla */
+  await actualizar(
+    "companies",
+    { slug: "eq.raiz-sensorica" },
+    { sector: "Agrotecnología" },
+  );
+
   const restos = await consultar<{ slug: string }>(
     "companies",
     { slug: "like.conhistorico-%" },

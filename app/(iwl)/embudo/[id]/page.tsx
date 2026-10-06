@@ -16,6 +16,7 @@ import {
   AcuerdoCandidatura,
   AnotarEvento,
   DescartarCandidatura,
+  EditarCandidatura,
   EnlacesCandidatura,
   FirmarAcuerdo,
   MoverCandidatura,
@@ -323,6 +324,37 @@ export default async function FichaCandidatura({
                 </div>
               ) : null}
             </dl>
+
+            {/*
+              Corregir lo que esté mal.
+              
+              La acción existía y no tenía botón: una startup con el nombre
+              mal escrito o el correo equivocado se quedaba así hasta
+              firmar.
+            */}
+            {estado !== "firmada" ? (
+              <div className="px-5 pb-4">
+                <EditarCandidatura
+                  candidatura={{
+                    id: c.id!,
+                    nombre: c.nombre!,
+                    sector: c.sector,
+                    one_liner: c.one_liner,
+                    website: c.website,
+                    pais: c.pais,
+                    contacto_nombre: c.contacto_nombre,
+                    contacto_email: c.contacto_email,
+                    contacto_telefono: c.contacto_telefono,
+                    contacto_cargo: c.contacto_cargo,
+                    estado_declarado: c.estado_declarado,
+                    equipo_personas: c.equipo_personas,
+                    liderazgo_femenino_pct: c.liderazgo_femenino_pct,
+                    origen: c.origen,
+                    notas: c.notas,
+                  }}
+                />
+              </div>
+            ) : null}
           </Bloque>
 
           <Bloque>

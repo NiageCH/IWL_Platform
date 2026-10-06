@@ -91,7 +91,7 @@ export async function presentarse(
    * ha visto solo le enseña a esquivarlo la próxima vez.
    */
   if (datos.apodo && datos.apodo.trim() !== "") {
-    return ok("Recibida. Gracias.");
+    return ok();
   }
 
   const enlaces = [
@@ -152,9 +152,18 @@ export async function presentarse(
     .rpc("testigo_de_candidatura", { p_id: nueva as string })
     .single<string>();
 
+  /*
+   * Sin mensaje: aquí el acuse es la pantalla entera.
+   *
+   * Al enviarse, el formulario se sustituye por la pantalla de gracias,
+   * que ya dice «Recibida. Gracias.» con el enlace privado debajo. Un
+   * mensaje aquí no lo leería nadie —el formulario que lo enseñaría ya no
+   * existe— y además impediría el cambio de pantalla: `<Formulario>` solo
+   * ejecuta `onOk` cuando la acción no tiene nada que decir, justamente
+   * para que nadie pierda un acuse al cerrar un panel.
+   */
   return {
     ok: true,
-    mensaje: "Recibida. Gracias.",
     enlace: testigo ? `/candidatura/${testigo}` : undefined,
   };
 }

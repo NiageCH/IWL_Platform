@@ -41,14 +41,18 @@ test("la fundadora registra un avance y cae en su carril", async ({ page }) => {
   await alta.getByRole("button", { name: "Registrar" }).click();
 
   /*
-   * Primero se espera a que el formulario se cierre, que es lo que hace la
-   * acción al salir bien, y solo después se busca el avance.
+   * Primero se espera al acuse, y solo después se busca el avance.
    *
-   * Entre las dos cosas hay una revalidación del servidor, y bajo carga
-   * tarda más de los cinco segundos por defecto: esta prueba fallaba una de
-   * cada varias pasadas de la suite entera, nunca en aislamiento.
+   * Antes se esperaba a que el formulario se cerrara. Ya no se cierra: un
+   * panel cuya acción devuelve mensaje se queda puesto para enseñarlo, y lo
+   * cierra quien lo lee. Siete veces se perdió una confirmación por cerrar
+   * el panel que la contenía, así que ahora lo impide `<Formulario>`.
+   *
+   * Entre el acuse y el avance hay una revalidación del servidor, y bajo
+   * carga tarda más de los cinco segundos por defecto: esta prueba fallaba
+   * una de cada varias pasadas de la suite entera, nunca en aislamiento.
    */
-  await expect(alta.locator('input[name="title"]')).toHaveCount(0);
+  await expect(page.getByText("Avance registrado.")).toBeVisible();
 
   const tarjeta = page
     .locator("article", {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Pencil } from "lucide-react";
 import {
   archivarCompania,
   asignarACompania,
@@ -50,6 +52,10 @@ export interface FichaCompania {
   tech_profile: string;
   phase_id: string | null;
   cohort_id: string | null;
+  website: string | null;
+  founded_on: string | null;
+  female_leadership_pct: number | string | null;
+  entry_state: string | null;
   archivada: boolean;
   tiene_actividad: boolean;
 }
@@ -63,15 +69,28 @@ export function EditarCompania({
   fases: Array<{ id: string; name: string }>;
   cohortes: Array<{ id: string; name: string }>;
 }) {
-  const [abierto, setAbierto] = useState(false);
+  /*
+   * Puede venir abierto desde la ficha de la compañía.
+   *
+   * Editar los datos de una startup solo se podía desde aquí, y había que
+   * saber que estaba aquí: desde su propia ficha no había nada que pulsar.
+   * Ahora hay un «Editar la ficha» que trae directamente a este formulario,
+   * y `?editar=<slug>` es lo que hace que llegue abierto en vez de dejar al
+   * que viene buscando otra vez la fila.
+   */
+  const parametros = useSearchParams();
+  const [abierto, setAbierto] = useState(
+    parametros.get("editar") === compania.slug,
+  );
 
   if (!abierto) {
     return (
       <button
         type="button"
         onClick={() => setAbierto(true)}
-        className="accion text-xs text-secundario"
+        className="accion text-xs"
       >
+        <Pencil aria-hidden="true" className="size-3.5 text-acento-texto" />
         Editar
       </button>
     );
@@ -165,6 +184,45 @@ export function EditarCompania({
                   defaultValue={compania.one_liner ?? ""}
                 />
               </Campo>
+
+              {/*
+                Los tres que estaban en la tabla y no se podían tocar.
+                
+                La web se escribe mal una vez y se queda mal, la fecha de
+                constitución casi nunca se sabe al dar de alta, y el
+                liderazgo femenino es el dato que sostiene el criterio 2X.
+              */}
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Campo etiqueta="Web" error={campo("website")}>
+                  <Texto
+                    name="website"
+                    placeholder="https://"
+                    defaultValue={compania.website ?? ""}
+                  />
+                </Campo>
+                <Campo etiqueta="Constituida el" error={campo("founded_on")}>
+                  <Texto
+                    type="date"
+                    name="founded_on"
+                    defaultValue={compania.founded_on ?? ""}
+                  />
+                </Campo>
+                <Campo
+                  etiqueta="Liderazgo femenino (%)"
+                  error={campo("female_leadership_pct")}
+                >
+                  <Texto
+                    name="female_leadership_pct"
+                    inputMode="decimal"
+                    defaultValue={
+                      compania.female_leadership_pct === null ||
+                      compania.female_leadership_pct === undefined
+                        ? ""
+                        : String(compania.female_leadership_pct)
+                    }
+                  />
+                </Campo>
+              </div>
 
               <div className="flex gap-2">
                 <Boton>Guardar</Boton>

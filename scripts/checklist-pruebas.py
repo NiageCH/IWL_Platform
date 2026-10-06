@@ -481,6 +481,21 @@ M = "19. Administración"
 add(M, "/admin/companias", "admin@iwl.test", "Dar de alta una compañía a mano",
     "Crear una compañía con su cohorte y su hoja de ruta.",
     "Queda lista para trabajar, sin pasos sueltos pendientes.")
+add(M, "/cartera/<slug>", "admin@iwl.test", "Editar la ficha desde la propia compañía",
+    "En la cabecera, al lado del nombre: «Editar la ficha».",
+    "Lleva al formulario de esa compañía YA ABIERTO. No hay que buscarla en la lista.")
+add(M, "/admin/companias", "admin@iwl.test", "Cambiar el nombre de una startup",
+    "Editar → cambiar el nombre → Guardar.",
+    "Dice «Ficha actualizada.» y el panel SE QUEDA ABIERTO para que se lea. El nombre nuevo sale en toda la plataforma.")
+add(M, "/admin/companias", "admin@iwl.test", "Los campos que faltaban",
+    "En el mismo formulario: web, fecha de constitución y liderazgo femenino. Probar «60 %» con signo.",
+    "Los tres se guardan. El porcentaje admite el signo y la coma.")
+add(M, "/embudo/<id>", "admin@iwl.test", "Corregir los datos de una candidatura",
+    "En «Con quién se habla»: «Corregir los datos». Cambiar el nombre o el correo.",
+    "Se guarda. Antes esto no se podía: una startup mal escrita se quedaba así hasta firmar.")
+add(M, "Todas", "—", "Un acuse no se pierde al cerrarse su panel",
+    "En cualquier formulario que se abra y cierre: guardar y mirar.",
+    "El mensaje se lee y el panel sigue abierto hasta que lo cierras tú.")
 add(M, "/admin/companias", "admin@iwl.test", "Editar, archivar y restaurar",
     "Editar los datos, archivarla y restaurarla.",
     "Las tres funcionan. Archivar saca de la cartera y conserva el histórico entero.")

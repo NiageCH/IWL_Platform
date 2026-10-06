@@ -1319,3 +1319,51 @@ no saberlo. Queda una opción vacía, deshabilitada, que dice «Elige una», con
 Y comprobado **también en el servidor**: el `required` del navegador se
 salta llamando a la API directamente, y el esquema tenía `.catch(null)`, que
 dejaba pasar un envío vacío sin decir nada.
+
+## 2026-10-06 · Editar los datos de una startup, y la regla que se mudó al código
+
+### «Necesito que los datos de las startups los pueda editar»
+
+Se podía, con dos agujeros.
+
+**En la cartera**: el formulario existía, pero solo en Administración →
+Compañías, y había que saber que estaba allí. Desde la ficha de la
+compañía —que es donde uno está mirando cuando se da cuenta de que el
+nombre está mal— no había nada que pulsar. Ahora hay un «Editar la ficha»
+al lado del nombre, y lleva al formulario **ya abierto** por
+`?editar=<slug>`, sin tener que buscar la fila otra vez.
+
+Y le faltaban tres campos que llevaban desde el principio en la tabla sin
+poder tocarse: la web, la fecha de constitución y el liderazgo femenino.
+Los tres se escriben mal o no se saben el día del alta, y el último es el
+que sostiene el criterio 2X.
+
+**En el embudo**: no se podía en absoluto. `editarCandidatura` era otra
+acción sin botón —la tercera de la familia, después de `borrarEtapa` y
+`moverHito`—. Una startup con el nombre mal escrito o el correo equivocado
+se quedaba así hasta firmar.
+
+El slug no se edita, y es deliberado: es la dirección de la compañía, y
+cambiarlo rompe cualquier enlace que alguien haya guardado.
+
+### La séptima vez fue la última: la regla se mudó al código
+
+Editar una ficha volvió a caer en lo de siempre: `onOk` cerraba el panel,
+cerrar el panel desmontaba el formulario, y el formulario se llevaba el
+«Ficha actualizada.» que la acción acababa de devolver. Séptima vez. Dos de
+ellas las escribí yo **después** de documentar la regla.
+
+Documentar no funcionaba, así que ahora lo impone `<Formulario>`: **`onOk`
+solo se ejecuta si la acción no devuelve mensaje.** Si hay algo que decir,
+el panel se queda puesto para decirlo y lo cierra quien lo lee; si no hay
+nada, no hay nada que perder.
+
+Diez formularios se cerraban solos. De la suite entera se movieron cuatro
+pruebas, y las cuatro hacia mejor: tres daban por hecho que el panel se
+cierra y ahora comprueban que el acuse se lee.
+
+La única que era una regresión de verdad fue el formulario público, que
+quiere cambiar de pantalla al enviarse. Ahí la solución correcta no era una
+excepción en el componente sino quitar el mensaje de la acción: el acuse de
+presentarse es la pantalla de gracias con su enlace, no una línea de texto
+que nadie ve. Es exactamente lo que la regla dice que hay que hacer.

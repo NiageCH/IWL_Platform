@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import {
   anadirEnlace,
   anotarEvento,
-  darAccesoCandidata,
   crearCandidatura,
+  darAccesoCandidata,
   descartarCandidatura,
+  editarCandidatura,
   firmarCandidatura,
   guardarAcuerdo,
   moverCandidatura,
@@ -609,6 +611,206 @@ export function AccesoCandidata({
             </>
           )
         }
+      </Formulario>
+    </div>
+  );
+}
+
+/**
+ * Corregir los datos de una candidatura.
+ *
+ * `editarCandidatura` existía desde el principio y **no tenía botón**: en el
+ * embudo, una startup con el nombre mal escrito o el correo equivocado se
+ * quedaba así hasta firmar. Es la misma familia de fallo que `borrarEtapa` y
+ * `moverHito`: la acción está, con sus tipos y su validación, y no se puede
+ * llamar desde ninguna pantalla.
+ *
+ * No incluye la cohorte ni el estado: la cohorte se decide al darla de alta
+ * y el paso se mueve con sus botones, que además dejan rastro en el
+ * historial. Esto es para corregir datos, no para saltarse el proceso.
+ */
+export function EditarCandidatura({
+  candidatura,
+}: {
+  candidatura: {
+    id: string;
+    nombre: string;
+    sector: string | null;
+    one_liner: string | null;
+    website: string | null;
+    pais: string | null;
+    contacto_nombre: string | null;
+    contacto_email: string | null;
+    contacto_telefono: string | null;
+    contacto_cargo: string | null;
+    estado_declarado: string | null;
+    equipo_personas: number | null;
+    liderazgo_femenino_pct: number | string | null;
+    origen: string | null;
+    notas: string | null;
+  };
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion text-xs"
+      >
+        <Pencil aria-hidden="true" className="size-3.5 text-acento-texto" />
+        Corregir los datos
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full border-t border-filete pt-4">
+      <Formulario accion={editarCandidatura}>
+        {(r) => (
+          <>
+            <input type="hidden" name="id" value={candidatura.id} />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo
+                etiqueta="Startup"
+                obligatorio
+                error={r.ok ? undefined : r.campos?.nombre}
+              >
+                <Texto name="nombre" required defaultValue={candidatura.nombre} />
+              </Campo>
+              <Campo etiqueta="Sector" error={r.ok ? undefined : r.campos?.sector}>
+                <Texto name="sector" defaultValue={candidatura.sector ?? ""} />
+              </Campo>
+              <Campo etiqueta="Web" error={r.ok ? undefined : r.campos?.website}>
+                <Texto
+                  name="website"
+                  placeholder="https://"
+                  defaultValue={candidatura.website ?? ""}
+                />
+              </Campo>
+              <Campo etiqueta="País" error={r.ok ? undefined : r.campos?.pais}>
+                <Texto name="pais" defaultValue={candidatura.pais ?? ""} />
+              </Campo>
+            </div>
+
+            <Campo
+              etiqueta="En una frase"
+              error={r.ok ? undefined : r.campos?.one_liner}
+            >
+              <AreaTexto
+                name="one_liner"
+                rows={2}
+                defaultValue={candidatura.one_liner ?? ""}
+              />
+            </Campo>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo
+                etiqueta="Persona de contacto"
+                obligatorio
+                error={r.ok ? undefined : r.campos?.contacto_nombre}
+              >
+                <Texto
+                  name="contacto_nombre"
+                  required
+                  defaultValue={candidatura.contacto_nombre ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Su cargo"
+                error={r.ok ? undefined : r.campos?.contacto_cargo}
+              >
+                <Texto
+                  name="contacto_cargo"
+                  defaultValue={candidatura.contacto_cargo ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Su correo"
+                obligatorio
+                error={r.ok ? undefined : r.campos?.contacto_email}
+              >
+                <Texto
+                  name="contacto_email"
+                  type="email"
+                  required
+                  defaultValue={candidatura.contacto_email ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Su teléfono"
+                error={r.ok ? undefined : r.campos?.contacto_telefono}
+              >
+                <Texto
+                  name="contacto_telefono"
+                  defaultValue={candidatura.contacto_telefono ?? ""}
+                />
+              </Campo>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Campo
+                etiqueta="Dice estar en"
+                error={r.ok ? undefined : r.campos?.estado_declarado}
+              >
+                <Seleccion
+                  key={candidatura.estado_declarado ?? "sin-fijar"}
+                  name="estado_declarado"
+                  defaultValue={candidatura.estado_declarado ?? ""}
+                >
+                  <option value="">Sin decir</option>
+                  {ESTADOS_ENTRADA.map((e) => (
+                    <option key={e.codigo} value={e.codigo}>
+                      {e.nombre}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+              <Campo
+                etiqueta="Cuántas personas"
+                error={r.ok ? undefined : r.campos?.equipo_personas}
+              >
+                <Texto
+                  name="equipo_personas"
+                  inputMode="numeric"
+                  defaultValue={candidatura.equipo_personas ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Liderazgo femenino (%)"
+                error={r.ok ? undefined : r.campos?.liderazgo_femenino_pct}
+              >
+                <Texto
+                  name="liderazgo_femenino_pct"
+                  inputMode="decimal"
+                  defaultValue={candidatura.liderazgo_femenino_pct ?? ""}
+                />
+              </Campo>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo etiqueta="Cómo llegó" error={r.ok ? undefined : r.campos?.origen}>
+                <Texto name="origen" defaultValue={candidatura.origen ?? ""} />
+              </Campo>
+              <Campo etiqueta="Notas" error={r.ok ? undefined : r.campos?.notas}>
+                <Texto name="notas" defaultValue={candidatura.notas ?? ""} />
+              </Campo>
+            </div>
+
+            <div className="flex gap-2">
+              <Boton>Guardar</Boton>
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+              >
+                Cerrar
+              </button>
+            </div>
+          </>
+        )}
       </Formulario>
     </div>
   );

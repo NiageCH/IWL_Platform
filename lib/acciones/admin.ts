@@ -8,6 +8,7 @@ import { generarClave } from "@/lib/claves";
 import {
   error,
   fechaOpcional,
+  numeroEscritoAMano,
   idOpcional,
   ok,
   textoObligatorio,
@@ -160,6 +161,21 @@ const esquemaFicha = z.object({
   entry_state: z.enum(ESTADOS_ENTRADA_VALIDOS).nullish(),
   phase_id: idOpcional,
   cohort_id: idOpcional,
+  /*
+   * Los tres que faltaban.
+   *
+   * Estaban en la tabla desde el principio y no se podían tocar desde
+   * ninguna pantalla: la web se escribe mal una vez y se queda mal, la
+   * fecha de constitución casi nunca se sabe al dar de alta, y el
+   * liderazgo femenino es el dato que sostiene el criterio 2X.
+   */
+  website: textoOpcional,
+  founded_on: fechaOpcional,
+  female_leadership_pct: numeroEscritoAMano(
+    0,
+    100,
+    "Un porcentaje entre 0 y 100.",
+  ),
 });
 
 /** La etapa y la fase las mueve IWL: deciden el nivel objetivo y el score */
