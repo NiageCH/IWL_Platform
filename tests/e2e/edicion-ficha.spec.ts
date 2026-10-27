@@ -112,6 +112,28 @@ test("en el embudo se corrigen los datos de una candidatura", async ({
   expect(c.pais).toBe("Portugal");
 });
 
+test("desde la compañía también se llega a archivarla o darla de baja", async ({
+  page,
+}) => {
+  /*
+   * Tercera vez que Rodrigo busca desde la ficha algo que vive en
+   * Administración: primero cambiar el nombre, luego restablecer una
+   * contraseña, ahora dar de baja una startup. El sitio donde uno se da
+   * cuenta de que hay que hacer algo es la ficha, no el panel.
+   */
+  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica");
+
+  await page.getByRole("link", { name: "Archivar o dar de baja" }).click();
+
+  // Cae en su fila, con las dos opciones a mano
+  await expect(page).toHaveURL(/\/admin\/companias#marea-clinica/);
+  const fila = page.locator("li#marea-clinica");
+  await expect(fila.getByRole("button", { name: "Archivar" })).toBeVisible();
+  await expect(
+    fila.getByRole("button", { name: /Borrar/ }),
+  ).toBeVisible();
+});
+
 /*
  * Se deja todo como estaba: las dos filas son de la semilla, así que se
  * restauran por fuera del camino que se acaba de probar.

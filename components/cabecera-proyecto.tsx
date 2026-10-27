@@ -1,4 +1,5 @@
 import {
+  Archive,
   Cpu,
   FileSignature,
   FolderCheck,
@@ -79,22 +80,43 @@ export function CabeceraProyecto({
               </h1>
               <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
               {/*
-                Editar la ficha, desde la ficha.
+                Lo que se hace sobre una compañía, desde la compañía.
                 
-                Se podía editar —el nombre, el sector, la etapa— pero solo
-                desde Administración, y había que saber que estaba allí.
-                Desde aquí, que es donde uno está mirando la compañía
-                cuando se da cuenta de que el nombre está mal, no había
-                nada que pulsar.
+                Todo esto vive en Administración, y hay que saber que vive
+                allí. Rodrigo lo buscó tres veces desde aquí —para cambiar
+                el nombre, para restablecer una contraseña y para dar de
+                baja una startup— y las tres veces no había nada que
+                pulsar. El sitio donde uno se da cuenta de que hay que
+                hacer algo es la ficha, no el panel.
+                
+                Los dos enlaces llevan a su fila en Administración: el
+                primero con el formulario ya abierto, el segundo solo
+                hasta ella, porque archivar y borrar no se ofrecen
+                desplegados de antemano.
               */}
               {resumen.permisos.esIwl ? (
-                <Link
-                  href={`/admin/companias?editar=${compania.slug}#${compania.slug}`}
-                  className="accion text-xs"
-                >
-                  <Pencil aria-hidden="true" className="size-3.5 text-acento-texto" />
-                  Editar la ficha
-                </Link>
+                <>
+                  <Link
+                    href={`/admin/companias?editar=${compania.slug}#${compania.slug}`}
+                    className="accion text-xs"
+                  >
+                    <Pencil
+                      aria-hidden="true"
+                      className="size-3.5 text-acento-texto"
+                    />
+                    Editar la ficha
+                  </Link>
+                  <Link
+                    href={`/admin/companias#${compania.slug}`}
+                    className="accion text-xs"
+                  >
+                    <Archive
+                      aria-hidden="true"
+                      className="size-3.5 text-acento-texto"
+                    />
+                    Archivar o dar de baja
+                  </Link>
+                </>
               ) : null}
             </div>
             <p className="mt-1 max-w-2xl text-sm text-secundario">
