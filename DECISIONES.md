@@ -1367,3 +1367,65 @@ quiere cambiar de pantalla al enviarse. Ahí la solución correcta no era una
 excepción en el componente sino quitar el mensaje de la acción: el acuse de
 presentarse es la pantalla de gracias con su enlace, no una línea de texto
 que nadie ve. Es exactamente lo que la regla dice que hay que hacer.
+
+## 2026-10-27 · Simplificar, y por dónde va cada proyecto
+
+Rodrigo, navegando: «poco intuitiva, no es simple moverse, no se resalta lo
+más importante de lo menos, en el embudo hay demasiada información». Y dos
+peticiones concretas: ver **por qué punto va cada proyecto**, y poder
+**asignar tareas**.
+
+### «Por dónde va» no estaba en ninguna parte
+
+La fase del programa salía en letra pequeña en la cabecera —«Incubación»— y
+no decía ni cuántas fases hay, ni cuál viene después, ni cuánto queda. Para
+saber si un proyecto iba bien había que leerse cinco bloques y sumarlos de
+cabeza.
+
+Ahora es lo primero de la ficha: las cuatro fases como un recorrido, con la
+actual marcada y las pasadas con su verificado, una frase que dice por dónde
+va y qué toca después, y dos barras con lo recorrido a la izquierda y lo que
+falta a la derecha —hitos del Anexo y tiempo del programa—.
+
+No inventa métricas: sale de las fases, de los hitos y de las fechas del
+Anexo, que ya estaban. Lo que faltaba era enseñarlo junto.
+
+Pasarse de plazo no recorta la barra: la tiñe. Un programa que se alarga es
+justo lo que hay que ver.
+
+### Las tareas eran un módulo entero que solo existía en la base
+
+`tasks` llevaba desde septiembre con su tabla, sus políticas, su disparador
+de quién puede asignar a quién y hasta la columna que engancha las horas a
+la tarea que las generó. **Sin una sola línea de pantalla.**
+
+Es la cuarta de la familia «existe y no tiene botón» —después de
+`borrarEtapa`, `moverHito` y `editarCandidatura`— y de lejos la más cara: no
+era una acción suelta, era un módulo.
+
+Al enseñarlo salió algo que lo dice todo: la semilla **ya tenía tareas
+dentro**, tres de ellas vencidas desde septiembre, y nadie las había visto
+nunca.
+
+El bloque va pegado a «Siguientes pasos», y es deliberado: los siguientes
+pasos dicen lo que falta, las tareas dicen quién lo está haciendo. En
+pantallas distintas obligaba a cruzar las dos listas de cabeza.
+
+La regla de quién asigna a quién no se repite en la acción. La impone
+`app.guard_asignacion_tarea` y duplicarla sería tener la misma regla en dos
+sitios que pueden discrepar.
+
+### El embudo decía lo mismo dos veces
+
+Cuatro tarjetas con cifras arriba y, justo debajo, una rejilla de ocho
+celdas con pastilla, cifra y dos líneas de descripción cada una. Media
+pantalla para repetir lo de arriba, y sin leerse como un recorrido: se leía
+como una tabla.
+
+Ahora el recorrido es un embudo de verdad: una barra por paso, con el ancho
+proporcional a su cuenta. El estrechamiento se ve solo —que es toda la
+gracia— y dónde se acumula el trabajo salta sin contar nada. El ancho no es
+la única señal: cada barra lleva su cifra y su nombre.
+
+Y las candidaturas pasan de cuatro líneas a una. Lo que se viene a hacer
+ahí es encontrar una y entrar, no leerse la descripción de las ocho.

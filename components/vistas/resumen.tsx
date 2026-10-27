@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { leerMovimiento } from "@/lib/datos/movimiento";
+import { leerAvance } from "@/lib/datos/avance";
+import { AvanceDelProgramaVista } from "@/components/avance-programa";
+import { VistaTareas } from "./tareas";
 import { Evolucion } from "@/components/evolucion";
 import { VistaMadurez } from "./madurez";
 import { EnlacesInforme } from "@/components/informe/enlace";
@@ -21,6 +24,10 @@ export async function VistaResumen({
 }) {
   const { invertible, kpis, hallazgos, scorePreparacion } = resumen;
   const movimiento = await leerMovimiento(resumen.compania.id);
+  const avance = await leerAvance(
+    resumen.compania.id,
+    resumen.compania.phase_id,
+  );
 
   /* El mismo prefijo que usa la cabecera: la fundadora ve `/proyecto`, IWL
      la ficha de esa compañía dentro de la cartera */
@@ -33,6 +40,29 @@ export async function VistaResumen({
 
   return (
     <div className="flex flex-col gap-6">
+      {/*
+        Por dónde va, lo primero.
+        
+        Era la pregunta que la plataforma no contestaba de un vistazo: la
+        fase estaba en letra pequeña en la cabecera y no decía ni cuántas
+        hay, ni cuál viene después, ni cuánto queda. Para saberlo había que
+        leerse cinco bloques.
+      */}
+      <Bloque elevacion={2}>
+        <TituloBloque
+          accion={
+            <Metadato>
+              {avance.faseActual
+                ? `Fase ${avance.faseActual.orden + 1} de ${avance.fases.length}`
+                : "Sin fase"}
+            </Metadato>
+          }
+        >
+          Por dónde va
+        </TituloBloque>
+        <AvanceDelProgramaVista avance={avance} />
+      </Bloque>
+
       <Bloque>
         <TituloBloque
           accion={
@@ -85,6 +115,15 @@ export async function VistaResumen({
           tipos={["mensual"]}
         />
       </Bloque>
+
+      {/*
+        Quién hace qué, pegado a los siguientes pasos.
+        
+        Los siguientes pasos dicen lo que falta; esto dice quién lo está
+        haciendo. Separarlos en pantallas distintas era obligar a cruzar
+        las dos listas de cabeza.
+      */}
+      <VistaTareas resumen={resumen} />
 
       <VistaMadurez resumen={resumen} />
 
