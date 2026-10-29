@@ -24,6 +24,7 @@ import {
 } from "@/components/graficos-cohorte";
 import { bandaDe } from "@/lib/datos/cohorte";
 import { cn, euros, numero, porcentaje } from "@/lib/utils";
+import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -253,6 +254,11 @@ export default async function Cartera() {
                     {ETAPAS[c.compania.stage] ?? c.compania.stage}
                     {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
                   </span>
+                  {c.compania.is_demo ? (
+                    <span className="mt-1 block">
+                      <DistintivoDemo />
+                    </span>
+                  ) : null}
                 </span>
 
                 <Semaforo estado={c.semaforo.estado} motivo={c.semaforo.motivo} />

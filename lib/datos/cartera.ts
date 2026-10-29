@@ -53,7 +53,24 @@ export async function leerCartera() {
     }));
 
   const cohorte = filas?.[0]?.cohorts ?? null;
-  const mapa = mapaIntervencion(companias);
+
+  /*
+   * Lo que se enseña y lo que cuenta no son la misma lista.
+   *
+   * Una compañía de demostración se ve en la cartera —para eso está— pero no
+   * entra en ningún agregado. Está construida para recorrer todos los
+   * estados, así que tiene por diseño hallazgos críticos, hitos vencidos y un
+   * update sin entregar: justo los datos que más deforman una media. El
+   * número que IWL mira para decidir no puede llevar dentro un proyecto que
+   * no existe.
+   *
+   * `companias` sigue siendo todo, porque el listado las enseña. `reales` es
+   * lo que alimenta medias, embudo, radares, runway, compromiso y lectura.
+   */
+  const reales = companias.filter((c) => !c.compania.is_demo);
+  const idsReales = new Set(reales.map((c) => c.compania.id));
+
+  const mapa = mapaIntervencion(reales);
 
   // Compromiso de IWL por compañía: horas y caja entregadas sobre
   // comprometidas. Es el panel que el documento de aportación pide en el
@@ -79,25 +96,33 @@ export async function leerCartera() {
 
   return {
     companias,
+    /*
+     * Las que cuentan. La comparativa las pide por su nombre para no tener
+     * que acordarse de filtrar: una pantalla que recibe «todas» y debe usar
+     * «las reales» acaba usando todas el día que alguien la toca.
+     */
+    reales,
     logos,
     cohorte,
     bandas,
     mapa,
-    tramos: embudo(companias, bandas),
-    evolucion: evolucionCohorte(instantaneas ?? []),
-    severidades: hallazgosPorSeveridad(companias),
+    tramos: embudo(reales, bandas),
+    evolucion: evolucionCohorte(
+      (instantaneas ?? []).filter((i) => idsReales.has(i.company_id)),
+    ),
+    severidades: hallazgosPorSeveridad(reales),
     // El radar lleva el logo, que ya está firmado unas líneas más arriba
-    radares: radaresCohorte(companias).map((r) => ({
+    radares: radaresCohorte(reales).map((r) => ({
       ...r,
       logo: logos.get(
-        companias.find((c) => c.compania.slug === r.slug)?.compania.logo_path ??
+        reales.find((c) => c.compania.slug === r.slug)?.compania.logo_path ??
           "",
       ),
     })),
-    runway: runwayCohorte(companias),
+    runway: runwayCohorte(reales),
     compromisos: (compromisos ?? [])
       .map((c) => {
-        const compania = companias.find((x) => x.compania.id === c.company_id);
+        const compania = reales.find((x) => x.compania.id === c.company_id);
         return {
           nombre: compania?.compania.name ?? "",
           slug: compania?.compania.slug ?? "",
@@ -111,7 +136,7 @@ export async function leerCartera() {
       })
       .filter((c) => c.slug !== ""),
     lectura: lecturaDeCohorte(
-      companias,
+      reales,
       movimientos,
       mapa,
       cohorte?.investable_target ?? null,

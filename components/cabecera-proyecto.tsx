@@ -15,6 +15,7 @@ import { Movimiento } from "@/components/evolucion";
 import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
 import { MenuAcciones } from "@/components/menu-acciones";
 import { numero } from "@/lib/utils";
+import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 
 /**
  * Cabecera fija de todas las pantallas del proyecto (§4.1): fase, semáforo,
@@ -81,6 +82,7 @@ export function CabeceraProyecto({
             <h1 className="titular-marca truncate text-lg text-titular">
               {compania.name}
             </h1>
+            {compania.is_demo ? <DistintivoDemo compacto /> : null}
           </div>
 
           <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>

@@ -4,6 +4,58 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-10-29 · Respuestas a la entrada de AgrolabX
+
+1. **Los seis meses de KPI inventados se van.** Un dato falso en un proyecto real no se queda, aunque esté archivado.
+2. **Bien quitados los entregables.** Mismo criterio.
+
+**Prioridad:** después de la demostración, las **cuentas de revisión** (entrada de abajo, punto 1). Rodrigo las está esperando para revisar la plataforma por rol. Cuando existan, dilo en la bitácora con la ruta de `.accesos-revision.md`.
+
+---
+
+## 2026-10-29 · Cuentas de revisión por rol y equipos de los proyectos reales
+
+### 1. Cuentas de revisión, una por vista
+
+Para que Rodrigo recorra la plataforma con cada rol. **Todas cuelgan de la demostración (Marea Clínica), nunca de un proyecto real.**
+
+**Correos con alias de Rodrigo**, no inventados: `rodrigo+<alias>@niage.es`. Llegan a su bandeja, así que la recuperación de contraseña funciona y ningún enlace sale a un dominio ajeno.
+
+| Alias | Nombre visible | Rol | Vínculo |
+|---|---|---|---|
+| `rodrigo+rev-admin@niage.es` | Revisión · Dirección | admin_iwl | Todo |
+| `rodrigo+rev-equipo@niage.es` | Revisión · Equipo IWL | equipo_iwl | Todo |
+| `rodrigo+rev-niage@niage.es` | Revisión · Ingeniería Niage | revisor_niage | Marea Clínica |
+| `rodrigo+rev-mentor1@niage.es` | Revisión · Mentor principal | mentor | Marea Clínica, mentor_principal |
+| `rodrigo+rev-mentor2@niage.es` | Revisión · Mentor secundario | mentor | Marea Clínica, mentor_secundario |
+| `rodrigo+rev-fundadora@niage.es` | Revisión · Fundadora | fundadora | Marea Clínica |
+| `rodrigo+rev-candidata@niage.es` | Revisión · Candidata | candidata | Una candidatura de demostración en NDA firmado, con su due diligence por entregar |
+
+Si existe `lector_externo` como rol con cuenta, añade su fila; si es solo enlace con caducidad, genera un enlace de la demo y ponlo en el fichero de accesos.
+
+Reglas:
+· Contraseña aleatoria por cuenta, generada por script, escrita **solo** en `.accesos-revision.md` (añadir a `.gitignore`). Ni en el seed, ni en la bitácora, ni en el chat.
+· Nombre visible siempre con el prefijo «Revisión ·», para que nunca se confundan con personas reales en listas, comentarios o tareas.
+· Se crean en local y en la nube. Script reutilizable: `npm run cuentas:revision`, idempotente, y `npm run cuentas:revision -- --borrar` para quitarlas todas.
+· La cuenta `candidata.prueba@iwl.es` se sustituye por la nueva y se borra.
+· En la bitácora: la tabla de arriba con lo que ve cada cuenta al entrar (pantalla de aterrizaje y pestañas visibles). Sirve de comprobación del paso 2 y de la tabla de visibilidad.
+
+### 2. Equipos de los proyectos reales
+
+Se registran como datos de la ficha. **No se crea ninguna cuenta todavía**: los correos están sin confirmar y antes hay que sustituir los `@iwl.es` provisionales.
+
+| Compañía | Persona | Papel |
+|---|---|---|
+| Igor Labs | Nuria Fernández | CEO. Socia de IWL y CEO de Nicea |
+| Siren | Agustina Gómez | Fundadora principal |
+| Siren | Camila Aguado | Socia fundadora |
+| La Pepi | Daniela Miazzo | Fundadora |
+| Proyecto Baires | Dr. Martín Celsi | Referente del proyecto, uno de varios socios |
+
+Nuria entra como **fundadora** de Igor Labs, no como equipo IWL: con rol de IWL vería la cartera del resto de la cohorte.
+
+---
+
 ## 2026-10-29 · Proyectos reales y un solo proyecto de demostración
 
 **Actualizado tras confirmar con Rodrigo: AgrolabX queda fuera del programa e Igor Labs sigue. Son cuatro proyectos reales, no tres.**

@@ -46,7 +46,12 @@ export default async function Comparativa() {
   if (!persona) redirect("/entrar");
   if (!capacidades(persona.role).verCartera) redirect("/");
 
-  const { companias } = await leerCartera();
+  /*
+   * Las reales, no todas: una compañía de demostración está hecha para
+   * recorrer todos los estados, así que aquí saldría con cifras inventadas
+   * al lado de las de verdad y en la misma tabla.
+   */
+  const { reales: companias } = await leerCartera();
 
   if (companias.length < 2) {
     return (

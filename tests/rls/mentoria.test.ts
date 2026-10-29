@@ -376,10 +376,30 @@ describe("la dedicación se mide contra lo asignado", () => {
       .eq("company_slug", "marea-clinica")
       .in("member_role", ["mentor_principal", "mentor_secundario"]);
 
-    expect(data?.length).toBe(2);
+    /*
+     * Hay al menos los dos de la semilla, y puede haber más.
+     *
+     * Contar exactamente dos daba por supuesto que nadie más está asignado
+     * a Marea Clínica, y eso dejó de ser cierto: es la compañía de
+     * demostración, así que de ella cuelgan las cuentas de revisión
+     * —`npm run cuentas:revision`— con las que se recorre la plataforma por
+     * rol. Lo que esta prueba comprueba es que cada mentor tiene sus horas,
+     * no cuántos mentores hay.
+     */
+    expect(data?.length).toBeGreaterThanOrEqual(2);
+    expect(
+      data?.some((m) => m.member_role === "mentor_secundario"),
+    ).toBe(true);
 
-    const principal = data!.find((m) => m.member_role === "mentor_principal")!;
-    expect(Number(principal.assigned_hours)).toBe(120);
+    /*
+     * El de la semilla, por sus horas asignadas: las cuentas de revisión
+     * no tienen ninguna, así que buscar «el que tiene 120» identifica al
+     * que esta prueba quiere mirar sin depender de cuántos haya.
+     */
+    const principal = data!.find(
+      (m) => m.member_role === "mentor_principal" && Number(m.assigned_hours) === 120,
+    )!;
+    expect(principal).toBeDefined();
     expect(Number(principal.imputadas)).toBeGreaterThan(0);
     expect(Number(principal.pct)).toBeGreaterThan(0);
   });
