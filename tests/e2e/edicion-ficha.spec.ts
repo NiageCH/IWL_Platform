@@ -22,7 +22,13 @@ test("desde la ficha de la compañía se llega a editarla, ya abierta", async ({
 }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica");
 
-  await page.getByRole("link", { name: "Editar la ficha" }).click();
+  /*
+   * Los enlaces sueltos de la cabecera pasan a un único menú de acciones.
+   * Eran tres compitiendo con el nombre de la compañía, y cada acción
+   * nueva empujaba a la siguiente.
+   */
+  await page.getByRole("button", { name: "Acciones" }).click();
+  await page.getByRole("menuitem", { name: "Editar la ficha" }).click();
 
   // Llega al formulario de esa compañía, abierto: no hay que buscar la fila
   await expect(page).toHaveURL(/\/admin\/companias\?editar=marea-clinica/);
@@ -123,7 +129,8 @@ test("desde la compañía también se llega a archivarla o darla de baja", async
    */
   await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica");
 
-  await page.getByRole("link", { name: "Archivar o dar de baja" }).click();
+  await page.getByRole("button", { name: "Acciones" }).click();
+  await page.getByRole("menuitem", { name: "Archivar o dar de baja" }).click();
 
   // Cae en su fila, con las dos opciones a mano
   await expect(page).toHaveURL(/\/admin\/companias#marea-clinica/);

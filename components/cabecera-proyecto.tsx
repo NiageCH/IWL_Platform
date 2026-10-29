@@ -1,20 +1,19 @@
 import {
-  Archive,
   Cpu,
   FileSignature,
   FolderCheck,
   HandCoins,
   LayoutDashboard,
   NotebookPen,
-  Pencil,
   Route,
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
-import { Cifra, Metadato, Semaforo } from "@/components/ui/primitivas";
+import { Metadato, Semaforo } from "@/components/ui/primitivas";
 import { Movimiento } from "@/components/evolucion";
 import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
+import { MenuAcciones } from "@/components/menu-acciones";
 import { numero } from "@/lib/utils";
 
 /**
@@ -25,17 +24,7 @@ import { numero } from "@/lib/utils";
  * abrir el módulo: qué mide y contra qué.
  */
 
-const ETAPAS: Record<string, string> = {
-  pre_semilla: "Pre-semilla",
-  semilla: "Semilla",
-  serie_a: "Serie A",
-};
 
-const PERFILES: Record<string, string> = {
-  software: "Software",
-  software_ia: "Software con IA",
-  hardware: "Hardware",
-};
 
 export function CabeceraProyecto({
   resumen,
@@ -50,7 +39,8 @@ export function CabeceraProyecto({
   /** Distancia desde la línea base. Sin él, la cifra solo cuenta el presente */
   movimiento?: { deltaTecnico: number | null; deltaPreparacion: number | null };
 }) {
-  const { compania, scoreTecnico, scorePreparacion, semaforo, invertible } = resumen;
+  const { compania, scoreTecnico, scorePreparacion, semaforo, permisos } =
+    resumen;
 
   const secciones: {
     codigo: NombreIcono;
@@ -70,127 +60,81 @@ export function CabeceraProyecto({
 
   return (
     <header className="border-b border-filete bg-lienzo/60">
-      <div className="mx-auto w-full max-w-6xl px-6 pt-6">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="relative pl-4">
-            <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
-            <div className="flex flex-wrap items-baseline gap-3">
-              <h1 className="titular-marca text-xl text-titular">
-                {compania.name}
-              </h1>
-              <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
-              {/*
-                Lo que se hace sobre una compañía, desde la compañía.
-                
-                Todo esto vive en Administración, y hay que saber que vive
-                allí. Rodrigo lo buscó tres veces desde aquí —para cambiar
-                el nombre, para restablecer una contraseña y para dar de
-                baja una startup— y las tres veces no había nada que
-                pulsar. El sitio donde uno se da cuenta de que hay que
-                hacer algo es la ficha, no el panel.
-                
-                Los dos enlaces llevan a su fila en Administración: el
-                primero con el formulario ya abierto, el segundo solo
-                hasta ella, porque archivar y borrar no se ofrecen
-                desplegados de antemano.
-              */}
-              {resumen.permisos.esIwl ? (
-                <>
-                  <Link
-                    href={`/admin/companias?editar=${compania.slug}#${compania.slug}`}
-                    className="accion text-xs"
-                  >
-                    <Pencil
-                      aria-hidden="true"
-                      className="size-3.5 text-acento-texto"
-                    />
-                    Editar la ficha
-                  </Link>
-                  <Link
-                    href={`/admin/companias#${compania.slug}`}
-                    className="accion text-xs"
-                  >
-                    <Archive
-                      aria-hidden="true"
-                      className="size-3.5 text-acento-texto"
-                    />
-                    Archivar o dar de baja
-                  </Link>
-                </>
-              ) : null}
-            </div>
-            <p className="mt-1 max-w-2xl text-sm text-secundario">
-              {compania.one_liner ?? "Sin descripción todavía."}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-              <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
-              <Metadato>{ETAPAS[compania.stage] ?? compania.stage}</Metadato>
-              <Metadato>{PERFILES[compania.tech_profile] ?? compania.tech_profile}</Metadato>
-              <Semaforo estado={semaforo.estado} motivo={semaforo.motivo} />
-            </div>
+      <div className="mx-auto w-full max-w-6xl px-6 pt-5">
+        {/*
+          Una línea, y en este orden: nombre · fase · semáforo · los dos
+          scores. A la derecha, un único menú de acciones.
+
+          Llevaba nombre, sector, dos enlaces de administración,
+          descripción, fase, etapa, perfil, semáforo y tres cifras con su
+          nota, y se repetía en las ocho pantallas de la compañía: la
+          cabecera pesaba más que el contenido que encabezaba.
+
+          Lo que se ha ido no se ha perdido. La descripción, el sector, la
+          etapa y el perfil bajan al Resumen, que es donde se leen una vez
+          y no ocho. «Invertible» también: su respuesta larga —qué falta—
+          ya vive ahí, en los siguientes pasos.
+        */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <div className="relative flex min-w-0 items-center gap-3 pl-3">
+            <span className="filete-acento absolute inset-y-1 left-0 w-0.5 rounded-full" />
+            <h1 className="titular-marca truncate text-lg text-titular">
+              {compania.name}
+            </h1>
           </div>
 
-          {/* En móvil las tres cifras se reparten en dos líneas antes que
-              obligar a desplazar la página en horizontal */}
-          <div className="flex flex-wrap gap-x-10 gap-y-4">
-            <Cifra
-              destacada
-              etiqueta="Score técnico"
-              /*
-               * Sin ninguna dimensión evaluada no hay score que enseñar. Una
-               * cifra ahí sería peor que un hueco: parecería una medición y
-               * es la ausencia de una.
-               */
+          <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
+          <Semaforo
+            estado={semaforo.estado}
+            motivo={semaforo.motivo}
+            compacto
+          />
+
+          <span className="flex-1" />
+
+          {/* Las dos cifras que se miran a diario, sin su nota larga */}
+          <span className="flex items-baseline gap-5">
+            <CifraCompacta
+              etiqueta="Técnico"
+              rotulo="Score técnico"
               valor={
-                scoreTecnico.evaluadas === 0 ? "—" : numero(scoreTecnico.valor, 1)
+                scoreTecnico.evaluadas === 0
+                  ? "—"
+                  : numero(scoreTecnico.valor, 1)
               }
-              nota={
-                <>
-                  {movimiento?.deltaTecnico !== undefined &&
-                  movimiento?.deltaTecnico !== null ? (
-                    <span className="block">
-                      <Movimiento delta={movimiento.deltaTecnico} />
-                    </span>
-                  ) : null}
-                  <span className="block">
-                    {scoreTecnico.evaluadas === 0
-                      ? "Due diligence técnico pendiente"
-                      : scoreTecnico.completo
-                        ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase()}`
-                        : `${scoreTecnico.evaluadas} de ${scoreTecnico.aplicables} dimensiones evaluadas`}
-                  </span>
-                </>
-              }
+              delta={movimiento?.deltaTecnico}
             />
-            <Cifra
+            <CifraCompacta
               etiqueta="Preparación"
+              rotulo="Score de preparación"
               valor={numero(scorePreparacion.valor, 1)}
-              nota={
-                <>
-                  {movimiento?.deltaPreparacion !== undefined &&
-                  movimiento?.deltaPreparacion !== null ? (
-                    <span className="block">
-                      <Movimiento delta={movimiento.deltaPreparacion} />
-                    </span>
-                  ) : null}
-                  <span className="block">
-                    {scorePreparacion.areas.length} áreas y la técnica
-                  </span>
-                </>
-              }
+              delta={movimiento?.deltaPreparacion}
             />
-            <Cifra
-              etiqueta="Invertible"
-              valor={invertible.invertible ? "Sí" : "No"}
-              nota={
-                invertible.invertible
-                  ? "Cumple la definición del programa"
-                  : invertible.siguientesPasos.length === 1
-                    ? "Un paso por delante"
-                    : `${invertible.siguientesPasos.length} pasos por delante`
-              }
+          </span>
+
+          {permisos.esIwl ? (
+            <MenuAcciones
+              acciones={[
+                {
+                  texto: "Editar la ficha",
+                  href: `/admin/companias?editar=${compania.slug}#${compania.slug}`,
+                },
+                {
+                  texto: "Informe para inversor",
+                  href: `/informe/tecnico-inversor/${compania.slug}`,
+                },
+                {
+                  texto: "Informe mensual",
+                  href: `/informe/mensual/${compania.slug}`,
+                },
+                {
+                  texto: "Archivar o dar de baja",
+                  href: `/admin/companias#${compania.slug}`,
+                  riesgo: true,
+                },
+              ]}
             />
-          </div>
+          ) : null}
         </div>
 
         <nav className="mt-6 flex flex-wrap gap-2">
@@ -220,5 +164,50 @@ export function CabeceraProyecto({
         </nav>
       </div>
     </header>
+  );
+}
+
+/**
+ * Una cifra de cabecera, sin su párrafo.
+ *
+ * Las tres que había llevaban cada una dos líneas de nota explicando de
+ * dónde salía. Está bien dicho y está bien que se diga —una vez, en el
+ * Resumen—, no ocho veces encima de cada pantalla.
+ */
+function CifraCompacta({
+  etiqueta,
+  rotulo,
+  valor,
+  delta,
+}: {
+  etiqueta: string;
+  /**
+   * El nombre entero, para quien no ve la pantalla.
+   *
+   * En compacto la etiqueta se abrevia —«Técnico»— y suelta no dice nada:
+   * un lector de pantalla leería «Técnico 94,2 flecha arriba 47,1». El
+   * rótulo devuelve el contexto que la abreviatura quita.
+   */
+  rotulo: string;
+  valor: string;
+  delta?: number | null;
+}) {
+  return (
+    <span aria-label={rotulo} className="flex items-baseline gap-1.5">
+      <span aria-hidden="true" className="text-xs text-metadato">
+        {etiqueta}
+      </span>
+      <span className="cifra text-base text-titular">{valor}</span>
+      {/*
+        El delta, sin su coletilla.
+        
+        «↑ 47,1 desde el inicio» ocupa media cabecera y repite ocho veces lo
+        mismo. Aquí solo la flecha y la cifra; el «desde el inicio» se lee
+        entero en el Resumen, con su línea base y su fecha.
+      */}
+      {delta !== undefined && delta !== null ? (
+        <Movimiento delta={delta} sufijo="" />
+      ) : null}
+    </span>
   );
 }

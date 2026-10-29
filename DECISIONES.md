@@ -1429,3 +1429,81 @@ la única señal: cada barra lleva su cifra y su nombre.
 
 Y las candidaturas pasan de cuatro líneas a una. Lo que se viene a hacer
 ahí es encontrar una y entrar, no leerse la descripción de las ocho.
+
+## 2026-10-29 · Paso 2 del rediseño: el esqueleto
+
+Sobre `docs/IWL_Doc_NavegacionUX_ES_v1_20261029.md`. El mapa del paso 1 está
+en `docs/IWL_Mapa_Actual_ES_v1_20261029.md`.
+
+### Permisos por capacidad, en un solo sitio
+
+`esIwl()` no daba para esto. Cubría dos roles de siete, y el revisor de
+Niage entraba en la cartera por una excepción escrita a mano en dos
+pantallas —`!esIwl(role) && role !== "revisor_niage"`—. Cada rol nuevo era
+buscar todas esas condiciones, y dejarse una no fallaba: solo dejaba a
+alguien fuera, o dentro, sin que nadie lo notara.
+
+Ahora se pregunta por capacidad —`verCartera`, `verEmbudo`,
+`configurarPrograma`, `tieneProyectoPropio`— y la tabla de qué puede cada
+rol vive en `lib/permisos.ts`. Añadir un rol es una fila.
+
+Las capacidades **por compañía** siguen donde estaban, en
+`lib/datos/permisos.ts`: dependen de la asignación, no del rol.
+
+### Mentor y revisor dejan de caer en `/proyecto`
+
+`/proyecto` deduce la compañía de la **primera** fila de `company_members`.
+Un mentor que lleva tres proyectos veía uno, al azar, y no tenía forma de
+llegar a los otros dos. Pasan a la cartera, que RLS ya filtra a lo suyo sin
+que la pantalla tenga que hacer nada.
+
+### El cerrojo de arriba, explícito
+
+Las rutas de compañía no miraban el rol: se apoyaban en que RLS no
+devolviera filas y en que la consulta de abajo redirigiera al no encontrar
+nada. Funciona, y RLS sigue siendo quien autoriza. Pero una comprobación
+que solo existe como efecto secundario de una consulta no se puede leer ni
+probar, y basta con añadir una lectura que no pase por RLS para abrirla sin
+que falle nada.
+
+Ahora los dos layouts lo dicen en voz alta. Y **404, no 403**: decir «no
+tienes permiso» confirma que esa compañía existe, y quién está en la
+cohorte no es público. Una prueba lo sujeta entrando como quien menos
+puede.
+
+### Un solo esqueleto y una sola lista
+
+La fundadora tenía solo la franja de arriba y IWL la barra lateral: lo que
+aprendía una persona no le servía para la otra vista. Ahora las dos tienen
+barra lateral, y la compacta de móvil es la misma lista, no otra.
+
+Eran **tres** listas duplicadas, no dos: las entradas en `barra-lateral` y
+`barra-superior`, y el repertorio de iconos otra vez en `nav-lateral`
+—cuatro iconos— frente al de `nav-secciones` —dieciséis—. Al meter «Mi
+compañía» en el menú el icono no existía en la copia pequeña. Las tres son
+ahora una.
+
+### La cabecera, de nueve datos a cinco
+
+Llevaba nombre, sector, dos enlaces de administración, descripción, fase,
+etapa, perfil, semáforo y tres cifras con dos líneas de nota cada una,
+repetido en las ocho pantallas de la compañía. Queda **nombre · fase ·
+semáforo · score técnico · preparación**, más un único menú de acciones.
+
+Lo quitado no se ha perdido, y esto importa: la primera versión de este
+cambio **sí lo perdió**. Al correr la suite, tres pruebas cayeron señalando
+que el motivo del semáforo, el «invertible» y la lectura de los scores
+habían desaparecido de la pantalla. No estaban en el documento como cosas a
+recolocar y yo tampoco las recoloqué. Ahora bajan al Resumen, que es donde
+se leen una vez en vez de ocho.
+
+El delta pierde su coletilla —«↑ 47,1» en vez de «↑ 47,1 desde el
+inicio»—, y el semáforo su motivo. Las dos cosas enteras están en el
+Resumen. Y la cifra compacta lleva `aria-label`: «Técnico 94,2 flecha
+arriba 47,1» no se entiende leído en voz alta.
+
+### Lo que se añade sin usar
+
+`<PanelLateral>` y `<MenuAcciones>`. El menú ya se usa; el panel no lo usa
+nadie todavía —las pantallas que lo van a usar se rehacen en el paso 5— y
+está anotado en el propio componente para que nadie piense que se olvidó.

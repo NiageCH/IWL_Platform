@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ChipCompania } from "@/components/chip-compania";
 import { redirect } from "next/navigation";
-import { personaActual, esIwl } from "@/lib/supabase/servidor";
+import { personaActual } from "@/lib/supabase/servidor";
+import { capacidades } from "@/lib/permisos";
 import { leerCartera } from "@/lib/datos/cartera";
 import {
   Bloque,
@@ -72,7 +73,12 @@ function DatoFila({
 export default async function Cartera() {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
-  if (!esIwl(persona.role) && persona.role !== "revisor_niage") redirect("/proyecto");
+  /*
+   * Quién entra aquí sale de la capacidad, no de una lista de roles con su
+   * excepción escrita a mano. Lo que cada quien ve dentro lo filtra RLS:
+   * un revisor o un mentor solo tienen sus compañías asignadas.
+   */
+  if (!capacidades(persona.role).verCartera) redirect("/");
 
   const {
     companias,

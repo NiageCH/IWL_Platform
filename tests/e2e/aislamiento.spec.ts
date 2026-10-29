@@ -34,8 +34,16 @@ test("la fundadora no llega a la cartera aunque escriba la ruta", async ({ page 
 test("la fundadora no alcanza otra compañía por su ruta", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea);
 
-  await page.goto("/cartera/vega-predictiva");
-  await expect(page).not.toHaveURL(/vega-predictiva/);
+  /*
+   * Ahora es un 404, no un rebote.
+   *
+   * Antes se confiaba en que la consulta no devolviera nada y la pantalla
+   * redirigiera; el layout de la compañía lo comprueba ya arriba. Y 404 y
+   * no 403 a propósito: decir «no tienes permiso» confirmaría que esa
+   * compañía existe, y quién está en la cohorte no es público.
+   */
+  const respuesta = await page.goto("/cartera/vega-predictiva");
+  expect(respuesta?.status()).toBe(404);
   await expect(page.getByText("Vega Predictiva")).toHaveCount(0);
 });
 

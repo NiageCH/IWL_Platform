@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { personaActual, esIwl } from "@/lib/supabase/servidor";
+import { personaActual } from "@/lib/supabase/servidor";
+import { menuDe } from "@/lib/navegacion";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavLateral, type EntradaLateral } from "./nav-lateral";
@@ -25,7 +26,7 @@ function iniciales(nombre: string) {
 }
 
 /**
- * La barra lateral de la consola de IWL.
+ * La barra lateral, la misma para todo el mundo.
  *
  * Sustituye a la franja superior, que era el patrón por defecto de cualquier
  * panel y no decía nada. Una columna vertical a toda altura cambia el
@@ -36,6 +37,10 @@ function iniciales(nombre: string) {
  * Va oscura sobre el área clara de trabajo. Dentro de `<Oscuro>` los tokens
  * cambian de valor, así que nada de lo que hay aquí necesita saberlo.
  *
+ * La usan los dos roles. Antes la fundadora solo tenía la franja de arriba,
+ * así que lo que aprendía una persona no le servía para la otra vista: dos
+ * esqueletos distintos para la misma plataforma.
+ *
  * Aparece a partir de `md`, 768 px, y no de `lg`: con el corte en 1024 una
  * ventana de portátil sin maximizar se quedaba con la barra de arriba, que
  * es justo lo que se quería dejar atrás. Por debajo de 768 no cabe una
@@ -45,20 +50,14 @@ export async function BarraLateral() {
   const persona = await personaActual();
   if (!persona) return null;
 
-  const entradas: EntradaLateral[] = [
-    { href: "/cartera", nombre: "Cartera", icono: "cartera" },
-    { href: "/embudo", nombre: "Embudo", icono: "embudo" },
-    { href: "/comparativa", nombre: "Comparativa", icono: "comparativa" },
-    ...(persona.role === "admin_iwl"
-      ? [
-          {
-            href: "/admin",
-            nombre: "Administración",
-            icono: "administracion" as const,
-          },
-        ]
-      : []),
-  ];
+  /*
+   * Las entradas salen de `lib/navegacion.ts`, no de aquí.
+   *
+   * Estaban escritas a mano en esta barra y otra vez en la de arriba, y
+   * había que acordarse de tocar las dos. Ahora las dos leen la misma
+   * lista, y quién ve qué se decide por capacidad en `lib/permisos.ts`.
+   */
+  const entradas: EntradaLateral[] = menuDe(persona.role);
 
   const nombre = persona.full_name ?? persona.email ?? "";
 
@@ -79,8 +78,13 @@ export async function BarraLateral() {
         </span>
       </Link>
 
+      {/*
+        Sin comprobar el rol aquí: la lista ya viene filtrada por capacidad.
+        Antes había un `esIwl()` que escondía el menú entero a quien no
+        fuera IWL, y era la razón de que la fundadora necesitara otra barra.
+      */}
       <div className="flex-1 px-3 py-2">
-        {esIwl(persona.role) ? <NavLateral entradas={entradas} /> : null}
+        <NavLateral entradas={entradas} />
       </div>
 
       {/*

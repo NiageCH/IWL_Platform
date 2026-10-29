@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { personaActual, esIwl } from "@/lib/supabase/servidor";
+import { personaActual } from "@/lib/supabase/servidor";
+import { inicioDe } from "@/lib/permisos";
 
 /**
  * Raíz. Lleva a cada persona a su vista.
@@ -16,7 +17,11 @@ export default async function Inicio() {
   const persona = await personaActual();
 
   if (!persona) redirect("/entrar");
-  if (esIwl(persona.role)) redirect("/cartera");
-  if (persona.role === "candidata") redirect("/candidatura");
-  redirect("/proyecto");
+  /*
+   * A dónde va cada quien lo decide `lib/permisos.ts`, no esta cadena.
+   *
+   * Eran tres condiciones escritas aquí, y había que acordarse de tocarlas
+   * al añadir un rol. Un mentor caía en `/proyecto` por descarte.
+   */
+  redirect(inicioDe(persona.role));
 }

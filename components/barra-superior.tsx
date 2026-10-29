@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { personaActual, esIwl } from "@/lib/supabase/servidor";
+import { personaActual } from "@/lib/supabase/servidor";
+import { menuDe } from "@/lib/navegacion";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavSecciones } from "./nav-secciones";
@@ -53,28 +54,15 @@ export async function BarraSuperior() {
             solo el color al pasar por encima no dice que se pueda pulsar, y
             sin pasar por encima no dice nada.
           */}
-          {persona && esIwl(persona.role) ? (
-            <NavSecciones
-              className="mb-0"
-              secciones={[
-                { href: "/cartera", nombre: "Cartera", icono: "cartera" },
-                { href: "/embudo", nombre: "Embudo", icono: "embudo" },
-                {
-                  href: "/comparativa",
-                  nombre: "Comparativa",
-                  icono: "comparativa",
-                },
-                ...(persona.role === "admin_iwl"
-                  ? [
-                      {
-                        href: "/admin",
-                        nombre: "Administración",
-                        icono: "administracion" as const,
-                      },
-                    ]
-                  : []),
-              ]}
-            />
+          {/*
+            La misma lista que la barra lateral.
+            
+            Estaba escrita aquí otra vez, a mano, y había que acordarse de
+            tocar las dos. Ahora las dos leen `lib/navegacion.ts`, y quién
+            ve qué se decide por capacidad en un solo sitio.
+          */}
+          {persona ? (
+            <NavSecciones className="mb-0" secciones={menuDe(persona.role)} />
           ) : null}
           {/* Quién eres, y la puerta a cambiar tu contraseña */}
           {persona ? (

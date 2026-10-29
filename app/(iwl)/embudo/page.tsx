@@ -6,7 +6,8 @@ import {
   Inbox,
   XCircle,
 } from "lucide-react";
-import { personaActual, esIwl } from "@/lib/supabase/servidor";
+import { personaActual } from "@/lib/supabase/servidor";
+import { capacidades } from "@/lib/permisos";
 import { leerEmbudo, leerCohortes } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
 import { EmbudoVisual, FilaCandidatura } from "@/components/embudo-visual";
@@ -38,7 +39,7 @@ export const metadata = { title: "Embudo · Plataforma IWL" };
 export default async function Embudo() {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
-  if (!esIwl(persona.role)) redirect("/proyecto");
+  if (!capacidades(persona.role).verEmbudo) redirect("/");
 
   const {
     abiertas,

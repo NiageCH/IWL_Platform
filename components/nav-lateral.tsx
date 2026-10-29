@@ -2,26 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BarChart3,
-  Filter,
-  LayoutGrid,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
+import { ICONOS } from "./nav-secciones";
 import { cn } from "@/lib/utils";
-
-const ICONOS = {
-  cartera: LayoutGrid,
-  embudo: Filter,
-  comparativa: BarChart3,
-  administracion: Settings,
-} satisfies Record<string, LucideIcon>;
 
 export type EntradaLateral = {
   href: string;
   nombre: string;
   icono: keyof typeof ICONOS;
+  /** Marca la entrada como abierta también en sus subrutas */
+  prefijo?: string;
 };
 
 /**

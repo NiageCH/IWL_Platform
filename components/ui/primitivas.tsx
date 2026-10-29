@@ -162,21 +162,34 @@ const TONOS_SEMAFORO = {
 export function Semaforo({
   estado,
   motivo,
+  compacto = false,
 }: {
   estado: "verde" | "ambar" | "rojo";
   motivo: string;
+  /**
+   * Solo la palabra, con el motivo en el título.
+   *
+   * Para la cabecera de la compañía, que tiene que caber en una línea: el
+   * motivo —«un hito retrasado»— es justo lo que la hacía partirse en dos.
+   * Se lee entero en el Resumen, que es donde se actúa sobre él.
+   *
+   * La palabra se queda en los dos casos: el color nunca es la única
+   * señal.
+   */
+  compacto?: boolean;
 }) {
   const nombre = { verde: "En curso", ambar: "Atención", rojo: "Bloqueo" }[estado];
 
   return (
     <span
+      title={compacto ? motivo : undefined}
       className={cn(
         "inline-flex items-baseline gap-2 border-l-2 pl-2 text-xs",
         TONOS_SEMAFORO[estado],
       )}
     >
       <span className="font-semibold uppercase tracking-wide">{nombre}</span>
-      <span className="text-secundario">{motivo}</span>
+      {compacto ? null : <span className="text-secundario">{motivo}</span>}
     </span>
   );
 }

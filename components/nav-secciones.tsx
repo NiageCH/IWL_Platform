@@ -33,7 +33,15 @@ import { cn } from "@/lib/utils";
  * El icono acompaña al rótulo, nunca lo sustituye: el texto va siempre al
  * lado. Un icono suelto es una adivinanza.
  */
-const ICONOS = {
+/*
+ * El repertorio, exportado.
+ *
+ * `nav-lateral.tsx` tenía su propia copia con cuatro iconos, así que al
+ * meter «Mi compañía» en el menú lateral el icono no existía allí. Era la
+ * tercera lista duplicada del mismo asunto —las dos primeras eran las
+ * entradas del menú—, y se resuelve igual: una sola.
+ */
+export const ICONOS = {
   cartera: LayoutGrid,
   embudo: Filter,
   comparativa: BarChart3,

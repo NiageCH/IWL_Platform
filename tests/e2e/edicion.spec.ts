@@ -36,13 +36,13 @@ test("la fundadora sí responde el cuestionario técnico", async ({ page }) => {
 test("el revisor de Niage puntúa y el score se mueve", async ({ page }) => {
   await entrarComo(page, USUARIOS.revisorMarea, "/cartera/marea-clinica/tecnico");
 
-  // La cifra de la cabecera, no la del panel de evolución
-  const cifra = page
-    .locator("header")
-    .locator("div")
-    .filter({ has: page.getByText("Score técnico", { exact: true }) })
-    .last();
-
+  /*
+   * La cifra de la cabecera, no la del panel de evolución.
+   *
+   * La cabecera pasó a una línea y las cifras son `span`, no `div`: ya no
+   * llevan su nota de dos líneas debajo, que se lee entera en el Resumen.
+   */
+  const cifra = page.getByLabel("Score técnico");
   await expect(cifra).toContainText("94,2");
 
   // Seguridad es la única dimensión con brecha en los datos semilla
@@ -65,7 +65,12 @@ test("el revisor de Niage puntúa y el score se mueve", async ({ page }) => {
 
   // El recorrido no se mueve: las instantáneas están congeladas y la de hoy
   // se tomó antes de este cambio. Es lo que las hace comparables
-  await expect(cifra).toContainText("↑ 47,1 desde el inicio");
+  /*
+   * Sin la coletilla: en la cabecera el delta va solo con su flecha y su
+   * cifra. El «desde el inicio» se lee entero en el Resumen, junto a la
+   * línea base y su fecha.
+   */
+  await expect(cifra).toContainText("↑ 47,1");
 
   // Se deja la puntuación como estaba: los tests no ensucian la semilla
   await bloque.locator('select[name="level"]').selectOption("2");

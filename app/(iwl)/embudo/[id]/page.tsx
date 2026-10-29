@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
+import { personaActual, clienteServidor } from "@/lib/supabase/servidor";
+import { capacidades } from "@/lib/permisos";
 import { leerCandidatura } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
 import { direccionBase } from "@/lib/direccion";
@@ -45,7 +46,7 @@ export default async function FichaCandidatura({
 }: PageProps<"/embudo/[id]">) {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
-  if (!esIwl(persona.role)) redirect("/proyecto");
+  if (!capacidades(persona.role).verEmbudo) redirect("/");
 
   const { id } = await params;
   const datos = await leerCandidatura(id);

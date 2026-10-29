@@ -23,15 +23,21 @@ test("el menú marca dónde estás y se lee como un control", async ({ page }) =
   await expect(cartera).toHaveClass(/item-lateral-activo/);
   await expect(cartera).toHaveAttribute("aria-current", "page");
 
-  const comparativa = page.getByRole("link", { name: "Comparativa", exact: true });
-  await expect(comparativa).toHaveClass(/item-lateral/);
-  await expect(comparativa).not.toHaveClass(/item-lateral-activo/);
-  await expect(comparativa).not.toHaveAttribute("aria-current", "page");
+  /*
+   * Se mira «Embudo» y ya no «Comparativa»: la comparativa deja de ser
+   * entrada propia del menú y pasa a ser una forma de mirar la cartera.
+   * Tener dos entradas para la misma pregunta era parte del problema.
+   */
+  const embudo = page.getByRole("link", { name: "Embudo", exact: true });
+  await expect(embudo).toHaveClass(/item-lateral/);
+  await expect(embudo).not.toHaveClass(/item-lateral-activo/);
+  await expect(embudo).not.toHaveAttribute("aria-current", "page");
 
-  await comparativa.click();
-  await expect(page).toHaveURL(/comparativa/);
+  // Y al cambiar de sitio, la marca se mueve con la persona
+  await embudo.click();
+  await expect(page).toHaveURL(/embudo/);
   await expect(
-    page.getByRole("link", { name: "Comparativa", exact: true }),
+    page.getByRole("link", { name: "Embudo", exact: true }),
   ).toHaveClass(/item-lateral-activo/);
 });
 
@@ -137,7 +143,7 @@ test("el botón principal es una cápsula en mayúsculas", async ({ page }) => {
 test("todo lo que se pulsa tiene foco visible", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera");
 
-  const enlace = page.getByRole("link", { name: "Comparativa", exact: true });
+  const enlace = page.getByRole("link", { name: "Embudo", exact: true });
   await enlace.focus();
 
   const contorno = await enlace.evaluate((e) => {

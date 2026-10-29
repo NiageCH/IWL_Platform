@@ -1,4 +1,17 @@
 import Link from "next/link";
+
+/** Los dos diccionarios que bajaron de la cabecera con sus datos */
+const ETAPAS: Record<string, string> = {
+  pre_semilla: "Pre-semilla",
+  semilla: "Semilla",
+  serie_a: "Serie A",
+};
+
+const PERFILES: Record<string, string> = {
+  software: "Software",
+  software_ia: "Software con IA",
+  hardware: "Hardware",
+};
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { leerMovimiento } from "@/lib/datos/movimiento";
 import { leerAvance } from "@/lib/datos/avance";
@@ -7,7 +20,15 @@ import { VistaTareas } from "./tareas";
 import { Evolucion } from "@/components/evolucion";
 import { VistaMadurez } from "./madurez";
 import { EnlacesInforme } from "@/components/informe/enlace";
-import { Bloque, Cifra, Metadato, Severidad, SinDatos, TituloBloque } from "@/components/ui/primitivas";
+import {
+  Bloque,
+  Cifra,
+  Metadato,
+  Semaforo,
+  Severidad,
+  SinDatos,
+  TituloBloque,
+} from "@/components/ui/primitivas";
 import { euros, numero, porcentaje } from "@/lib/utils";
 
 /**
@@ -22,7 +43,8 @@ export async function VistaResumen({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const { invertible, kpis, hallazgos, scorePreparacion } = resumen;
+  const { compania, invertible, kpis, hallazgos, scorePreparacion, scoreTecnico, semaforo } =
+    resumen;
   const movimiento = await leerMovimiento(resumen.compania.id);
   const avance = await leerAvance(
     resumen.compania.id,
@@ -60,6 +82,76 @@ export async function VistaResumen({
         >
           Por dónde va
         </TituloBloque>
+
+        {/*
+          Lo que bajó de la cabecera.
+          
+          La descripción, el sector, la etapa y el perfil estaban arriba, y
+          arriba se repetían en las ocho pantallas de la compañía. Aquí se
+          leen una vez, que es las que hacen falta.
+        */}
+        <div className="border-b border-filete px-4 py-3">
+          <p className="text-sm text-cuerpo">
+            {compania.one_liner ?? "Sin descripción todavía."}
+          </p>
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
+            <Metadato>{ETAPAS[compania.stage] ?? compania.stage}</Metadato>
+            <Metadato>
+              {PERFILES[compania.tech_profile] ?? compania.tech_profile}
+            </Metadato>
+            {compania.website ? (
+              <a
+                href={compania.website}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="enlace text-xs text-acento-texto"
+              >
+                {compania.website.replace(/^https?:\/\//, "")}
+              </a>
+            ) : null}
+          </p>
+        </div>
+
+        {/*
+          El estado, con su porqué.
+          
+          Esto estaba en la cabecera: el semáforo con su motivo, el
+          «invertible» y la lectura de cada score. De la cabecera se fue
+          porque la hacía pesar más que el contenido y se repetía en las
+          ocho pantallas. Aquí se lee una vez y entero, que es lo que hacía
+          falta: arriba queda la señal, aquí el motivo.
+        */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-filete px-4 py-3">
+          <Semaforo estado={semaforo.estado} motivo={semaforo.motivo} />
+
+          <span className="flex items-baseline gap-2 text-xs">
+            <span className="text-metadato">Invertible</span>
+            <span className="cifra text-sm text-titular">
+              {invertible.invertible ? "Sí" : "No"}
+            </span>
+            <span className="text-metadato">
+              {invertible.invertible
+                ? "cumple la definición del programa"
+                : invertible.siguientesPasos.length === 1
+                  ? "un paso por delante"
+                  : `${invertible.siguientesPasos.length} pasos por delante`}
+            </span>
+          </span>
+
+          <span className="text-xs text-metadato">
+            {scoreTecnico.evaluadas === 0
+              ? "Due diligence técnico pendiente"
+              : scoreTecnico.completo
+                ? `Score técnico sobre el objetivo de ${(ETAPAS[compania.stage] ?? compania.stage).toLowerCase()}`
+                : `${scoreTecnico.evaluadas} de ${scoreTecnico.aplicables} dimensiones técnicas evaluadas`}
+          </span>
+
+          <span className="text-xs text-metadato">
+            Preparación sobre {scorePreparacion.areas.length} áreas y la técnica
+          </span>
+        </div>
+
         <AvanceDelProgramaVista avance={avance} />
       </Bloque>
 

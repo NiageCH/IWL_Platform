@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { personaActual, esIwl, clienteServidor } from "@/lib/supabase/servidor";
+import { personaActual, clienteServidor } from "@/lib/supabase/servidor";
+import { capacidades } from "@/lib/permisos";
 import { leerCartera } from "@/lib/datos/cartera";
 import {
   Bloque,
@@ -43,7 +44,7 @@ const KPI_COMUNES = [
 export default async function Comparativa() {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
-  if (!esIwl(persona.role) && persona.role !== "revisor_niage") redirect("/proyecto");
+  if (!capacidades(persona.role).verCartera) redirect("/");
 
   const { companias } = await leerCartera();
 

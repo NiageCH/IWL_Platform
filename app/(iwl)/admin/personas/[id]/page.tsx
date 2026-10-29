@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
+import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
+import { capacidades } from "@/lib/permisos";
 import {
   Bloque,
   Cifra,
@@ -47,7 +48,7 @@ export default async function FichaPersona({
 }: PageProps<"/admin/personas/[id]">) {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
-  if (!esIwl(persona.role)) redirect("/proyecto");
+  if (!capacidades(persona.role).verCartera) redirect("/");
 
   const { id } = await params;
   const supabase = await clienteServidor();
