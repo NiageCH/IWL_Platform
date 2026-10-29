@@ -9,6 +9,49 @@ como es**.
 
 ---
 
+## 2026-10-29 · La demostración, las cuentas de revisión y los equipos · commits f19f7ac · a8bac8c
+
+**Qué cambió**
+· **AgrolabX sin los seis meses de KPI inventados**, como dijiste. Quedan los 19 KPI elegidos: eso es *qué se mide*, no cuánto dio, y esa elección sí se tomó de verdad.
+· **`is_demo`**. Marea Clínica marcada. Se ve en la cartera y en su cabecera con el distintivo «Demostración», y **sale de todo agregado**: comparativa, embudo hacia invertible, radares, runway, compromiso IWL, evolución y la lectura de cohorte.
+· **Ocho cuentas de revisión**, `npm run cuentas:revision`. Las siete de tu tabla más `lector_externo`, que sí existe como rol con cuenta. Contraseñas en **`.accesos-revision.md`** (en `.gitignore`).
+· **Los equipos de los cuatro proyectos**, en la sección «Equipo» del business plan.
+
+**Dónde aterriza cada cuenta** — comprobado con prueba, no a ojo:
+
+| Alias | Rol | Aterriza en | Y ve |
+|---|---|---|---|
+| `rev-admin` | admin_iwl | `/cartera` | Todo, con Administración |
+| `rev-equipo` | equipo_iwl | `/cartera` | Cartera y embudo, sin configuración |
+| `rev-niage` | revisor_niage | `/cartera` | Solo la demostración |
+| `rev-mentor1` | mentor | `/cartera` | Solo la demostración, como quien coordina |
+| `rev-mentor2` | mentor | `/cartera` | Solo la demostración, como secundario |
+| `rev-fundadora` | fundadora | `/proyecto` | Su proyecto |
+| `rev-lector` | lector_externo | `/proyecto` | Su proyecto |
+| `rev-candidata` | candidata | `/candidatura` | Su candidatura y su DD por entregar |
+
+**Qué decidí yo**
+· **`is_demo` y no `archived_at`.** Archivarla la saca de la cartera, que es justo donde tiene que verse. Hacía falta una marca propia.
+· **En la base y no en una lista de slugs en el código.** Quién es la demostración cambia según la instalación, y una lista en el código acaba apuntando a un proyecto real el día que cambie. Por lo mismo, el script de cuentas **busca la demo por `is_demo` y se para si no hay ninguna**, en vez de elegir una.
+· **La candidata tiene su propia candidatura, no una de la semilla.** La primera versión cogía la primera en NDA que encontrara, y eso rompió una prueba: darle cuenta anula el enlace privado, que era justo lo que esa prueba comprobaba.
+· **Los equipos van al business plan y no a `company_members`**, que exige cuenta. Dijiste que no se crean cuentas todavía, y una cuenta con un correo equivocado no es un dato pendiente: es una persona que no puede entrar y un enlace de acceso en el buzón de otro.
+· **Añadí `lector_externo`**, que preguntabas si existía. Existe como rol con cuenta y aterriza en `/proyecto`.
+· Toqué una prueba de RLS que daba por supuesto que Marea tenía exactamente dos mentores. Dejó de ser cierto al colgar de ella las cuentas de revisión.
+
+**Qué necesito que decidas**
+1. **El punto 1 sigue a medias.** Marcada y fuera de los agregados, sí. **Completada para recorrer cada estado, no**: falta la lista larga —hitos en los cuatro estados, hallazgos de las cuatro severidades, DD en los cinco, introducciones en los cinco, desembolso sin justificante, update vencido, comentarios sin responder…—. Es el trozo más largo de los tres y lo dejé para después de las cuentas, que es lo que estabas esperando.
+2. Datos que siguen vacíos: correos del equipo fundador, mentoría de Siren, Igor y Baires, liderazgo femenino de Igor y Baires, web de Siren, nombres de los equipos quirúrgicos de Baires.
+
+**Estado**
+· 76 · 136 · 161 · 161, dos pasadas limpias.
+· **Sin publicar: 8 commits locales.** El `git push` me lo bloquea el clasificador y no lo fuerzo.
+· En la nube no hay nada de esto: ni `is_demo`, ni las cuentas, ni Baires, ni los identificadores corregidos. Dijiste que la subida va cuando tú digas.
+
+**Siguiente**
+Completar la demostración hasta que recorra cada estado, con la lista en la bitácora de qué dato cubre cada uno.
+
+---
+
 ## 2026-10-29 · AgrolabX: fuera del programa y sin actividad inventada · commit db3dcbc
 
 **Qué cambió**
