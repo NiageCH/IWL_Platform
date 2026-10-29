@@ -9,6 +9,62 @@ como es**.
 
 ---
 
+## 2026-10-29 · AgrolabX: fuera del programa y sin actividad inventada · commit PENDIENTE
+
+**Qué cambió**
+· Fuera de `seed/local/30_agrolabx.sql`: 16 líneas de horas, 2 desembolsos, 5 contactos, 5 introducciones y 4 entregables. 90 líneas.
+· Se queda el Anexo I y sus 3 compromisos de caja: es lo firmado.
+· AgrolabX archivada con motivo «Fuera del programa». No borrada.
+
+**Qué decidí yo**
+· **Los entregables también se van**, y no estaban en tu lista. Son de la misma naturaleza que lo demás: salen en el mismo extracto de aportación, como trabajo que IWL dice haber entregado. Si los querías dentro, dímelo y vuelven.
+· **Los seis meses de KPI se quedan**, y sí son inventados. No alimentan el extracto —que es el criterio que diste— pero son datos falsos en un proyecto real. Decides tú: una línea y se van.
+· Sin `archived_by`: no lo archivó nadie, lo trae así la semilla. Poner ahí a una persona sería inventar quién tomó la decisión.
+
+**Qué necesito que decidas**
+1. ¿Los seis meses de KPI inventados se quedan o se van?
+2. ¿Los entregables estaban fuera de tu lista a propósito?
+
+**Estado**
+· 76 · 136 · 146. Nada dependía de esa actividad.
+· El fichero es `seed/local/`, que no se versiona: este commit solo lleva la bitácora.
+· **AgrolabX no está en la nube.** Ya no. Así que allí no hay nada que archivar.
+
+**Siguiente**
+El punto 1, la demostración, que es el que queda.
+
+---
+
+## 2026-10-29 · Los cuatro proyectos reales · commit PENDIENTE2
+
+**Qué cambió**
+· Terral Barria → **La Pepi** (`la-pepi`), Roster → **Siren** (`siren`), y la web `roster.ai` vaciada.
+· **Proyecto Baires** dado de alta. Son cuatro.
+· Los cuatro en fase_1, due diligence conjunto, con checklist, business plan y KPI instanciados.
+· El identificador viejo redirige al nuevo conservando la subpágina, también sin sesión. `lib/renombres.ts` y el proxy.
+
+**Qué decidí yo**
+· **La redirección no estaba pedida como mecanismo, solo como «redirigir el viejo».** La puse en el proxy y no en el layout porque así conserva la pestaña: lo que alguien guarda no suele ser la portada de la ficha sino `/tecnico` o `/plan`. Y va antes de la guardia de sesión, porque si cayera después mandaríamos a entrar y de vuelta al identificador viejo.
+· **Renombrar por id y no por slug** en la semilla: el insert lleva `on conflict (id) do nothing` —correcto, el fichero se ejecuta muchas veces y no debe pisar lo editado— pero eso significa que en una base donde ya existían, el nombre nuevo no llegaría nunca.
+· **Entrada de Baires: `idea`.** Dijiste «idea con activo propio». El activo —la ontología de nueve estructuras— no cambia que no hay producto; se nota en el texto, no en el estado.
+· **`female_leadership_pct` vacío en Igor y en Baires**, como pediste. El 100 % que traía Igor no tenía fuente.
+
+**Qué necesito que decidas**
+1. Lo que dejé vacío por no tener dato: equipo fundador de los cuatro (no hay correos), mentoría de Siren, Igor y Baires, porcentaje de liderazgo femenino de Igor y Baires, web de Siren, y los nombres de los equipos quirúrgicos de Baires —esos dijiste que los pones tú—.
+2. Nada de esto está en la nube todavía: dijiste que la subida va cuando tú digas.
+
+**Estado**
+· 76 · 136 · 149 · 149, dos pasadas limpias.
+· **Inventario de la nube**, que pediste antes de tocarla: La Pepi (slug `terral-barria`), Siren (slug `roster`) e Igor Labs, activas; `qqq` archivada; `German`/`w`, `sjcnksdncn`/`ttttttt` y `PIRULO`/`pirulo`, activas. Siete. **Ni AgrolabX ni Baires ni Marea están allí.**
+· Los nombres ya estaban cambiados en la nube; los identificadores no.
+· `seed/local/21_proyectos.sql` no se versiona: de este commit solo se sube la redirección y su prueba.
+
+**Siguiente**
+· Pendiente el **punto 1, la demostración**: Marea con `is_demo`, distintivo visible, fuera de todo agregado, y completada hasta recorrer cada estado. Es el trozo grande y no lo he empezado.
+· Hice el 2 y el 3 y me salté el 1, que iba en medio. No tenía motivo para cambiar tu orden: seguí por donde ya estaba trabajando.
+
+---
+
 ## 2026-10-29 · Corregir un mes de KPI, y los guardianes · commits 532d87b · b9988f0 · fbff9ff
 
 **Qué cambió**
