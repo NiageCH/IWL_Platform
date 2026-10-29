@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-29 · AgrolabX: fuera del programa y sin actividad inventada · commit PENDIENTE
+## 2026-10-29 · AgrolabX: fuera del programa y sin actividad inventada · commit db3dcbc
 
 **Qué cambió**
 · Fuera de `seed/local/30_agrolabx.sql`: 16 líneas de horas, 2 desembolsos, 5 contactos, 5 introducciones y 4 entregables. 90 líneas.
@@ -35,7 +35,7 @@ El punto 1, la demostración, que es el que queda.
 
 ---
 
-## 2026-10-29 · Los cuatro proyectos reales · commit PENDIENTE2
+## 2026-10-29 · Los cuatro proyectos reales · commit 700f63a
 
 **Qué cambió**
 · Terral Barria → **La Pepi** (`la-pepi`), Roster → **Siren** (`siren`), y la web `roster.ai` vaciada.
