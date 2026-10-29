@@ -22,7 +22,8 @@
     "snapshots": "tsx scripts/snapshots.mts",
     "altas:locales": "node scripts/altas-locales.mjs",
     "informes": "node scripts/informes.mjs",
-    "sembrar:nube": "node scripts/sembrar-nube.mjs"
+    "sembrar:nube": "node scripts/sembrar-nube.mjs",
+    "cuentas:revision": "node scripts/cuentas-revision.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

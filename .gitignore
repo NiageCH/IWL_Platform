@@ -63,3 +63,6 @@ informes/
 
 # Tabla de accesos generada por scripts/claves.mjs. Contraseñas en claro.
 .accesos-nube.md
+
+# Contraseñas de las cuentas de revisión, generadas al azar
+.accesos-revision.md
