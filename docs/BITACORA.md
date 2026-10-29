@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-29 · Convención de informes y tabla de visibilidad · commit pendiente
+## 2026-10-29 · Convención de informes y tabla de visibilidad · commit 1265e18
 
 **Qué cambió**
 · `CLAUDE.md` gana la sección «Cómo se reporta»: cada paso termina con su entrada aquí, y `docs/REVISION.md` es el canal de vuelta.
