@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { rutaRenombrada } from "@/lib/renombres";
 
 /**
  * Refresco de sesión y guardia de rutas.
@@ -39,6 +40,22 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const ruta = request.nextUrl.pathname;
+
+  /*
+   * Una compañía que cambió de nombre.
+   *
+   * Antes de la guardia de sesión, para que el enlace viejo funcione
+   * igual lo abra quien lo abra: si cayera después, a quien no tuviera
+   * sesión lo mandaríamos a entrar y luego al identificador viejo, que ya
+   * no existe.
+   */
+  const renombrada = rutaRenombrada(ruta);
+  if (renombrada) {
+    const destino = request.nextUrl.clone();
+    destino.pathname = renombrada;
+    return NextResponse.redirect(destino, 308);
+  }
+
   const esRutaPublica =
     ruta.startsWith("/entrar") ||
     ruta.startsWith("/auth") ||
