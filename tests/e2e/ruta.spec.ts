@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { COMPANIAS, USUARIOS, borrar, entrarComo } from "./entrada";
+import {
+  COMPANIAS,
+  USUARIOS,
+  actualizar,
+  borrar,
+  consultar,
+  entrarComo,
+} from "./entrada";
 
 /**
  * Hoja de ruta.
@@ -156,12 +163,48 @@ test("un hito del plan sin cumplir bloquea el estado invertible", async ({
    * daba por cumplidos sin decirlo. Marea supera los dos scores y no tiene
    * hallazgos críticos, así que lo único que puede estar frenándola son los
    * hitos de su hoja de ruta que todavía no ha cerrado.
+   *
+   * La prueba se crea su propia condición en vez de confiar en la semilla.
+   *
+   * Confiaba, y tenía fecha de caducidad: la semilla marca como cumplidos
+   * los hitos de las etapas ya terminadas, y las fechas de las etapas van
+   * contra `current_date`. Según pasan las semanas, más etapas quedan
+   * atrás y más hitos salen cumplidos. El día que los cuatro hitos que
+   * condicionan el estado invertible quedaron cerrados, esta prueba empezó
+   * a comprobar lo contrario de lo que dice —y en verde, porque nunca
+   * llegó a mirar que de verdad hubiera uno pendiente—.
    */
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
+  const [hito] = await consultar<{ id: string; status: string }>(
+    "milestones",
+    {
+      company_id: `eq.${COMPANIAS.marea}`,
+      gates_investable: "eq.true",
+      limit: "1",
+    },
+    "id,status",
+  );
 
-  await expect(
-    page.getByText(/Cumplir el hito del Anexo/).first(),
-  ).toBeVisible();
+  const estadoOriginal = hito.status;
+  await actualizar(
+    "milestones",
+    { id: `eq.${hito.id}` },
+    { status: "pendiente", completed_on: null },
+  );
+
+  try {
+    await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
+
+    await expect(
+      page.getByText(/Cumplir el hito del Anexo/).first(),
+    ).toBeVisible();
+  } finally {
+    // Se deja como estaba, pase lo que pase con la aserción de arriba
+    await actualizar(
+      "milestones",
+      { id: `eq.${hito.id}` },
+      { status: estadoOriginal },
+    );
+  }
 });
 
 test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
