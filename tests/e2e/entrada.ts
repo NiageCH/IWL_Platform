@@ -253,3 +253,66 @@ export async function consultar<T = Record<string, unknown>>(
 
   return respuesta.json() as Promise<T[]>;
 }
+
+/**
+ * Los ficheros que hay en un sitio del almacenamiento.
+ *
+ * Postgres no sabe de Storage: un `delete` arrastra filas por sus claves
+ * ajenas y deja los ficheros donde estaban. Para comprobar que una limpieza
+ * se los llevó hay que preguntárselo al almacenamiento, no a la base.
+ */
+export async function ficherosEn(
+  bucket: string,
+  prefijo: string,
+): Promise<string[]> {
+  const { url, clave } = supabase();
+
+  const respuesta = await fetch(`${url}/storage/v1/object/list/${bucket}`, {
+    method: "POST",
+    headers: {
+      apikey: clave,
+      Authorization: `Bearer ${clave}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefix: prefijo, limit: 100 }),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(
+      `No se ha podido listar ${bucket}/${prefijo}: ${respuesta.status} ${await respuesta.text()}`,
+    );
+  }
+
+  const ficheros = (await respuesta.json()) as Array<{ name: string }>;
+  return ficheros.map((f) => f.name);
+}
+
+/**
+ * Deja un fichero en el almacenamiento, para montar el escenario de una
+ * prueba. El tipo importa: los buckets rechazan lo que no esperan —el de
+ * logos solo admite imágenes—, así que va como argumento y no fijo.
+ */
+export async function subirFichero(
+  bucket: string,
+  ruta: string,
+  contenido: Uint8Array,
+  tipo: string,
+): Promise<void> {
+  const { url, clave } = supabase();
+
+  const respuesta = await fetch(`${url}/storage/v1/object/${bucket}/${ruta}`, {
+    method: "POST",
+    headers: {
+      apikey: clave,
+      Authorization: `Bearer ${clave}`,
+      "Content-Type": tipo,
+    },
+    body: new Blob([contenido as BlobPart], { type: tipo }),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(
+      `No se ha podido subir ${bucket}/${ruta}: ${respuesta.status} ${await respuesta.text()}`,
+    );
+  }
+}

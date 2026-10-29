@@ -814,13 +814,23 @@ export async function borrarCompania(formData: FormData): Promise<Resultado> {
   }
 
   const supabase = await clienteServidor();
+  const ficheros = await rutasDeLaCompania(supabase, datos.id);
+
   const { error: falloBase } = await supabase.rpc("borrar_compania", {
     target_company: datos.id,
   });
 
   if (falloBase) return traducirError(falloBase);
 
+  /*
+   * «No tenía nada registrado» cuenta horas, documentos, hitos y KPI, pero
+   * no el logo: una compañía creada por error y luego abandonada suele
+   * tener exactamente eso y nada más, así que este camino es el que más
+   * ficheros deja sueltos, no el otro.
+   */
+  await limpiarFicheros(supabase, datos.id, ficheros);
   refrescar();
+
   return ok(`${datos.slug} borrada. No tenía nada registrado.`);
 }
 
@@ -1372,6 +1382,79 @@ export async function abrirCv(profileId: string): Promise<Resultado & { url?: st
 }
 
 /** Qué hay dentro de una compañía, para enseñarlo antes de destruirlo */
+/**
+ * Las rutas de los ficheros de una compañía, para poder borrarlos después.
+ *
+ * Un `delete` en Postgres arrastra las filas por sus claves ajenas, pero los
+ * ficheros no están en Postgres: viven en Storage, bajo `logos/<id>/…` y
+ * `data-room/<id>/…`. Borrada la compañía nadie los referencia, así que ni
+ * se ven ni hay por dónde llegar a ellos para limpiarlos: ocupan, se pagan,
+ * y una dirección firmada que alguien guardara seguiría abriendo el fichero
+ * de un proyecto que oficialmente ya no existe.
+ *
+ * Se leen antes porque después ya no se podrán leer.
+ */
+async function rutasDeLaCompania(
+  supabase: Awaited<ReturnType<typeof clienteServidor>>,
+  companyId: string,
+): Promise<{ logos: string[]; dataRoom: string[] }> {
+  const [{ data: compania }, { data: versiones }] = await Promise.all([
+    supabase.from("companies").select("logo_path").eq("id", companyId).maybeSingle(),
+    supabase.from("document_versions").select("storage_path").eq("company_id", companyId),
+  ]);
+
+  return {
+    logos: compania?.logo_path ? [compania.logo_path] : [],
+    dataRoom: (versiones ?? [])
+      .map((v) => v.storage_path)
+      .filter((r): r is string => Boolean(r)),
+  };
+}
+
+/**
+ * Quita del almacenamiento lo que la compañía tenía.
+ *
+ * Va después del borrado y no antes: lo que autoriza es la base, así que si
+ * el borrado se rechaza los ficheros tienen que seguir donde estaban.
+ *
+ * Lo que sobre se apunta en el registro de actividad y **no** se devuelve
+ * como mensaje: al borrar, la fila que contiene el formulario desaparece de
+ * la lista y se lleva su propio acuse al desmontarse. Un aviso que nadie
+ * puede llegar a leer es peor que no darlo, porque hace creer que está
+ * avisado. Aquí el acuse es la pantalla cambiada —la compañía ya no está— y
+ * el rastro de lo que quedó suelto queda donde se puede consultar después.
+ */
+async function limpiarFicheros(
+  supabase: Awaited<ReturnType<typeof clienteServidor>>,
+  companyId: string,
+  ficheros: { logos: string[]; dataRoom: string[] },
+): Promise<void> {
+  const sobras: Record<string, string[]> = {};
+
+  if (ficheros.logos.length) {
+    const { error: fallo } = await supabase.storage.from("logos").remove(ficheros.logos);
+    if (fallo) sobras.logos = ficheros.logos;
+  }
+
+  if (ficheros.dataRoom.length) {
+    const { error: fallo } = await supabase.storage
+      .from("data-room")
+      .remove(ficheros.dataRoom);
+    if (fallo) sobras["data-room"] = ficheros.dataRoom;
+  }
+
+  if (!Object.keys(sobras).length) return;
+
+  const persona = await personaActual();
+  await supabase.from("activity_log").insert({
+    actor_id: persona?.id ?? null,
+    entity: "companies",
+    entity_id: companyId,
+    action: "ficheros_sin_borrar",
+    detail: sobras,
+  });
+}
+
 export async function contenidoCompania(
   companyId: string,
 ): Promise<Record<string, number>> {
@@ -1413,12 +1496,16 @@ export async function borrarCompaniaConTodo(
   }
 
   const supabase = await clienteServidor();
+  const ficheros = await rutasDeLaCompania(supabase, datos.id);
+
   const { error: falloBase } = await supabase.rpc("borrar_compania_con_todo", {
     target_company: datos.id,
   });
 
   if (falloBase) return traducirError(falloBase);
 
+  await limpiarFicheros(supabase, datos.id, ficheros);
   refrescar();
+
   return ok(`${datos.slug} borrada con todo su histórico.`);
 }
