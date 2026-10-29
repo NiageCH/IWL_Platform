@@ -287,6 +287,15 @@ el código, el problema es el código.
 poder pasar dos veces seguidas: la que toca configuración la restaura por fuera
 del camino que prueba, y la que crea datos los limpia.
 
+**Un guardián de autorización se exime sin sesión; uno de integridad, no.**
+«Esto es de IWL» no significa nada cuando no hay nadie: la clave de
+servicio ya se salta el RLS entero, así que bloquearla no protege y sí
+impide restaurar una prueba o correr un script. «Un Anexo firmado no se
+edita» sí vale siempre, lo escriba quien lo escriba; la semilla desactiva
+ese disparador a mano cuando lo necesita, y así se ve. Si la semilla quiere
+que un guardián de autorización se aplique, se declara una sesión con
+`set_config('request.jwt.claims', …)`.
+
 **Restaurar y borrar no son lo mismo.** Lo que la prueba creó se borra —cuentas
 incluidas, que viven en `auth.users` y no se van con el perfil—; lo que
 encontró se deja como estaba. Un `delete` sobre una fila de la semilla hace
@@ -299,6 +308,13 @@ suite pasó de minuto y medio a ocho, fallando en sitios distintos en cada
 pasada— y el síntoma apunta siempre a lo último que se tocó. Con la
 compilación la suite tarda lo mismo siempre, y de paso destapó un fallo que
 solo existía en producción: una página pública que se prerrenderizaba.
+
+**La semilla se mueve con el calendario.** Las fechas de las etapas van
+contra `current_date`, así que según pasan las semanas más etapas quedan
+atrás y más hitos salen cumplidos. Una prueba que da por supuesto el estado
+de hoy deja de comprobar lo que dice sin que nadie se entere —y sigue en
+verde mientras nadie reinicie la base—. Si una prueba necesita una
+condición, se la crea y la restaura en un `finally`.
 
 **Una pantalla se prueba con una compañía recién creada, no con las de la
 semilla.** Las de la semilla traen evaluación técnica, Anexo y hoja de ruta,

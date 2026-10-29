@@ -2246,6 +2246,73 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"kpi_value_history": {
+                  Row: {
+                    "changed_at": string,"changed_by": string | null,"company_id": string,"company_kpi_id": string,"id": string,"kpi_value_id": string | null,"nota": string | null,"period": string,"valor_anterior": number | null,"valor_nuevo": number | null
+                  }
+                  Insert: {
+                    "changed_at"?: string,"changed_by"?: string | null,"company_id": string,"company_kpi_id": string,"id"?: string,"kpi_value_id"?: string | null,"nota"?: string | null,"period": string,"valor_anterior"?: number | null,"valor_nuevo"?: number | null
+                  }
+                  Update: {
+                    "changed_at"?: string,"changed_by"?: string | null,"company_id"?: string,"company_kpi_id"?: string,"id"?: string,"kpi_value_id"?: string | null,"nota"?: string | null,"period"?: string,"valor_anterior"?: number | null,"valor_nuevo"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "kpi_value_history_changed_by_fkey"
+      columns: ["changed_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_changed_by_fkey"
+      columns: ["changed_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_changed_by_fkey"
+      columns: ["changed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "kpi_value_history_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "kpi_value_history_company_kpi_id_fkey"
+      columns: ["company_kpi_id"]
+isOneToOne: false
+      referencedRelation: "company_kpis"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kpi_value_history_kpi_value_id_fkey"
+      columns: ["kpi_value_id"]
+isOneToOne: false
+      referencedRelation: "kpi_values"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"kpi_values": {
                   Row: {
                     "company_id": string,"company_kpi_id": string,"created_at": string,"created_by": string | null,"id": string,"note": string | null,"period": string,"source": string,"target_value": number | null,"update_id": string | null,"updated_at": string,"value": number | null
@@ -3945,6 +4012,9 @@ isOneToOne: false
                            },
 "puede_cambiar_correo":
 { Args: { "target_profile": string }; Returns: boolean
+                           },
+"reabrir_update":
+{ Args: { "target_update": string }; Returns: undefined
                            },
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined

@@ -1507,3 +1507,68 @@ arriba 47,1» no se entiende leído en voz alta.
 `<PanelLateral>` y `<MenuAcciones>`. El menú ya se usa; el panel no lo usa
 nadie todavía —las pantallas que lo van a usar se rehacen en el paso 5— y
 está anotado en el propio componente para que nadie piense que se olvidó.
+
+## 2026-10-29 · Corregir un mes de KPI, y dos cosas que salieron al hacerlo
+
+### Un mes enviado no se podía corregir
+
+La pantalla de carga calcula sola el mes: «el siguiente al último con
+datos». Así que un MRR mal tecleado quedaba mal para siempre, y arrastraba
+el runway, el crecimiento y la comparativa de toda la cohorte.
+`guardarValorKpi` existía desde el principio y no tenía por dónde llamarse.
+
+Corregir un número ya entregado no es lo mismo que cargarlo: alguien pudo
+decidir con el valor viejo. Así que no basta con dejar escribir encima.
+
+**El límite.** Mientras IWL no haya revisado el mes, lo corrige la
+compañía. Revisado, hace falta que IWL lo reabra —y reabrir queda en el
+registro de actividad, porque deshacer una validación tiene que poder
+explicarse—.
+
+**El rastro.** Tabla propia, `kpi_value_history`, y no `activity_log`: esto
+se enseña en la pantalla del mes junto al valor, y un registro general no
+se consulta por compañía y periodo sin volverse caro. Lo escribe un
+disparador y no la acción: si dependiera de que la acción se acuerde,
+bastaría una corrección por otro camino para que el rastro mintiera por
+omisión. Un rastro con huecos es peor que no tenerlo, porque invita a
+confiar en él.
+
+Las derivadas y la comparativa no hacen nada especial: leen `kpi_values`,
+así que recalculan solas. Las instantáneas no, y eso es a propósito: están
+congeladas para poder comparar.
+
+### Una prueba con fecha de caducidad
+
+Al reiniciar la base cayó «un hito del plan sin cumplir bloquea el estado
+invertible». No por el cambio: la semilla marca como cumplidos los hitos de
+las etapas ya terminadas, y las fechas de las etapas van contra
+`current_date`. Según pasan las semanas, más etapas quedan atrás y más
+hitos salen cumplidos. El día que se cerraron los cuatro que condicionan el
+estado invertible, la prueba pasó a comprobar lo contrario de lo que dice.
+
+Llevaba semanas en verde porque nadie reiniciaba la base. Es la segunda vez
+que aparece este patrón —la primera fue la convocatoria, en octubre— y la
+lección es la misma: **una prueba que depende de cómo está la semilla hoy
+no comprueba lo que dice.** Ahora se crea su propia condición y la
+restaura en un `finally`.
+
+### Los guardianes y la clave de servicio
+
+Cuarta vez que una prueba no podía dejar la semilla como la encontró: usa
+la clave de servicio —que es como se restaura, por fuera del camino que se
+prueba— y un disparador la rechazaba diciendo «eso es de IWL». Sin sesión
+no hay un «quién» a quien restringir, y la clave de servicio ya se salta el
+RLS entero por diseño: bloquearla no protege nada y sí impide lo legítimo.
+
+Se arregla de una vez, con una distinción que conviene no mezclar:
+
+- **Guardián de autorización** —«esto es de IWL», «esto es de quien
+  coordina»— se exime sin sesión. Son seis.
+- **Guardián de integridad** —«un Anexo firmado no se edita», «una línea
+  base no se edita», «no hay tarifa vigente»— **no** se exime: esas reglas
+  valen las escriba quien las escriba. Son tres, y la semilla ya desactiva
+  el disparador a mano cuando necesita saltárselas, que es como debe verse.
+
+Y cuando la semilla quiere que un guardián de autorización sí se aplique,
+se declara una sesión con `set_config('request.jwt.claims', …)`, que es lo
+que ya hace `seed/03_actividad.sql`.

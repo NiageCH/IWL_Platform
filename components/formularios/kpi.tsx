@@ -1,6 +1,15 @@
 "use client";
 
-import { guardarUpdate, guardarValoresDelMes } from "@/lib/acciones/kpi";
+import { useState } from "react";
+import { Pencil, Unlock } from "lucide-react";
+import type { MesCargado } from "@/lib/datos/correcciones";
+
+import {
+  guardarUpdate,
+  guardarValorKpi,
+  guardarValoresDelMes,
+  reabrirUpdate,
+} from "@/lib/acciones/kpi";
 import {
   AreaTexto,
   Boton,
@@ -178,6 +187,136 @@ export function FormularioUpdate({
             </Campo>
             <Boton>Guardar update</Boton>
           </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Corregir un mes ya cargado.
+ *
+ * No existía: la pantalla solo ofrece cargar «el siguiente al último con
+ * datos», así que un MRR mal tecleado quedaba mal para siempre y arrastraba
+ * el runway, el crecimiento y la comparativa.
+ *
+ * Un campo por KPI, con el valor actual puesto. Se guarda uno a uno y no
+ * en bloque: una corrección es puntual —un número concreto que estaba
+ * mal— y guardar la columna entera metería en el historial cambios que
+ * nadie hizo.
+ */
+export function CorregirMes({
+  slug,
+  companyId,
+  mes,
+}: {
+  slug: string;
+  companyId: string;
+  mes: MesCargado;
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  if (mes.revisado) {
+    return (
+      <span className="text-xs text-metadato">
+        Revisado por IWL. Para corregirlo, que lo reabran
+      </span>
+    );
+  }
+
+  if (!abierto) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAbierto(true)}
+        className="accion text-xs"
+      >
+        <Pencil aria-hidden="true" className="size-3.5 text-acento-texto" />
+        Corregir este mes
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-full border-t border-filete pt-3">
+      <ul className="flex flex-col gap-3">
+        {mes.valores.map((v) => (
+          <li key={v.companyKpiId}>
+            <Formulario accion={guardarValorKpi} className="gap-2">
+              {(r) => (
+                <>
+                  <input type="hidden" name="slug" value={slug} />
+                  <input type="hidden" name="company_id" value={companyId} />
+                  <input
+                    type="hidden"
+                    name="company_kpi_id"
+                    value={v.companyKpiId}
+                  />
+                  <input type="hidden" name="period" value={mes.periodo} />
+
+                  <Campo
+                    etiqueta={v.nombre}
+                    error={r.ok ? undefined : r.campos?.value}
+                  >
+                    <div className="flex gap-2">
+                      <Texto
+                        name="value"
+                        inputMode="decimal"
+                        defaultValue={v.valor === null ? "" : String(v.valor)}
+                        className="flex-1"
+                      />
+                      <Boton>Corregir</Boton>
+                    </div>
+                  </Campo>
+
+                  <Campo
+                    etiqueta="Por qué cambia"
+                    ayuda="Queda en el historial del mes, junto al valor anterior"
+                  >
+                    <Texto name="note" placeholder="Error al teclear" />
+                  </Campo>
+                </>
+              )}
+            </Formulario>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        type="button"
+        onClick={() => setAbierto(false)}
+        className="mt-3 rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
+      >
+        Cerrar
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Reabrir un mes que IWL ya revisó.
+ *
+ * Solo lo ve IWL. Deshacer una validación tiene que poder explicarse
+ * después, así que la función de la base lo apunta en el registro de
+ * actividad.
+ */
+export function ReabrirMes({
+  slug,
+  updateId,
+}: {
+  slug: string;
+  updateId: string;
+}) {
+  return (
+    <Formulario accion={reabrirUpdate} className="gap-0">
+      {() => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="id" value={updateId} />
+          <button type="submit" className="accion text-xs">
+            <Unlock aria-hidden="true" className="size-3.5 text-acento-texto" />
+            Reabrir para corregir
+          </button>
         </>
       )}
     </Formulario>

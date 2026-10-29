@@ -5,6 +5,7 @@ import { z } from "zod";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
   error,
+  numeroEscritoAMano,
   ok,
   textoObligatorio,
   textoOpcional,
@@ -77,14 +78,28 @@ const esquemaValor = z.object({
   company_id: uuid,
   company_kpi_id: uuid,
   period: periodo,
-  value: z
-    .string()
-    .trim()
-    .transform((v) => (v === "" ? null : Number(v)))
-    .refine((v) => v === null || Number.isFinite(v), "Escribe un número."),
+  /* Con el signo, la coma y los espacios que teclea una persona */
+  value: numeroEscritoAMano(
+    -1_000_000_000,
+    1_000_000_000,
+    "Escribe un número.",
+  ),
   note: textoOpcional,
 });
 
+/**
+ * Corregir **un** valor de un mes ya cargado.
+ *
+ * Existía desde el principio y no tenía por dónde llamarse, así que un mes
+ * enviado no se podía arreglar: la pantalla solo ofrece cargar «el
+ * siguiente al último con datos». Un MRR mal tecleado quedaba mal para
+ * siempre y arrastraba el runway, el crecimiento y la comparativa.
+ *
+ * El límite y el rastro no están aquí: los pone la base. Un mes que IWL ya
+ * revisó lo rechaza un disparador, y cada cambio de valor se apunta solo en
+ * `kpi_value_history`. Repetirlo en la acción sería la misma regla en dos
+ * sitios que pueden discrepar.
+ */
 export async function guardarValorKpi(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaValor, formData);
   if (fallo) return fallo;
@@ -106,7 +121,32 @@ export async function guardarValorKpi(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(datos.slug);
-  return ok();
+  return ok("Corregido. Las derivadas y la comparativa se recalculan solas.");
+}
+
+/**
+ * Reabrir un mes que IWL ya revisó, para que se pueda corregir.
+ *
+ * Es de IWL y deja rastro en el registro de actividad: reabrir es deshacer
+ * una validación, y eso tiene que poder explicarse después. Quién puede lo
+ * decide la función de la base, no esto.
+ */
+export async function reabrirUpdate(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ slug: textoObligatorio(), id: uuid }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("reabrir_update", {
+    target_update: datos.id,
+  });
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar(datos.slug);
+  return ok("Mes reabierto. La compañía ya puede corregirlo.");
 }
 
 /**

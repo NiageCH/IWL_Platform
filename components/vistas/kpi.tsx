@@ -9,7 +9,16 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
-import { CargaKpis, FormularioUpdate } from "@/components/formularios/kpi";
+import {
+  CargaKpis,
+  CorregirMes,
+  FormularioUpdate,
+  ReabrirMes,
+} from "@/components/formularios/kpi";
+import {
+  leerCorrecciones,
+  leerMesesCargados,
+} from "@/lib/datos/correcciones";
 import { valorKpi as formatear } from "@/lib/etiquetas";
 import { fecha, numero, porcentaje } from "@/lib/utils";
 
@@ -38,7 +47,7 @@ export async function VistaKpi({
   const companyId = resumen.compania.id;
   const { permisos, compania } = resumen;
 
-  const [series, updates, cartera] = await Promise.all([
+  const [series, updates, cartera, meses, correcciones] = await Promise.all([
     supabase
       .from("kpi_series")
       .select("period, code, name, unit, value, target_value, category")
@@ -59,6 +68,8 @@ export async function VistaKpi({
       .eq("company_id", companyId)
       .eq("is_active", true)
       .order("order_index"),
+    leerMesesCargados(companyId),
+    leerCorrecciones(companyId),
   ]);
 
   const filas = series.data ?? [];
@@ -181,6 +192,90 @@ export async function VistaKpi({
           );
         })}
       </div>
+
+      {/*
+        Corregir un mes ya enviado.
+        
+        No se podía: la carga calcula sola «el siguiente al último con
+        datos», así que un MRR mal tecleado quedaba mal para siempre y
+        arrastraba el runway, el crecimiento y la comparativa. El límite
+        —un mes revisado por IWL solo se corrige si lo reabren— y el rastro
+        los pone la base, no esta pantalla.
+      */}
+      <Bloque>
+        <TituloBloque
+          accion={
+            <Metadato>
+              {correcciones.length === 0
+                ? "Sin correcciones"
+                : `${correcciones.length} ${correcciones.length === 1 ? "corrección" : "correcciones"}`}
+            </Metadato>
+          }
+        >
+          Corregir un mes
+        </TituloBloque>
+
+        {meses.length === 0 ? (
+          <SinDatos>
+            Todavía no hay ningún mes cargado que corregir.
+          </SinDatos>
+        ) : (
+          <ul className="divide-y divide-filete">
+            {meses.map((m) => (
+              <li
+                key={m.periodo}
+                className="flex flex-wrap items-baseline gap-x-4 gap-y-2 px-4 py-3"
+              >
+                <span className="cifra text-sm text-titular">{m.periodo}</span>
+                <Etiqueta>
+                  {m.estado === "revisado"
+                    ? "Revisado"
+                    : m.estado === "entregado"
+                      ? "Entregado"
+                      : m.estado === "borrador"
+                        ? "Borrador"
+                        : "Sin update"}
+                </Etiqueta>
+                <span className="flex-1" />
+
+                {permisos.puedeEscribir ? (
+                  <CorregirMes
+                    slug={compania.slug}
+                    companyId={companyId}
+                    mes={m}
+                  />
+                ) : null}
+
+                {permisos.esIwl && m.revisado && m.updateId ? (
+                  <ReabrirMes slug={compania.slug} updateId={m.updateId} />
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {correcciones.length > 0 ? (
+          <details className="border-t border-filete px-4 py-3">
+            <summary className="accion cursor-pointer text-xs">
+              Historial de correcciones
+            </summary>
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {correcciones.map((c) => (
+                <li key={c.id} className="flex flex-wrap gap-x-3 text-xs">
+                  <span className="cifra text-metadato">{c.periodo}</span>
+                  <span className="text-titular">{c.nombre}</span>
+                  <span className="cifra text-secundario">
+                    {c.anterior ?? "—"} → {c.nuevo ?? "—"}
+                  </span>
+                  <span className="text-metadato">
+                    {c.quien ?? "alguien"} · {fecha(c.cuando)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+      </Bloque>
 
       <Bloque>
         <TituloBloque accion={<Metadato>Calculadas, no introducidas</Metadato>}>
