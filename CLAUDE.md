@@ -247,6 +247,34 @@ guardar.
 escriben como se los diría una persona a otra: qué ha pasado y qué hacer, sin
 signos de exclamación.
 
+## Cómo se reporta
+
+**Al terminar cada paso o cada encargo, la entrada va en `docs/BITACORA.md`**,
+la más reciente arriba. Solo se añaden entradas: una escrita no se reescribe
+nunca, ni para corregirla. Si algo resultó estar mal, se dice en la entrada
+siguiente.
+
+```
+## AAAA-MM-DD · <título corto> · commit <hash>
+**Qué cambió** · lo hecho, en frases cortas
+**Qué decidí yo** · lo que se interpretó sin que lo dijeran
+**Qué necesito que decidas** · preguntas numeradas, una por línea
+**Estado** · suites, despliegue, lo que queda sin usar o pendiente
+**Siguiente** · lo próximo que se haría
+```
+
+«Qué decidí yo» no es opcional ni de relleno: es donde se ve lo que se dio
+por supuesto. Un encargo sin interpretaciones es raro; si esa sección sale
+vacía, casi siempre es que no se ha mirado.
+
+Es complementario a `DECISIONES.md`, no lo sustituye. La bitácora cuenta
+**qué pasó en cada tanda**; `DECISIONES.md` cuenta **por qué algo es como
+es**, y se lee cuando ese algo parece raro.
+
+**`docs/REVISION.md` es el canal de vuelta.** Cuando se diga «lee
+docs/REVISION.md», ahí están las respuestas y los encargos nuevos: se
+trabaja sobre la entrada más reciente.
+
 ## Al escribir
 
 En castellano: identificadores, comentarios, mensajes y commits. Los nombres de
