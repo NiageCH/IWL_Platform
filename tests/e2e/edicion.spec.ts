@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, entrarComo } from "./entrada";
+import { COMPANIAS, USUARIOS, borrar, entrarComo } from "./entrada";
 
 /**
  * Edición desde la interfaz.
@@ -124,6 +124,17 @@ test("la fundadora carga los KPI del mes y las derivadas se calculan solas", asy
   // español.
   const fila = page.locator("tr", { hasText: mes });
   await expect(fila).toContainText("12,0 meses");
+
+  /*
+   * El mes se borra al salir.
+   *
+   * Esta prueba crea un mes que la semilla no tenía, y la comparativa
+   * enseña **un solo mes: el más reciente de toda la cohorte**. Dejándolo
+   * puesto, la comparativa salta a un mes en el que solo Vega tiene datos
+   * y las demás aparecen vacías —y la prueba que comprueba la comparativa
+   * falla, en otro fichero y por un motivo que no se parece a su causa.
+   */
+  await borrar("kpi_values", { company_id: COMPANIAS.vega, period: `${mes}-01` });
 });
 
 test("la fundadora edita una sección del plan pero no la valida", async ({ page }) => {

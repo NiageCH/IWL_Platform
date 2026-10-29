@@ -93,6 +93,13 @@ test("un MRR mal tecleado se corrige y la comparativa cambia", async ({
   await page.waitForURL(/\/entrar/);
   await entrarComo(page, USUARIOS.admin, "/comparativa");
 
+  /*
+   * Primero, que la comparativa esté mirando el mes que acabamos de
+   * corregir: enseña uno solo, el más reciente de toda la cohorte. Si otra
+   * prueba deja cargado un mes posterior, aquí se vería ese y la
+   * comprobación de abajo fallaría sin decir por qué.
+   */
+  await expect(page.getByText(mesTocado)).toBeVisible();
   await expect(page.getByText(/999\.999|999999/).first()).toBeVisible();
 });
 
