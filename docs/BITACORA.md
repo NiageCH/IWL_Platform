@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-30 · Un solo lenguaje de estados · commit PENDIENTE
+## 2026-10-30 · Un solo lenguaje de estados · commit 6533987
 
 **Qué cambió**
 · **Cinco estados y nada más**, en `lib/estados.ts`: hecho, en curso, por hacer, atención, vencido, más «no aplica». Una función, `estadoVisual(entidad, fila)`, traduce lo que hay en la base —hitos, tareas, puntos de due diligence, secciones del plan, updates, KPI, hallazgos, tramos— a uno de ellos. 37 pruebas, todas con la fecha pasada a mano.
