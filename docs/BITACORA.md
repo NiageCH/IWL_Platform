@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-30 · Menos bloques, menos magenta y el plan en una barra · commit PENDIENTE
+## 2026-10-30 · Menos bloques, menos magenta y el plan en una barra · commit 16cc113
 
 **Qué cambió**
 · **El magenta deja de pintar datos.** Barras de preparación, radares, curvas, embudo, el avance del programa y la cifra destacada pasan a `--color-dato`, un gris oscuro, con la línea de objetivo discontinua. Sigue habiendo un solo color de serie. El magenta se queda en marca, navegación, enlaces y acción principal.
