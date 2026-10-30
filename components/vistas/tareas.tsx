@@ -1,5 +1,5 @@
 import type { ResumenCompania } from "@/lib/datos/compania";
-import { leerAsignables, leerTareas } from "@/lib/datos/tareas";
+import { leerAsignables, leerTareas, type Tarea } from "@/lib/datos/tareas";
 import {
   Bloque,
   Etiqueta,
@@ -12,6 +12,8 @@ import {
   EstadoTarea,
   NuevaTarea,
 } from "@/components/formularios/tareas";
+import { BarraSegmentada, Estado } from "@/components/ui/estado";
+import { estadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,10 @@ const ESTADOS: Record<string, string> = {
 };
 
 const CERRADAS = ["hecha", "descartada"];
+
+/** El estado visual de una tarea, que se pide en la barra y en cada fila */
+const visualTarea = (t: Tarea) =>
+  estadoVisual("tarea", { estado: t.status, fecha: t.due_date });
 
 export async function VistaTareas({
   resumen,
@@ -66,6 +72,23 @@ export async function VistaTareas({
         Quién hace qué
       </TituloBloque>
 
+      {/*
+        Las tareas, de un vistazo y antes de la lista. Con doce encargos
+        repartidos, cuántos están vencidos no se sabía sin contarlos.
+      */}
+      {tareas.length > 0 ? (
+        <div className="border-b border-filete px-4 py-3">
+          <BarraSegmentada
+            etiqueta="Tareas del proyecto"
+            segmentos={tareas.map((t) => ({
+              id: t.id,
+              estado: visualTarea(t),
+              rotulo: t.title,
+            }))}
+          />
+        </div>
+      ) : null}
+
       {vivas.length === 0 ? (
         <SinDatos>
           No hay nada encargado. Una tarea es para lo que tiene dueño y fecha:
@@ -94,7 +117,7 @@ export async function VistaTareas({
                 <span
                   className={cn(
                     "cifra shrink-0 text-xs",
-                    t.vencida ? "text-mal" : "text-metadato",
+                    t.vencida ? "es-vencido texto-estado" : "text-metadato",
                   )}
                 >
                   {t.vencida ? "venció el " : ""}
@@ -116,9 +139,20 @@ export async function VistaTareas({
               )}
 
               {permisos.puedeEscribir ? (
-                <EstadoTarea slug={compania.slug} id={t.id} estado={t.status} />
+                <>
+                  <Estado valor={visualTarea(t)} soloIcono />
+                  <EstadoTarea
+                    slug={compania.slug}
+                    id={t.id}
+                    estado={t.status}
+                    visual={visualTarea(t)}
+                  />
+                </>
               ) : (
-                <Etiqueta>{ESTADOS[t.status] ?? t.status}</Etiqueta>
+                <Estado
+                  valor={visualTarea(t)}
+                  rotulo={ESTADOS[t.status] ?? t.status}
+                />
               )}
             </li>
           ))}
@@ -140,7 +174,10 @@ export async function VistaTareas({
                   {t.title}
                 </span>
                 <Metadato>{t.owner ?? "Sin asignar"}</Metadato>
-                <Etiqueta>{ESTADOS[t.status] ?? t.status}</Etiqueta>
+                <Estado
+                  valor={visualTarea(t)}
+                  rotulo={ESTADOS[t.status] ?? t.status}
+                />
               </li>
             ))}
           </ul>

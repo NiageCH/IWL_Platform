@@ -114,7 +114,6 @@ export default async function Embudo() {
         <Bloque className="p-6">
           <Cifra
             icono={CheckCircle2}
-            tono="menta"
             etiqueta="Firmadas"
             valor={numero(firmadas.length)}
             nota="Ya están en la cartera"
@@ -132,7 +131,6 @@ export default async function Embudo() {
         <Bloque className="p-6">
           <Cifra
             icono={FileSignature}
-            tono="cielo"
             etiqueta="De cada 100 cerradas, firman"
             valor={conversion === null ? "—" : porcentaje(conversion, 0)}
             nota={

@@ -8,6 +8,8 @@ import {
   guardarAnexo,
   registrarHoras,
 } from "@/lib/acciones/programa";
+import type { EstadoVisual } from "@/lib/estados";
+import { cn } from "@/lib/utils";
 import {
   AreaTexto,
   Boton,
@@ -28,11 +30,14 @@ export function EstadoHito({
   slug,
   id,
   estado,
+  visual,
   puedeConfirmar,
 }: {
   slug: string;
   id: string;
   estado: string;
+  /** El estado visual, para que el control lleve su color */
+  visual: EstadoVisual;
   puedeConfirmar: boolean;
 }) {
   return (
@@ -46,7 +51,7 @@ export function EstadoHito({
             name="status"
             defaultValue={estado}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className="py-1 text-xs"
+            className={cn("select-estado py-1 text-xs", `es-${visual}`)}
             error={!resultado.ok}
           >
             <option value="pendiente">Pendiente</option>

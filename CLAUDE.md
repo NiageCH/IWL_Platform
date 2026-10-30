@@ -151,6 +151,17 @@ redefine los tokens. Ningún componente sabe en qué tema está.
 de superficie se separan de verdad. Con `#000000` los tres niveles iban 0 → 9
 → 24 sobre 255, una diferencia que no se ve.
 
+**Un estado se pinta con `<Estado>`, nunca a mano.** Cinco —hecho, en
+curso, por hacer, atención, vencido— más un «no aplica», iguales para los
+tres públicos. La traducción de lo que hay en la base a uno de ellos está
+en `lib/estados.ts`, en `estadoVisual(entidad, fila)`, y el dibujo en
+`components/ui/estado.tsx`. Cada uno va **siempre con icono y palabra**: el
+color es el tercer refuerzo, y con la pantalla en gris el estado se sigue
+leyendo. Lo que no es una pastilla —una fecha, una barra, un filete— toma el
+tono con `.es-<estado>` más `texto-estado`, `relleno-estado` o
+`filete-estado`. El azul existe solo para «En curso» y no entra en enlaces,
+botones ni gráficos.
+
 **Dos registros de color, y no se mezclan:**
 
 - **Los gráficos usan un solo color cromático**, el magenta. Las series se
@@ -295,6 +306,13 @@ edita» sí vale siempre, lo escriba quien lo escriba; la semilla desactiva
 ese disparador a mano cuando lo necesita, y así se ve. Si la semilla quiere
 que un guardián de autorización se aplique, se declara una sesión con
 `set_config('request.jwt.claims', …)`.
+
+**Lo que prepara la suite se nombra, no se barre.** El arranque de las
+pruebas de interfaz desarchivaba «todas las compañías archivadas» para
+dejar visibles las tres del seed. El día que hubo una archivada a propósito
+—AgrolabX, fuera del programa— cada pasada la sacaba del archivo y le
+borraba el motivo, en silencio. Un filtro por lo que se quiere, nunca por
+lo que sobra.
 
 **Restaurar y borrar no son lo mismo.** Lo que la prueba creó se borra —cuentas
 incluidas, que viven en `auth.users` y no se van con el perfil—; lo que

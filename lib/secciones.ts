@@ -30,35 +30,14 @@ export const NOMBRES_SECCION = [
 
 export type NombreIcono = (typeof NOMBRES_SECCION)[number];
 
-/**
- * El tono de cada icono de sección.
+/*
+ * Los iconos de sección iban en cuatro tonos decorativos —cielo, lila,
+ * menta, durazno— para que una fila de ocho pestañas no fuera una fila de
+ * ocho grises. Se retiraron el 30 de octubre, por decisión de Rodrigo: con
+ * los cinco estados en pantalla, un color que no significa nada compite
+ * justo con el que sí.
  *
- * Decorativo y nada más: el rótulo va siempre al lado, así que quien no
- * distinga el tono lee exactamente lo mismo. Está para que una fila de ocho
- * secciones no sea una fila de ocho grises.
- *
- * Los tonos se repiten —hay cuatro y más secciones— y no pasa nada: no
- * codifican una categoría, solo rompen el monocromo.
+ * No queda función que los devuelva. `.icono-seccion` ya cae al gris
+ * secundario cuando nadie le pasa `--tono`, así que el icono va en gris sin
+ * que nadie se lo diga.
  */
-const TONOS: Record<NombreIcono, string> = {
-  cartera: "var(--color-acento-texto)",
-  embudo: "var(--color-cielo)",
-  comparativa: "var(--color-lila)",
-  administracion: "var(--color-menta)",
-  resumen: "var(--color-acento-texto)",
-  ruta: "var(--color-cielo)",
-  programa: "var(--color-lila)",
-  aportacion: "var(--color-menta)",
-  tecnico: "var(--color-cielo)",
-  diligencia: "var(--color-durazno)",
-  plan: "var(--color-lila)",
-  kpi: "var(--color-menta)",
-  companias: "var(--color-cielo)",
-  personas: "var(--color-lila)",
-  evaluacion: "var(--color-durazno)",
-  umbrales: "var(--color-menta)",
-};
-
-export function tonoSeccion(icono: NombreIcono): string {
-  return TONOS[icono];
-}

@@ -9,6 +9,50 @@ como es**.
 
 ---
 
+## 2026-10-30 · Un solo lenguaje de estados · commit PENDIENTE
+
+**Qué cambió**
+· **Cinco estados y nada más**, en `lib/estados.ts`: hecho, en curso, por hacer, atención, vencido, más «no aplica». Una función, `estadoVisual(entidad, fila)`, traduce lo que hay en la base —hitos, tareas, puntos de due diligence, secciones del plan, updates, KPI, hallazgos, tramos— a uno de ellos. 37 pruebas, todas con la fecha pasada a mano.
+· **Los tokens**, con los valores exactos de tu documento. El azul entra solo como «En curso».
+· **`<Estado>`**, **`<BarraSegmentada>`**, **`<NodoEstado>`** y **`<LeyendaEstados>`** en `components/ui/estado.tsx`. Cada estado va siempre con icono y palabra; el color es el tercer refuerzo.
+· **Aplicado a Resumen, Recorrido y Due diligence**, que es el orden que pediste.
+· **Los tonos decorativos, retirados.** Cielo, lila, menta y durazno ya no están en los iconos de sección ni en las cifras. El icono de navegación va en gris.
+· **Capturas antes y después** de las tres pantallas, en `docs/capturas/`.
+
+**Qué se ve ahora y antes no**
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Due diligence | Siete bloques de desplegables grises. Para saber si quedaba algo en rojo había que mirar los 29 puntos uno a uno | Abre con 29 cuadrados: **22 hechos · 1 en curso · 5 por hacer · 1 vencido**. Y cada área con la suya |
+| Recorrido | Seis tarjetas de media pantalla. «¿Por dónde vamos?» se contestaba leyéndoselas | Abre con la línea de puntos, un nodo por tramo con sus hitos debajo y **«Estás aquí»** marcado. Cada punto baja a su tarjeta |
+| Resumen | El semáforo con su propia escala de tres luces, distinta de la de todo lo demás | El semáforo es una pastilla de estado más: si está en rojo por un hito retrasado, el hito se ve del mismo rojo |
+
+**Qué decidí yo**
+· **El desplegable lleva el color, y la pastilla se queda en el icono.** Al poner la pastilla junto al desplegable, la fila decía «Validado» dos veces. Ahora el control va teñido de su estado y delante va solo el icono, que es lo que hace que se distinga en escala de grises —un `<select>` no lleva icono.
+· **Un documento caducado pasa a «Vencido», no a «Pendiente».** En pantalla eran lo mismo y no lo son: un punto que nadie ha entregado y una escritura que caducó la semana pasada piden cosas distintas. **Para el score no cambia nada**: ahí sigue sin contar, que es lo que estaba decidido.
+· **Una tarea bloqueada es «Vencido»**, no «Por hacer»: no avanza y alguien tiene que desbloquearla. Mismo criterio que un punto bloqueante.
+· **Un hallazgo aceptado es «No aplica».** Un riesgo aceptado por escrito deja de ser trabajo pendiente, por crítico que fuera.
+· **Un hito pendiente con la fecha pasada sale vencido aunque la base diga «pendiente».** Nadie marca «retrasado» a mano.
+· **Los tonos decorativos los retiré enteros, no solo en las tres pantallas.** Era un cambio de un fichero y dejarlo a medias habría dado dos vocabularios durante una semana.
+
+**Qué necesito que decidas**
+1. **El avance del programa sigue en magenta** —las cuatro fases y las dos barras del Resumen—. No lo metí en los cinco estados porque no es un estado: es cuánto llevas de un contrato. ¿Lo paso también al lenguaje de estados o se queda como marca?
+2. **La barra segmentada no está todavía en el business plan.** Tu criterio de aceptación la pide ahí también, y lo necesita el «Para revisar» del tablero de la fundadora. ¿La meto en la misma tanda que el tablero o ahora?
+3. **El semáforo verde ahora se lee «En plazo»** y antes decía «En curso». «En curso» ya significa otra cosa en el lenguaje nuevo, y dos palabras iguales con dos sentidos es justo lo que estamos quitando.
+
+**Estado**
+· 113 unitarias · 136 RLS · 168 interfaz. Las tres en verde, y la de interfaz dos veces seguidas.
+· **Tres pruebas que estaban en verde por accidente**, y las tres por la misma causa: la suite dejaba la base distinta de como la encontró.
+  · `correccion-kpi` comprobaba que la comparativa lee el MRR corregido **de Marea**, que es la demostración y está fuera de todos los agregados a propósito. Pasaba solo porque una pasada anterior había dejado `is_demo` en falso. Ahora corrige el de Vega, que sí cuenta.
+  · `tests/preparar-base.ts` desarchivaba **todas** las compañías archivadas, no las tres del seed: **sacaba a AgrolabX del archivo y le borraba el motivo** en cada pasada. Igual el `beforeEach` de `mentoria`. Las dos van ahora por nombre.
+  · Una prueba de RLS contaba las compañías asignadas al revisor **sin descontar las archivadas**. Daba de más por AgrolabX, y solo en tu máquina.
+· **Sin subir a la nube.** Y siguen **9 commits sin publicar**: el `git push` me lo bloquea el clasificador cada vez. Tendrás que lanzarlo tú.
+
+**Siguiente**
+Completar la demostración hasta que recorra cada estado, con la lista en la bitácora de qué dato cubre cada uno, añadiendo lo que pide el tablero de la fundadora: meta del programa, pasos dentro de los hitos y secciones en «Para revisar».
+
+---
+
 ## 2026-10-29 · La demostración, las cuentas de revisión y los equipos · commits f19f7ac · a8bac8c
 
 **Qué cambió**

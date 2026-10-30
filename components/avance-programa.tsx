@@ -143,7 +143,7 @@ function Barra({
         <span
           className={cn(
             "cifra text-sm",
-            excedido ? "text-aviso" : "text-titular",
+            excedido ? "es-vencido texto-estado" : "text-titular",
           )}
         >
           {hecho}
@@ -155,7 +155,7 @@ function Barra({
           <div
             className={cn(
               "h-full rounded-full",
-              excedido ? "bg-aviso" : "bg-acento",
+              excedido ? "es-vencido relleno-estado" : "bg-acento",
             )}
             style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
           />

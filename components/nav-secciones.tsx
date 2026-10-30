@@ -20,7 +20,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
+import type { NombreIcono } from "@/lib/secciones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -102,7 +102,6 @@ export function NavSecciones({
               <Icono
                 aria-hidden="true"
                 className="icono-seccion size-4 shrink-0"
-                style={{ "--tono": tonoSeccion(s.icono) } as React.CSSProperties}
                 strokeWidth={activa ? 2.5 : 2}
               />
             ) : null}

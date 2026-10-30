@@ -302,7 +302,10 @@ export async function VistaTecnico({
             {(hallazgos.data ?? []).map((h) => (
               <li key={h.id} className="px-4 py-4">
                 <div className="flex flex-wrap items-baseline gap-3">
-                  <Severidad nivel={h.severity as "critico" | "alto" | "medio" | "bajo"} />
+                  <Severidad
+                    nivel={h.severity as "critico" | "alto" | "medio" | "bajo"}
+                    estado={h.status}
+                  />
                   <span className="text-sm font-medium text-titular">{h.title}</span>
                   <Metadato>{h.tech_dimensions?.name}</Metadato>
                   <Etiqueta>{ESTADOS_HALLAZGO[h.status] ?? h.status}</Etiqueta>

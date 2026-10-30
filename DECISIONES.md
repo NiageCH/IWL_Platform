@@ -1572,3 +1572,57 @@ Se arregla de una vez, con una distinción que conviene no mezclar:
 Y cuando la semilla quiere que un guardián de autorización sí se aplique,
 se declara una sesión con `set_config('request.jwt.claims', …)`, que es lo
 que ya hace `seed/03_actividad.sql`.
+
+### Un solo lenguaje de estados
+
+La plataforma tenía tres vocabularios de color a la vez. El due diligence
+sacaba una etiqueta gris con la palabra dentro; el hito, una palabra sin
+color; la compañía, un semáforo de tres luces —verde, ámbar, rojo— con su
+propia escala; y por encima de todo eso, cuatro tonos decorativos en los
+iconos de sección que no significaban nada. En una pantalla con las dos
+cosas, el color que no significa nada es exactamente el que más se mira.
+
+Ahora son cinco estados —hecho, en curso, por hacer, atención, vencido— más
+un «no aplica», iguales para fundadora, IWL y mentor. La traducción de
+cualquier estado de la base a uno de los cinco está en `lib/estados.ts` y
+solo ahí; el dibujo, en `components/ui/estado.tsx`. **Ninguna pantalla
+elige un color de estado por su cuenta**: los tres sitios donde hacía falta
+pintar algo que no es una pastilla —la fecha de un hito vencido, la barra de
+un plazo pasado, el filete de una tarjeta— usan `.es-<estado>` con
+`texto-estado`, `relleno-estado` o `filete-estado`, que salen de los mismos
+tokens.
+
+Tres consecuencias que conviene saber antes de cambiarlas:
+
+- **Un documento caducado se ve «Vencido», aunque para el score siga
+  contando como pendiente.** No es incoherencia: el score mide qué hay
+  entregado y válido, y ahí un caducado no cuenta, igual que uno que nunca
+  llegó. En pantalla sí son distintos, porque piden cosas distintas.
+- **El desplegable que cambia un estado va teñido de ese estado, y a su
+  lado solo el icono.** Con la pastilla entera al lado, la fila decía
+  «Validado» dos veces. El icono se queda porque un `<select>` no lo lleva,
+  y sin él el estado no se distingue en escala de grises.
+- **El semáforo verde se lee «En plazo»**, no «En curso». «En curso» pasó a
+  significar «alguien está trabajando en ello», y una misma palabra con dos
+  sentidos en la misma pantalla es justo lo que se estaba quitando.
+
+El magenta sigue siendo marca —navegación, enlaces, acción principal, series
+de gráfico— y el azul existe solo para «En curso». Los dos registros no se
+cruzan.
+
+### Una prueba deja como estaba lo que no creó ella, también al desarchivar
+
+`tests/preparar-base.ts` desarchivaba **todas** las compañías archivadas
+antes de cada pasada de interfaz, porque las tres del seed versionado se
+archivan en una instalación de trabajo y las pruebas las necesitan
+visibles. El día que hubo una compañía real archivada a propósito
+—AgrolabX, fuera del programa— cada pasada la sacaba del archivo y le
+borraba el motivo. El mismo `beforeEach` de `mentoria.spec.ts` hacía lo
+mismo.
+
+Las dos van ahora por nombre: `marea-clinica`, `vega-predictiva`,
+`raiz-sensorica`. Y de paso destapó tres pruebas que estaban en verde por
+accidente, las tres apoyadas en que la pasada anterior había dejado la base
+distinta de como la encontró. Es la regla de siempre —lo que la prueba creó
+se borra, lo que encontró se deja— aplicada a un sitio donde no se había
+mirado: el arranque de la suite.

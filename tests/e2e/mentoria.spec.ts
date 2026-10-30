@@ -8,16 +8,24 @@ import {
 } from "./entrada";
 
 /*
- * Ninguna compañía archivada al empezar.
+ * Ninguna de las tres del seed archivada al empezar.
  *
  * Varias pruebas de aquí archivan y restauran, y si una se corta a mitad deja
  * el estado cambiado para las siguientes. Se restaura por fuera del camino
  * que se prueba, que es lo único que hace la suite repetible.
+ *
+ * Por su nombre y no «todas las archivadas», que es como estaba: así
+ * desarchivaba también a AgrolabX, que está fuera del programa por decisión
+ * de Rodrigo, y le borraba el motivo. Una prueba deja como estaba lo que no
+ * creó ella.
  */
 test.beforeEach(async () => {
   await actualizar(
     "companies",
-    { archived_at: "not.is.null" },
+    {
+      archived_at: "not.is.null",
+      slug: "in.(marea-clinica,vega-predictiva,raiz-sensorica)",
+    },
     { archived_at: null, archived_by: null, archive_reason: null },
   );
 });

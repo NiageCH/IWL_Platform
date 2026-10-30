@@ -8,6 +8,8 @@ import {
   reasignarTarea,
 } from "@/lib/acciones/tareas";
 import type { Asignable } from "@/lib/datos/tareas";
+import type { EstadoVisual } from "@/lib/estados";
+import { cn } from "@/lib/utils";
 import {
   AreaTexto,
   Boton,
@@ -136,10 +138,13 @@ export function EstadoTarea({
   slug,
   id,
   estado,
+  visual,
 }: {
   slug: string;
   id: string;
   estado: string;
+  /** El estado visual, para que el control lleve su color */
+  visual: EstadoVisual;
 }) {
   return (
     <Formulario accion={cambiarEstadoTarea} className="gap-0">
@@ -154,7 +159,7 @@ export function EstadoTarea({
             name="status"
             defaultValue={estado}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className="py-1 text-xs"
+            className={cn("select-estado py-1 text-xs", `es-${visual}`)}
             error={!r.ok}
             aria-label="Estado de la tarea"
           >

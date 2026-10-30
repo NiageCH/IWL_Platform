@@ -12,7 +12,7 @@ import Link from "next/link";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { Metadato, Semaforo } from "@/components/ui/primitivas";
 import { Movimiento } from "@/components/evolucion";
-import { tonoSeccion, type NombreIcono } from "@/lib/secciones";
+import type { NombreIcono } from "@/lib/secciones";
 import { MenuAcciones } from "@/components/menu-acciones";
 import { numero } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
@@ -154,9 +154,6 @@ export function CabeceraProyecto({
                 <s.Icono
                   aria-hidden="true"
                   className="icono-seccion size-4 shrink-0"
-                  style={
-                    { "--tono": tonoSeccion(s.codigo) } as React.CSSProperties
-                  }
                   strokeWidth={activa ? 2.5 : 2}
                 />
                 {s.nombre}

@@ -24,9 +24,20 @@ test("la fundadora ve su hoja de ruta con el objetivo de cada etapa", async ({
   await expect(page.getByRole("heading", { name: "Hoja de ruta" })).toBeVisible();
   await expect(page.getByText("Entró en MVP")).toBeVisible();
 
-  // Las etapas del recorrido «Desde el MVP», en orden
-  await expect(page.getByText("1. Diagnóstico y línea base")).toBeVisible();
-  await expect(page.getByText("3. Motor comercial repetible")).toBeVisible();
+  /*
+   * Las etapas del recorrido «Desde el MVP», en orden.
+   *
+   * Por el título de su tarjeta y no por el texto suelto: desde que la
+   * hoja de ruta abre con la línea de puntos, el nombre de cada tramo
+   * sale dos veces —el punto que baja a la tarjeta y la tarjeta—, y
+   * `getByText` se queja de que hay dos.
+   */
+  await expect(
+    page.getByRole("heading", { name: "1. Diagnóstico y línea base" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "3. Motor comercial repetible" }),
+  ).toBeVisible();
 
   // Y el objetivo, que es lo que distingue una etapa de un plazo
   await expect(
@@ -91,7 +102,9 @@ test("una compañía sin hoja de ruta invita a diseñarla, y se diseña", async 
    * que lo que se comprueba es el efecto y no el mensaje: la plantilla
    * sugerida fue la del estado de entrada de Vega, que entró en idea.
    */
-  await expect(page.getByText("1. Validación del problema")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "1. Validación del problema" }),
+  ).toBeVisible();
   await expect(page.getByText("Entró en Idea")).toBeVisible();
   await expect(page.getByText("06 abr 2026 → 31 may 2026")).toBeVisible();
 

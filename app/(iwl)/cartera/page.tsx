@@ -165,7 +165,6 @@ export default async function Cartera() {
         <Bloque className="p-6">
           <Cifra
             icono={Wallet}
-            tono="durazno"
             etiqueta="Runway bajo umbral"
             valor={numero(runwayBajo)}
             nota="Menos de 6 meses"
@@ -174,7 +173,6 @@ export default async function Cartera() {
         <Bloque className="p-6">
           <Cifra
             icono={CalendarClock}
-            tono="cielo"
             etiqueta="Updates pendientes"
             valor={numero(companias.filter((c) => !c.updateAlDia).length)}
             nota="Del mes en curso"

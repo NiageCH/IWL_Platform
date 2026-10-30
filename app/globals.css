@@ -61,6 +61,50 @@
   --color-mal: #fb7185;
 
   /* ---------------------------------------------------------------------
+   * Los cinco estados.
+   *
+   * Un solo lenguaje para toda la plataforma y para los tres públicos.
+   * Antes cada pantalla elegía: el due diligence una etiqueta gris, el
+   * hito una palabra sin color, la compañía un semáforo de tres luces.
+   *
+   * Los tres valores de cada uno son el relleno sólido, el texto y el
+   * fondo suave sobre el que ese texto se lee. El par texto/fondo pasa de
+   * 4,5 y el relleno sobre blanco de 3.
+   *
+   * Son los mismos en los dos temas, y es a propósito: una pastilla de
+   * estado lleva su propio fondo, así que no depende de la superficie que
+   * tenga debajo. Lo que no puede pasar es que «vencido» sea un rojo en
+   * la ficha y otro en la cartera.
+   *
+   * El azul entra aquí y solo aquí: es el color de «En curso». No se usa
+   * en enlaces, en botones ni en gráficos.
+   * ------------------------------------------------------------------- */
+  --estado-hecho: #16a34a;
+  --estado-hecho-texto: #15803d;
+  --estado-hecho-fondo: #dcfce7;
+
+  --estado-curso: #2563eb;
+  --estado-curso-texto: #1d4ed8;
+  --estado-curso-fondo: #dbeafe;
+
+  /* El único que no se rellena: contorno, porque todavía no ha empezado */
+  --estado-pendiente: #71717a;
+  --estado-pendiente-texto: #3f3f46;
+  --estado-pendiente-fondo: #f4f4f5;
+
+  --estado-atencion: #d97706;
+  --estado-atencion-texto: #b45309;
+  --estado-atencion-fondo: #fef3c7;
+
+  --estado-vencido: #dc2626;
+  --estado-vencido-texto: #b91c1c;
+  --estado-vencido-fondo: #fee2e2;
+
+  --estado-no_aplica: #d4d4d8;
+  --estado-no_aplica-texto: #52525b;
+  --estado-no_aplica-fondo: #fafafa;
+
+  /* ---------------------------------------------------------------------
    * Paleta funcional.
    *
    * Para iconos, pastillas y etiquetas de categoría. **No para gráficos**:
@@ -449,6 +493,137 @@ body {
   );
   border: 1px solid
     color-mix(in oklab, var(--tono, var(--color-secundario)) 20%, transparent);
+}
+
+/* =========================================================================
+ * Los cinco estados
+ *
+ * Una pastilla con icono y palabra, y una barra de segmentos. Las dos salen
+ * de los mismos tokens, así que un estado es el mismo color en la ficha, en
+ * la cartera y en el tablero.
+ *
+ * Qué tono toma cada pieza lo pone la clase `.es-<estado>`, que solo fija
+ * tres variables. Ningún componente escribe un color de estado a mano: ese
+ * es el criterio de aceptación del documento.
+ * ========================================================================= */
+
+.es-hecho {
+  --estado-solido: var(--estado-hecho);
+  --estado-texto: var(--estado-hecho-texto);
+  --estado-fondo: var(--estado-hecho-fondo);
+}
+
+.es-curso {
+  --estado-solido: var(--estado-curso);
+  --estado-texto: var(--estado-curso-texto);
+  --estado-fondo: var(--estado-curso-fondo);
+}
+
+.es-pendiente {
+  --estado-solido: var(--estado-pendiente);
+  --estado-texto: var(--estado-pendiente-texto);
+  --estado-fondo: var(--estado-pendiente-fondo);
+}
+
+.es-atencion {
+  --estado-solido: var(--estado-atencion);
+  --estado-texto: var(--estado-atencion-texto);
+  --estado-fondo: var(--estado-atencion-fondo);
+}
+
+.es-vencido {
+  --estado-solido: var(--estado-vencido);
+  --estado-texto: var(--estado-vencido-texto);
+  --estado-fondo: var(--estado-vencido-fondo);
+}
+
+.es-no_aplica {
+  --estado-solido: var(--estado-no_aplica);
+  --estado-texto: var(--estado-no_aplica-texto);
+  --estado-fondo: var(--estado-no_aplica-fondo);
+}
+
+/*
+ * La pastilla de estado. Icono y palabra siempre: el color es el tercer
+ * refuerzo, no el dato.
+ */
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  flex: none;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--estado-texto);
+  background-color: var(--estado-fondo);
+  border: 1px solid color-mix(in oklab, var(--estado-solido) 32%, transparent);
+}
+
+/* Solo el icono, para una tabla donde la palabra no cabe. Lleva su
+   `title` y su texto para lector de pantalla, nunca color a secas */
+.estado-solo-icono {
+  padding: 0.1875rem;
+  border-radius: 9999px;
+}
+
+/*
+ * El nodo de la línea de recorrido. Mismo lenguaje, forma de línea de
+ * tiempo: el icono dentro de un círculo del color de su estado.
+ */
+.nodo-estado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 9999px;
+  color: var(--estado-solido);
+  background-color: var(--estado-fondo);
+  border: 1.5px solid color-mix(in oklab, var(--estado-solido) 55%, transparent);
+}
+
+/*
+ * La barra segmentada: un cuadrado por elemento, del color de su estado.
+ *
+ * Es la pieza que convierte «29 puntos de due diligence» en algo que se ve
+ * de un vistazo. Cada segmento es un enlace a su elemento, así que la barra
+ * no solo informa: es por donde se entra.
+ */
+.barra-segmentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1875rem;
+}
+
+.segmento {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0.1875rem;
+  background-color: var(--estado-solido);
+  border: 1px solid color-mix(in oklab, var(--estado-solido) 100%, transparent);
+  transition: transform 100ms ease, box-shadow 100ms ease;
+}
+
+/*
+ * «Por hacer» va en contorno, no relleno: todavía no ha pasado nada. Con
+ * los veintinueve cuadrados rellenos, una checklist recién instanciada se
+ * veía igual de cargada que una terminada.
+ */
+.segmento.es-pendiente {
+  background-color: var(--estado-pendiente-fondo);
+  border-color: var(--estado-pendiente);
+}
+
+a.segmento:hover,
+a.segmento:focus-visible {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--estado-solido) 35%, transparent);
 }
 
 /*
@@ -932,4 +1107,45 @@ summary:focus-visible,
 
 details[open] > .desplegable-titulo .flecha-desplegable {
   transform: rotate(90deg);
+}
+
+/*
+ * El filete lateral de una tarjeta, del color de su estado.
+ *
+ * Lo llevaba la hoja de ruta con su propia escala —verde, acento, filete—,
+ * que no era la de ningún otro sitio. Ahora toma el tono del estado, así
+ * que un tramo retrasado y un hito retrasado son el mismo rojo.
+ */
+.filete-estado {
+  border-left-color: var(--estado-solido);
+}
+
+/*
+ * Texto y relleno del color de un estado, para lo que no es una pastilla:
+ * la fecha de un hito que venció, la barra de un plazo que se pasó.
+ *
+ * Van siempre con la clase `.es-<estado>`, que es la que trae el tono. No
+ * hay ningún color de estado escrito a mano fuera de este fichero.
+ */
+.texto-estado {
+  color: var(--estado-texto);
+}
+
+.relleno-estado {
+  background-color: var(--estado-solido);
+}
+
+/*
+ * El desplegable que cambia un estado, del color de ese estado.
+ *
+ * Al poner la pastilla al lado del desplegable, la fila decía «Validado»
+ * dos veces: una en la pastilla y otra dentro del control. Ahora el estado
+ * lo lleva el propio control, con su icono delante para que se distinga en
+ * escala de grises, y la palabra se escribe una sola vez.
+ */
+.select-estado {
+  color: var(--estado-texto);
+  background-color: var(--estado-fondo);
+  border-color: color-mix(in oklab, var(--estado-solido) 40%, transparent);
+  font-weight: 600;
 }

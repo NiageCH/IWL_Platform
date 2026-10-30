@@ -4,6 +4,46 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-10-30 · Calendario y Claude: aparcados
+
+**Decisión de Rodrigo: calendario e IA quedan para más adelante.** `docs/IWL_Doc_CalendarioEIA_ES_v1_20261030.md` se queda como referencia, sin construir nada de él.
+
+· No añadas `sesiones`, `sesion_*` ni `ia_peticiones` al modelo de datos.
+· En el inicio de la fundadora, el business plan precargado lo carga **IWL a mano** a partir de los documentos. Sin IA.
+
+Foco, en este orden: estados visuales · demostración completa · paso 4 · modelo de datos de los dos tableros (espera aprobación) · evidencia · inicio de la fundadora · inicio del mentor.
+
+---
+
+## 2026-10-30 · Estados visuales y menos texto
+
+Lee `docs/IWL_Doc_EstadosVisuales_ES_v1_20261030.md`. Rodrigo encuentra la plataforma con demasiado texto y confusa. Un solo lenguaje de cinco estados con color, icono y palabra, igual para los tres públicos, y reglas para quitar texto.
+
+**Orden:** va **antes** de los dos tableros de inicio, para que nazcan con este lenguaje. Primero los tokens, `<Estado>`, `estadoVisual` y la barra segmentada; luego aplicarlo a las pantallas existentes empezando por Resumen, Recorrido y Due diligence; después los tableros.
+
+**Decisión de Rodrigo:** el azul entra solo como color de «En curso». Sigue fuera de enlaces, botones y gráficos. Los tonos decorativos de los iconos (cielo, lila, menta, durazno) se retiran.
+
+Entrega capturas antes y después de las tres primeras pantallas en la bitácora.
+
+---
+
+## 2026-10-30 · Inicio de la fundadora
+
+Lee `docs/IWL_Doc_InicioFundadora_ES_v1_20261030.md`. Es el tablero principal de la fundadora: dónde está, a dónde va y qué le toca. Sustituye, para ella, al paso 3 del rediseño.
+
+**Orden:**
+1. Termina la demostración que recorre cada estado, añadiendo lo que este documento necesita: meta del programa, pasos dentro de los hitos y secciones del business plan en «Para revisar». Así el tablero se prueba con la cuenta `rev-fundadora`.
+2. Paso 4 (cinco pestañas y rutas), para que cada acción del tablero apunte a su ruta definitiva.
+3. Este tablero.
+
+Antes de escribir código, entrega en un archivo de `docs/` el modelo de datos de lo nuevo (meta, pasos, «Para revisar», comprobación previa al acceso) y de qué tablas sale cada bloque del tablero. Espera aprobación.
+
+**Ampliación: inicio del mentor y edición con evidencia.** Lee también `docs/IWL_Doc_InicioMentorYEvidencia_ES_v1_20261030.md`. El modelo de datos que me entregues cubre los dos documentos a la vez, porque comparten pasos de hito y evidencia. Orden dentro del punto 3: primero `<Evidencia>` y la ampliación de `evidence_links`, que usan los dos tableros; después el inicio de la fundadora; después el del mentor.
+
+Pendiente de la entrada anterior: liderazgo femenino de Igor es **100 %**.
+
+---
+
 ## 2026-10-29 · Respuestas a la entrada de AgrolabX
 
 1. **Los seis meses de KPI inventados se van.** Un dato falso en un proyecto real no se queda, aunque esté archivado.

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
+  COMPANIAS,
   USUARIOS,
   actualizar,
   borrar,
@@ -16,7 +17,18 @@ import {
  * desde el principio y no tenía por dónde llamarse.
  */
 
-const MAREA = "00000000-0000-0000-0004-000000000001";
+const MAREA = COMPANIAS.marea;
+
+/**
+ * La corrección se prueba sobre Vega, no sobre Marea.
+ *
+ * Lo que de verdad comprueba este test es que la comparativa de IWL lee el
+ * valor corregido, y Marea Clínica es la compañía de demostración: está
+ * fuera de todos los agregados a propósito, así que su MRR corregido no
+ * aparece ahí —ni debe—. Con Marea el test pasaba solo mientras la base
+ * arrastraba un `is_demo` en falso de una pasada anterior.
+ */
+const VEGA = COMPANIAS.vega;
 
 /**
  * El MRR que la semilla deja en el último mes, para devolverlo al acabar.
@@ -34,7 +46,7 @@ let mesRevisado = "";
 test("un MRR mal tecleado se corrige y la comparativa cambia", async ({
   page,
 }) => {
-  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/kpi");
+  await entrarComo(page, USUARIOS.fundadoraVega, "/proyecto/kpi");
 
   const bloque = page
     .locator("section")
@@ -48,7 +60,7 @@ test("un MRR mal tecleado se corrige y la comparativa cambia", async ({
   const [antes] = await consultar<{ id: string; value: string }>(
     "kpi_values",
     {
-      company_id: `eq.${MAREA}`,
+      company_id: `eq.${VEGA}`,
       period: `eq.${mesTocado}-01`,
       "company_kpis.kpi_definitions.code": "eq.mrr",
       select: "id,value,company_kpis!inner(kpi_definitions!inner(code))",
@@ -70,7 +82,7 @@ test("un MRR mal tecleado se corrige y la comparativa cambia", async ({
   // El valor nuevo está en la base
   const [despues] = await consultar<{ value: string }>(
     "kpi_series",
-    { company_id: `eq.${MAREA}`, code: "eq.mrr", period: `eq.${mesTocado}-01` },
+    { company_id: `eq.${VEGA}`, code: "eq.mrr", period: `eq.${mesTocado}-01` },
     "value",
   );
   expect(Number(despues.value)).toBe(999999);
@@ -181,4 +193,5 @@ test.afterAll(async () => {
   }
 
   await borrar("kpi_value_history", { company_id: MAREA });
+  await borrar("kpi_value_history", { company_id: VEGA });
 });

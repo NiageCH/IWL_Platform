@@ -30,6 +30,9 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { Estado, LeyendaEstados } from "@/components/ui/estado";
+import { BarraHitos, LineaRecorrido } from "@/components/linea-recorrido";
+import { estadoVisual } from "@/lib/estados";
 import { euros, fecha, numero } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -50,13 +53,6 @@ const ESTADOS_HITO: Record<string, string> = {
   en_curso: "En curso",
   cumplido: "Cumplido",
   retrasado: "Retrasado",
-};
-
-const TONO_ETAPA: Record<string, string> = {
-  completada: "border-bien",
-  en_curso: "border-acento",
-  planificada: "border-filete",
-  cancelada: "border-filete",
 };
 
 export async function VistaRuta({
@@ -169,6 +165,24 @@ export async function VistaRuta({
             etiqueta="Etapas cerradas"
           />
         </div>
+
+        {/*
+          El plan entero en una línea.
+
+          Seis tarjetas de media pantalla cada una no contestan «¿por dónde
+          vamos?» sin leérselas las seis. Aquí se ve de un vistazo, con el
+          tramo en el que se está marcado, y cada punto baja a su tarjeta.
+        */}
+        <div className="border-t border-filete">
+          <LineaRecorrido
+            etapas={ruta.etapas}
+            etapaActualId={ruta.etapaActual?.id ?? null}
+          />
+        </div>
+
+        <div className="border-t border-filete px-4 py-4">
+          <BarraHitos etapas={ruta.etapas} sueltos={ruta.sueltos} />
+        </div>
       </Bloque>
 
       <ol className="flex flex-col gap-4">
@@ -223,6 +237,8 @@ export async function VistaRuta({
           </ul>
         </Bloque>
       ) : null}
+
+      <LeyendaEstados />
     </div>
   );
 }
@@ -244,10 +260,22 @@ function TarjetaEtapa({
   permisos: NonNullable<ResumenCompania>["permisos"];
 }) {
   const cumplidos = etapa.hitos.filter((h) => h.estado === "cumplido").length;
+  const estado = estadoVisual("etapa", { estado: etapa.estado, fin: etapa.fin });
 
   return (
-    <Bloque className={cn("border-l-2", TONO_ETAPA[etapa.estado])}>
-      <TituloBloque accion={<Etiqueta>{ESTADOS_ETAPA[etapa.estado]}</Etiqueta>}>
+    <Bloque
+      id={`etapa-${etapa.id}`}
+      className={cn("scroll-mt-24 border-l-2 filete-estado", `es-${estado}`)}
+    >
+      <TituloBloque
+        accion={
+          <Estado
+            valor={estado}
+            rotulo={ESTADOS_ETAPA[etapa.estado]}
+            motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
+          />
+        }
+      >
         {etapa.orden + 1}. {etapa.nombre}
       </TituloBloque>
 
@@ -352,9 +380,11 @@ function Hito({
   stageId?: string | null;
   etapas?: Array<{ id: string; nombre: string }>;
 }) {
-  const hoy = new Date().toISOString().slice(0, 10);
-  const vencido =
-    hito.estado !== "cumplido" && hito.fecha !== null && hito.fecha < hoy;
+  const visual = estadoVisual("hito", {
+    estado: hito.estado,
+    fecha: hito.fecha,
+  });
+  const vencido = visual === "vencido";
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -375,7 +405,7 @@ function Hito({
         <span
           className={cn(
             "cifra text-xs",
-            vencido ? "text-mal" : "text-metadato",
+            vencido ? "es-vencido texto-estado" : "text-metadato",
           )}
         >
           {hito.estado === "cumplido" && hito.completadoEl
@@ -384,15 +414,25 @@ function Hito({
               ? fecha(hito.fecha)
               : "Sin fecha"}
         </span>
+        {/*
+          El estado se ve siempre, se pueda tocar o no. Quien podía
+          editarlo solo tenía delante un desplegable gris: el estado estaba
+          escrito, pero no se veía. Con el control delante va solo el
+          icono, que si no la fila dice «Cumplido» dos veces.
+        */}
         {permisos.puedeEscribir ? (
-          <EstadoHito
-            slug={slug}
-            id={hito.id}
-            estado={hito.estado}
-            puedeConfirmar={permisos.esIwl}
-          />
+          <>
+            <Estado valor={visual} soloIcono />
+            <EstadoHito
+              slug={slug}
+              id={hito.id}
+              estado={hito.estado}
+              visual={visual}
+              puedeConfirmar={permisos.esIwl}
+            />
+          </>
         ) : (
-          <Etiqueta>{ESTADOS_HITO[hito.estado]}</Etiqueta>
+          <Estado valor={visual} rotulo={ESTADOS_HITO[hito.estado]} />
         )}
         {/* Mover de carril: la acción existía y no había por dónde llamarla,
             así que un hito creado donde no tocaba se quedaba ahí */}

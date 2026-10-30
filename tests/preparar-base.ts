@@ -15,7 +15,14 @@ import { execFileSync } from "node:child_process";
  * recupera su vista con `npm run db:reset`, que vuelve a aplicar su seed
  * local. Dejarlas como estaban obligaría a adivinar cuáles se archivaron a
  * propósito y cuáles las archivó una prueba.
+ *
+ * Y se desarchivan **estas tres por su nombre**, no todas las archivadas.
+ * Desarchivaba cualquiera, y eso sacaba del archivo a AgrolabX —que está
+ * fuera del programa por decisión de Rodrigo— y le borraba el motivo de
+ * paso. Una prueba deja como estaba lo que no creó ella.
  */
+const DEL_SEED = ["marea-clinica", "vega-predictiva", "raiz-sensorica"];
+
 export async function desarchivarCompanias(): Promise<void> {
   let salida: string;
   try {
@@ -36,7 +43,8 @@ export async function desarchivarCompanias(): Promise<void> {
   const clave = leer("SERVICE_ROLE_KEY");
 
   const respuesta = await fetch(
-    `${url}/rest/v1/companies?archived_at=not.is.null`,
+    `${url}/rest/v1/companies?archived_at=not.is.null` +
+      `&slug=in.(${DEL_SEED.join(",")})`,
     {
       method: "PATCH",
       headers: {

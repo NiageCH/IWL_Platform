@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { Estado } from "@/components/ui/estado";
+import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,14 +20,18 @@ export function Bloque({
   children,
   className,
   elevacion = 1,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   /** 2 para lo que tiene que destacar sobre el resto de la pantalla */
   elevacion?: 1 | 2;
+  /** Para poder enlazar a un bloque concreto desde un resumen de arriba */
+  id?: string;
 }) {
   return (
     <section
+      id={id}
       className={cn(
         elevacion === 2 ? "elevacion-2" : "elevacion-1",
         "rounded-lg",
@@ -75,19 +81,19 @@ export function Metadato({ children }: { children: ReactNode }) {
 /**
  * Los tonos que puede llevar el icono de una cifra.
  *
- * Clasifican, no informan: la etiqueta de la cifra dice siempre de qué se
- * trata, así que quien no distinga el tono lee exactamente lo mismo. Por eso
- * esto vale para un icono y no para una serie de un gráfico.
+ * Fueron ocho: cuatro decorativos —cielo, lila, menta, durazno— y tres de
+ * estado. Los decorativos se retiraron el 30 de octubre, por decisión de
+ * Rodrigo: con los cinco estados en pantalla, un color que no significa
+ * nada compite con el que sí.
+ *
+ * Quedan el acento, que es marca, y los tres de alerta, que acompañan a
+ * una cifra que ya lleva su rótulo escrito.
  */
 const TONOS_ICONO = {
   acento: "[--tono:var(--color-acento-texto)]",
-  cielo: "[--tono:var(--color-cielo)]",
-  lila: "[--tono:var(--color-lila)]",
-  menta: "[--tono:var(--color-menta)]",
-  durazno: "[--tono:var(--color-durazno)]",
-  bien: "[--tono:var(--color-bien)]",
-  aviso: "[--tono:var(--color-aviso)]",
-  mal: "[--tono:var(--color-mal)]",
+  bien: "[--tono:var(--estado-hecho)]",
+  aviso: "[--tono:var(--estado-atencion)]",
+  mal: "[--tono:var(--estado-vencido)]",
 } as const;
 
 export type TonoIcono = keyof typeof TONOS_ICONO;
@@ -149,15 +155,25 @@ export function Cifra({
   );
 }
 
-const TONOS_SEMAFORO = {
-  verde: "border-bien text-bien",
-  ambar: "border-aviso text-aviso",
-  rojo: "border-mal text-mal",
-} as const;
+/** Del semáforo de tres luces a los cinco estados, que son los mismos en
+ *  toda la plataforma */
+const SEMAFORO: Record<
+  "verde" | "ambar" | "rojo",
+  { estado: EstadoVisual; nombre: string }
+> = {
+  verde: { estado: "hecho", nombre: "En plazo" },
+  ambar: { estado: "atencion", nombre: "Atención" },
+  rojo: { estado: "vencido", nombre: "Bloqueo" },
+};
 
 /**
- * Semáforo. Siempre con texto, nunca solo color (§8): quien no distingue el
- * color tiene que poder leer el estado.
+ * Semáforo de la compañía: el peor estado de lo que tiene abierto.
+ *
+ * Tenía su propia paleta de tres tonos —verde, ámbar, rojo— distinta de la
+ * de los hitos y de la del due diligence. Ahora es una pastilla de estado
+ * más, con el mismo color y el mismo icono que la cosa concreta que lo ha
+ * puesto así: si está en rojo por un hito retrasado, el hito se ve del
+ * mismo rojo.
  */
 export function Semaforo({
   estado,
@@ -172,56 +188,54 @@ export function Semaforo({
    * Para la cabecera de la compañía, que tiene que caber en una línea: el
    * motivo —«un hito retrasado»— es justo lo que la hacía partirse en dos.
    * Se lee entero en el Resumen, que es donde se actúa sobre él.
-   *
-   * La palabra se queda en los dos casos: el color nunca es la única
-   * señal.
    */
   compacto?: boolean;
 }) {
-  const nombre = { verde: "En curso", ambar: "Atención", rojo: "Bloqueo" }[estado];
+  const { estado: visual, nombre } = SEMAFORO[estado];
 
   return (
-    <span
-      title={compacto ? motivo : undefined}
-      className={cn(
-        "inline-flex items-baseline gap-2 border-l-2 pl-2 text-xs",
-        TONOS_SEMAFORO[estado],
-      )}
-    >
-      <span className="font-semibold uppercase tracking-wide">{nombre}</span>
+    <span className="inline-flex items-baseline gap-2 text-xs">
+      <Estado valor={visual} rotulo={nombre} motivo={compacto ? motivo : undefined} />
       {compacto ? null : <span className="text-secundario">{motivo}</span>}
     </span>
   );
 }
 
-const TONOS_SEVERIDAD = {
-  critico: "border-mal bg-mal/10 text-mal",
-  alto: "border-aviso bg-aviso/10 text-aviso",
-  medio: "border-filete-fuerte text-secundario",
-  bajo: "border-filete text-metadato",
+const NOMBRE_SEVERIDAD = {
+  critico: "Crítico",
+  alto: "Alto",
+  medio: "Medio",
+  bajo: "Bajo",
 } as const;
 
+/**
+ * La severidad de un hallazgo, en el lenguaje de estados.
+ *
+ * Un crítico abierto es rojo, un alto es ámbar y un resuelto es verde: lo
+ * mismo que un hito o un punto del checklist en esa situación. La palabra
+ * sigue siendo la severidad, que dice más que «vencido»; lo que se unifica
+ * es el color, que antes tenía su propia escala.
+ */
 export function Severidad({
   nivel,
+  estado = "abierto",
 }: {
   nivel: "critico" | "alto" | "medio" | "bajo";
+  /** Resuelto o aceptado dejan de pintar de rojo, por muy crítico que fuera */
+  estado?: string;
 }) {
-  const nombre = {
-    critico: "Crítico",
-    alto: "Alto",
-    medio: "Medio",
-    bajo: "Bajo",
-  }[nivel];
+  const nombre =
+    estado === "resuelto"
+      ? "Resuelto"
+      : estado === "aceptado"
+        ? `${NOMBRE_SEVERIDAD[nivel]} · aceptado`
+        : NOMBRE_SEVERIDAD[nivel];
 
   return (
-    <span
-      className={cn(
-        "cifra inline-block rounded border px-1.5 py-0.5 text-[11px] uppercase tracking-wide",
-        TONOS_SEVERIDAD[nivel],
-      )}
-    >
-      {nombre}
-    </span>
+    <Estado
+      valor={estadoVisual("hallazgo", { severidad: nivel, estado })}
+      rotulo={nombre}
+    />
   );
 }
 

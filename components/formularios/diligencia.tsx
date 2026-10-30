@@ -2,6 +2,8 @@
 
 import { cambiarEstadoPunto } from "@/lib/acciones/diligencia";
 import { Formulario, Seleccion } from "@/components/ui/formulario";
+import type { EstadoVisual } from "@/lib/estados";
+import { cn } from "@/lib/utils";
 
 /**
  * Cambio de estado de un punto del checklist.
@@ -14,11 +16,14 @@ export function EstadoPunto({
   slug,
   id,
   estado,
+  visual,
   puedeValidar,
 }: {
   slug: string;
   id: string;
   estado: string;
+  /** El estado visual, para que el control lleve su color */
+  visual: EstadoVisual;
   puedeValidar: boolean;
 }) {
   return (
@@ -38,7 +43,7 @@ export function EstadoPunto({
             name="status"
             defaultValue={estado}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className="py-1 text-xs"
+            className={cn("select-estado py-1 text-xs", `es-${visual}`)}
             error={!resultado.ok}
           >
             <option value="pendiente">Pendiente</option>

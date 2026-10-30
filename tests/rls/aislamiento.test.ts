@@ -85,8 +85,16 @@ describe("companies", () => {
   it("un revisor de Niage solo ve las compañías que tiene asignadas", async () => {
     const servicio = clienteServicio();
 
-    // Las asignaciones se leen de la base, no se escriben en el test: así el
-    // test sigue valiendo si una instalación añade proyectos propios
+    /*
+     * Las asignaciones se leen de la base, no se escriben en el test: así el
+     * test sigue valiendo si una instalación añade proyectos propios.
+     *
+     * Y se descuentan las archivadas. Estar asignada a una compañía
+     * archivada no la hace visible —es lo que significa archivar— y en la
+     * instalación de Rodrigo hay una: AgrolabX, fuera del programa y con el
+     * revisor todavía apuntado. La comparación daba de más por eso, y solo
+     * en su máquina.
+     */
     const asignaciones = async (email: string) => {
       const { data: perfil } = await servicio
         .from("profiles")
@@ -96,9 +104,10 @@ describe("companies", () => {
 
       const { data } = await servicio
         .from("company_members")
-        .select("company_id")
+        .select("company_id, companies!inner ( archived_at )")
         .eq("profile_id", perfil!.id)
-        .eq("member_role", "revisor_niage");
+        .eq("member_role", "revisor_niage")
+        .is("companies.archived_at", null);
 
       return (data ?? []).map((m) => m.company_id).sort();
     };

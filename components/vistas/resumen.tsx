@@ -29,6 +29,7 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { LeyendaEstados } from "@/components/ui/estado";
 import { euros, numero, porcentaje } from "@/lib/utils";
 
 /**
@@ -356,6 +357,8 @@ export async function VistaResumen({
           ) : null}
         </ul>
       </Bloque>
+
+      <LeyendaEstados />
     </div>
   );
 }
