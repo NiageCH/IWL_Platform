@@ -109,7 +109,9 @@ test("un hallazgo crítico abierto impide el estado invertible", async ({ page }
 });
 
 test("el score técnico se lee contra el objetivo de la etapa", async ({ page }) => {
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
+  /* En su pantalla: la frase bajó del Resumen al due diligence técnico,
+     que es donde está el score del que habla */
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/tecnico");
 
   await expect(page.getByText("Sobre el objetivo de semilla").first()).toBeVisible();
 });

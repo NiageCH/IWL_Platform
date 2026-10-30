@@ -12,6 +12,8 @@ import {
   AbrirDocumento,
   AdjuntarBusinessPlan,
 } from "@/components/formularios/documentos";
+import { BarraSegmentada, Estado } from "@/components/ui/estado";
+import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 
 /**
@@ -27,6 +29,17 @@ const ESTADOS: Record<string, string> = {
   en_revision: "En revisión",
   validada: "Validada por IWL",
 };
+
+/** El estado de una sección, con sus comentarios sin responder encima */
+function visualSeccion(
+  seccion: { status: string },
+  sinResponder: number,
+): EstadoVisual {
+  return estadoVisual("seccion_bp", {
+    estado: seccion.status,
+    comentariosSinResponder: sinResponder,
+  });
+}
 
 const ESTADOS_HIPOTESIS: Record<string, string> = {
   sin_contrastar: "Sin contrastar",
@@ -60,7 +73,9 @@ export async function VistaPlan({
       .eq("company_id", companyId),
     supabase
       .from("comments")
-      .select("id, entity_id, body, created_at, profiles:author_id ( full_name )")
+      .select(
+        "id, entity_id, body, created_at, resolved_at, profiles:author_id ( full_name )",
+      )
       .eq("company_id", companyId)
       .eq("entity", "bp_section")
       .order("created_at"),
@@ -86,6 +101,17 @@ export async function VistaPlan({
 
   const hipotesisPorSeccion = agrupar(hipotesis.data ?? [], (h) => h.section_id);
   const comentariosPorSeccion = agrupar(comentarios.data ?? [], (c) => c.entity_id);
+
+  /*
+   * Sin responder, no «todos».
+   *
+   * Un comentario ya resuelto es histórico y no frena nada. Lo que pone
+   * una sección en ámbar es el que sigue esperando respuesta.
+   */
+  const sinResponderDe = (seccionId: string) =>
+    (comentariosPorSeccion.get(seccionId) ?? []).filter(
+      (c) => c.resolved_at === null,
+    ).length;
 
   const validadas = ordenadas.filter((s) => s.status === "validada").length;
 
@@ -152,16 +178,54 @@ export async function VistaPlan({
         >
           Estado del plan
         </TituloBloque>
+
+        {/*
+          El plan entero, de un vistazo y antes de la lista.
+
+          Un cuadrado por sección: cuántas están validadas y cuántas
+          esperan respuesta se ve sin leer las nueve filas. Un comentario
+          sin responder pone su sección en ámbar aunque la sección en sí
+          vaya bien, porque es lo que de verdad frena.
+        */}
+        <div className="border-b border-filete px-4 py-3">
+          <BarraSegmentada
+            etiqueta="Secciones del business plan"
+            segmentos={ordenadas.map((s) => ({
+              id: s.id,
+              estado: visualSeccion(s, sinResponderDe(s.id)),
+              rotulo: s.bp_section_templates?.name ?? "Sección",
+              href: `#seccion-${s.id}`,
+            }))}
+          />
+        </div>
+
         <ul className="divide-y divide-filete">
-          {ordenadas.map((s) => (
-            <li key={s.id} className="flex items-baseline gap-3 px-4 py-2.5">
-              <span className="flex-1 text-sm text-titular">
-                {s.bp_section_templates?.name}
-              </span>
-              {s.content ? null : <Metadato>Sin redactar</Metadato>}
-              <Etiqueta>{ESTADOS[s.status] ?? s.status}</Etiqueta>
-            </li>
-          ))}
+          {ordenadas.map((s) => {
+            const sinResponder = sinResponderDe(s.id);
+            return (
+              <li key={s.id} className="flex items-center gap-3 px-4 py-2.5">
+                <a
+                  href={`#seccion-${s.id}`}
+                  className="enlace flex-1 text-sm text-titular"
+                >
+                  {s.bp_section_templates?.name}
+                </a>
+                {s.content ? null : <Metadato>Sin redactar</Metadato>}
+                {sinResponder > 0 ? (
+                  <Metadato>
+                    {sinResponder}{" "}
+                    {sinResponder === 1
+                      ? "comentario sin responder"
+                      : "comentarios sin responder"}
+                  </Metadato>
+                ) : null}
+                <Estado
+                  valor={visualSeccion(s, sinResponder)}
+                  rotulo={ESTADOS[s.status] ?? s.status}
+                />
+              </li>
+            );
+          })}
         </ul>
       </Bloque>
 
@@ -171,12 +235,19 @@ export async function VistaPlan({
         const susComentarios = comentariosPorSeccion.get(seccion.id) ?? [];
 
         return (
-          <Bloque key={seccion.id}>
+          <Bloque
+            key={seccion.id}
+            id={`seccion-${seccion.id}`}
+            className="scroll-mt-24"
+          >
             <TituloBloque
               accion={
                 <span className="flex items-center gap-3">
                   <Metadato>v{seccion.current_version}</Metadato>
-                  <Etiqueta>{ESTADOS[seccion.status] ?? seccion.status}</Etiqueta>
+                  <Estado
+                    valor={visualSeccion(seccion, sinResponderDe(seccion.id))}
+                    rotulo={ESTADOS[seccion.status] ?? seccion.status}
+                  />
                 </span>
               }
             >

@@ -12,7 +12,7 @@ export function Imprimir() {
       <button
         type="button"
         onClick={() => window.print()}
-        className="barra-acento rounded-md px-3 py-2 text-sm font-medium text-white transition-all hover:brightness-110"
+        className="barra-dato rounded-md px-3 py-2 text-sm font-medium text-white transition-all hover:brightness-110"
       >
         Imprimir o guardar en PDF
       </button>

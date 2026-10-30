@@ -26,7 +26,8 @@ import {
  * compañía sin saber en cuál está. Con hexadecimales fijos habría que
  * duplicar cada componente.
  */
-const ACENTO = "var(--color-acento)";
+/* El magenta no pinta datos: la serie va en gris oscuro */
+const ACENTO = "var(--color-dato)";
 const NEUTRO = "var(--color-metadato)";
 const FILETE = "var(--color-filete)";
 const SUPERFICIE = "var(--color-papel)";

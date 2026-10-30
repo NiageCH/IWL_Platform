@@ -22,7 +22,8 @@ import {
  * tiene que poder enseñar y lo que no cuenta ninguna cifra sola.
  */
 
-const ACENTO = "var(--color-acento)";
+/* El magenta no pinta datos: la serie va en gris oscuro */
+const ACENTO = "var(--color-dato)";
 const NEUTRO = "var(--color-metadato)";
 const FILETE = "var(--color-filete)";
 

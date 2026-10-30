@@ -1,8 +1,9 @@
+import Link from "next/link";
+
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { leerAsignables, leerTareas, type Tarea } from "@/lib/datos/tareas";
 import {
   Bloque,
-  Etiqueta,
   Metadato,
   SinDatos,
   TituloBloque,
@@ -18,20 +19,23 @@ import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 /**
- * Quién hace qué en este proyecto.
+ * Qué falta en este proyecto: una sola lista.
  *
- * La tabla y sus permisos llevaban desde septiembre sin una sola pantalla:
- * no había forma de encargarle nada a nadie. «Quiero asignar la auditoría
- * técnica a Juan Mishima, o al fundador, o a un tercero» no tenía respuesta.
+ * Eran dos bloques seguidos —«Siguientes pasos» y «Quién hace qué»— y
+ * había que cruzarlos de cabeza: uno decía lo que falta para que el
+ * proyecto sea invertible y el otro quién lo estaba haciendo. Son la misma
+ * pregunta, y separadas obligaban a leer dos veces para contestarla.
  *
- * Las abiertas primero y las vencidas marcadas, que es lo accionable. Lo
- * cerrado baja al final y se cuenta, pero no ocupa.
+ * Ahora van juntas. Lo que tiene dueño y fecha es una tarea; lo que sale de
+ * la definición de invertible y todavía no se le ha encargado a nadie va
+ * igual en la lista, con su estado, y lleva a la pantalla donde se hace.
  */
 
 const ESTADOS: Record<string, string> = {
   pendiente: "Pendiente",
   en_curso: "En curso",
   hecha: "Hecha",
+  bloqueada: "Bloqueada",
   descartada: "Descartada",
 };
 
@@ -41,10 +45,13 @@ const CERRADAS = ["hecha", "descartada"];
 const visualTarea = (t: Tarea) =>
   estadoVisual("tarea", { estado: t.status, fecha: t.due_date });
 
-export async function VistaTareas({
+export async function VistaQueFalta({
   resumen,
+  pasos = [],
 }: {
   resumen: NonNullable<ResumenCompania>;
+  /** Lo que falta para ser invertible, con la pantalla donde se hace */
+  pasos?: Array<{ texto: string; href: string }>;
 }) {
   const { compania, permisos } = resumen;
 
@@ -55,21 +62,22 @@ export async function VistaTareas({
 
   const vivas = tareas.filter((t) => !CERRADAS.includes(t.status));
   const cerradas = tareas.filter((t) => CERRADAS.includes(t.status));
+  const nadaQueHacer = vivas.length === 0 && pasos.length === 0;
 
   return (
     <Bloque>
       <TituloBloque
         accion={
           <Metadato>
-            {abiertas === 0
+            {nadaQueHacer
               ? "Nada pendiente"
               : vencidas > 0
-                ? `${abiertas} abiertas · ${vencidas} vencidas`
-                : `${abiertas} abiertas`}
+                ? `${abiertas + pasos.length} abiertas · ${vencidas} vencidas`
+                : `${abiertas + pasos.length} abiertas`}
           </Metadato>
         }
       >
-        Quién hace qué
+        Qué falta
       </TituloBloque>
 
       {/*
@@ -89,17 +97,17 @@ export async function VistaTareas({
         </div>
       ) : null}
 
-      {vivas.length === 0 ? (
+      {nadaQueHacer ? (
         <SinDatos>
-          No hay nada encargado. Una tarea es para lo que tiene dueño y fecha:
-          una auditoría, un documento que falta, una llamada que hay que hacer.
+          No queda nada por hacer: la compañía cumple la definición de
+          proyecto invertible y no tiene tareas abiertas.
         </SinDatos>
       ) : (
         <ul className="divide-y divide-filete">
           {vivas.map((t) => (
             <li
               key={t.id}
-              className="flex flex-wrap items-baseline gap-x-3 gap-y-2 px-4 py-3"
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3"
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-titular">{t.title}</span>
@@ -107,9 +115,6 @@ export async function VistaTareas({
                   <span className="block text-xs text-secundario">
                     {t.description}
                   </span>
-                ) : null}
-                {t.source_entity ? (
-                  <Metadato>Nace de {t.source_entity}</Metadato>
                 ) : null}
               </span>
 
@@ -135,7 +140,7 @@ export async function VistaTareas({
                   asignables={asignables}
                 />
               ) : (
-                <Etiqueta>{t.owner ?? "Sin asignar"}</Etiqueta>
+                <Metadato>{t.owner ?? "Sin asignar"}</Metadato>
               )}
 
               {permisos.puedeEscribir ? (
@@ -156,6 +161,32 @@ export async function VistaTareas({
               )}
             </li>
           ))}
+
+          {/*
+            Lo que falta para ser invertible y todavía no es de nadie.
+
+            Va en la misma lista y no en un bloque aparte: la diferencia
+            entre esto y una tarea es solo que nadie se ha hecho cargo
+            todavía, y eso se dice con el estado, no con otro bloque.
+          */}
+          {pasos.map((paso) => (
+            <li
+              key={paso.texto}
+              className="fila-enlace flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3"
+            >
+              <Link
+                href={paso.href}
+                className="estirado enlace min-w-0 flex-1 text-sm text-titular"
+              >
+                {paso.texto}
+              </Link>
+              <Metadato>Sin encargar</Metadato>
+              <Estado valor="pendiente" rotulo="Para invertible" />
+              <span aria-hidden="true" className="flecha cifra shrink-0 text-acento-texto">
+                →
+              </span>
+            </li>
+          ))}
         </ul>
       )}
 
@@ -168,7 +199,7 @@ export async function VistaTareas({
             {cerradas.map((t) => (
               <li
                 key={t.id}
-                className="flex flex-wrap items-baseline gap-3 text-xs"
+                className="flex flex-wrap items-center gap-3 text-xs"
               >
                 <span className="min-w-0 flex-1 text-secundario line-through">
                   {t.title}

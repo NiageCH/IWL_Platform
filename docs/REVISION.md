@@ -4,6 +4,21 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-10-30 · Sobre «La demostración recorre cada estado» (6d7efc4)
+
+Bien resuelto, y de acuerdo con las tres decisiones: semilla local, el crítico que la saca de invertible y el cambio de agosto y septiembre.
+
+**Respuestas**
+1. **Quinto tramo, sí: «Cierre de ronda», planificado.** El tablero de la fundadora necesita un tramo futuro en gris para enseñar «a dónde vas». «Retrasado» y «En riesgo» no hace falta forzarlos.
+2. **Objetivos a los KPI de Marea ahora**, en la semilla local, y el estado KPI frente a objetivo en «Último mes» del Resumen. Uno en objetivo, uno en atención y uno vencido.
+3. Meta y pasos de hito, con el modelo de datos. De acuerdo.
+
+**Antes de eso, la entrada anterior está sin hacer** («Sobre Cinco estados»): Resumen a cuatro bloques, el magenta fuera de los datos, quitar «Va por…» y la numeración de fases, quitar «Nace de seed», plegar los tramos completados en Recorrido y la barra segmentada del business plan. Va primero.
+
+Orden: entrada anterior · estos dos puntos · paso 4 · modelo de datos de los tableros.
+
+---
+
 ## 2026-10-30 · Sobre «Cinco estados» (6533987)
 
 Revisadas las capturas. Due diligence es exactamente lo que se buscaba: los 29 cuadrados se leen de un vistazo. Recorrido y Resumen mejoran, pero siguen siendo largos.

@@ -30,7 +30,8 @@ import { Metadato } from "@/components/ui/primitivas";
  * compañía sin saber en cuál está. Con hexadecimales fijos habría que
  * duplicar cada componente.
  */
-const ACENTO = "var(--color-acento)";
+/* El magenta no pinta datos: la serie va en gris oscuro */
+const ACENTO = "var(--color-dato)";
 const NEUTRO = "var(--color-metadato)";
 const FILETE = "var(--color-filete)";
 const MAL = "var(--color-mal)";
@@ -99,7 +100,7 @@ function Panel({
         <span className="text-sm font-medium text-titular">{titulo}</span>
         <span className="cifra text-sm text-secundario">
           {formatear(primero)} → <span className="text-titular">{formatear(ultimo)}</span>{" "}
-          <span className={delta < 0 ? "text-mal" : "text-acento-texto"}>
+          <span className={delta < 0 ? "es-vencido texto-estado" : "es-hecho texto-estado"}>
             {delta === 0
               ? "sin cambio"
               : `${delta > 0 ? "↑" : "↓"} ${formatear(Math.abs(delta))}`}
@@ -255,7 +256,7 @@ export function Movimiento({
 
   return (
     <span
-      className={`cifra whitespace-nowrap text-xs ${delta > 0 ? "text-acento-texto" : "text-mal"}`}
+      className={`cifra whitespace-nowrap text-xs ${delta > 0 ? "es-hecho texto-estado" : "es-vencido texto-estado"}`}
     >
       {delta > 0 ? "↑" : "↓"} {formatear(Math.abs(delta))} {sufijo}
     </span>

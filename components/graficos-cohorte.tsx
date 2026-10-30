@@ -38,13 +38,14 @@ import {
  * compañía sin saber en cuál está. Con hexadecimales fijos habría que
  * duplicar cada componente.
  */
-const ACENTO = "var(--color-acento)";
+/* El magenta no pinta datos: la serie va en gris oscuro */
+const ACENTO = "var(--color-dato)";
 const NEUTRO = "var(--color-metadato)";
 const FILETE = "var(--color-filete)";
 const MAL = "var(--color-mal)";
 const SUPERFICIE = "var(--color-papel)";
 const TEXTO = "var(--color-cuerpo)";
-const ACENTO_APAGADO = "var(--color-acento-apagado)";
+const ACENTO_APAGADO = "var(--color-dato-tenue)";
 
 function Caja({ children }: { children: React.ReactNode }) {
   return <div className="elevacion-2 rounded-md px-3 py-2 text-xs">{children}</div>;
@@ -313,7 +314,7 @@ export function RadaresCohorte({ companias }: { companias: RadarCompania[] }) {
             <span className="min-w-0 flex-1 truncate text-sm font-medium text-titular">
               {c.nombre}
             </span>
-            <span className="cifra shrink-0 text-lg text-acento-texto">
+            <span className="cifra shrink-0 text-lg text-titular">
               {formatear(c.score)}
             </span>
           </figcaption>

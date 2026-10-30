@@ -320,6 +320,74 @@ export async function VistaDiligencia({
         ) : null}
       </Bloque>
 
+      {/*
+        Preparación por área, que estaba en el Resumen.
+
+        Bajó aquí porque es donde se trabaja sobre ella: cada barra es un
+        área de este mismo checklist, y leerla al lado de sus puntos es lo
+        que convierte un número en algo que se puede mover. En el Resumen
+        era el octavo bloque de ocho.
+      */}
+      <Bloque>
+        <TituloBloque
+          accion={
+            <Metadato>
+              Score {numero(resumen.scorePreparacion.valor, 1)}
+            </Metadato>
+          }
+        >
+          Preparación por área
+        </TituloBloque>
+
+        <ul className="divide-y divide-filete">
+          {resumen.scorePreparacion.areas.map((area) => (
+            <li key={area.codigo} className="flex items-center gap-4 px-4 py-3">
+              <span className="w-32 shrink-0 text-sm text-titular sm:w-56">
+                {area.nombre}
+              </span>
+              <span className="h-1.5 flex-1 rounded-sm bg-hundido" aria-hidden="true">
+                <span
+                  className="barra-dato block h-full rounded-sm"
+                  style={{ width: `${area.valor}%` }}
+                />
+              </span>
+              <span className="cifra w-14 shrink-0 text-right text-sm text-titular">
+                {numero(area.valor, 0)}
+              </span>
+              <span className="hidden w-44 shrink-0 text-right text-xs text-secundario sm:inline">
+                {area.bloqueantes > 0
+                  ? `${area.bloqueantes} bloqueante${area.bloqueantes > 1 ? "s" : ""}`
+                  : area.pendientes > 0
+                    ? `${area.pendientes} por entregar`
+                    : "Completa"}
+              </span>
+            </li>
+          ))}
+
+          {resumen.scorePreparacion.aportacionTecnica ? (
+            <li className="flex items-center gap-4 bg-elevado px-4 py-3">
+              <span className="w-32 shrink-0 text-sm font-medium text-titular sm:w-56">
+                Due diligence técnico
+              </span>
+              <span className="h-1.5 flex-1 rounded-sm bg-hundido" aria-hidden="true">
+                <span
+                  className="barra-dato block h-full rounded-sm"
+                  style={{
+                    width: `${resumen.scorePreparacion.aportacionTecnica.valor}%`,
+                  }}
+                />
+              </span>
+              <span className="cifra w-14 shrink-0 text-right text-sm text-titular">
+                {numero(resumen.scorePreparacion.aportacionTecnica.valor, 0)}
+              </span>
+              <span className="hidden w-44 shrink-0 text-right text-xs text-secundario sm:inline">
+                Peso {numero(resumen.scorePreparacion.aportacionTecnica.peso, 1)}
+              </span>
+            </li>
+          ) : null}
+        </ul>
+      </Bloque>
+
       <LeyendaEstados />
     </div>
   );

@@ -212,10 +212,24 @@ async function leerKpisRecientes(supabase: Cliente, companyId: string) {
     ? { periodo: anterior, valores: valoresDe(anterior) }
     : null;
 
+  /*
+   * El objetivo de cada KPI del último mes.
+   *
+   * La columna estaba en la base y no la leía nadie: un valor sin objetivo
+   * no está ni bien ni mal, así que la pantalla no podía decir nada de él.
+   * Con el objetivo sí, y es lo que convierte seis cifras en seis estados.
+   */
+  const objetivos: Record<string, number | null> = {};
+  for (const fila of filas.filter((f) => f.period === ultimo)) {
+    objetivos[fila.code!] =
+      fila.target_value === null ? null : Number(fila.target_value);
+  }
+
   return {
     periodo: ultimo,
     filas,
     valores: mes.valores,
+    objetivos,
     derivados: calcularDerivados(mes, mesAnterior),
   };
 }

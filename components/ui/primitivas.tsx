@@ -105,15 +105,29 @@ export function Cifra({
   destacada = false,
   icono: Icono,
   tono = "acento",
+  estado,
 }: {
   valor: ReactNode;
   etiqueta: string;
   nota?: ReactNode;
-  /** La cifra que manda en la pantalla, con el acento encendido */
+  /**
+   * La cifra que manda en la pantalla.
+   *
+   * Iba en magenta. Un score es un dato y el magenta no pinta datos, así
+   * que ahora manda por tamaño y por peso, que es como manda una cifra en
+   * una pantalla que ya tiene cinco colores con significado.
+   */
   destacada?: boolean;
   /** Un icono de lucide. Acompaña a la etiqueta, no la sustituye */
   icono?: LucideIcon;
   tono?: TonoIcono;
+  /**
+   * Cómo va esta cifra frente a su objetivo.
+   *
+   * Solo cuando hay objetivo: una cifra suelta no está ni bien ni mal, y
+   * pintarla de algo sería inventarse un juicio.
+   */
+  estado?: EstadoVisual;
 }) {
   const cuerpo = (
     <div className="flex min-w-0 flex-col gap-1">
@@ -124,12 +138,17 @@ export function Cifra({
       */}
       <span
         className={cn(
-          "cifra text-[2rem] leading-none tracking-tight",
-          destacada ? "text-acento-texto" : "text-titular",
+          "cifra leading-none tracking-tight text-titular",
+          destacada ? "text-[2.5rem] font-semibold" : "text-[2rem]",
         )}
       >
         {valor}
       </span>
+      {estado ? (
+        <span>
+          <Estado valor={estado} />
+        </span>
+      ) : null}
       {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
     </div>
   );

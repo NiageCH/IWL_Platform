@@ -28,7 +28,15 @@ export interface Asignable {
   grupo: string;
 }
 
-const ABIERTAS = ["pendiente", "en_curso"];
+/*
+ * Bloqueada cuenta como abierta.
+ *
+ * No estaba, y el recuento de la pantalla decía «6 abiertas · 3 vencidas»
+ * mientras la barra pintaba cuatro en rojo. Una tarea bloqueada no está
+ * hecha y alguien tiene que desbloquearla: es trabajo abierto, y si venció
+ * está vencida como cualquier otra.
+ */
+const ABIERTAS = ["pendiente", "en_curso", "bloqueada"];
 
 export async function leerTareas(companyId: string): Promise<{
   tareas: Tarea[];

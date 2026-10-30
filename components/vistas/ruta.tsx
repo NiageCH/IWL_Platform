@@ -195,6 +195,7 @@ export async function VistaRuta({
               slug={compania.slug}
               companyId={compania.id}
               permisos={permisos}
+              abierta={etapa.id === ruta.etapaActual?.id}
             />
           </li>
         ))}
@@ -243,6 +244,15 @@ export async function VistaRuta({
   );
 }
 
+/**
+ * Un tramo del plan.
+ *
+ * Solo se abre el que está en curso. Los demás se pliegan en una línea con
+ * su estado y sus cifras: con seis tramos abiertos había que bajar tres
+ * pantallas para llegar al que se está trabajando, que es el único sobre
+ * el que se puede hacer algo hoy. Los cerrados siguen a un clic, que
+ * consultarlos es legítimo —solo que no es lo que se viene a hacer—.
+ */
 function TarjetaEtapa({
   etapa,
   etapas,
@@ -250,6 +260,7 @@ function TarjetaEtapa({
   slug,
   companyId,
   permisos,
+  abierta,
 }: {
   etapa: Etapa;
   /** Todas, para poder mover un hito de carril */
@@ -258,6 +269,8 @@ function TarjetaEtapa({
   slug: string;
   companyId: string;
   permisos: NonNullable<ResumenCompania>["permisos"];
+  /** El tramo en el que está el proyecto se abre solo */
+  abierta: boolean;
 }) {
   const cumplidos = etapa.hitos.filter((h) => h.estado === "cumplido").length;
   const estado = estadoVisual("etapa", { estado: etapa.estado, fin: etapa.fin });
@@ -267,17 +280,40 @@ function TarjetaEtapa({
       id={`etapa-${etapa.id}`}
       className={cn("scroll-mt-24 border-l-2 filete-estado", `es-${estado}`)}
     >
-      <TituloBloque
-        accion={
+      <details open={abierta}>
+        <summary className="desplegable-titulo titulo-bloque flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+          <span
+            aria-hidden="true"
+            className="flecha-desplegable cifra text-acento-texto"
+          >
+            ›
+          </span>
+          <h2 className="text-sm font-semibold tracking-tight text-titular">
+            {etapa.orden + 1}. {etapa.nombre}
+          </h2>
           <Estado
             valor={estado}
             rotulo={ESTADOS_ETAPA[etapa.estado]}
             motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
           />
-        }
-      >
-        {etapa.orden + 1}. {etapa.nombre}
-      </TituloBloque>
+          <span className="flex-1" />
+          {/* Las cifras del tramo, para no tener que abrirlo solo por verlas */}
+          <Metadato>
+            {etapa.hitos.length === 0
+              ? "Sin hitos"
+              : `${cumplidos} de ${etapa.hitos.length} hitos`}
+          </Metadato>
+          <Metadato>
+            {etapa.horasPrevistas === null
+              ? `${numero(etapa.horasImputadas)} h`
+              : `${numero(etapa.horasImputadas)} de ${numero(etapa.horasPrevistas)} h`}
+          </Metadato>
+          <Metadato>
+            {etapa.inicio && etapa.fin
+              ? `${fecha(etapa.inicio)} → ${fecha(etapa.fin)}`
+              : "Sin fechas"}
+          </Metadato>
+        </summary>
 
       <div className="flex flex-col gap-3 border-b border-filete px-4 py-3">
         <p className="text-sm text-cuerpo">{etapa.objetivo}</p>
@@ -362,6 +398,7 @@ function TarjetaEtapa({
           />
         </div>
       ) : null}
+      </details>
     </Bloque>
   );
 }

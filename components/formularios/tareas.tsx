@@ -165,6 +165,14 @@ export function EstadoTarea({
           >
             <option value="pendiente">Pendiente</option>
             <option value="en_curso">En curso</option>
+            {/*
+              Bloqueada faltaba, y el desplegable es no controlado: una
+              tarea bloqueada salía como «Pendiente» —la primera opción— y
+              al tocar cualquier otra cosa de la fila se guardaba así. El
+              estado existía en la base y no había forma de verlo ni de
+              dejarlo como estaba.
+            */}
+            <option value="bloqueada">Bloqueada</option>
             <option value="hecha">Hecha</option>
             <option value="descartada">Descartada</option>
           </Seleccion>

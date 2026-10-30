@@ -60,7 +60,7 @@ export function SalaDeDatosCandidata({
           </p>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-elevado">
             <div
-              className="barra-acento h-full rounded-full"
+              className="barra-dato h-full rounded-full"
               style={{ width: `${(cumplidas / obligatorias.length) * 100}%` }}
             />
           </div>

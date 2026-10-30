@@ -1656,3 +1656,61 @@ varias filas— y todos eran la misma regla sin aplicar: **lo que la prueba
 creó se borra; lo que encontró se deja**. Con una compañía que tiene que
 estar completa para que alguien la revise, dejar de cumplirla ya no pasa
 desapercibido.
+
+### El magenta no pinta datos
+
+La plataforma tenía el acento en todo: las barras de preparación por área,
+los radares, las curvas del recorrido, el embudo, la cifra destacada de
+cada bloque y tres cuartas partes del avance del programa. Era coherente
+mientras el magenta era el único color con peso en la pantalla.
+
+Dejó de serlo el día que entraron los cinco estados. Con verde, azul, ámbar
+y rojo diciendo cosas concretas, una barra magenta al lado parece
+significar algo y no significa nada —y es, además, la que más se mira,
+porque es la más saturada—. Dos vocabularios de color en la misma pantalla
+y solo uno con contenido.
+
+Ahora los datos van en `--color-dato`, un gris oscuro, con la línea de
+objetivo discontinua en `--color-dato-tenue`. **Sigue habiendo un solo
+color de serie**, que es la regla que de verdad importaba: las series se
+distinguen por relleno, trazo y etiqueta, nunca por tono. El magenta se
+queda donde es marca: navegación, enlaces, acción principal y el filete de
+los bloques.
+
+La cifra destacada perdió el acento y manda ahora por tamaño y por peso. Un
+score es un dato.
+
+### El Resumen son cuatro bloques
+
+Llegó a tener ocho: por dónde va, siguientes pasos, quién hace qué,
+madurez, recorrido de scores, último mes, hallazgos y preparación por área.
+Cada uno llegó por una razón buena y el conjunto era ilegible: la pregunta
+que contesta el Resumen es «¿qué hago hoy?», y para contestarla había que
+bajar ocho veces.
+
+Se queda en cuatro:
+
+- **Por dónde va** — la fase, el semáforo y el avance del programa.
+- **Qué falta** — los siguientes pasos hacia invertible y las tareas, en
+  una sola lista. Eran dos bloques seguidos que había que cruzar de
+  cabeza: uno decía lo que falta y el otro quién lo estaba haciendo.
+- **Último mes** — los KPI, con su estado cuando tienen objetivo.
+- **Hallazgos abiertos**.
+
+Lo demás no se borró, se mudó a donde se trabaja sobre ello: **madurez y
+recorrido de scores al due diligence técnico**, que es de donde salen, y
+**preparación por área al due diligence general**, donde cada barra es un
+área de ese mismo checklist. Cuando llegue el tablero de la fundadora, el
+Resumen se convierte en él.
+
+### El Recorrido solo abre el tramo en curso
+
+Seis tramos abiertos eran tres pantallas de scroll para llegar al único
+sobre el que se puede hacer algo hoy. Los demás se pliegan en una línea con
+su estado y sus cifras —hitos, horas, plazo— y siguen a un clic:
+consultarlos es legítimo, solo que no es lo que se viene a hacer.
+
+Tiene una consecuencia para las pruebas que conviene saber: **lo que está
+dentro de un tramo plegado existe en el marcado y no es visible**. Una
+prueba que busque «el primero» de algo encuentra el del tramo cerrado. Se
+busca el primero visible, o se abre el tramo como lo abriría una persona.

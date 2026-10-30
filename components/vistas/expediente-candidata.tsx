@@ -75,7 +75,7 @@ export function ExpedienteCandidata({
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-elevado">
             <div
-              className="barra-acento h-full rounded-full"
+              className="barra-dato h-full rounded-full"
               style={{
                 width: `${(avance.cumplidas / avance.total) * 100}%`,
               }}

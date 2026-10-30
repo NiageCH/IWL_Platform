@@ -60,7 +60,9 @@ test("el mapa de intervención dice dónde rinde más y a quién afecta", async 
 });
 
 test("la ficha enseña la evolución de los dos scores", async ({ page }) => {
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica");
+  /* El recorrido de los scores bajó del Resumen al due diligence técnico,
+     que es de donde salen */
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/tecnico");
 
   const recorrido = page.locator("section", { hasText: "Recorrido" }).last();
 
@@ -112,7 +114,7 @@ test("la fundadora no llega a la comparativa de la cohorte", async ({ page }) =>
 });
 
 test("la fundadora sí ve el recorrido de su propia compañía", async ({ page }) => {
-  await entrarComo(page, USUARIOS.fundadoraMarea);
+  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/tecnico");
 
   const recorrido = page.locator("section", { hasText: "Recorrido" }).last();
   await expect(recorrido.getByText("Score técnico")).toBeVisible();

@@ -162,15 +162,24 @@ tono con `.es-<estado>` más `texto-estado`, `relleno-estado` o
 `filete-estado`. El azul existe solo para «En curso» y no entra en enlaces,
 botones ni gráficos.
 
+**El magenta no pinta datos.** Ni estados, ni scores, ni barras, ni series
+de gráfico. Es marca: navegación, enlaces, la acción principal y el filete
+de los bloques. Lo tuvo todo —las barras de preparación, los radares, las
+curvas, la cifra destacada— y con los cinco estados en pantalla eso era un
+segundo vocabulario de color que no significaba nada, compitiendo justo con
+el que sí. Decisión de Rodrigo, 30 oct 2026.
+
 **Dos registros de color, y no se mezclan:**
 
-- **Los gráficos usan un solo color cromático**, el magenta. Las series se
-  distinguen por relleno, trazo y etiqueta de texto, nunca por tono. Esto no
-  se relaja: es de lo que depende que la pantalla se lea con daltonismo.
-- **Los iconos, chips y estados tienen una paleta funcional** —cielo, lila,
-  menta, durazno— con una condición: **el color nunca es la única señal**. Un
-  chip lleva su palabra dentro, un icono lleva su rótulo al lado. Quien no
-  distinga el tono lee exactamente lo mismo.
+- **Los datos van en gris oscuro**, `--color-dato`, con la línea de
+  objetivo discontinua en `--color-dato-tenue`. **Un solo color de serie**:
+  las series se distinguen por relleno, trazo y etiqueta de texto, nunca
+  por tono. Esto no se relaja: es de lo que depende que la pantalla se lea
+  con daltonismo.
+- **Los estados tienen su paleta**, la de `lib/estados.ts`, con una
+  condición: **el color nunca es la única señal**. Una pastilla lleva su
+  palabra y su icono. Quien no distinga el tono lee exactamente lo mismo.
+  Los cuatro tonos decorativos —cielo, lila, menta, durazno— se retiraron.
 
 **Los valores salen de inceptionwomanlab.es**: grises de zinc, rosa `#FF007A`
 y titulares en Zalando Sans Expanded, en mayúsculas y apretados. Esa

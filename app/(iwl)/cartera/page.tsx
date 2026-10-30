@@ -475,7 +475,7 @@ function ProgresoCompromiso({ pct }: { pct: number | null }) {
     <span className="flex items-center gap-2">
       <span className="h-1.5 w-24 shrink-0 rounded-sm bg-hundido" aria-hidden="true">
         <span
-          className="barra-acento block h-full rounded-sm"
+          className="barra-dato block h-full rounded-sm"
           style={{ width: `${Math.min(100, pct)}%` }}
         />
       </span>

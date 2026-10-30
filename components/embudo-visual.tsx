@@ -42,7 +42,7 @@ export function EmbudoVisual({
               <span
                 className={cn(
                   "absolute inset-y-0 left-0 rounded-sm",
-                  vacio ? "bg-filete" : "bg-acento",
+                  vacio ? "bg-filete" : "bg-dato",
                 )}
                 style={{
                   width: vacio ? "2px" : `${(p.cuenta / maximo) * 100}%`,

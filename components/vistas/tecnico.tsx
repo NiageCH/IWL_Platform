@@ -2,6 +2,10 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 import { dimensionesPorPrioridad } from "@/lib/scoring/score-tecnico";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { ScorecardRadar } from "@/components/scorecard-radar";
+import { ETAPAS } from "@/lib/etiquetas";
+import { VistaMadurez } from "./madurez";
+import { Evolucion } from "@/components/evolucion";
+import { leerMovimiento } from "@/lib/datos/movimiento";
 import {
   Bloque,
   Etiqueta,
@@ -151,6 +155,8 @@ export async function VistaTecnico({
   // se saca a una constante una vez comprobado que existe
   const evaluacionActual = evaluacion.data;
 
+  const movimiento = await leerMovimiento(companyId);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -185,6 +191,17 @@ export async function VistaTecnico({
               se publique.
             </p>
           ) : null}
+          {/*
+            Contra qué se puntúa.
+            
+            Estaba en el Resumen y bajó aquí con el resto: es la frase que
+            evita leer un 94 como una nota de examen. El objetivo de cada
+            dimensión depende de la etapa, y una pre-semilla no se mide
+            contra lo que se le pide a una serie A.
+          */}
+          <p className="border-b border-filete px-4 py-2 text-xs text-metadato">
+            Sobre el objetivo de {ETAPAS[compania.stage]?.toLowerCase() ?? compania.stage}
+          </p>
           <div className="px-4 py-4">
             <ScorecardRadar dimensiones={scoreTecnico.dimensiones} />
           </div>
@@ -454,6 +471,32 @@ export async function VistaTecnico({
           </ul>
         </Bloque>
       ) : null}
+
+      {/*
+        Madurez y recorrido, que estaban en el Resumen.
+
+        Bajaron aquí porque es de donde salen: el índice de madurez y las
+        dos curvas se mueven con la evaluación técnica, y mirarlos en la
+        misma pantalla en la que se puntúa es lo que permite ver si lo que
+        acabas de cambiar movió algo. En el Resumen eran dos bloques de
+        los ocho que lo hacían ilegible.
+      */}
+      <VistaMadurez resumen={resumen} />
+
+      <Bloque>
+        <TituloBloque
+          accion={
+            <Metadato>
+              {movimiento.lineaBase
+                ? `Desde ${movimiento.lineaBase.fecha}`
+                : "Sin medición de partida"}
+            </Metadato>
+          }
+        >
+          Recorrido
+        </TituloBloque>
+        <Evolucion puntos={movimiento.puntos} />
+      </Bloque>
     </div>
   );
 }

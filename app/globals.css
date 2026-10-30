@@ -122,6 +122,23 @@
   --color-menta: #6ee7b7;
   --color-durazno: #fcd34d;
 
+  /* ---------------------------------------------------------------------
+   * El color de los datos.
+   *
+   * **El magenta no pinta datos.** Ni estados, ni scores, ni barras: es
+   * marca, navegación, enlaces y la acción principal, y nada más. Decisión
+   * de Rodrigo del 30 de octubre, y es la que ordena la pantalla: con los
+   * cinco estados en color, una barra magenta al lado parecía significar
+   * algo y no significaba nada.
+   *
+   * Las series, las barras y los radares van en gris oscuro, y la línea de
+   * objetivo discontinua en el tenue. Sigue habiendo un solo color de
+   * serie, que es de lo que depende que los gráficos se lean sin
+   * distinguir tonos.
+   * ------------------------------------------------------------------- */
+  --color-dato: #3f3f46;
+  --color-dato-tenue: #a1a1aa;
+
   /*
    * El amarillo de los antetítulos de la web, de vuelta y con condiciones.
    *
@@ -204,6 +221,10 @@ html {
   --color-lila: #c4b5fd;
   --color-menta: #6ee7b7;
   --color-durazno: #fcd34d;
+
+  /* Sobre carbón, el gris de los datos se aclara para que la serie se vea */
+  --color-dato: #d4d4d8;
+  --color-dato-tenue: #71717a;
 }
 
 /*
@@ -248,6 +269,9 @@ html {
 
   /* El mismo amarillo, un punto más tostado para que no vibre sobre blanco */
   --color-filete-marca: #e0ac00;
+
+  --color-dato: #3f3f46;
+  --color-dato-tenue: #a1a1aa;
 
   /* Los mismos cuatro tonos, bajados hasta que se leen sobre blanco */
   --color-cielo: #0369a1;
@@ -665,18 +689,19 @@ a.segmento:focus-visible {
   text-shadow: none;
 }
 
-/* Barra de datos con algo de cuerpo, sin dejar de ser una barra */
-.barra-acento {
+/*
+ * Barra de datos.
+ *
+ * Fue magenta y con brillo. Ahora es gris oscuro: el magenta no pinta
+ * datos. El nombre `barra-acento` se retira para que nadie la vuelva a
+ * usar pensando que es la de la marca.
+ */
+.barra-dato {
   background: linear-gradient(
     180deg,
-    color-mix(in oklab, var(--color-acento) 88%, white),
-    var(--color-acento)
+    color-mix(in oklab, var(--color-dato) 85%, white),
+    var(--color-dato)
   );
-  box-shadow: 0 0 16px -2px color-mix(in oklab, var(--color-acento) 55%, transparent);
-}
-
-[data-tema="claro"] .barra-acento {
-  box-shadow: none;
 }
 
 /* Filete de sección: arranca en el acento y se apaga */

@@ -17,6 +17,15 @@ test.beforeAll(async () => {
   await borrar("roadmap_stages", { company_id: COMPANIAS.vega });
 });
 
+/*
+ * Madurez y transformación se leen en el due diligence técnico.
+ *
+ * Estaban en el Resumen, que llegó a tener ocho bloques. Bajaron aquí
+ * porque es de donde salen: el índice y las dos curvas se mueven con la
+ * evaluación técnica, y mirarlos en la pantalla donde se puntúa es lo que
+ * permite ver si lo que acabas de cambiar movió algo.
+ */
+
 /**
  * Madurez y transformación.
  *
@@ -28,7 +37,7 @@ test.beforeAll(async () => {
 test("la fundadora ve su madurez de hoy contra la del día de partida", async ({
   page,
 }) => {
-  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto");
+  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/tecnico");
 
   await expect(
     page.getByRole("heading", { name: "Madurez y transformación" }),
@@ -47,7 +56,7 @@ test("la fundadora ve su madurez de hoy contra la del día de partida", async ({
 });
 
 test("la fundadora no congela líneas base", async ({ page }) => {
-  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto");
+  await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/tecnico");
 
   await expect(page.getByText(/Congelar (la|otra) línea base/)).toHaveCount(0);
 });
@@ -56,7 +65,7 @@ test("sin línea base se dice que no hay transformación que medir", async ({
   page,
 }) => {
   // Vega no tiene línea base congelada
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva");
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva/tecnico");
 
   await expect(page.getByText("Sin línea base congelada").first()).toBeVisible();
   await expect(
@@ -68,7 +77,7 @@ test("sin línea base se dice que no hay transformación que medir", async ({
 test("IWL congela una línea base y pasa a haber con qué comparar", async ({
   page,
 }) => {
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva");
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva/tecnico");
   await page.getByText("Congelar la línea base").click();
 
   const alta = page.locator("form", { has: page.locator('select[name="kind"]') });
@@ -90,7 +99,7 @@ test("IWL congela una línea base y pasa a haber con qué comparar", async ({
 });
 
 test("un eje sin datos no cuenta como un cero", async ({ page }) => {
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva");
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva/tecnico");
 
   // Vega no tiene el técnico terminado ni ingreso cargado
   await expect(page.getByText(/Sin medir:/)).toBeVisible();

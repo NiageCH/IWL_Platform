@@ -9,6 +9,42 @@ como es**.
 
 ---
 
+## 2026-10-30 · Menos bloques, menos magenta y el plan en una barra · commit PENDIENTE
+
+**Qué cambió**
+· **El magenta deja de pintar datos.** Barras de preparación, radares, curvas, embudo, el avance del programa y la cifra destacada pasan a `--color-dato`, un gris oscuro, con la línea de objetivo discontinua. Sigue habiendo un solo color de serie. El magenta se queda en marca, navegación, enlaces y acción principal.
+· **El avance del programa habla el lenguaje de estados**: fases recorridas en verde, la actual en azul, las futuras en gris. La barra de tiempo en gris, ámbar a menos de 30 días y roja si se pasa.
+· **Fuera la numeración de fases y «va por X, y después le toca Y»**, como pedía el documento de navegación.
+· **El Resumen son cuatro bloques**: Por dónde va · Qué falta · Último mes · Hallazgos abiertos. Madurez y Recorrido de scores bajan a Due diligence técnico; Preparación por área, a Due diligence general.
+· **«Qué falta» junta los siguientes pasos y las tareas** en una sola lista. Lo que no es de nadie todavía lleva «Sin encargar» y enlaza a su pantalla.
+· **Fuera «Nace de seed»**, que era un detalle interno colándose en pantalla.
+· **El Recorrido solo abre el tramo en curso.** Los demás, plegados en una línea con su estado, sus hitos, sus horas y su plazo.
+· **Barra segmentada en el business plan**, con un cuadrado por sección. Un comentario sin responder pone su sección en ámbar.
+· **Quinto tramo de Marea, «Cierre de ronda», planificado**, y **objetivos a tres KPI**: MRR en objetivo, clientes de pago en atención, caja vencida.
+
+**Qué decidí yo**
+· **La cifra destacada manda por tamaño y peso, no por color.** Un score es un dato y el magenta ya no pinta datos; dejarla en rosa habría sido la excepción que rompe la regla el primer día.
+· **«En curso» no tiñe la barra de tiempo.** Solo ámbar y rojo cambian el color: una barra azul al lado de una verde sugiere que pasa algo cuando no pasa nada.
+· **Las introducciones entran en el lenguaje de estados.** No estaban en tu tabla, pero son un embudo y encajan sin forzar: cerrada es hecho, descartada no aplica.
+· **El aviso de la barra de tiempo es a 30 días, no a 7** como el resto. Un programa de doce meses no se endereza en una semana.
+· **Arreglé dos cosas que encontré de paso**, las dos de tareas: «bloqueada» no estaba en el desplegable —así que una tarea bloqueada salía como «Pendiente» y se guardaba así al tocar la fila— y no contaba como abierta, de modo que la cabecera decía «3 vencidas» mientras la barra pintaba cuatro.
+
+**Qué necesito que decidas**
+1. **«Estás aquí» sigue en magenta**, en la línea del Recorrido. Lo dejé porque marca posición, no dato. Si lo quieres también en gris, es una línea.
+2. **Los KPI sin objetivo no dicen nada**, y son la mitad. Crecimiento, runway y coste cloud son derivadas y no tienen columna de objetivo. ¿Les pongo uno o se quedan así?
+
+**Estado**
+· 116 unitarias · 136 RLS, en verde.
+· **La suite de interfaz no la he podido pasar entera.** No es excusa, es lo que pasó y conviene que lo sepas antes de mirar nada: la máquina lleva toda la tarde a carga 15–24 con Chrome al 120 %, y la suite ha tardado **2 horas y 47 minutos** en vez de tres minutos. Fallaron doce pruebas de ficheros que no he tocado —Anexo, borrado, candidata, embudo, equipo— tardando entre diez y diecisiete minutos cada una, y el intento siguiente ni siquiera llegó a compilar: se agotaron los 240 segundos del arranque.
+· **Lo que sí está comprobado**, en pasadas dirigidas y con la máquina aguantando: los once ficheros que toqué o rompí —`ruta`, `madurez`, `movil`, `avances`, `cohorte`, `aislamiento`, `interfaz`, `demostracion-completa`, `documentos`, `tareas`, `mentoria`— pasan todos.
+· **Falta una pasada limpia de la suite entera.** Hasta que la haya, no digo que esté en verde.
+· Doce pruebas de interfaz tocadas, todas por cambios deliberados: pantallas que se movieron de sitio y tramos que ahora nacen plegados. Ninguna se relajó para que pasara.
+
+**Siguiente**
+Una pasada limpia de la suite de interfaz con la máquina descargada. Después, el paso 4: las cinco pestañas y las redirecciones.
+
+---
+
 ## 2026-10-30 · La demostración recorre cada estado · commit 6d7efc4
 
 **Qué cambió**

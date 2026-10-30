@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import {
   COMPANIAS,
   USUARIOS,
@@ -7,6 +7,35 @@ import {
   consultar,
   entrarComo,
 } from "./entrada";
+
+/**
+ * Abre un tramo plegado.
+ *
+ * Desde que el Recorrido solo deja abierto el tramo en curso, lo demás
+ * vive dentro de un `<details>`: el objetivo, los hitos, los avances y los
+ * botones de IWL. Se abre como lo abriría una persona, pulsando su línea.
+ */
+async function abrirTramo(page: Page, nombre: string) {
+  const tramo = tramoDe(page, nombre);
+  if (!(await tramo.locator("details[open]").count())) {
+    await tramo.locator("summary").first().click();
+  }
+  return tramo;
+}
+
+/**
+ * La tarjeta de un tramo, por su identificador y no por su texto.
+ *
+ * Filtrando `section` por el nombre del tramo se cogía la cabecera de la
+ * hoja de ruta: la línea de puntos lleva dentro el nombre de los cinco, y
+ * esa es la primera sección de la página.
+ */
+function tramoDe(page: Page, nombre: string) {
+  return page
+    .locator("section[id^='etapa-']")
+    .filter({ has: page.getByRole("heading", { name: nombre }) })
+    .first();
+}
 
 /**
  * Hoja de ruta.
@@ -39,9 +68,11 @@ test("la fundadora ve su hoja de ruta con el objetivo de cada etapa", async ({
     page.getByRole("heading", { name: "3. Motor comercial repetible" }),
   ).toBeVisible();
 
-  // Y el objetivo, que es lo que distingue una etapa de un plazo
+  // Y el objetivo, que es lo que distingue una etapa de un plazo. Está
+  // dentro del tramo, que ahora nace plegado si no es el que está en curso
+  const tramo = await abrirTramo(page, "3. Motor comercial repetible");
   await expect(
-    page.getByText(/Que vender deje de depender del fundador/),
+    tramo.getByText(/Que vender deje de depender del fundador/),
   ).toBeVisible();
 });
 
@@ -58,7 +89,9 @@ test("la fundadora sí mueve sus hitos, pero no los da por cumplidos", async ({
 }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
 
-  const estado = page.locator('select[name="status"]').first();
+  // En el tramo en curso, que es el único abierto: en los plegados el
+  // desplegable existe en el marcado pero no se ve
+  const estado = page.locator('select[name="status"]:visible').first();
   await expect(estado).toBeVisible();
   await expect(estado.locator('option[value="en_curso"]')).toHaveCount(1);
   await expect(estado.locator('option[value="cumplido"]')).toHaveCount(0);
@@ -67,9 +100,12 @@ test("la fundadora sí mueve sus hitos, pero no los da por cumplidos", async ({
 test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/ruta");
 
-  await expect(page.getByText("Editar la etapa").first()).toBeVisible();
+  /* En el tramo en curso, que es el único que nace abierto. En los demás
+     los botones existen igual, a un clic */
+  const tramo = tramoDe(page, "4. Preparación de ronda");
+  await expect(tramo.getByText("Editar la etapa").first()).toBeVisible();
   await expect(
-    page.getByText("Añadir un hito a esta etapa").first(),
+    tramo.getByText("Añadir un hito a esta etapa").first(),
   ).toBeVisible();
 
   // Y sí puede confirmar un hito
@@ -106,7 +142,9 @@ test("una compañía sin hoja de ruta invita a diseñarla, y se diseña", async 
     page.getByRole("heading", { name: "1. Validación del problema" }),
   ).toBeVisible();
   await expect(page.getByText("Entró en Idea")).toBeVisible();
-  await expect(page.getByText("06 abr 2026 → 31 may 2026")).toBeVisible();
+  /* El plazo sale dos veces desde que el tramo se pliega: en su línea y,
+     al abrirlo, en el detalle */
+  await expect(page.getByText("06 abr 2026 → 31 may 2026").first()).toBeVisible();
 
   // Y ninguna etapa está abierta todavía: el plan existe, el trabajo no
   await expect(page.getByText("Etapa que toca")).toBeVisible();
@@ -239,8 +277,11 @@ test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
     .fill("Comprobar que una etapa se puede borrar.");
   await alta.getByRole("button", { name: "Añadir etapa" }).click();
 
-  const etapa = page.locator("section").filter({ hasText: nombre }).last();
+  /* Nace plegada: no es el tramo en curso. Se abre como la abriría
+     cualquiera, pulsando su línea */
+  const etapa = page.locator("section[id^='etapa-']").filter({ hasText: nombre }).last();
   await expect(etapa).toBeVisible();
+  await etapa.locator("summary").first().click();
 
   // Y ahora se borra, que es lo que no se podía
   await etapa.getByRole("button", { name: "Borrar la etapa" }).click();

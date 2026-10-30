@@ -518,7 +518,7 @@ function Barra({
       <span className="w-16 shrink-0 text-sm text-titular">{etiqueta}</span>
       <span className="h-2 flex-1 rounded-sm bg-hundido" aria-hidden="true">
         <span
-          className="barra-acento block h-full rounded-sm"
+          className="barra-dato block h-full rounded-sm"
           style={{ width: `${pct}%` }}
         />
       </span>

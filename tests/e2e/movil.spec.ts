@@ -13,8 +13,12 @@ test("la fundadora trabaja desde el móvil", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea);
 
   await expect(page.getByRole("heading", { name: "Marea Clínica" })).toBeVisible();
-  await expect(page.getByText("Score técnico").first()).toBeVisible();
-  await expect(page.getByText("Siguientes pasos")).toBeVisible();
+  /* El score vive en la cabecera, que es lo que se ve en todas las
+     pantallas; en el Resumen ya no se repite */
+  await expect(page.getByLabel("Score técnico")).toBeVisible();
+  /* Era «Siguientes pasos»: ahora los pasos y las tareas van en una sola
+     lista, porque son la misma pregunta */
+  await expect(page.getByText("Qué falta")).toBeVisible();
 
   // Navegación entre módulos
   await page.getByRole("link", { name: "Due diligence técnico" }).click();

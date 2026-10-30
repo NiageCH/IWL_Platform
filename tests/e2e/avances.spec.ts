@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { COMPANIAS, USUARIOS, borrar, entrarComo } from "./entrada";
 
 /*
@@ -18,21 +18,55 @@ test.beforeAll(async () => {
  * base según quién entra.
  */
 
+/**
+ * Abre un tramo plegado del Recorrido.
+ *
+ * Solo queda abierto el tramo en curso; lo demás vive dentro de un
+ * `<details>`. Se busca por el identificador de la tarjeta y no por su
+ * texto, porque el nombre del tramo sale también en la línea de puntos de
+ * la cabecera.
+ */
+async function abrirTramo(page: Page, nombre: string) {
+  const tramo = page
+    .locator("section[id^='etapa-']")
+    .filter({ has: page.getByRole("heading", { name: nombre }) })
+    .first();
+
+  if (!(await tramo.locator("details[open]").count())) {
+    await tramo.locator("summary").first().click();
+  }
+  return tramo;
+}
+
 test("los dos carriles se ven sobre la misma etapa", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
 
-  await expect(page.getByText("La compañía").first()).toBeVisible();
-  await expect(page.getByText("IWL", { exact: true }).first()).toBeVisible();
+  /*
+   * El diagnóstico está cerrado, y desde que el Recorrido solo deja
+   * abierto el tramo en curso hay que abrirlo. Se abre como lo abriría
+   * cualquiera: pulsando su línea.
+   */
+  const tramo = await abrirTramo(page, "1. Diagnóstico y línea base");
+
+  await expect(tramo.getByText("La compañía").first()).toBeVisible();
+  await expect(tramo.getByText("IWL", { exact: true }).first()).toBeVisible();
 
   // Un avance de cada lado en la etapa de diagnóstico
-  await expect(page.getByText("Data room completado")).toBeVisible();
-  await expect(page.getByText("Primera sesión técnica con el equipo")).toBeVisible();
+  await expect(tramo.getByText("Data room completado")).toBeVisible();
+  await expect(
+    tramo.getByText("Primera sesión técnica con el equipo"),
+  ).toBeVisible();
 });
 
 test("la fundadora registra un avance y cae en su carril", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
 
-  await page.getByText("Registrar un avance").first().click();
+  /*
+   * El primero **visible**, no el primero del marcado: los tramos
+   * plegados llevan el suyo dentro de un `<details>` cerrado, y ese es el
+   * que venía primero en la página.
+   */
+  await page.locator("button:visible", { hasText: "Registrar un avance" }).first().click();
 
   const alta = page.locator("form", { has: page.locator('input[name="title"]') });
   await alta
