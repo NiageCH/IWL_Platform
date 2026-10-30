@@ -192,6 +192,13 @@ test.afterAll(async () => {
     });
   }
 
-  await borrar("kpi_value_history", { company_id: MAREA });
+  /*
+   * Solo el de Vega, que es donde corrige esta prueba.
+   *
+   * Borraba también el de Marea, de cuando corregía ahí. Marea es la
+   * compañía de demostración y su historial de correcciones es uno de los
+   * datos que tiene que enseñar: cada pasada se lo llevaba por delante y
+   * solo volvía con un `db:reset`.
+   */
   await borrar("kpi_value_history", { company_id: VEGA });
 });

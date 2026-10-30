@@ -48,8 +48,16 @@ test("la tarea se mueve de estado y se cierra", async ({ page }) => {
   /*
    * Al cerrarse baja al plegable de cerradas: lo abierto es lo accionable
    * y es lo que tiene que ocupar sitio.
+   *
+   * Se comprueba que **esta** bajó, no que haya exactamente una cerrada.
+   * Contar las del proyecto hacía que la prueba dependiera de cuántas
+   * trajera la semilla, y en cuanto la demostración añadió las suyas
+   * dejó de cuadrar.
    */
-  await expect(page.getByText(/1 cerrada/)).toBeVisible();
+  const cerradas = page.locator("details", { hasText: /cerradas?/ }).first();
+  await expect(cerradas).toBeVisible();
+  await cerradas.locator("summary").click();
+  await expect(cerradas.getByText(TITULO)).toBeVisible();
 });
 
 test("la fundadora no le encarga trabajo a IWL", async ({ page }) => {

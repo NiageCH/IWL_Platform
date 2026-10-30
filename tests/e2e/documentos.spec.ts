@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { USUARIOS, actualizar, borrar, entrarComo } from "./entrada";
+import { COMPANIAS, USUARIOS, actualizar, borrar, entrarComo } from "./entrada";
 
 /**
  * Data room (§4.3).
@@ -176,6 +176,13 @@ test("un documento de otra compañía no se abre", async ({ page, request }) => 
  * revisión —y uno a validado—, así que la segunda pasada los encontraría ya
  * cambiados y comprobaría otra cosa. Los documentos los crearon ellas, así
  * que esos sí se borran.
+ *
+ * **Solo los de Vega**, que es la única compañía en la que entra este
+ * fichero. Se filtraba por el título del punto y nada más, y como el
+ * checklist es el mismo para todas, cada pasada dejaba en «pendiente» los
+ * puntos homónimos de Marea y de Raíz: dos compañías que esta prueba no
+ * abre. Se notó cuando la demostración puso uno de ellos en bloqueante y
+ * apareció pendiente a la pasada siguiente.
  */
 test.afterAll(async () => {
   for (const titulo of [
@@ -185,7 +192,7 @@ test.afterAll(async () => {
   ]) {
     await actualizar(
       "dd_items",
-      { title: `eq.${titulo}` },
+      { title: `eq.${titulo}`, company_id: `eq.${COMPANIAS.vega}` },
       { status: "pendiente", document_id: null },
     );
   }
@@ -195,6 +202,6 @@ test.afterAll(async () => {
     "Vesting del equipo fundador",
     "Política de precios",
   ]) {
-    await borrar("documents", { name: nombre });
+    await borrar("documents", { name: nombre, company_id: COMPANIAS.vega });
   }
 });

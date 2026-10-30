@@ -1626,3 +1626,33 @@ accidente, las tres apoyadas en que la pasada anterior había dejado la base
 distinta de como la encontró. Es la regla de siempre —lo que la prueba creó
 se borra, lo que encontró se deja— aplicada a un sitio donde no se había
 mirado: el arranque de la suite.
+
+### La demostración completa vive en la semilla local
+
+Marea Clínica está en el seed versionado porque las suites la necesitan, y
+está marcada como demostración porque es la compañía que enseña la
+plataforma. Las dos cosas tiran en direcciones contrarias: una suite quiere
+datos quietos y conocidos, y una demostración quiere datos que recorran
+cada estado —un hallazgo crítico, un punto bloqueante, un mes que venció
+sin entregarse—.
+
+Se resuelve separándolas. La Marea del repositorio se queda como estaba, y
+`supabase/seed/local/40_demostracion.sql` —que no se versiona— la completa
+en la máquina de quien revisa. Completarla en el seed versionado habría
+sido cambiarle los números a ciento setenta pruebas para que una persona
+pueda mirar una pantalla.
+
+Tiene un coste que conviene saber: **la demostración completa no existe en
+una máquina recién clonada**. Por eso `tests/e2e/demostracion-completa.spec.ts`
+se salta donde no esté, en vez de fallar por no tener datos que el
+repositorio no trae.
+
+Y tiene una consecuencia que costó cuatro arreglos: una suite que deja la
+base distinta de como la encontró se come la demostración. Aparecieron
+cuatro casos el mismo día —un restore filtrado solo por el título del
+punto, un borrado de todo el historial de correcciones de una compañía, un
+recuento de tareas cerradas y un `.single()` sobre una tabla que admite
+varias filas— y todos eran la misma regla sin aplicar: **lo que la prueba
+creó se borra; lo que encontró se deja**. Con una compañía que tiene que
+estar completa para que alguien la revise, dejar de cumplirla ya no pasa
+desapercibido.

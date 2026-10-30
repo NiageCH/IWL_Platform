@@ -104,6 +104,12 @@ export interface Filas {
     direccion?: string | null;
   };
   hallazgo: { severidad: string; estado: string };
+  /**
+   * Una introducción no es una tarea: es un embudo. Pero los cinco estados
+   * le sirven igual, y leerla en el mismo lenguaje que el resto es lo que
+   * permite mirar el extracto de aportación sin cambiar de vocabulario.
+   */
+  introduccion: { estado: string };
   etapa: { estado: string; fin?: string | null };
   /** Una compañía toma el peor estado de lo que tiene abierto */
   compania: { estados: EstadoVisual[] };
@@ -207,6 +213,15 @@ export function estadoVisual<E extends keyof Filas>(
       if (f.severidad === "critico") return "vencido";
       if (f.severidad === "alto") return "atencion";
       return f.estado === "en_curso" ? "curso" : "pendiente";
+    }
+
+    case "introduccion": {
+      const f = fila as Filas["introduccion"];
+      if (f.estado === "cerrada") return "hecho";
+      if (f.estado === "descartada") return "no_aplica";
+      if (f.estado === "presentada") return "pendiente";
+      // Reunión celebrada y en negociación: alguien está trabajándola
+      return "curso";
     }
 
     case "etapa": {

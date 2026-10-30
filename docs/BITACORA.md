@@ -9,6 +9,53 @@ como es**.
 
 ---
 
+## 2026-10-30 · La demostración recorre cada estado · commit PENDIENTE
+
+**Qué cambió**
+· **`supabase/seed/local/40_demostracion.sql`**, nuevo y no versionado. Completa Marea Clínica hasta que no queda un estado sin enseñar. Idempotente: se puede volver a aplicar sin duplicar nada.
+· **Las introducciones entran en el lenguaje de estados** —cerrada es hecho, descartada no aplica, presentada por hacer— y la pantalla de KPI también: un update en borrador cuya fecha pasó ya no se lee «Borrador», se lee **Vencido**.
+· **Seis capturas de la demostración completa** en `docs/capturas/*-demo.png`.
+· **Una prueba que comprueba que lo sigue haciendo**, `tests/e2e/demostracion-completa.spec.ts`. Se salta donde el seed local no esté.
+
+**Qué estado cubre cada dato**
+
+| Estado | Dónde se ve en Marea |
+|---|---|
+| **Hecho** | 6 hitos cumplidos · 23 puntos de DD validados · 4 updates revisados · la introducción cerrada con Historia Clínica Abierta · el hallazgo de retención de logs, resuelto · la tarea de rotar la credencial · 5 secciones del plan validadas |
+| **En curso** | el hito «Data room completo y validado» · el punto «Posición de caja», entregado · «Cuentas anuales», en revisión · el update de agosto, en manos de IWL · dos introducciones vivas · 3 secciones del plan «para revisar» · 3 tareas en marcha |
+| **Por hacer** | el hito «Tres inversores en conversación avanzada» · 3 puntos de DD pendientes · la introducción a Semilla Ibérica, sin respuesta · la tarea de montar la sala de datos, con plazo por delante · 1 sección del plan en borrador |
+| **Atención** | el hallazgo alto de copias sin prueba de restauración · los 1.500 € desembolsados sin justificante · 3 comentarios sin responder |
+| **Vencido** | el hito «Carta de intenciones de un inversor ancla», que venció el 20 de octubre · el punto «Vesting del equipo fundador», bloqueante · el documento del embudo comercial, **caducado** el 14 de octubre · el update de septiembre, que venció el 10 de octubre sin entregarse · el hallazgo **crítico** de credenciales del PACS · la tarea bloqueada del coste de adquisición |
+| **No aplica** | la tarea descartada de traducir el material · la introducción descartada con Fondo Atlántico |
+
+Y lo que no es un estado pero estaba en tu lista: **las cuatro severidades** de hallazgo técnico, crítico incluido · **un mes de KPI corregido con su historial** —13.518 → 13.900, firmado por la fundadora, escrito por el disparador y no por la semilla— · **las cinco fases de una introducción, una con comisión** y 18.000 € · **línea base y reevaluación**, la inicial de abril y la trimestral de septiembre.
+
+**Qué decidí yo**
+· **Va en `seed/local/`, no en el seed versionado.** Las suites se apoyan en la Marea del repositorio —sus scores, sus recuentos, su semáforo— y completarla allí era cambiarles los números a ciento setenta pruebas para que una persona pueda mirar una pantalla.
+· **El crítico de seguridad pone a Marea en «Bloqueo» y la saca de invertible.** Es a propósito: sin él, ni el semáforo rojo ni la lista de siguientes pasos se ven en ninguna parte. Como Marea está fuera de todos los agregados, no ensucia ninguna media.
+· **Septiembre pasa a borrador y agosto a entregado.** Era la única forma de tener a la vez un mes en manos de IWL y un mes que venció sin entregarse. Octubre no se crea: una prueba lo carga y lo borra en cada pasada.
+· **La tarea cerrada va a nombre de la fundadora y no del CTO.** El CTO de Marea es la única persona del seed sin trabajo a su nombre, y hay una prueba que lo necesita. Una semilla local no le cambia los supuestos a la suite.
+· **Las introducciones entran en los cinco estados** aunque tu documento de estados no las listaba: son un embudo, encajan sin forzar nada, y el extracto de aportación es justo donde no apetece cambiar de vocabulario.
+
+**Qué necesito que decidas**
+1. **Faltan dos estados de tramo: «planificada» y «cancelada».** La hoja de ruta de Marea tiene las cuatro etapas que pediste, tres completadas y una en curso. Para enseñar esos dos haría falta una quinta etapa planificada, y dijiste cuatro. ¿La añado?
+2. **«KPI frente a objetivo» no se puede enseñar.** La columna `target_value` existe en `kpi_values` y está vacía en toda la plataforma, y ninguna pantalla la lee como estado. ¿Le pongo objetivos a los KPI de Marea y los enseño en el Resumen, o eso va con el modelo de datos de los tableros?
+3. **Meta del programa y pasos dentro de un hito, bloqueados.** Son lo que pide el tablero de la fundadora y no existen en el modelo de datos. Van en el documento que tengo que entregarte antes de escribir código, así que la demostración los recorrerá cuando apruebes eso.
+
+**Estado**
+· 116 unitarias · 136 RLS · 174 interfaz. Las tres en verde, y la de interfaz dos veces seguidas. Comprobado además que **la demostración sigue completa después de dos pasadas enteras de la suite**, que es lo que de verdad costaba.
+· **Cuatro pruebas más dejaban la base distinta de como la encontraron**, y las cuatro salieron a la luz al completar la demostración:
+  · `documentos.spec.ts` devolvía a «pendiente» tres puntos del checklist **filtrando solo por el título**. Como el checklist es igual para todas, cada pasada tocaba también los puntos homónimos de Marea y de Raíz, dos compañías que ese fichero no abre.
+  · `correccion-kpi.spec.ts` borraba **todo** el historial de correcciones de Marea, de cuando corregía ahí. Se llevaba por delante el rastro de la demostración en cada pasada.
+  · `tareas.spec.ts` contaba «1 cerrada» en vez de comprobar que la suya bajó al plegable.
+  · Una prueba de RLS pedía «la línea base de Marea» con `.single()`, dando por supuesto que solo hay una.
+· **Sin subir a la nube.** La demostración completa está solo en esta máquina.
+
+**Siguiente**
+El modelo de datos de los dos tableros —meta, pasos de hito, «Para revisar» y comprobación previa al acceso— en un archivo de `docs/`, para que lo apruebes antes de escribir nada.
+
+---
+
 ## 2026-10-30 · Un solo lenguaje de estados · commit 6533987
 
 **Qué cambió**

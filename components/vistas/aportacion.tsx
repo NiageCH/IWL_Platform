@@ -14,6 +14,8 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { Estado } from "@/components/ui/estado";
+import { estadoVisual } from "@/lib/estados";
 import { euros, fecha, numero, porcentaje } from "@/lib/utils";
 
 /**
@@ -240,8 +242,12 @@ export async function VistaAportacion({
                     </p>
                   ) : null}
                   {pendienteJustificar > 0 ? (
-                    <p className="mt-1.5 text-xs text-aviso">
-                      {euros(pendienteJustificar)} sin justificante subido
+                    <p className="mt-1.5">
+                      <Estado
+                        valor="atencion"
+                        rotulo={`${euros(pendienteJustificar)} sin justificante`}
+                        motivo="Un desembolso sin justificante no cuenta como aportación acreditada"
+                      />
                     </p>
                   ) : null}
                 </li>
@@ -273,7 +279,10 @@ export async function VistaAportacion({
                     {i.organizacion ?? i.contacto}
                   </span>
                   <Metadato>{TIPOS_CONTACTO[i.tipo] ?? i.tipo}</Metadato>
-                  <Etiqueta>{ESTADOS_INTRODUCCION[i.estado] ?? i.estado}</Etiqueta>
+                  <Estado
+                    valor={estadoVisual("introduccion", { estado: i.estado })}
+                    rotulo={ESTADOS_INTRODUCCION[i.estado] ?? i.estado}
+                  />
                   <span className="flex-1" />
                   <Metadato>
                     {i.quien} · {fecha(i.fecha)}

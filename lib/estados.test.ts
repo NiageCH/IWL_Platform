@@ -210,6 +210,30 @@ describe("hallazgos", () => {
   });
 });
 
+describe("introducciones", () => {
+  it("cerrada es hecho y descartada no aplica", () => {
+    expect(estadoVisual("introduccion", { estado: "cerrada" }, HOY)).toBe("hecho");
+    expect(estadoVisual("introduccion", { estado: "descartada" }, HOY)).toBe(
+      "no_aplica",
+    );
+  });
+
+  it("presentada y sin respuesta todavía es por hacer", () => {
+    expect(estadoVisual("introduccion", { estado: "presentada" }, HOY)).toBe(
+      "pendiente",
+    );
+  });
+
+  it("reunión celebrada y negociación son en curso", () => {
+    expect(
+      estadoVisual("introduccion", { estado: "reunion_celebrada" }, HOY),
+    ).toBe("curso");
+    expect(estadoVisual("introduccion", { estado: "en_negociacion" }, HOY)).toBe(
+      "curso",
+    );
+  });
+});
+
 describe("etapas de la hoja de ruta", () => {
   it("completada es hecho y cancelada no aplica", () => {
     expect(estadoVisual("etapa", { estado: "completada", fin: AYER }, HOY)).toBe("hecho");

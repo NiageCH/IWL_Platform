@@ -4,6 +4,26 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-10-30 · Sobre «Cinco estados» (6533987)
+
+Revisadas las capturas. Due diligence es exactamente lo que se buscaba: los 29 cuadrados se leen de un vistazo. Recorrido y Resumen mejoran, pero siguen siendo largos.
+
+**Respuestas**
+1. **El avance del programa pasa al lenguaje de estados.** Tramos y fases completados en verde, el actual en azul, los futuros en gris; la barra de tiempo en gris oscuro, en ámbar si quedan menos de 30 días y en rojo si se pasa. **Regla general: el magenta no pinta datos.** Ni estados, ni scores, ni barras. Solo marca, navegación, enlaces y la acción principal. Las barras de «Preparación por área», los radares y las curvas pasan a gris oscuro, con la línea objetivo discontinua.
+2. **La barra segmentada del business plan, ahora**, en esta misma tanda.
+3. **«En plazo», de acuerdo.**
+
+**Lo que veo en las capturas**
+· **Resumen tiene ocho bloques.** Se queda en cuatro: Por dónde va, Qué falta (siguientes pasos y tareas en una sola lista), Último mes y Hallazgos abiertos. Madurez y Recorrido de scores se mueven a Due diligence técnico; Preparación por área, a Due diligence general. Cuando llegue el tablero de la fundadora, Resumen se convierte en él.
+· **«Va por Incubación, y después le toca fin del programa»** sigue ahí, y las fases siguen numeradas («01 Acuerdo Marco», «Fase 3 de 4»). Fuera las dos cosas, como dice el documento de navegación.
+· **«Nace de seed»** aparece bajo cada tarea en «Quién hace qué». Es un detalle interno que llega a la pantalla. Que no salga nunca, tampoco en la demo.
+· **Recorrido:** solo el tramo en curso abierto; los completados, plegados en una línea con su estado y sus cifras. Hoy hay que bajar tres pantallas para llegar al tramo actual.
+· **Las pestañas siguen en dos filas.** Es el paso 4; va justo después de la demo.
+
+Orden: estos ajustes · barra del business plan · demostración completa · paso 4.
+
+---
+
 ## 2026-10-30 · Calendario y Claude: aparcados
 
 **Decisión de Rodrigo: calendario e IA quedan para más adelante.** `docs/IWL_Doc_CalendarioEIA_ES_v1_20261030.md` se queda como referencia, sin construir nada de él.

@@ -21,12 +21,22 @@ beforeAll(async () => {
   ]);
 });
 
+/*
+ * La inicial, por su nombre.
+ *
+ * Se pedía «la línea base de Marea» con `.single()`, dando por supuesto que
+ * solo hay una. Una compañía puede tener varias —la inicial, una por
+ * trimestre, una previa a la ronda— y en cuanto apareció la segunda esto se
+ * cayó pidiendo una fila y encontrando dos. Lo que esta prueba dice es que
+ * **el punto de partida** no se reescribe, así que pide esa.
+ */
 describe("la línea base es inmutable", () => {
   it("no se puede editar, ni siquiera con la clave de servicio", async () => {
     const { data: base } = await servicio
       .from("baselines")
       .select("id")
       .eq("company_id", COMPANIAS.marea)
+      .eq("kind", "inicial")
       .single();
 
     const { error } = await servicio
@@ -43,6 +53,7 @@ describe("la línea base es inmutable", () => {
       .from("baselines")
       .select("kind, taken_on, stage")
       .eq("company_id", COMPANIAS.marea)
+      .eq("kind", "inicial")
       .single();
 
     const { error } = await equipoIwl.from("baselines").insert({

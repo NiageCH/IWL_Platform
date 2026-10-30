@@ -4,7 +4,6 @@ import type { ResumenCompania } from "@/lib/datos/compania";
 import { SerieKpi } from "@/components/serie-kpi";
 import {
   Bloque,
-  Etiqueta,
   Metadato,
   SinDatos,
   TituloBloque,
@@ -19,6 +18,8 @@ import {
   leerCorrecciones,
   leerMesesCargados,
 } from "@/lib/datos/correcciones";
+import { Estado } from "@/components/ui/estado";
+import { estadoVisual } from "@/lib/estados";
 import { valorKpi as formatear } from "@/lib/etiquetas";
 import { fecha, numero, porcentaje } from "@/lib/utils";
 
@@ -160,6 +161,12 @@ export async function VistaKpi({
     (u) => u.period === `${mesACargar}-01`,
   );
 
+  /* La fecha límite de cada mes, para decir si un borrador es un borrador
+     o un mes que se pasó de plazo */
+  const vencimientos = new Map(
+    (updates.data ?? []).map((u) => [u.period.slice(0, 7), u.due_date]),
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 md:grid-cols-2">
@@ -227,15 +234,21 @@ export async function VistaKpi({
                 className="flex flex-wrap items-baseline gap-x-4 gap-y-2 px-4 py-3"
               >
                 <span className="cifra text-sm text-titular">{m.periodo}</span>
-                <Etiqueta>
-                  {m.estado === "revisado"
-                    ? "Revisado"
-                    : m.estado === "entregado"
-                      ? "Entregado"
-                      : m.estado === "borrador"
-                        ? "Borrador"
-                        : "Sin update"}
-                </Etiqueta>
+                <Estado
+                  valor={estadoVisual("update", {
+                    estado: m.estado,
+                    fecha: vencimientos.get(m.periodo) ?? null,
+                  })}
+                  rotulo={
+                    m.estado === "revisado"
+                      ? "Revisado"
+                      : m.estado === "entregado"
+                        ? "Entregado"
+                        : m.estado === "borrador"
+                          ? "Borrador"
+                          : "Sin update"
+                  }
+                />
                 <span className="flex-1" />
 
                 {permisos.puedeEscribir ? (
@@ -385,11 +398,24 @@ export async function VistaKpi({
                   <span className="cifra text-sm font-medium text-titular">
                     {u.period.slice(0, 7)}
                   </span>
-                  <Etiqueta>{ESTADOS_UPDATE[u.status] ?? u.status}</Etiqueta>
+                  {/*
+                    El estado del mes, no solo el de la fila.
+
+                    Un update en borrador cuya fecha ya pasó no es un
+                    borrador: es un mes que no se entregó, y esa es la
+                    única forma de verlo desde aquí.
+                  */}
+                  <Estado
+                    valor={estadoVisual("update", {
+                      estado: u.status,
+                      fecha: u.due_date,
+                    })}
+                    rotulo={ESTADOS_UPDATE[u.status] ?? u.status}
+                  />
                   {u.submitted_at ? (
                     <Metadato>Entregado {fecha(u.submitted_at)}</Metadato>
                   ) : u.due_date ? (
-                    <Metadato>Vence {fecha(u.due_date)}</Metadato>
+                    <Metadato>Vencía el {fecha(u.due_date)}</Metadato>
                   ) : null}
                 </div>
                 {u.achievements ? (
