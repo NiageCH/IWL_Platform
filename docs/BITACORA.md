@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-30 · La demostración recorre cada estado · commit PENDIENTE
+## 2026-10-30 · La demostración recorre cada estado · commit 6d7efc4
 
 **Qué cambió**
 · **`supabase/seed/local/40_demostracion.sql`**, nuevo y no versionado. Completa Marea Clínica hasta que no queda un estado sin enseñar. Idempotente: se puede volver a aplicar sin duplicar nada.
