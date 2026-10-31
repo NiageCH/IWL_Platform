@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-10-31 · Sobre la pasada de interfaz que faltaba · commit PENDIENTE
+## 2026-10-31 · Sobre la pasada de interfaz que faltaba · commit bfbbcdd
 
 **Qué cambió**
 · `tests/e2e/borrado.spec.ts` limpia al entrar las compañías que dejó una pasada abortada, en vez de contar con que la suya siempre llegue al final.
