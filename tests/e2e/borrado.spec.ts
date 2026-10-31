@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   USUARIOS,
   actualizar,
+  borrar,
   consultar,
   entrarComo,
   ficherosEn,
@@ -28,6 +29,31 @@ const PNG_DE_UN_PIXEL = Uint8Array.from(
   ),
   (c) => c.charCodeAt(0),
 );
+
+/*
+ * Lo que dejó una pasada que no llegó al final.
+ *
+ * Esta prueba crea una compañía y la borra ella misma, así que en
+ * condiciones normales no deja nada. Pero si la pasada se corta antes
+ * —un tiempo agotado, la máquina cargada, alguien que la para— la
+ * compañía se queda, y la pasada siguiente encuentra dos donde esperaba
+ * ninguna y falla por un motivo que no se parece a su causa.
+ *
+ * Pasó: dos «Compañía que se borra» acumuladas de dos pasadas abortadas.
+ * Limpiar al entrar es lo que hace que la suite se recupere sola en vez
+ * de necesitar que alguien mire la base a mano.
+ */
+test.beforeAll(async () => {
+  const restos = await consultar<{ slug: string }>(
+    "companies",
+    { slug: "like.borrado-%" },
+    "slug",
+  );
+
+  for (const resto of restos) {
+    await borrar("companies", { slug: resto.slug });
+  }
+});
 
 test("borrar una compañía con todo se lleva también sus ficheros", async ({
   page,

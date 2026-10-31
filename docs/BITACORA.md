@@ -9,6 +9,38 @@ como es**.
 
 ---
 
+## 2026-10-31 · Sobre la pasada de interfaz que faltaba · commit PENDIENTE
+
+**Qué cambió**
+· `tests/e2e/borrado.spec.ts` limpia al entrar las compañías que dejó una pasada abortada, en vez de contar con que la suya siempre llegue al final.
+
+**Qué pasó con la suite**
+Tres pasadas completas, las tres con la máquina a carga 15–24 y Chrome al 120 %. Ninguna sirve para decir que está en verde, y conviene ver por qué:
+
+| Pasada | Duración | Fallaron | De qué |
+|---|---|---|---|
+| 1.ª | 2 h 47 min | 12 | 10 por agotar el tiempo (15 min cada una), 2 reales |
+| 2.ª | 1 h 54 min | 9 | 8 por tiempo, 1 real |
+| 3.ª | 1 h 24 min | 7 | 7 por tiempo o arrastradas de una anterior |
+
+**Los tres conjuntos que fallaron son distintos entre sí.** Un fallo que cambia de sitio en cada pasada y siempre a los 15 minutos y medio —que es el tope— no es una regresión: es una máquina que no da. Tres minutos es lo que tarda esta suite cuando la máquina está libre.
+
+**Lo que sí era real, y está arreglado:**
+· **`borrado.spec.ts` encontraba dos compañías donde esperaba ninguna.** Eran «Compañía que se borra» de dos pasadas que se cortaron antes de su limpieza, del 30 a las 19:15 y a las 23:34. Las borré, y la prueba limpia ahora al entrar: la suite se recupera sola en vez de necesitar que alguien mire la base a mano. Es la cuarta vez este mes que una prueba que no deja la base como la encontró rompe otra.
+· Las doce pruebas que tocaron los cambios de ayer —pantallas movidas de sitio y tramos plegados— están arregladas y pasan en pasada dirigida.
+
+**Qué necesito que decidas**
+1. **Hace falta una pasada limpia** con la máquina descargada antes de dar esto por bueno. La puedes lanzar tú con `npm run test:e2e` cuando cierres Chrome, o la lanzo yo cuando me digas que la máquina está libre.
+
+**Estado**
+· 116 unitarias · 136 RLS, en verde y repetidas.
+· Interfaz: 167 de 174 en la mejor pasada, con los siete fallos repartidos al azar por el tiempo agotado. **Sin pasada limpia todavía.**
+
+**Siguiente**
+La pasada limpia. Después, el paso 4.
+
+---
+
 ## 2026-10-30 · Menos bloques, menos magenta y el plan en una barra · commit 16cc113
 
 **Qué cambió**
