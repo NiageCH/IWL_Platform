@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-04 · La pasada limpia, y los primeros componentes comunes · commit PENDIENTE
+## 2026-11-04 · La pasada limpia, y los primeros componentes comunes · commit acee55c
 
 **La suite está en verde.** 116 unitarias · 136 RLS · **174 de interfaz en 2 minutos y 24 segundos**, dos veces seguidas. Era la máquina: las mismas pruebas que tardaban quince minutos y medio ahora tardan menos de un segundo. No había ninguna regresión escondida.
 
