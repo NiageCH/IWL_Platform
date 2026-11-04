@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-04 · Safari, y la página de archivos y registro · commit PENDIENTE
+## 2026-11-04 · Safari, y la página de archivos y registro · commit 8599171
 
 **Qué cambió**
 · **WebKit entra en la suite**, en escritorio y en iPhone. **344 pruebas en verde en los dos motores.** Antes eran 174 en uno solo.
