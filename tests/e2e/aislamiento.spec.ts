@@ -86,8 +86,9 @@ test("un revisor de Niage solo ve las compañías que lleva", async ({ page }) =
 test("el semáforo y las severidades llevan texto, no solo color", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva");
 
-  // Semáforo rojo por el hallazgo crítico abierto
-  await expect(page.getByText("Bloqueo").first()).toBeVisible();
+  /* Semáforo rojo por el hallazgo crítico abierto. «Bloqueado», no
+     «Bloqueo»: una palabra suelta no decía qué pasaba */
+  await expect(page.getByText("Bloqueado").first()).toBeVisible();
   await expect(page.getByText("Un hallazgo crítico abierto").first()).toBeVisible();
 
   await page.goto("/cartera/vega-predictiva/tecnico");

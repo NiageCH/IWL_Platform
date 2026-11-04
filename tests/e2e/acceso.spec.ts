@@ -89,8 +89,13 @@ test("la dirección pone la contraseña al dar de alta y se enseña una vez", as
   await expect(page.getByText(/no se vuelve a enseñar/)).toBeVisible();
 
   // Y sirve para entrar
+  /*
+   * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
+   * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
+   * WebKit eso es un error, no un silencio como en Chromium.
+   */
   await page.getByRole("button", { name: "Salir" }).click();
-  await page.goto("/entrar");
+  await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("tres-palabras-y-42");
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -143,8 +148,13 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await expect(page.getByText(/la-de-siempre-77/)).toBeVisible();
 
   // Entra una vez: a partir de aquí ya no es un alta, es un restablecimiento
+  /*
+   * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
+   * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
+   * WebKit eso es un error, no un silencio como en Chromium.
+   */
   await page.getByRole("button", { name: "Salir" }).click();
-  await page.goto("/entrar");
+  await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-de-siempre-77");
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -174,8 +184,13 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await expect(fila.getByRole("button", { name: "Hecho" })).toBeVisible();
 
   // Y la contraseña nueva entra
+  /*
+   * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
+   * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
+   * WebKit eso es un error, no un silencio como en Chromium.
+   */
   await page.getByRole("button", { name: "Salir" }).click();
-  await page.goto("/entrar");
+  await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill(nueva);
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -227,8 +242,13 @@ test("cada persona cambia su propia contraseña", async ({ page }) => {
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/la-primera-clave-9/)).toBeVisible();
 
+  /*
+   * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
+   * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
+   * WebKit eso es un error, no un silencio como en Chromium.
+   */
   await page.getByRole("button", { name: "Salir" }).click();
-  await page.goto("/entrar");
+  await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -241,8 +261,13 @@ test("cada persona cambia su propia contraseña", async ({ page }) => {
   await expect(page.getByText(/Contraseña cambiada/)).toBeVisible();
 
   // La nueva vale y la vieja ya no
+  /*
+   * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
+   * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
+   * WebKit eso es un error, no un silencio como en Chromium.
+   */
   await page.getByRole("button", { name: "Salir" }).click();
-  await page.goto("/entrar");
+  await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Entrar" }).click();

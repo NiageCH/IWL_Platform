@@ -27,15 +27,38 @@ export default defineConfig({
     baseURL: BASE,
     trace: "retain-on-failure",
   },
+  /*
+   * Dos motores, y los dos son principales.
+   *
+   * Rodrigo revisa en Safari y las fundadoras entran desde Mac y desde
+   * iPhone. Durante un tiempo la suite solo corrió en Chromium, y eso
+   * convirtió a Safari en un sitio donde los fallos se descubren
+   * mirando: cuatro síntomas de una revisión no se reproducían aquí
+   * porque aquí no se miraba.
+   *
+   * WebKit es el motor de Safari. No es Safari —no comparte su caché ni
+   * sus extensiones— pero sí su maquetación y su CSS, que es donde
+   * aparecen estas diferencias.
+   */
   projects: [
     {
       name: "escritorio",
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "escritorio-safari",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
       // La vista de fundadora tiene que ser usable en móvil (§11)
       name: "movil",
       use: { ...devices["Pixel 7"] },
+      testMatch: /movil\.spec\.ts/,
+    },
+    {
+      // Y en iPhone, que es desde donde van a entrar la mitad
+      name: "movil-safari",
+      use: { ...devices["iPhone 14"] },
       testMatch: /movil\.spec\.ts/,
     },
   ],

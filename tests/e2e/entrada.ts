@@ -59,7 +59,25 @@ export async function entrarComo(page: Page, email: string, destino = "/") {
   );
 
   await page.goto(enlace.toString());
-  await page.waitForURL((u) => !u.pathname.startsWith("/auth/"));
+
+  /*
+   * Hasta que la sesión aterriza de verdad, no antes.
+   *
+   * Se esperaba solo a salir de `/auth/`, y con `destino` por defecto eso
+   * deja a la página en `/`, que es el repartidor: redirige a `/cartera`
+   * o a `/proyecto` según el papel. Esa segunda redirección seguía en
+   * marcha cuando la prueba pedía su ruta, y en WebKit eso aborta la
+   * navegación con «interrupted by another navigation».
+   *
+   * Chromium la seguía en silencio, así que el fallo solo existía en
+   * Safari —y afectó a trece pruebas, todas las que comprueban que
+   * alguien **no** llega a una ruta, que son justo las que piden rutas
+   * que redirigen.
+   */
+  await page.waitForURL(
+    (u) => !u.pathname.startsWith("/auth/") && u.pathname !== "/",
+  );
+  await page.waitForLoadState("domcontentloaded");
 }
 
 export const USUARIOS = {

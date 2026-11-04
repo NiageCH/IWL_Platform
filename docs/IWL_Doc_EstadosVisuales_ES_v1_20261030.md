@@ -1,6 +1,6 @@
 # Plataforma IWL · estados visuales
 
-Versión 1 · 30 oct 2026 · Inception Woman Lab
+Versión 1.1 · 4 nov 2026 · Inception Woman Lab
 
 Un solo lenguaje de estado para toda la plataforma y los tres públicos: fundadora, IWL y mentor. Se ve el estado antes de leer nada. Sustituye a los tonos sueltos que hay hoy (cielo, lila, menta, durazno, ok, warn, crit).
 
@@ -58,7 +58,7 @@ Una compañía toma el peor estado de lo que tiene abierto, con el motivo escrit
 ## 4. Menos texto
 
 1. **Primero la forma, después la palabra.** Cada bloque abre con algo que se ve: barra, puntos, cifra. El texto explicativo va detrás de un `?` o al pasar el ratón.
-2. **Barra segmentada para todo conjunto.** Un segmento por elemento, coloreado por estado. «29 puntos de due diligence» se ve como 29 cuadrados: cuántos verdes, cuántos rojos, de un vistazo. Pulsar un segmento abre ese elemento.
+2. **Barra de avance de un solo color.** Verde lo hecho, gris claro el resto, y «23 de 29» al lado. Debajo, solo las excepciones como pastillas: «2 vencidos», «1 en atención». Nada de filas de cuadros de cinco colores. Pulsar la barra o una pastilla abre la lista filtrada.
 3. **Recorrido como línea de puntos.** Tramos y hitos como puntos sobre una línea, con el color de su estado y «estás aquí» marcado.
 4. **Títulos de cuatro palabras como máximo.** Sin subtítulo si el título se entiende solo.
 5. **Cifras grandes, rótulos pequeños.** «3 de 5» en grande; «condiciones cumplidas» debajo, en pequeño.
@@ -71,5 +71,5 @@ Una compañía toma el peor estado de lo que tiene abierto, con el motivo escrit
 - Los cinco estados se ven iguales para fundadora, IWL y mentor.
 - Ningún icono de navegación lleva color.
 - Ninguna pantalla tiene un párrafo de más de dos líneas visible sin pulsar.
-- Due diligence, hitos, pasos y business plan abren con su barra segmentada.
+- Due diligence, hitos, pasos y business plan abren con su barra de avance y sus excepciones.
 - Con escala de grises activada, cada estado se distingue por su icono.

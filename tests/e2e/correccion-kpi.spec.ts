@@ -164,7 +164,16 @@ test("un mes que IWL ya revisó no lo corrige la compañía", async ({
   const deIwl = page.locator("li").filter({ hasText: mesRevisado }).first();
   await deIwl.getByRole("button", { name: "Reabrir para corregir" }).click();
 
-  await page.reload();
+  /*
+   * El acuse es la pantalla cambiada: reabierto el mes, el botón de
+   * reabrir desaparece. Se esperaba a eso con un `reload()`, y en WebKit
+   * la recarga salía antes de que la acción terminara de revalidar, así
+   * que volvía la pantalla de antes.
+   */
+  await expect(
+    deIwl.getByRole("button", { name: "Reabrir para corregir" }),
+  ).toHaveCount(0);
+
   const trasReabrir = page.locator("li").filter({ hasText: mesRevisado }).first();
   await expect(
     trasReabrir.getByRole("button", { name: "Corregir este mes" }),

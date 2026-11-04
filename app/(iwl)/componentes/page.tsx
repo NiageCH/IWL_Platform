@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { CircleDollarSign } from "lucide-react";
 
 import { personaActual } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
@@ -145,7 +144,7 @@ export default async function Componentes() {
             valor="13.900 €"
             estado="hecho"
             nota="Objetivo 13.000 €"
-            ayuda="Ingreso recurrente del último mes cargado. Se compara con el objetivo del Anexo para esta etapa. Verde es en objetivo o por encima."
+            ayuda="Ingreso recurrente del último mes cargado. Se compara con el objetivo del Anexo para esta etapa. «En objetivo» es igual o por encima."
             href="/comparativa"
           />
           <Cifra
@@ -153,19 +152,18 @@ export default async function Componentes() {
             valor="227.510 €"
             estado="vencido"
             nota="Objetivo 300.000 €"
-            ayuda="Saldo disponible al cierre del mes. Rojo es más de un 20 % por debajo del objetivo."
+            ayuda="Saldo disponible al cierre del mes. «Lejos» es más de un 20 % por debajo del objetivo."
           />
           <Cifra
             etiqueta="Clientes de pago"
             valor="13"
             estado="atencion"
             nota="Objetivo 15"
-            ayuda="Clientes que pagan, sin contar pilotos. Ámbar es hasta un 20 % por debajo del objetivo."
+            ayuda="Clientes que pagan, sin contar pilotos. «Cerca» es hasta un 20 % por debajo del objetivo."
           />
           <Cifra
             etiqueta="Horas de IWL"
             valor="212"
-            icono={CircleDollarSign}
             nota="de 410 previstas en el plan"
           />
           <Cifra etiqueta="Sin objetivo" valor="9,8 meses" nota="Burn de 23.186 €" />

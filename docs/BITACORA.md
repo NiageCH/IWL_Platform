@@ -9,6 +9,47 @@ como es**.
 
 ---
 
+## 2026-11-04 · Safari, y la página de archivos y registro · commit PENDIENTE
+
+**Qué cambió**
+· **WebKit entra en la suite**, en escritorio y en iPhone. **344 pruebas en verde en los dos motores.** Antes eran 174 en uno solo.
+· **La página del punto B**, `docs/IWL_Doc_ArchivosYRegistro_ES_v1_20261104.md`. Espera tu aprobación: hay cuatro decisiones que son tuyas.
+· **Los tres ajustes de `/componentes`**: las cifras frente a objetivo dicen **En objetivo · Cerca · Lejos · Sin objetivo**; el semáforo rojo dice **«Bloqueado»** y lleva su motivo escrito al lado y enlazado; fuera el icono de dólar.
+· Capturas en los dos motores: `componentes-chromium.png`, `componentes-safari.png`, `cabecera-chromium.png`, `cabecera-safari.png`.
+
+**Lo que encontró Safari, y lo que no**
+
+Los cuatro síntomas de tu revisión **tampoco se reproducen en WebKit**. Lo medí igual que en Chromium: pastilla de 22 px con icono y palabra en línea, `rgb(185, 28, 28)` en los dos, barra con 256 px de relleno. Los dos motores dan lo mismo al milímetro, así que el servidor de desarrollo viejo sigue siendo la única explicación que encaja.
+
+Pero mirar en Safari sí destapó **quince fallos que Chromium no veía**, y uno de ellos valía por trece:
+
+· **La sesión no había aterrizado cuando la prueba pedía su ruta.** Se esperaba solo a salir de `/auth/`, y con el destino por defecto eso deja la página en `/`, que es el repartidor y vuelve a redirigir según el papel. Esa segunda redirección seguía en marcha, y en WebKit eso aborta la navegación siguiente. Chromium la seguía en silencio. Afectaba a las trece pruebas que comprueban que alguien **no** llega a una ruta, que son justo las que piden rutas que redirigen.
+· **Salir y pedir `/entrar` a la vez.** Cinco pruebas pulsaban «Salir» —que ya lleva a `/entrar`— y acto seguido navegaban allí. Ahora esperan a llegar.
+· **Una recarga que adelantaba a su propia acción.** Al reabrir un mes de KPI, el `reload()` salía antes de que la acción terminara de revalidar y volvía la pantalla de antes. Ahora el acuse es la pantalla cambiada, que es la regla de la casa.
+
+Ninguno era un fallo del producto: los tres eran pruebas escritas contra el comportamiento de un solo motor.
+
+**Qué decidí yo**
+· **«Lejos» y no «Muy por debajo».** Cuatro palabras cortas y del mismo registro, que es lo que permite leerlas de un vistazo bajo una cifra.
+· **El motivo del semáforo lleva al due diligence técnico.** Es de donde salen los hallazgos críticos, que es lo que lo pone en rojo hoy. Cuando el motivo sea otro —un hito retrasado— habrá que llevarlo a su sitio; lo dejo apuntado.
+· **La página de B dice lo que no existe tan claro como lo que sí.** Hay siete cosas que faltan, cuatro de ellas con decisión tuya. Escribir solo lo que funciona habría sido un documento inútil para lo único que sirve: contestarle a un auditor.
+
+**Qué necesito que decidas** — son los cuatro del apartado 7 de la página de B:
+1. **Nadie anota quién abre un documento.** La tabla existe y está vacía. ¿Escribo una línea cada vez que se pide un enlace firmado?
+2. **El registro de actividad no se puede leer desde la plataforma.** ¿Una pantalla en Administración con filtro por compañía y fecha?
+3. **No hay plazo de conservación de nada.** Propongo: documentos del Acuerdo mientras dure la relación más seis años, accesos dos años, actividad mientras exista la compañía. Esto lo tienes que fijar tú.
+4. **El data room no tiene límite de tamaño por archivo.** ¿50 MB, como candidaturas?
+
+**Estado**
+· 116 unitarias · 136 RLS · **344 de interfaz en los dos motores**, en verde.
+· Hechos los puntos 1, 2 y 3 de tu orden actualizado. **Quedan**: los seis puntos de la segunda revisión, el Resumen completo, el paso 4 y el barrido.
+· De los seis puntos, el 6 —adjuntar archivos en el due diligence técnico— depende de que apruebes la página de B.
+
+**Siguiente**
+Los seis puntos de la segunda revisión, empezando por quitar la fila de cuadritos de colores de todas las pantallas y sustituirla por la barra de un color con sus excepciones debajo.
+
+---
+
 ## 2026-11-04 · La pasada limpia, y los primeros componentes comunes · commit acee55c
 
 **La suite está en verde.** 116 unitarias · 136 RLS · **174 de interfaz en 2 minutos y 24 segundos**, dos veces seguidas. Era la máquina: las mismas pruebas que tardaban quince minutos y medio ahora tardan menos de un segundo. No había ninguna regresión escondida.

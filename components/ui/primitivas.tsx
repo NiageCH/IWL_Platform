@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { Ayuda } from "@/components/ui/ayuda";
 import { Estado } from "@/components/ui/estado";
-import { estadoVisual, type EstadoVisual } from "@/lib/estados";
+import { ROTULO_OBJETIVO, estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { cn } from "@/lib/utils";
 
 /**
@@ -189,7 +189,9 @@ export function Cifra({
       )}
       {estado ? (
         <span>
-          <Estado valor={estado} />
+          {/* Las palabras de una cifra, no las del trabajo: una cifra no
+              «vence», se queda lejos de su objetivo */}
+          <Estado valor={estado} rotulo={ROTULO_OBJETIVO[estado]} />
         </span>
       ) : null}
       {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
@@ -225,7 +227,7 @@ const SEMAFORO: Record<
 > = {
   verde: { estado: "hecho", nombre: "En plazo" },
   ambar: { estado: "atencion", nombre: "Atención" },
-  rojo: { estado: "vencido", nombre: "Bloqueo" },
+  rojo: { estado: "vencido", nombre: "Bloqueado" },
 };
 
 /**
@@ -240,25 +242,33 @@ const SEMAFORO: Record<
 export function Semaforo({
   estado,
   motivo,
-  compacto = false,
+  href,
 }: {
   estado: "verde" | "ambar" | "rojo";
   motivo: string;
-  /**
-   * Solo la palabra, con el motivo en el título.
-   *
-   * Para la cabecera de la compañía, que tiene que caber en una línea: el
-   * motivo —«un hito retrasado»— es justo lo que la hacía partirse en dos.
-   * Se lee entero en el Resumen, que es donde se actúa sobre él.
-   */
-  compacto?: boolean;
+  /** A dónde lleva el motivo: al hallazgo, al hito o a lo que lo cause */
+  href?: string;
 }) {
   const { estado: visual, nombre } = SEMAFORO[estado];
 
+  /*
+   * El motivo va siempre escrito al lado, también en la cabecera.
+   *
+   * Estaba solo en el `title` cuando el sitio era estrecho, y «Bloqueado»
+   * a secas no dice nada: hay que saber **qué** bloquea para hacer algo.
+   * Un motivo que solo aparece al pasar el ratón no existe en una pantalla
+   * táctil, que es desde donde entra la mitad de la gente.
+   */
   return (
-    <span className="inline-flex items-baseline gap-2 text-xs">
-      <Estado valor={visual} rotulo={nombre} motivo={compacto ? motivo : undefined} />
-      {compacto ? null : <span className="text-secundario">{motivo}</span>}
+    <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+      <Estado valor={visual} rotulo={nombre} />
+      {href ? (
+        <Link href={href} className="enlace text-secundario">
+          {motivo}
+        </Link>
+      ) : (
+        <span className="text-secundario">{motivo}</span>
+      )}
     </span>
   );
 }

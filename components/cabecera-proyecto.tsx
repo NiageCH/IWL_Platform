@@ -86,10 +86,18 @@ export function CabeceraProyecto({
           </div>
 
           <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
+          {/*
+            El motivo, escrito al lado y con su enlace.
+            
+            Iba solo en el `title` para que la cabecera cupiera en una
+            línea. «Bloqueado» a secas no dice nada —hay que saber qué
+            bloquea para hacer algo— y un motivo que solo aparece al pasar
+            el ratón no existe en una pantalla táctil.
+          */}
           <Semaforo
             estado={semaforo.estado}
             motivo={semaforo.motivo}
-            compacto
+            href={`${base}/tecnico`}
           />
 
           <span className="flex-1" />

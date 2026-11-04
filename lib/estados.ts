@@ -39,6 +39,24 @@ export const ESTADOS: Record<EstadoVisual, { nombre: string; orden: number }> = 
   no_aplica: { nombre: "No aplica", orden: 0 },
 };
 
+/**
+ * Cómo se llama cada estado cuando lo que se mide es una cifra contra su
+ * objetivo.
+ *
+ * «Caja 227.510 € · Vencido» se lee como una fecha pasada, y no lo es: es
+ * una cifra por debajo de donde tendría que estar. Mismos colores y mismos
+ * iconos —el lenguaje no se rompe— y otras palabras, porque las palabras
+ * son las que dicen de qué se está hablando.
+ */
+export const ROTULO_OBJETIVO: Record<EstadoVisual, string> = {
+  hecho: "En objetivo",
+  atencion: "Cerca",
+  vencido: "Lejos",
+  curso: "Sin objetivo",
+  pendiente: "Sin dato",
+  no_aplica: "No aplica",
+};
+
 /** Los cinco que se enseñan en la leyenda. «No aplica» no es un estado de trabajo */
 export const CINCO: EstadoVisual[] = [
   "hecho",

@@ -4,6 +4,65 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-04 · Segunda revisión de Rodrigo (en Chrome)
+
+**1. Fuera la fila de cuadritos de colores, en todas las pantallas.** Cinco colores seguidos no se leen como avance; se leen como ruido. Sustituye a la regla «barra segmentada» de `IWL_Doc_EstadosVisuales`:
+· **Una barra de avance de un solo color**: verde lo hecho, gris claro el resto, y «23 de 29» al lado.
+· **Debajo, solo las excepciones**, como pastillas `<Estado>`: «2 vencidos», «1 en atención». Si no hay excepciones, nada.
+· Pulsar la barra o una pastilla abre la lista filtrada.
+· Aplica a Qué falta, Due diligence general (arriba y en cada área), Due diligence técnico, Business plan y cualquier otro sitio donde esté. La barra segmentada se queda en `/componentes` como pieza retirada, o se borra.
+
+**2. «Bloqueo» sigue sin explicarse.** Como ya está pedido: «Bloqueado» y el motivo **escrito al lado en la cabecera** («Un hallazgo crítico abierto»), pulsable hasta el hallazgo.
+
+**3. Aportación: «Horas entregadas 242 de 350» es demasiado grande y en negrita.** Usa `<Cifra>` en su tamaño normal, igual que el resto de cifras de la plataforma.
+
+**4. Scorecard técnico sin color.** Relleno suave del valor actual en el color de su estado frente al objetivo (verde si llega, ámbar si no, rojo si está lejos), con poca opacidad; objetivo en gris discontinuo; al pasar el ratón por cada eje, valor, objetivo y una línea de qué mide.
+
+**5. «Dónde está la distancia»: el número sigue sin explicación.** `<Cifra>` con su `?`: qué mide la distancia, en qué escala, y si más es mejor o peor. Y cada fila de dimensión con una línea de qué significa.
+
+**6. Adjuntar archivos en el due diligence técnico.** Sigue sin poderse. Es `<Evidencia>`, que espera la página del punto B. **Entrega esa página ya**, antes que el Resumen: Rodrigo la está pidiendo en todas las pantallas.
+
+**Orden actualizado:** Safari · página del punto B · los tres ajustes de `/componentes` · estos seis puntos · Resumen completo · paso 4 · barrido.
+
+---
+
+## 2026-11-04 · Safari
+
+Rodrigo revisa en **Safari**, y lo que veía mal no se reproducía en Chromium. Las fundadoras van a entrar desde Mac y desde iPhone, así que Safari es un navegador principal, no secundario.
+
+1. Añade **WebKit** a los proyectos de Playwright, en escritorio y en iPhone, y que la suite de interfaz pase en los dos motores.
+2. Revisa en WebKit los cuatro síntomas que vio Rodrigo: icono encima de la palabra, icono sin color, barra de hitos vacía, fase y semáforo solapados. Si alguno se reproduce, arréglalo antes que nada y cuéntalo en la bitácora con la causa.
+3. Las capturas de la bitácora, a partir de ahora, en Chromium y en WebKit.
+
+---
+
+## 2026-11-04 · Cambio de orden: el Resumen, terminado de punta a punta
+
+Rodrigo ve «todo igual» porque la mayor parte de su revisión depende de lo que aún no está: cifras con explicación, nada de desplegables, todo pulsable, Resumen de solo lectura. Las piezas existen en `/componentes`, pero ninguna pantalla está terminada.
+
+**Nuevo orden:**
+1. Los tres ajustes de la entrada anterior (KPI, «Bloqueado», icono de dólar).
+2. **El Resumen, entero, como pantalla de referencia**: cabecera con `<Cifra>` y su `?` en Técnico y Preparación, semáforo con motivo al lado, solo lectura sin ningún desplegable, «Qué falta» con barra y lista pulsable, Último mes y Hallazgos con `<Estado>` y pulsables. Captura en la bitácora. Rodrigo lo valida antes de seguir.
+3. Página del punto B.
+4. Paso 4.
+5. Barrido del resto de pantallas con el Resumen como patrón.
+
+---
+
+## 2026-11-04 · Sobre `/componentes` (acee55c · c4d9402)
+
+La página de muestra funciona y es la herramienta correcta. Tres ajustes antes de aplicar las piezas:
+
+1. **Los KPI no «vencen».** «Caja 227.510 € · Vencido» se lee como una fecha pasada. Para una cifra frente a su objetivo, palabras propias con los mismos colores: **En objetivo** (verde) · **Cerca** (ámbar) · **Lejos** (rojo) · **Sin objetivo** (gris).
+2. **«Bloqueo» no se entiende**, lo dijo Rodrigo. El semáforo rojo dice **«Bloqueado»** y su motivo va siempre al lado, no solo al pasar el ratón.
+3. **Fuera el icono de dólar en magenta de «Horas de IWL».** Es decorativo, no son euros y el magenta no pinta datos.
+
+Sobre lo que Rodrigo vio en local: de acuerdo con tu diagnóstico, era un servidor de desarrollo arrancado antes de los cambios. Lo vuelve a mirar con el servidor reiniciado.
+
+Sigue el orden: página del punto B (registro y documentos) y espera aprobación.
+
+---
+
 ## 2026-11-04 · Revisión de Rodrigo en local, como Marea Clínica
 
 Rodrigo ha recorrido todas las pantallas. El diagnóstico es uno: **cada pantalla dibuja sus estados, cifras, barras y círculos a su manera**, y por eso falla lo mismo en todas: iconos encima de la palabra y sin color, cifras sin explicación, barras que no avanzan, selectores sin guardar. Se arregla en los componentes, una vez, y después se barre pantalla por pantalla.
