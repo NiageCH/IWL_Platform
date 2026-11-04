@@ -105,7 +105,7 @@ export async function VistaResumen({
           )}
         </div>
 
-        <AvanceDelProgramaVista avance={avance} />
+        <AvanceDelProgramaVista avance={avance} base={base} />
       </Bloque>
 
       {/*

@@ -1174,3 +1174,29 @@ details[open] > .desplegable-titulo .flecha-desplegable {
   border-color: color-mix(in oklab, var(--estado-solido) 40%, transparent);
   font-weight: 600;
 }
+
+/*
+ * El globo de ayuda de una cifra.
+ *
+ * Oculto hasta que alguien lo pide. Se abre hacia abajo y a la izquierda
+ * del botón, porque las cifras suelen estar en el borde derecho de su
+ * tarjeta y hacia la derecha se salía de la pantalla.
+ */
+.globo-ayuda {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  z-index: 30;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: max-content;
+  max-width: 17rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-filete-fuerte);
+  background-color: var(--color-papel);
+  padding: 0.625rem 0.75rem;
+  box-shadow: 0 8px 24px -8px rgb(24 24 27 / 0.25);
+  text-align: left;
+  white-space: normal;
+}

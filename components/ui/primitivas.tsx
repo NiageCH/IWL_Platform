@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
+import { Ayuda } from "@/components/ui/ayuda";
 import { Estado } from "@/components/ui/estado";
 import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { cn } from "@/lib/utils";
@@ -98,6 +100,20 @@ const TONOS_ICONO = {
 
 export type TonoIcono = keyof typeof TONOS_ICONO;
 
+/**
+ * La escala de tamaños de una cifra. Dos, y las mismas en todas partes.
+ *
+ * Había tres sin querer: la cifra normal a 2 rem, la destacada a 2,5 y los
+ * titulares de tarjeta con su propia tipografía. En pantallas distintas, la
+ * misma clase de dato salía de tamaños distintos —«75 %» del Recorrido no
+ * medía lo mismo que «Preparación de ronda» al lado—, y eso hace que una
+ * parezca más importante que la otra sin que nadie lo haya decidido.
+ */
+const ESCALA = {
+  normal: "text-[2rem]",
+  protagonista: "text-[2.5rem] font-semibold",
+} as const;
+
 export function Cifra({
   valor,
   etiqueta,
@@ -106,6 +122,8 @@ export function Cifra({
   icono: Icono,
   tono = "acento",
   estado,
+  ayuda,
+  href,
 }: {
   valor: ReactNode;
   etiqueta: string;
@@ -128,22 +146,47 @@ export function Cifra({
    * pintarla de algo sería inventarse un juicio.
    */
   estado?: EstadoVisual;
+  /**
+   * Qué mide, contra qué se compara y qué significa la flecha.
+   *
+   * Tres líneas detrás de un `?`. «Técnico 94,2 ↑ 47,1» no dice nada a
+   * quien no estuvo en la conversación donde se definió, y escribirlo
+   * debajo es lo que llenó la pantalla de párrafos.
+   */
+  ayuda?: ReactNode;
+  /** Dónde se ve el detalle de esta cifra. Lo que se cuenta, se pulsa */
+  href?: string;
 }) {
   const cuerpo = (
     <div className="flex min-w-0 flex-col gap-1">
-      <Metadato>{etiqueta}</Metadato>
+      <span className="flex items-center gap-1.5">
+        <Metadato>{etiqueta}</Metadato>
+        {ayuda ? <Ayuda titulo={etiqueta}>{ayuda}</Ayuda> : null}
+      </span>
       {/*
         La cifra manda en la tarjeta y tiene que verse desde lejos. Antes era
         del tamaño de un titular pequeño y competía con su propia etiqueta.
       */}
-      <span
-        className={cn(
-          "cifra leading-none tracking-tight text-titular",
-          destacada ? "text-[2.5rem] font-semibold" : "text-[2rem]",
-        )}
-      >
-        {valor}
-      </span>
+      {href ? (
+        <Link
+          href={href}
+          className={cn(
+            "cifra enlace w-fit leading-none tracking-tight text-titular",
+            destacada ? ESCALA.protagonista : ESCALA.normal,
+          )}
+        >
+          {valor}
+        </Link>
+      ) : (
+        <span
+          className={cn(
+            "cifra leading-none tracking-tight text-titular",
+            destacada ? ESCALA.protagonista : ESCALA.normal,
+          )}
+        >
+          {valor}
+        </span>
+      )}
       {estado ? (
         <span>
           <Estado valor={estado} />

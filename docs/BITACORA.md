@@ -9,6 +9,48 @@ como es**.
 
 ---
 
+## 2026-11-04 · La pasada limpia, y los primeros componentes comunes · commit PENDIENTE
+
+**La suite está en verde.** 116 unitarias · 136 RLS · **174 de interfaz en 2 minutos y 24 segundos**, dos veces seguidas. Era la máquina: las mismas pruebas que tardaban quince minutos y medio ahora tardan menos de un segundo. No había ninguna regresión escondida.
+
+**Lo que no he podido reproducir, y lo medí antes de tocar nada**
+
+Tres de los síntomas de tu revisión no se dan en la compilación de hoy. Lo comprobé entrando como fundadora de Marea, a 1280 px, midiendo el estilo calculado en el navegador y no a ojo:
+
+| Lo que viste | Lo que mide hoy |
+|---|---|
+| El círculo encima de la palabra | Pastilla de 22 px de alto: icono y palabra en la misma línea |
+| El icono en gris | `rgb(185, 28, 28)` en el icono y en el texto, sobre fondo `rgb(254, 226, 226)` |
+| «Hitos del Anexo» con la barra vacía | Relleno de 256 px sobre 600, en `rgb(63, 63, 70)` |
+| «Incubación» y el semáforo solapados | Separados, en una línea |
+
+Los cuatro síntomas juntos son exactamente lo que se ve **si la hoja de estilos no trae las reglas nuevas**: sin `.estado`, el `<svg>` cae a su propia línea por el `display:block` de Tailwind y toma el color del texto de alrededor, que es gris; sin `bg-dato`, el relleno de la barra queda transparente. Apostaría a que estabas mirando un `npm run dev` levantado desde antes de los cambios. Mátalo y vuelve a arrancarlo, o revisa contra `npm run build && npx next start`. Dime si con eso sigue pasando, porque entonces es otra cosa y la busco.
+
+**Qué cambió, del punto A**
+· **`/componentes`**, la muestra que pediste: cada pieza en todos sus estados, solo para quien configura el programa. Captura en `docs/capturas/componentes.png`.
+· **`<Ayuda>`**: el `?` de una cifra. Se abre al pasar el ratón y se fija al pulsar, que es lo único que funciona en pantalla táctil. Se cierra con Escape o pulsando fuera.
+· **`<Cifra>` con explicación y enlace**, y **dos tamaños y solo dos**, los mismos en todas las pantallas.
+· **`<BarraProgreso>` y `<BarraPorEstado>`**: el relleno sale del par hecho/total y de nada más. Sin total no hay barra: lo dice en vez de pintar una a cero.
+· El avance del programa usa ya las barras nuevas, y cada una lleva a su pantalla.
+
+**Qué decidí yo**
+· **Dos tamaños de cifra, no tres.** El protagonista y el normal. Había tres sin querer y por eso «75 %» del Recorrido no medía lo mismo que la cifra de al lado.
+· **La muestra la ve quien configura el programa**, no cualquier admin: es la capacidad que ya existe para las pantallas de taller.
+· **Dejé `<BarraPorEstado>` además de la segmentada.** La segmentada enseña elementos —29 cuadrados— y esta enseña proporción. Para once hitos la segmentada se lee mejor; para «cuánto del presupuesto», la de proporción.
+
+**Qué necesito que decidas**
+1. **Confírmame lo del `npm run dev`.** Si tras reiniciarlo sigues viendo los círculos encima, lo busco por otro lado.
+
+**Estado**
+· 116 unitarias · 136 RLS · 174 interfaz, dos pasadas seguidas en verde.
+· **Del punto A quedan**: la cabecera (A3), que todo lo contable se pulse (A5), editar por panel en vez de desplegable (A6), `<Evidencia>` (A7), los gráficos con color y explicación (A8) y los nombres en vez de categorías (A9).
+· **A6 y A7 están bloqueados por tu propio orden**: el panel de edición lleva evidencia adjunta dentro, y antes de construir `<Evidencia>` toca entregarte la página del punto B y esperar aprobación. Es lo siguiente.
+
+**Siguiente**
+La página del punto B —dónde se guarda cada archivo, cómo se versiona, quién lo ve, qué queda registrado— para que la apruebes. Con eso desbloqueado, A6 y A7, y en paralelo A3, A5, A8 y A9.
+
+---
+
 ## 2026-10-31 · Sobre la pasada de interfaz que faltaba · commit bfbbcdd
 
 **Qué cambió**

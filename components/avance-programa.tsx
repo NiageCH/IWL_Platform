@@ -1,7 +1,8 @@
 import type { AvanceDelPrograma } from "@/lib/datos/avance";
 import { NodoEstado } from "@/components/ui/estado";
+import { BarraProgreso } from "@/components/ui/barra-progreso";
 import type { EstadoVisual } from "@/lib/estados";
-import { fecha, numero } from "@/lib/utils";
+import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 /**
@@ -36,8 +37,11 @@ const ESTADO_FASE: Record<
 
 export function AvanceDelProgramaVista({
   avance,
+  base,
 }: {
   avance: AvanceDelPrograma;
+  /** `/proyecto` o `/cartera/<slug>`: las barras llevan a su pantalla */
+  base: string;
 }) {
   const { fases, hitos, tiempo } = avance;
 
@@ -84,34 +88,41 @@ export function AvanceDelProgramaVista({
       </ol>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Barra
-          etiqueta="Hitos del Anexo"
-          pct={hitos.pct}
-          hecho={`${hitos.cumplidos} de ${hitos.total}`}
-          falta={
-            hitos.total === 0
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs text-metadato">Hitos del Anexo</span>
+          <BarraProgreso
+            etiqueta="Hitos del Anexo"
+            hecho={hitos.cumplidos}
+            total={hitos.total}
+            estado={hitos.cumplidos === hitos.total ? "hecho" : "curso"}
+            href={`${base}/ruta`}
+          />
+          <span className="text-xs text-metadato">
+            {hitos.total === 0
               ? "Sin hitos acordados todavía"
               : hitos.total - hitos.cumplidos === 0
                 ? "Todos cumplidos"
-                : `Quedan ${hitos.total - hitos.cumplidos}`
-          }
-        />
+                : `Quedan ${hitos.total - hitos.cumplidos}`}
+          </span>
+        </div>
 
-        <Barra
-          etiqueta="Tiempo del programa"
-          pct={tiempo?.pct ?? null}
-          hecho={
-            tiempo?.mesesIdos !== null && tiempo?.mesesIdos !== undefined
-              ? `${numero(tiempo.mesesIdos)} ${tiempo.mesesIdos === 1 ? "mes" : "meses"}`
-              : "—"
-          }
-          falta={
-            tiempo
-              ? `Hasta ${fecha(tiempo.fin)}`
-              : "Sin Anexo firmado con fechas"
-          }
-          estado={tiempo ? estadoDelPlazo(tiempo.fin) : "pendiente"}
-        />
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs text-metadato">Tiempo del programa</span>
+          {tiempo && tiempo.meses ? (
+            <BarraProgreso
+              etiqueta="Tiempo del programa"
+              hecho={tiempo.mesesIdos ?? 0}
+              total={tiempo.meses}
+              estado={estadoDelPlazo(tiempo.fin)}
+              href={`${base}/programa`}
+            />
+          ) : (
+            <p className="text-xs text-metadato">Sin Anexo firmado con fechas</p>
+          )}
+          <span className="text-xs text-metadato">
+            {tiempo ? `Hasta ${fecha(tiempo.fin)}` : "Sin Anexo firmado con fechas"}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -131,53 +142,4 @@ function estadoDelPlazo(fin: string): EstadoVisual {
   const aviso = new Date(`${hoy}T00:00:00Z`);
   aviso.setUTCDate(aviso.getUTCDate() + AVISO_DIAS);
   return fin <= aviso.toISOString().slice(0, 10) ? "atencion" : "curso";
-}
-
-function Barra({
-  etiqueta,
-  pct,
-  hecho,
-  falta,
-  estado,
-}: {
-  etiqueta: string;
-  pct: number | null;
-  hecho: string;
-  falta: string;
-  /** Cuando la barra tiene estado. Sin él va en el gris de los datos */
-  estado?: EstadoVisual;
-}) {
-  /* En curso no se tiñe: una barra azul al lado de una verde sugiere que
-     pasa algo, y no pasa nada. Solo ámbar y rojo cambian el color */
-  const tenido = estado === "atencion" || estado === "vencido";
-
-  return (
-    <div className={cn("flex flex-col gap-1.5", estado && `es-${estado}`)}>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="text-xs text-metadato">{etiqueta}</span>
-        <span
-          className={cn(
-            "cifra text-sm",
-            tenido ? "texto-estado" : "text-titular",
-          )}
-        >
-          {hecho}
-        </span>
-      </div>
-
-      <div className="h-2 overflow-hidden rounded-full bg-hundido ring-1 ring-filete">
-        {pct === null ? null : (
-          <div
-            className={cn(
-              "h-full rounded-full",
-              tenido ? "relleno-estado" : "bg-dato",
-            )}
-            style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
-          />
-        )}
-      </div>
-
-      <span className="text-xs text-metadato">{falta}</span>
-    </div>
-  );
 }

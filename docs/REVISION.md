@@ -4,6 +4,48 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-04 · Revisión de Rodrigo en local, como Marea Clínica
+
+Rodrigo ha recorrido todas las pantallas. El diagnóstico es uno: **cada pantalla dibuja sus estados, cifras, barras y círculos a su manera**, y por eso falla lo mismo en todas: iconos encima de la palabra y sin color, cifras sin explicación, barras que no avanzan, selectores sin guardar. Se arregla en los componentes, una vez, y después se barre pantalla por pantalla.
+
+### A. Componentes comunes, primero
+
+1. **`<Estado>`.** Icono a la izquierda de la palabra, en la misma línea y centrado en vertical, **siempre con el color de su estado**: icono coloreado y pastilla con fondo suave. Hoy en Último mes, Hallazgos, Hoja de ruta y Aportación el círculo sale encima de la palabra y en gris. Severidades de hallazgo con su color: crítico rojo, alto ámbar, medio y bajo gris.
+2. **`<Cifra>`.** Rótulo, número y, si lo hay, el cambio. Al pasar el ratón o pulsar `?`, una explicación de tres líneas: qué mide, contra qué se compara y qué significa la flecha. Y un enlace a la pantalla donde se ve el detalle. Se aplica a «Técnico 94,2 ↑ 47,1» y «Preparación 87,2 ↑ 84,9» de la cabecera, a «Distancia», a Madurez y a todos los KPI. **Escala de tamaños única**: la cifra protagonista siempre al mismo tamaño en todas las pantallas («75 %» de Recorrido igual que «Preparación de ronda»).
+3. **Cabecera.** «Incubación» y el semáforo se solapan. Fase como texto y semáforo como `<Estado>` con su palabra; al pulsarlo, el motivo («Un hallazgo crítico abierto») y un enlace a él. «Bloqueo» no se entiende: el semáforo dice qué pasa, no una palabra suelta.
+4. **`<BarraProgreso>`.** El relleno es proporcional de verdad: «Hitos del Anexo 6 de 11» hoy sale vacía. Segmentos con el color de cada estado. Se pulsa y abre la lista.
+5. **Todo lo que se cuenta se pulsa.** Cada cifra, segmento, hito, hallazgo, punto o KPI abre su detalle en `<PanelLateral>` o lleva a su pantalla.
+6. **Editar es un gesto completo, no un desplegable.** Ningún selector suelto. Para cambiar un estado: botón «Actualizar», que abre el panel lateral con estado nuevo, comentario, evidencia adjunta y **Guardar**; debajo, el historial de quién cambió qué y cuándo. Quien no puede cambiarlo ve la pastilla, sin desplegable. Así se ve quién decide.
+7. **`<Evidencia>` se adelanta y se usa ya** en: encargar una tarea, registrar un avance, cuestionario técnico, plan de trabajo técnico, cambio de estado de hitos y puntos. Subir archivo, elegir uno del data room o pegar un enlace.
+8. **Gráficos con color y explicación.** Radar, madurez y curvas: el objetivo en gris discontinuo; el valor actual de cada eje con el color de su estado frente al objetivo (en objetivo verde, por debajo ámbar, muy por debajo rojo). Al pasar el ratón por un punto, el valor, el objetivo y una línea de qué significa. Esto precisa mi regla anterior: el magenta no pinta datos, **los colores de estado sí**.
+9. **Nombres, no categorías.** «Responsable: Compañía» pasa a la persona. Si no hay persona asignada, «Sin asignar» en ámbar.
+
+### B. Documentos y registro
+
+Antes de construir `<Evidencia>`, entrega en `docs/` una página corta, para Rodrigo y no técnica, que diga: dónde se guarda cada archivo, cómo se versiona, quién puede verlo, qué queda registrado de cada cambio (quién, cuándo, qué, con qué evidencia), cuánto tiempo se guarda y cómo se consulta ese registro desde la plataforma. Si algo de eso no existe hoy, la página lo dice y propone cómo.
+
+### C. Pantallas
+
+· **Resumen: solo lectura.** Es resumen y estado. Fuera desplegables. «Qué falta» deja de ser «1hecho1por hacer4vencido1no aplica» en texto plano: barra segmentada con leyenda de pastillas y, debajo, la lista ordenada (vencido, atención, por hacer), cada línea pulsable.
+· **Programa y Anexo: se funde en Recorrido** en el paso 4, como estaba previsto. Lo que aporta a la fundadora queda como una tarjeta «Lo acordado»: pilares activos, horas que pone IWL, hitos que condicionan el equity y el Anexo firmado para descargar.
+· **Hoja de ruta y Recorrido:** puntos de tramo con color de estado; la cifra de recorrido a escala; registrar un avance con evidencia.
+· **Aportación:** tamaños, colores y círculos con los componentes de A.
+· **Due diligence técnico:** radar con color y explicación al pasar el ratón; «Distancia» con su `?`; cada dimensión con una línea de qué mide y su nivel objetivo; plan de trabajo con responsable con nombre y edición por panel; cuestionario con evidencia.
+· **Madurez y transformación, Due diligence general, Business plan, KPI:** misma pasada con los componentes de A. En KPI, el estado frente a objetivo en color.
+
+### D. Orden
+
+1. Componentes de A, con una página interna de muestra (`/componentes`, solo admin) que enseñe cada uno en todos sus estados. Captura de esa página en la bitácora.
+2. Página de B. Espera aprobación.
+3. Paso 4: cinco pestañas. Así el barrido se hace una vez sobre las pantallas definitivas.
+4. Barrido de C, pestaña por pestaña, con capturas a 1280 px y en móvil.
+
+Criterio para dar por cerrada cada pantalla: ningún estado sin color e icono en línea, ninguna cifra sin explicación, ningún selector sin Guardar, todo lo contable pulsable, tamaños de la escala única.
+
+Sobre la pasada limpia de pruebas: Rodrigo la lanzará con la máquina descargada.
+
+---
+
 ## 2026-10-30 · Sobre «La demostración recorre cada estado» (6d7efc4)
 
 Bien resuelto, y de acuerdo con las tres decisiones: semilla local, el crítico que la saca de invertible y el cambio de agosto y septiembre.
