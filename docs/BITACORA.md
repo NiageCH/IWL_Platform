@@ -9,6 +9,92 @@ como es**.
 
 ---
 
+## 2026-11-05 · Subida a producción: pasos 1 a 3 hechos · commit PENDIENTE
+
+### Paso 1 · Qué había en la nube
+
+**El proyecto está entero y despierto.** `ffvcrnqcsvsqvnswzlbj`, IWL-Platform, Fráncfort, `ACTIVE_HEALTHY`. La transferencia a la organización Pro conservó URL y claves: el CLI seguía enlazado y las credenciales de `.env.produccion` funcionan sin tocar nada. No estuvo pausado.
+
+**Compañías (7):** igor-labs · pirulo · qqq (archivada) · roster, ya renombrada a «Siren» pero con el identificador viejo · terral-barria, igual con «La Pepi» · ttttttt · w. Sin Marea Clínica, sin Proyecto Baires, sin AgrolabX.
+
+**Cuentas (13):** 5 con `@iwl.es`, 2 con `.test` de AgrolabX, 3 de prueba (`qqqq@q.com`, `w@w.es`, `maria@pitulo.com`), `juan@niage.es`, `rodrigo@nonage.es` —ojo al dominio, es «nonage»— y `candidata.prueba@iwl.es`.
+
+**El registro estaba ABIERTO:** `disable_signup: false`. Cualquiera con la dirección podía darse de alta. Sigue abierto: cerrarlo es el paso 5 y no he podido.
+
+**Contenido:** 203 puntos de due diligence, 27 hitos, 8 candidaturas, 1 documento, 0 anexos.
+
+### Paso 2 · Migraciones
+
+Cinco pendientes, todas aplicadas sin incidencias: `corregir_kpi`, `guardas_sin_sesion`, `compania_demostracion`, `acceso_candidata_sin_sesion` y `evidencia`.
+
+### Paso 3 · Datos
+
+· **`roster` → `siren`** y **`terral-barria` → `la-pepi`**. El proxy ya redirige los identificadores viejos, así que ningún enlace guardado se rompe.
+· **Fichas al día** de La Pepi, Siren e Igor Labs: sector, descripción, etapa, perfil, estado de entrada y liderazgo femenino.
+· **Proyecto Baires, creado.** Con su checklist, su business plan y sus KPI instanciados.
+· **Marea Clínica, creada y marcada `is_demo`.**
+· **Las cuatro de prueba, archivadas** —qqq, pirulo, ttttttt, w— con motivo «Prueba».
+· **Sin AgrolabX**, como pediste.
+
+Quedan 9 compañías: 4 reales, la demostración y 4 archivadas. 261 puntos de due diligence, 81 secciones de plan, 118 KPI.
+
+### Dónde me he parado, y por qué
+
+**Paso 4 · Cuentas: bloqueado por el clasificador.** Al intentar crear las cuentas del equipo en producción me lo impidió, con motivo «Permission Grant». Es razonable: son cuentas con rol de dirección en un sistema con dirección pública.
+
+Dejé el trabajo hecho en `scripts/cuentas-nube.mjs`, registrado como `npm run cuentas:nube`. Lo he probado en modo lectura y funciona.
+
+**Paso 5 · Ajustes de Auth: no puedo.** Cerrar el registro y fijar la Site URL se hacen en el panel de Supabase o con la API de gestión, que pide un token personal tuyo. El `supabase config push` no sirve: arrastraría `site_url = "http://localhost:3000"` del `config.toml` a producción.
+
+**Pasos 6 y 7 · Despliegue y comprobación:** detrás de los dos anteriores. Sin cuentas no hay nada que comprobar.
+
+### Qué decidí yo
+
+· **Las cuatro de prueba se archivan, no se borran.** Archivar es reversible y las saca de la cartera igual. Borrar en producción con 27 hitos y 203 puntos alrededor es algo que prefiero que decidas tú: dime y las borro.
+· **Marea Clínica va sin su historia.** La semilla que la trae completa **crea cuentas `@marea.test` con contraseñas de desarrollo escritas en el propio fichero**. Eso no entra en un sistema con dirección pública. Está creada con su estructura —checklist, plan y KPI— y vacía de contenido. Para que recorra cada estado en la nube hace falta cargar esa historia sin las cuentas falsas, que es trabajo aparte.
+· **No he borrado ninguna cuenta**, ni siquiera las `@iwl.es` que pediste quitar. Primero que funcionen las nuevas; si borro antes y algo falla, te quedas fuera de tu propia plataforma. El script las lista.
+· **Declaré sesión para crear compañías.** El guardián «dar de alta una compañía es del equipo de IWL» salta también con la clave de servicio, porque es anterior a la regla de eximir los guardianes de autorización sin sesión. Usé el patrón de la semilla en vez de tocar el guardián en producción.
+
+### Qué necesito que decidas
+
+1. **El cambio de contraseña obligatorio en la primera entrada no existe.** Las cuentas llevan la marca `debe_cambiar_password`, pero no hay pantalla que la haga cumplir. ¿La construyo antes de repartir las contraseñas, o repartes avisando?
+2. **Las cuatro de prueba: ¿archivadas o borradas?**
+3. **`rodrigo@nonage.es`** es tu cuenta actual en la nube, con el dominio mal escrito. El script crea `rodrigo@niage.es`. ¿Borro la vieja cuando entres con la nueva?
+
+### Los comandos, en orden
+
+```bash
+# 1. Las cuentas del equipo. Escribe .accesos-nube.md con las contraseñas
+npm run cuentas:nube
+
+# 2. Las cuentas de revisión en la nube
+SUPABASE_URL=$(grep NEXT_PUBLIC_SUPABASE_URL .env.produccion | cut -d= -f2-) \
+SUPABASE_SERVICE_ROLE_KEY=$(grep SUPABASE_SERVICE_ROLE_KEY .env.produccion | cut -d= -f2-) \
+npm run cuentas:revision
+
+# 3. Publicar el código (16 commits sin subir)
+git push
+
+# 4. Desplegar en Vercel
+npx vercel --prod
+```
+
+**En el panel de Supabase**, Authentication → Sign In / Providers:
+· **Allow new users to sign up: OFF.** Hoy está en ON.
+· **Site URL**: la dirección de producción de Vercel.
+· **Redirect URLs**: añade `https://<tu-dominio>/auth/confirmar`.
+
+Cuando esté, lo compruebo con los dos motores y subo las capturas.
+
+### Estado
+· Producción: migraciones al día, datos cargados, **registro todavía abierto** y sin cuentas nuevas.
+· Local: 116 unitarias · 136 RLS · 352 de interfaz, en verde.
+
+**Siguiente**
+Terminar los pasos 4 a 7 en cuanto me digas, y después «Mi perfil».
+
+---
+
 ## 2026-11-05 · Las cifras, con tus medidas · commit e5341b5
 
 **Qué cambió**

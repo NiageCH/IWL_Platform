@@ -4,6 +4,65 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-05 · README al día y GitHub
+
+El README es del 2 de octubre y no cuenta lo que hay. Antes de que Rodrigo publique en GitHub:
+
+**1. Reescribe `README.md`** para alguien del equipo que llega nuevo. Corto, y lo detallado enlazado a `docs/`:
+· Qué es la plataforma, en tres líneas, y quién la usa (los seis roles, con la tabla de capacidades de `lib/permisos.ts`).
+· Arranque local: Docker, `npx supabase start`, `npm run db:reset`, `npm run dev`, y el aviso de un solo servidor de desarrollo a la vez (`pkill -f "next dev"`).
+· Cuentas: de desarrollo, de revisión (`npm run cuentas:revision`, `.accesos-revision.md`) y de la nube (`.accesos-nube.md`). Dónde están y que **no se versionan**.
+· Semillas: versionadas (demo para las pruebas) frente a `seed/local/` (proyectos reales y Marea completa), y por qué.
+· Pruebas: unitarias, RLS e interfaz en **Chromium y WebKit**; cuánto tardan con la máquina libre.
+· Producción: Vercel y Supabase Pro en Fráncfort, URL, cómo se despliega y qué falta antes de las fundadoras (correo, dominio, Vercel Pro, acuerdos de datos).
+· Cómo se trabaja: `docs/BITACORA.md`, `docs/REVISION.md`, `DECISIONES.md` y el índice de documentos de `docs/` con una línea cada uno.
+· Navegadores soportados: Safari 16.4 o posterior, Chrome 111 o posterior.
+
+**2. Antes de publicar, comprueba** que ni en los ficheros versionados ni en los 14 commits pendientes hay `.env*`, `.accesos-*`, `seed/local/` ni contraseñas, y dilo en la bitácora.
+
+**3. Deja a Rodrigo el comando** para publicar (`git push origin main`) en la bitácora. El remoto es SSH: si a él le falla por clave, que lo diga y se resuelve.
+
+Va antes de la subida a producción, que depende de que el código esté publicado.
+
+---
+
+## 2026-11-05 · Subida a producción: AUTORIZADA para pruebas del equipo
+
+**PRIORIDAD: va ahora, antes de «Mi perfil».** Supabase ya está en plan Pro. Rodrigo ha **transferido el proyecto existente** (Fráncfort, `ffvcrnq…`) a la organización Pro «IWL-Platform»: misma URL y mismas claves. Compruébalo en la bitácora, y si el proyecto estuvo pausado, que ha vuelto entero.
+
+Rodrigo autoriza ahora la subida descrita en «Archivos y registro aprobado, y subida a producción» (bloque que estaba EN ESPERA), con estos cambios. **Objetivo: que el equipo pruebe con sus correos reales. Todavía sin fundadoras.**
+
+### Cuentas en la nube
+
+| Persona | Correo | Rol |
+|---|---|---|
+| Rodrigo González | rodrigo@niage.es | admin_iwl |
+| Luciana Patiño | luciana@niage.es | admin_iwl |
+| Laura Gleizer | laura@niage.es | equipo_iwl |
+| Juan Mishima | juan.mishima@niage.es | revisor_niage |
+| David Rodriguez | ingenieria@inceptionwlab.es | equipo_iwl |
+
+· **David: correo confirmado por Rodrigo**, `ingenieria@inceptionwlab.es`. Se crea con los demás.
+· Carlos Silvero y Cecilia Calónico no entran todavía: sin correo real.
+· Cuentas de revisión también, con contraseñas nuevas.
+· Contraseñas generadas al azar en `.accesos-nube.md` (nuevo, sustituye al del 29 de septiembre), y **cambio de contraseña obligatorio en la primera entrada**.
+· Ninguna cuenta `@iwl.es` en la nube. Si existen, se borran.
+
+### Pasos, en orden, cada uno en la bitácora
+
+1. Estado actual de la nube: compañías, cuentas y roles, `disable_signup`.
+2. Migraciones.
+3. Datos: configuración del programa, La Pepi, Siren, Igor Labs, Proyecto Baires y la demostración Marea Clínica (`is_demo`). **Sin AgrolabX.**
+4. Cuentas de la tabla de arriba y de revisión.
+5. Ajustes de Auth: registro cerrado, Site URL de producción y URL de redirección.
+6. Despliegue del código en Vercel (`fra1`).
+7. Comprobación en la URL de producción, Chromium y WebKit, con cada rol: entra, aterriza donde debe y ve lo que dice la tabla de visibilidad. Capturas.
+8. Lo que necesite credenciales de Rodrigo (`git push`, `supabase login`, `vercel`), como comandos exactos en la bitácora, en el orden en que tiene que lanzarlos.
+
+Si algo falla, se para y se cuenta.
+
+---
+
 ## 2026-11-05 · Tamaño de las cifras, con medidas
 
 Rodrigo sigue viendo las cifras desproporcionadas, también «Horas entregadas 244 de 350» en Aportación (punto 3 de la segunda revisión, aún sin hacer). Para no interpretar, medidas fijas para `<Cifra>` en toda la plataforma:

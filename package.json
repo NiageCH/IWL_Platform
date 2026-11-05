@@ -23,7 +23,8 @@
     "altas:locales": "node scripts/altas-locales.mjs",
     "informes": "node scripts/informes.mjs",
     "sembrar:nube": "node scripts/sembrar-nube.mjs",
-    "cuentas:revision": "node scripts/cuentas-revision.mjs"
+    "cuentas:revision": "node scripts/cuentas-revision.mjs",
+    "cuentas:nube": "node scripts/cuentas-nube.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
