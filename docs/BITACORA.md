@@ -9,6 +9,88 @@ como es**.
 
 ---
 
+## 2026-11-05 · `--limpiar`: en la nube solo quedan las nuevas · commit 820b4b1
+
+**Qué cambió**
+· **`npm run cuentas:nube -- --limpiar`** borra toda cuenta que no esté en la lista: las cinco del equipo y las ocho de revisión. **Por defecto es una simulación**: dice qué borraría y qué arrastraría cada una. Solo borra con `--confirmar`.
+· **No hace nada mientras `rodrigo@niage.es` no funcione**, ni siquiera la simulación. Tiene que existir, ser `admin_iwl`, haber entrado alguna vez y haber cambiado ya la contraseña temporal. Además, nunca puede salir entre las que se borran, y la limpieza no cambia papeles: no degrada a nadie.
+· **Antes de borrar escribe la constancia** en `docs/constancia/`, un fichero por pasada. Recoge papel, nombre, alta, último acceso, compañías y todo el registro de actividad de cada cuenta. Incluye el texto de sus comentarios y objeciones, que **se borran con la cuenta**, y las candidaturas a las que se quita el autor.
+· **Las candidaturas no dejaban borrar a quien las creó.** Cinco tablas tienen la clave foránea en `no action`, y el borrado habría fallado justo con las cuentas que trabajaron en el embudo. Ahora se les quita el autor justo antes, que es lo que las otras 52 claves foráneas hacen solas.
+· **Cada cuenta borrada deja una fila `borrar_cuenta`** en el registro de actividad: correo, papel y dónde está la constancia.
+· **`--listar` saca las trece**, con alta, último acceso y una columna «se queda / sobra». Lo que sobra sale ahora de la lista de quién se queda, no de un patrón: con el patrón se escapaban `qqqq@q.com`, `w@w.es` y `maria@pitulo.com`, que es lo que viste tú.
+· **La lista de quién se queda vive en `scripts/cuentas-lista.mjs`**, y la leen `cuentas:nube` y `cuentas:revision`. Con dos copias, añadir a alguien en una y no en la otra era crearle la cuenta y borrársela en la siguiente limpieza.
+· `DESPLIEGUE.md`, con la limpieza.
+
+**Cómo lo he probado** (contra la base local, nunca contra la nube)
+· **El seguro, en sus tres estados**: sin `rodrigo@niage.es`, con la cuenta sin estrenar y con la contraseña temporal sin cambiar se niega las tres veces. Entra y cambia la contraseña, y abre.
+· **El borrado, con material de verdad.** En tu base local había nueve cuentas `cambio.…`, `reset.…` y `alta.auto.…@iwl.test`, restos de pasadas de la suite que se cortaron antes de limpiar. Algunas eran mías, de esta mañana. A una le puse un comentario, una candidatura y una acción. La simulación encontró las nueve y nada más. La confirmación las borró, y el comentario se fue con su autora. La candidatura quedó con el autor en blanco, como estaba antes. La acción siguió en el registro, sin autor, y hubo nueve filas `borrar_cuenta`. Una segunda pasada: «No sobra ninguna cuenta».
+· Después quité de la base local la `rodrigo@niage.es` de prueba, las filas de prueba y las constancias.
+
+### Qué decidí yo
+· **La constancia es de todas las cuentas que se borran**, no solo de las tres que nombrabas. Cuesta lo mismo, y las `@iwl.es` también pierden su autoría.
+· **`docs/constancia/` no se versiona.** Pediste guardarlo en `docs/`, y ahí está, pero lleva correos, nombres y lo que cada cuenta hizo en compañías reales, y eso no entra en el repositorio. Si lo quieres en git, se quita la línea del `.gitignore`.
+· **Las compañías de prueba se borran desde la plataforma**, no con el script. «Borrar con todo» exige una sesión de dirección y deja a tu nombre qué llevaba cada una. Con la clave de servicio no hay nombre que poner, y además el script no limpiaría sus ficheros. Lo que sí hace la simulación es avisar si siguen ahí.
+· **El orden importa por una razón que no se ve**: borrar una compañía **se lleva su registro de actividad** (`on delete cascade`). Por eso la simulación va antes que «borrar con todo»: su constancia recoge lo que esas cuentas hicieron en las compañías de prueba, y la de `--confirmar` ya no lo vería.
+· **Exijo además que hayas cambiado la contraseña temporal**, no solo que hayas entrado. Es lo que garantiza que la contraseña la sabes tú y no solo el fichero de accesos.
+· **`CUENTAS_ENTORNO` y `CUENTAS_CONSERVAR`** existen para probar contra la base local. La segunda solo puede añadir cuentas a las que se quedan, nunca quitar.
+
+### El orden, con los comandos
+
+Desde la carpeta del proyecto, donde está `.env.produccion`:
+
+```bash
+# 1. Fusión en main (esta rama sale de tu main de ahora)
+git merge --ff-only worktree-limpiar-cuentas-nube
+
+# 2. La migración de la contraseña temporal
+npx supabase db push
+
+# 3. Publicar y desplegar
+git push
+npx vercel --prod
+```
+
+**Panel de Supabase**, si no lo has hecho ya: registro cerrado, Site URL `https://ride.inceptionwlab.es` y como única redirección `https://ride.inceptionwlab.es/auth/confirmar`. **Vercel**: `NEXT_PUBLIC_SITE_URL=https://ride.inceptionwlab.es` en Production.
+
+```bash
+# 4. Las cuentas nuevas: el equipo (contraseñas en .accesos-nube.md) y las de revisión
+npm run cuentas:nube
+npm run cuentas:revision -- --nube
+```
+
+**5.** Entra en `https://ride.inceptionwlab.es` con `rodrigo@niage.es` y la contraseña de `.accesos-nube.md`. Te pedirá cambiarla: cámbiala.
+
+```bash
+# 6. Simulación. Lee la constancia que escribe en docs/constancia/
+npm run cuentas:nube -- --limpiar
+```
+
+**7.** En la plataforma: Administración → Compañías → **borrar con todo** qqq, pirulo, ttttttt y w.
+
+```bash
+# 8. Borrar
+npm run cuentas:nube -- --limpiar --confirmar
+
+# 9. Comprobar: deben quedar 13 —5 del equipo y 8 de revisión—, todas «se queda»
+npm run cuentas:nube -- --listar
+```
+
+Después, reparte `.accesos-nube.md` y bórralo.
+
+### Qué necesito que decidas
+1. **`npm run cuentas:nube` sin opciones vuelve a dar contraseña a todo el equipo**, también a quien ya ha cambiado la suya. No deja a nadie fuera, porque la nueva queda en `.accesos-nube.md`, pero sí obliga a repartir otra vez. ¿Hago que solo toque las cuentas que todavía no existen, y que reponer una contraseña sea con `--reponer <correo>`?
+2. ¿La constancia se queda fuera de git, como la he dejado?
+
+### Estado
+· 116 unitarias · 139 RLS · **356 de interfaz en verde y 4 saltadas**, en Chromium y WebKit.
+· Producción: sin tocar.
+· La primera compilación de la suite falló al cargar las tipografías de Google. No era la red: era la carpeta `.next` que deja `next typegen`. Con la carpeta limpia compila.
+
+**Siguiente**
+Lo que digas de las dos preguntas, comprobar producción cuando esté desplegada, y «Mi perfil».
+
+---
+
 ## 2026-11-05 · Fusión: dominio y cambio de contraseña juntos en main · commit 74bf289
 
 **Qué cambió**
