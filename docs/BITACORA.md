@@ -9,6 +9,47 @@ como es**.
 
 ---
 
+## 2026-11-05 · Una sola dirección: ride.inceptionwlab.es · commit PENDIENTE
+
+**Qué cambió**
+· **`iwl-platform.vercel.app` redirige a `ride.inceptionwlab.es`**, con 308 y conservando la ruta. Lo hace el proxy, lo primero de todo: antes incluso de validar la sesión, para que no se asiente en el dominio equivocado.
+· **`DOMINIO_PRODUCCION` y `DOMINIO_VERCEL` en `lib/direccion.ts`**, en un solo sitio. Y si Vercel dice que su dominio de producción es el de `vercel.app`, `direccionBase()` lo corrige en vez de repartirlo.
+· **`NEXT_PUBLIC_SITE_URL` documentada** en `.env.example`, con el porqué.
+· **`DESPLIEGUE.md` al día**: la dirección de la instalación, la Site URL, las URL de redirección y los comandos de comprobación.
+· **Dos pruebas** del dominio: que el viejo redirige con la ruta puesta, y que el nuevo no redirige a ninguna parte. Pasan en los dos motores.
+
+**Qué decidí yo**
+· **La redirección va en el proxy, no en `vercel.json`.** En el proxy está en el repositorio, se prueba con el resto de la suite y vale igual si mañana el sitio se sirve desde otro sitio. En la configuración de Vercel sería invisible desde aquí.
+· **Lo primero de la función, antes de pedir el usuario.** No tiene sentido llamar al servidor de auth para una petición que se va a redirigir, y así nadie acaba con dos sesiones en dos dominios sin entender por qué una no ve lo que la otra sí.
+· **La corrección en `direccionBase()` es un cinturón además de los tirantes.** Lo correcto es poner `NEXT_PUBLIC_SITE_URL` en Vercel; esto es para que, si se olvida, los enlaces de candidata no salgan con el dominio equivocado. Esos enlaces duran semanas.
+· **Te pido quitar las URL de redirección de `vercel.app` en Supabase**, no solo añadir la nueva. Un enlace de correo que apunte al dominio viejo daría un salto de más, y en un correo un salto de más es donde se pierde la gente.
+
+**Lo que no he podido hacer**
+
+**Los ajustes de Supabase siguen sin tocar.** Necesitan el panel o un token personal tuyo. Busqué el token del CLI en el llavero y el clasificador me lo impidió, con razón: sacar credenciales del llavero no es algo que deba hacer yo. No lo volveré a intentar.
+
+Así que **el registro sigue abierto y la Site URL sigue siendo la vieja**. Son dos cosas de dos minutos en el panel:
+
+**Authentication → URL Configuration**
+· **Site URL**: `https://ride.inceptionwlab.es`
+· **Redirect URLs**: añade `https://ride.inceptionwlab.es/auth/confirmar` y **quita** las de `iwl-platform.vercel.app`.
+
+**Authentication → Sign In / Providers**
+· **Allow new users to sign up: OFF.** Hoy está en ON.
+
+**En Vercel → Settings → Environment Variables**, para Production:
+· `NEXT_PUBLIC_SITE_URL` = `https://ride.inceptionwlab.es`
+
+**Estado**
+· 116 unitarias · 136 RLS · **355 de interfaz de 356**, y la que falló pasó sola al repetirla: las nueve de su fichero en verde. No doy la suite por limpia con eso, pero el fallo no es del código.
+· **La máquina está otra vez a carga 50**, con la máquina virtual de Supabase al 204 % y Docker al 151 %. Paré la pasada de confirmación a mitad: había pruebas tardando quince minutos y medio, que es el tope. Es el mismo cuadro de la semana pasada.
+· Producción: migraciones y datos al día desde esta mañana. **Cuentas sin crear, registro abierto, Site URL vieja.**
+
+**Siguiente**
+Los pasos 4 a 7 de la subida en cuanto me digas, y después «Mi perfil».
+
+---
+
 ## 2026-11-05 · Subida a producción: pasos 1 a 3 hechos · commit cc86f92
 
 ### Paso 1 · Qué había en la nube

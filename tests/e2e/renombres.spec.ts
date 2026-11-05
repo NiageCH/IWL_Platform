@@ -42,3 +42,36 @@ test("el identificador viejo redirige también sin sesión", async ({ page }) =>
   await page.goto("/cartera/roster/plan");
   await expect(page).toHaveURL(/siguiente=%2Fcartera%2Fsiren%2Fplan/);
 });
+
+/**
+ * Una sola dirección.
+ *
+ * Vercel sirve el proyecto también en `iwl-platform.vercel.app`. Ahí
+ * funciona todo, y ese es el problema: se guardan enlaces y se reparten, y
+ * ese dominio depende del nombre del proyecto en Vercel. El proxy manda el
+ * viejo al nuevo.
+ *
+ * Se comprueba contra el servidor local cambiando la cabecera `Host`, que
+ * es lo que mira el proxy. No hace falta tocar producción para saber si la
+ * regla está puesta.
+ */
+test("el dominio de Vercel redirige al dominio propio", async ({ request }) => {
+  const respuesta = await request.get("/cartera", {
+    headers: { host: "iwl-platform.vercel.app" },
+    maxRedirects: 0,
+  });
+
+  expect(respuesta.status()).toBe(308);
+  expect(respuesta.headers()["location"]).toBe(
+    "https://ride.inceptionwlab.es/cartera",
+  );
+});
+
+test("el dominio propio no redirige a ninguna parte", async ({ request }) => {
+  const respuesta = await request.get("/entrar", {
+    headers: { host: "ride.inceptionwlab.es" },
+    maxRedirects: 0,
+  });
+
+  expect(respuesta.status()).toBe(200);
+});
