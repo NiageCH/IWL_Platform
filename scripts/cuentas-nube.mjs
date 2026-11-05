@@ -2,7 +2,8 @@
 /**
  * Las cuentas de la nube.
  *
- *   npm run cuentas:nube                           crea o repone las del equipo
+ *   npm run cuentas:nube                           crea las del equipo que faltan
+ *   npm run cuentas:nube -- --reponer <correo>     contraseña nueva para una que ya existe
  *   npm run cuentas:nube -- --listar               todas, sin tocar nada
  *   npm run cuentas:nube -- --limpiar              qué borraría, sin borrar
  *   npm run cuentas:nube -- --limpiar --confirmar  borra lo que no está en la lista
@@ -11,13 +12,16 @@
  * `cuentas-lista.mjs`: el equipo y las cuentas de revisión, nada más.
  *
  * Crear da a cada persona una contraseña aleatoria y temporal: las
- * contraseñas no se imprimen, van a `.accesos-nube.md`, que no se versiona,
- * y en la primera entrada la plataforma pide cambiarla. Pasarlo dos veces
- * deja las mismas cuentas con contraseñas nuevas.
+ * contraseñas no se imprimen, se añaden a `.accesos-nube.md`, que no se
+ * versiona, y en la primera entrada la plataforma pide cambiarla.
+ *
+ * **Las que ya existen no se tocan.** Antes, pasarlo otra vez le cambiaba
+ * la contraseña a todo el equipo, también a quien ya había puesto la suya.
+ * Reponer es a propósito y de una en una: `--reponer <correo>`.
  *
  * Limpiar se explica en su sección, más abajo.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { EQUIPO, PRINCIPAL, correosQueSeQuedan } from "./cuentas-lista.mjs";
 
 const SALIDA = ".accesos-nube.md";
@@ -99,6 +103,19 @@ const argumentos = new Set(process.argv.slice(2));
 const soloListar = argumentos.has("--listar");
 const limpiar = argumentos.has("--limpiar");
 const confirmar = argumentos.has("--confirmar");
+const reponer = (() => {
+  const i = process.argv.indexOf("--reponer");
+  return i === -1 ? null : (process.argv[i + 1] ?? "").trim().toLowerCase();
+})();
+
+if (reponer !== null && !EQUIPO.some((p) => p.email === reponer)) {
+  console.error(
+    reponer
+      ? `${reponer} no es del equipo de cuentas-lista.mjs. A cualquier otra persona se le pone contraseña desde Administración → Personas.`
+      : "--reponer necesita el correo: npm run cuentas:nube -- --reponer alguien@niage.es",
+  );
+  process.exit(1);
+}
 
 if (confirmar && !limpiar) {
   console.error("--confirmar solo vale con --limpiar.");
@@ -159,6 +176,17 @@ async function crearCuentas() {
   const puestas = [];
 
   for (const persona of EQUIPO) {
+    const ya = porCorreo.get(persona.email);
+
+    if (reponer ? persona.email !== reponer : ya) {
+      if (!reponer) console.log(`· ${persona.email}: ya existe, no la toco`);
+      continue;
+    }
+    if (reponer && !ya) {
+      console.error(`· ${persona.email}: no existe todavía. Créala sin --reponer.`);
+      process.exit(1);
+    }
+
     const pass = clave();
     const cuerpo = {
       email: persona.email,
@@ -167,7 +195,6 @@ async function crearCuentas() {
       user_metadata: { full_name: persona.nombre, role: persona.rol },
     };
 
-    const ya = porCorreo.get(persona.email);
     const respuesta = ya
       ? await fetch(`${URL_}/auth/v1/admin/users/${ya.id}`, {
           method: "PUT", headers: cab, body: JSON.stringify(cuerpo),
@@ -201,9 +228,10 @@ async function crearCuentas() {
 
     console.log(`· ${persona.email}: ${ya ? "contraseña nueva" : "creada"}`);
 
-    /* El disparador crea el perfil al nacer la cuenta; el papel se asegura
-       aquí, que es lo que decide qué ve cada cual */
-    await fetch(`${URL_}/rest/v1/profiles?email=eq.${encodeURIComponent(persona.email)}`, {
+    /* El disparador crea el perfil al nacer la cuenta; el papel se pone
+       aquí, que es lo que decide qué ve cada cual. Al reponer no se toca:
+       si se cambió desde la plataforma, se respeta */
+    if (!ya) await fetch(`${URL_}/rest/v1/profiles?email=eq.${encodeURIComponent(persona.email)}`, {
       method: "PATCH",
       headers: cab,
       body: JSON.stringify({ full_name: persona.nombre, role: persona.rol }),
@@ -213,18 +241,20 @@ async function crearCuentas() {
   }
 
   if (!puestas.length) {
-    console.error("\nNo se ha puesto ninguna cuenta. No escribo el fichero de accesos.");
-    process.exit(1);
+    console.log("\nNo falta ninguna cuenta del equipo. Nada que hacer.");
+    return;
   }
 
-  const hoy = new Date().toISOString().slice(0, 10);
+  const ahora = new Date().toISOString().slice(0, 16).replace("T", " ");
 
-  writeFileSync(
-    SALIDA,
-    `# Accesos de la nube
-
-Generado el ${hoy} por \`npm run cuentas:nube\`. Sustituye al fichero del 29
-de septiembre.
+  /*
+   * Se añade, no se sobrescribe: si quedaba alguna contraseña sin
+   * repartir, pisarla dejaría una cuenta con una clave que no sabe nadie.
+   */
+  if (!existsSync(SALIDA)) {
+    writeFileSync(
+      SALIDA,
+      `# Accesos de la nube
 
 Instancia: ${URL_}
 
@@ -232,19 +262,25 @@ Instancia: ${URL_}
 se generan al azar y no se guardan en ningún otro sitio. Repártelas una a
 una y bórralo.
 
+Se entra en la dirección de producción con correo y contraseña. En la
+primera entrada se pide cambiar la contraseña: hasta hacerlo, solo se puede
+cambiarla o salir. La que pone aquí la dirección no vale para quedarse.
+`,
+    );
+  }
+
+  appendFileSync(
+    SALIDA,
+    `
+## ${ahora} UTC · \`npm run cuentas:nube${reponer ? ` -- --reponer ${reponer}` : ""}\`
+
 | Correo | Contraseña | Rol | Quién |
 |---|---|---|---|
 ${puestas.map((p) => `| \`${p.email}\` | \`${p.pass}\` | ${p.rol} | ${p.nombre} |`).join("\n")}
-
-Se entra en la dirección de producción con correo y contraseña.
-
-En la primera entrada se pide cambiar la contraseña: hasta hacerlo, solo
-se puede cambiarla o salir. La que pone aquí la dirección no vale para
-quedarse.
 `,
   );
 
-  console.log(`\n${puestas.length} cuentas. Contraseñas en ${SALIDA}.`);
+  console.log(`\n${puestas.length} ${puestas.length === 1 ? "cuenta" : "cuentas"}. Contraseñas en ${SALIDA}.`);
 }
 
 // -----------------------------------------------------------------------------
