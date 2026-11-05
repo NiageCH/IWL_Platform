@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-05 · Subida a producción: pasos 1 a 3 hechos · commit PENDIENTE
+## 2026-11-05 · Subida a producción: pasos 1 a 3 hechos · commit cc86f92
 
 ### Paso 1 · Qué había en la nube
 
