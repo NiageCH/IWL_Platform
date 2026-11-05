@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-05 · Las cifras, con tus medidas · commit PENDIENTE
+## 2026-11-05 · Las cifras, con tus medidas · commit e5341b5
 
 **Qué cambió**
 · **Dos tamaños y las medidas que diste**: Montserrat 600 a 20 px la normal, 28 px la destacada, con `tabular-nums`. **Fuera el monoespaciado de las cifras grandes**; se queda en tablas, fechas y metadatos.
