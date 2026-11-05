@@ -9,6 +9,103 @@ como es**.
 
 ---
 
+## 2026-11-05 · `nube:vaciar`, `--reponer` y la guía para cargar compañías · commit b6b934b
+
+**Qué cambió**
+· **`npm run nube:vaciar`** deja la nube lista para cargar las compañías reales. Por defecto es una simulación; borra con `--confirmar`.
+  · Borra todas las compañías salvo Marea Clínica, que es la única con `is_demo`.
+  · Borra todas las candidaturas salvo tres de muestra: «Revisión · Candidatura» en NDA, que es la de `rev-candidata`, «Muestra · Firmada», enganchada a Marea, y «Muestra · Descartada».
+  · Se lleva también sus ficheros de `logos`, `data-room` y `candidaturas`, buscados por carpeta.
+  · No toca la configuración ni las cuentas.
+  · Escribe la constancia en `docs/constancia/` y deja una fila `vaciar` en el registro.
+· **Sus dos seguros**: contra la base local se niega salvo con `--local`, y contra la nube mientras `rodrigo@niage.es` no funcione, con el mismo criterio que `--limpiar`.
+· **Candidaturas de demostración** (migración `20261105140000_candidatura_demo`). Se ven en el embudo con el distintivo «Demo», en las tres listas y en la cabecera, y no cuentan en ningún número: ni por paso, ni abiertas, firmadas o descartadas, ni en la conversión. Marcarlas es de la dirección.
+· **`cuentas:nube` sin opciones solo crea las que faltan**; las que existen no se tocan, ni contraseña ni papel. Reponer una es `--reponer <correo>`, de una en una y solo del equipo. Las contraseñas se añaden a `.accesos-nube.md` con la fecha, sin pisar las que no se hubieran repartido.
+· **La guía**: `docs/IWL_Doc_CargarCompania_ES_v1_20261105.md`. Cubre entrada (por el embudo o en alta directa), ficha, equipo, Anexo, hoja de ruta, hitos y KPI. Para cada paso dice dónde se hace, con los rótulos de la pantalla, quién puede hacerlo y qué hay que ver después.
+· **El aviso de «Dar de alta a una persona»** decía que la persona «entra pidiendo su enlace». Ahora dice que entra con la contraseña que se enseña y que se le pide cambiarla.
+
+### Lo que la entrada anterior tenía mal
+**`--limpiar` habría fallado con cualquier cuenta que hubiera creado una línea base.** Al borrar una cuenta, la base le quita el autor a lo que hizo, y en una línea base eso es un `update` que `guard_linea_base` rechaza siempre. Lo he comprobado en local con una transacción que se deshace. Las pruebas no lo veían porque ninguna línea base de la semilla tiene autor. No he relajado el guardián: ahora la simulación lo avisa («NO SE PUEDE BORRAR») y `--confirmar` se salta esa cuenta y dice por qué. En la nube no llegará a pasar si `nube:vaciar` va antes, porque las líneas base se van con sus compañías.
+
+Y la entrada anterior mandaba borrar las cuatro compañías de prueba con «borrar con todo». **Ya no hace falta**: `nube:vaciar` se las lleva.
+
+**Cómo lo he probado** (contra la base local)
+· `nube:vaciar` contra un `.env.produccion` que apuntaba a local se negó. Con `--local`, la simulación recorrió la base entera: 7 compañías con 132 ficheros y 33 candidaturas.
+· Para el borrado de verdad creé una compañía con ficheros en `logos` y en carpetas anidadas de `data-room`, una candidatura firmada enganchada a ella —el caso que impide borrar una compañía— y otra abierta con un fichero. Limité la pasada a ellas. Resultado:
+  · Se borraron las tres, sin que quedara ni un fichero.
+  · Se crearon las dos muestras que faltaban, la firmada enganchada a Marea.
+  · La de revisión quedó marcada.
+  · Se escribió la fila del registro.
+  · La semilla quedó intacta.
+· Después lo dejé todo como estaba.
+· `--reponer` en sus cuatro caminos: crear las que faltan, segunda pasada que no toca nada, reponer una y negarse con alguien de fuera del equipo. El papel se conserva y la marca se pone.
+· La línea base: una cuenta que era su autora la simulación la marcó y `--confirmar` se la saltó.
+· Dos pruebas de RLS: el equipo no puede marcar una candidatura y la dirección sí, y la vista lo recoge. Y una de interfaz: una candidatura marcada sigue en la lista con «Demo» y la cifra «En proceso» baja en una.
+
+### Qué decidí yo
+· **Las muestras se crean, no se eligen entre las que hay.** Una firmada de las de prueba tiene su propia compañía de prueba, y quedársela obligaba a conservar esa compañía o a reengancharla. Si ya existe una con el nombre de muestra, se queda.
+· **La firmada cuelga de Marea.** La base no admite una firmada sin compañía, y así «Ver su ficha» lleva a la demostración.
+· **El script borra con la clave de servicio y no con «borrar con todo».** Esa función exige una sesión de dirección. A cambio, los ficheros se quitan por carpeta y no por las rutas guardadas, que dejaban huérfanos.
+· **Del registro de actividad, el de las compañías borradas se va con ellas** (`on delete cascade`). La constancia de la simulación es la que lo conserva.
+· **La guía la escribió un agente leyendo el código, y la he revisado.** Los rótulos salen del JSX. Lo que no pudo comprobar en pantalla está dicho como tal.
+
+### El orden para la nube
+
+Desde la carpeta del proyecto, donde está `.env.produccion`:
+
+```bash
+# 1. Fusión en main
+git merge --ff-only worktree-limpiar-cuentas-nube
+
+# 2. Las migraciones pendientes: la contraseña temporal, si no estaba, y las candidaturas de demostración
+npx supabase db push
+
+# 3. Publicar y desplegar
+git push
+npx vercel --prod
+
+# 4. Vaciar los datos de prueba. Lee la constancia antes de confirmar
+npm run nube:vaciar
+npm run nube:vaciar -- --confirmar
+
+# 5. Las cuentas de revisión, enganchadas a las muestras
+npm run cuentas:revision -- --nube
+
+# 6. Quitar las cuentas que sobran. Lee la constancia antes de confirmar
+npm run cuentas:nube -- --limpiar
+npm run cuentas:nube -- --limpiar --confirmar
+
+# 7. Deben quedar 13 —5 del equipo y 8 de revisión—, todas «se queda»
+npm run cuentas:nube -- --listar
+```
+
+**8.** Cargar las compañías reales siguiendo la guía, desde `https://ride.inceptionwlab.es`.
+
+**El orden importa en dos sitios.** Primero vaciar y después limpiar: si no, las cuentas que crearon líneas base en compañías de prueba no se dejan borrar. Y siempre la simulación antes de `--confirmar`: es la que deja constancia de lo que hay.
+
+### Lo que encontró la guía, y que no he arreglado
+Escribirla destapó callejones sin salida. Están todos en la guía; estos son los que más pesan:
+
+· **Al firmar, la candidata no pasa a fundadora ni se asigna a su compañía.** Firmar crea la compañía, pero ella sigue con el papel de candidata hasta que alguien lo cambia a mano en Personas.
+· **Un Anexo firmado no se puede renovar.** La acción de abrir una versión nueva existe, pero la pantalla solo ofrece el botón cuando no hay ninguno.
+· **Los objetivos de KPI no tienen pantalla.** La columna existe y los gráficos la pintan, pero nada la escribe.
+· **Un hito no se puede editar ni borrar**, solo cambiarle el estado y la etapa.
+· **Sin plantillas de recorrido, una compañía no puede empezar su hoja de ruta.** «Añadir una etapa» solo aparece cuando ya hay alguna.
+
+### Qué necesito que decidas
+1. ¿Hago que firmar una candidatura convierta a la candidata en fundadora y la asigne a su compañía? Hoy es un paso a mano, fácil de olvidar.
+2. ¿Pongo el botón para abrir una versión nueva del Anexo cuando ya hay uno firmado?
+3. De los otros tres —objetivos de KPI, editar hitos y empezar una hoja de ruta sin plantilla—, ¿cuáles antes de cargar las compañías reales?
+
+### Estado
+· 116 unitarias · 141 RLS · **358 de interfaz en verde y 4 saltadas**, en Chromium y WebKit. `--reponer` va en su propio commit, 729a3ed.
+· Producción: sin tocar desde aquí.
+
+**Siguiente**
+Lo que digas de esas tres preguntas, y «Mi perfil».
+
+---
+
 ## 2026-11-05 · `--limpiar`: en la nube solo quedan las nuevas · commit 820b4b1
 
 **Qué cambió**
