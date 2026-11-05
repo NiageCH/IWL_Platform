@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-05 · Fuera los cuadritos · commit PENDIENTE
+## 2026-11-05 · Fuera los cuadritos · commit e449313
 
 **Qué cambió**
 · **`<Avance>`** sustituye a la fila de cuadritos **en las cuatro pantallas donde estaba**: Due diligence general —arriba y en cada área—, Qué falta, Business plan y los hitos del Recorrido. No queda ninguna.
