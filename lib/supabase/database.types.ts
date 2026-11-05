@@ -1961,13 +1961,13 @@ isOneToOne: false
                   ]
                 },"evidence_links": {
                   Row: {
-                    "company_id": string,"created_at": string,"created_by": string | null,"hypothesis_id": string | null,"id": string,"kind": Database["public"]['Enums']["tipo_evidencia"],"label": string,"section_id": string | null,"target_code": string | null,"target_id": string | null,"url": string | null
+                    "company_id": string,"created_at": string,"created_by": string | null,"entity": string | null,"entity_id": string | null,"hypothesis_id": string | null,"id": string,"kind": Database["public"]['Enums']["tipo_evidencia"],"label": string,"section_id": string | null,"target_code": string | null,"target_id": string | null,"url": string | null
                   }
                   Insert: {
-                    "company_id": string,"created_at"?: string,"created_by"?: string | null,"hypothesis_id"?: string | null,"id"?: string,"kind": Database["public"]['Enums']["tipo_evidencia"],"label": string,"section_id"?: string | null,"target_code"?: string | null,"target_id"?: string | null,"url"?: string | null
+                    "company_id": string,"created_at"?: string,"created_by"?: string | null,"entity"?: string | null,"entity_id"?: string | null,"hypothesis_id"?: string | null,"id"?: string,"kind": Database["public"]['Enums']["tipo_evidencia"],"label": string,"section_id"?: string | null,"target_code"?: string | null,"target_id"?: string | null,"url"?: string | null
                   }
                   Update: {
-                    "company_id"?: string,"created_at"?: string,"created_by"?: string | null,"hypothesis_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["tipo_evidencia"],"label"?: string,"section_id"?: string | null,"target_code"?: string | null,"target_id"?: string | null,"url"?: string | null
+                    "company_id"?: string,"created_at"?: string,"created_by"?: string | null,"entity"?: string | null,"entity_id"?: string | null,"hypothesis_id"?: string | null,"id"?: string,"kind"?: Database["public"]['Enums']["tipo_evidencia"],"label"?: string,"section_id"?: string | null,"target_code"?: string | null,"target_id"?: string | null,"url"?: string | null
                   }
                   Relationships: [
                     {

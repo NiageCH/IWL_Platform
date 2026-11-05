@@ -16,6 +16,7 @@ import {
   type Segmento,
 } from "@/components/ui/estado";
 import { estadoVisual } from "@/lib/estados";
+import { leerAperturas } from "@/lib/datos/evidencia";
 import { EstadoPunto } from "@/components/formularios/diligencia";
 import {
   AbrirDocumento,
@@ -49,8 +50,11 @@ export async function VistaDiligencia({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const { areas, areasCatalogo, puntos, hallazgos, documentos } =
-    await leerDiligencia(resumen.compania.id);
+  const [{ areas, areasCatalogo, puntos, hallazgos, documentos }, aperturas] =
+    await Promise.all([
+      leerDiligencia(resumen.compania.id),
+      leerAperturas(resumen.compania.id),
+    ]);
   const { permisos, compania } = resumen;
 
   const scorePorArea = new Map(
@@ -318,6 +322,35 @@ export async function VistaDiligencia({
             puntos={puntos}
           />
         ) : null}
+
+        {/*
+          Quién ha abierto qué.
+
+          Se anotaba desde el principio y no lo veía nadie. Decisión de
+          Rodrigo: lo ve también la fundadora, en su propio data room.
+          Saber quién ha mirado tu información es parte de confiar en
+          quien la guarda.
+        */}
+        <details className="border-t border-filete px-4 py-3">
+          <summary className="accion cursor-pointer text-xs">
+            Quién ha abierto estos documentos
+          </summary>
+          {aperturas.length === 0 ? (
+            <p className="mt-3 text-xs text-secundario">
+              Nadie ha abierto todavía ningún documento de esta compañía.
+            </p>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {aperturas.map((a) => (
+                <li key={a.id} className="flex flex-wrap gap-x-3 text-xs">
+                  <span className="text-titular">{a.quien}</span>
+                  <span className="text-secundario">{a.documento}</span>
+                  <span className="cifra text-metadato">{fecha(a.cuando)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </details>
       </Bloque>
 
       {/*

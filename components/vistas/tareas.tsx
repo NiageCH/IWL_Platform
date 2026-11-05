@@ -14,6 +14,11 @@ import {
   NuevaTarea,
 } from "@/components/formularios/tareas";
 import { BarraSegmentada, Estado } from "@/components/ui/estado";
+import { Evidencia } from "@/components/formularios/evidencia";
+import {
+  leerDocumentosElegibles,
+  leerEvidencias,
+} from "@/lib/datos/evidencia";
 import { estadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -55,10 +60,15 @@ export async function VistaQueFalta({
 }) {
   const { compania, permisos } = resumen;
 
-  const [{ tareas, abiertas, vencidas }, asignables] = await Promise.all([
-    leerTareas(compania.id),
-    permisos.puedeEscribir ? leerAsignables(compania.id) : Promise.resolve([]),
-  ]);
+  const [{ tareas, abiertas, vencidas }, asignables, evidencias, elegibles] =
+    await Promise.all([
+      leerTareas(compania.id),
+      permisos.puedeEscribir ? leerAsignables(compania.id) : Promise.resolve([]),
+      leerEvidencias(compania.id, "task"),
+      permisos.puedeEscribir
+        ? leerDocumentosElegibles(compania.id)
+        : Promise.resolve([]),
+    ]);
 
   const vivas = tareas.filter((t) => !CERRADAS.includes(t.status));
   const cerradas = tareas.filter((t) => CERRADAS.includes(t.status));
@@ -116,6 +126,22 @@ export async function VistaQueFalta({
                     {t.description}
                   </span>
                 ) : null}
+                {/*
+                  En qué se apoya. Encargar una tarea sin poder adjuntar el
+                  documento del que sale obliga a explicarlo por correo, y
+                  entonces la tarea y su contexto viven en sitios distintos.
+                */}
+                <span className="mt-1.5 block">
+                  <Evidencia
+                    slug={compania.slug}
+                    companyId={compania.id}
+                    entidad="task"
+                    entidadId={t.id}
+                    adjuntas={evidencias.get(t.id) ?? []}
+                    elegibles={elegibles}
+                    puedeEscribir={permisos.puedeEscribir}
+                  />
+                </span>
               </span>
 
               {t.due_date ? (

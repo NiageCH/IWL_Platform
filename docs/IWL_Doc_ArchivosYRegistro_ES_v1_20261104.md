@@ -87,8 +87,15 @@ de un punto de due diligence, la reapertura de un mes de KPI, el borrado de
 una compañía y los ficheros que no se pudieron borrar con ella.
 
 **El registro de accesos a documentos** anota las consultas: quién abrió qué
-documento y cuándo. La tabla existe y **está vacía**: nadie escribe en ella
-todavía. Está en la lista de lo que falta.
+documento y cuándo. **Se escribe una línea cada vez que alguien pide abrir un
+documento**, que es por donde pasan todas las aperturas.
+
+> **Corrección del 5 nov 2026.** La versión anterior de esta página decía que
+> nadie escribía en esa tabla. Era falso: la escritura estaba desde el
+> principio. La tabla está vacía en local porque ningún documento de la
+> semilla tiene fichero, así que no hay nada que abrir. Lo que de verdad
+> faltaba era poder **verlo**, y eso ya está: en el data room, plegado bajo
+> «Quién ha abierto estos documentos», y lo ve también la fundadora.
 
 Además, algunos datos llevan su propio rastro dentro de su pantalla, porque
 es donde se miran:
@@ -132,10 +139,9 @@ Clínica. Lo que se pide a las participadas se pide también aquí.
 Esto es lo que hay que decidir o construir. Mi propuesta al lado de cada
 cosa; la decisión es tuya.
 
-1. **Nadie anota quién abre un documento.** La tabla está y está vacía.
-   *Propongo* escribir una línea cada vez que se pide un enlace firmado. Es
-   el sitio por el que pasan todas las aperturas, así que no se escapa
-   ninguna.
+1. ~~**Nadie anota quién abre un documento.**~~ **Hecho, y estaba mal
+   contado**: se anotaba desde el principio. Lo que faltaba era verlo, y ya
+   se ve en el data room, también para la fundadora.
 2. **El registro de actividad no se puede leer desde la plataforma.**
    *Propongo* una pantalla en Administración con filtro por compañía y por
    fecha, y, en cada ficha, las últimas diez líneas de lo que le ha pasado.
@@ -180,5 +186,18 @@ Es una columna más y una regla de acceso; va en el mismo cambio.
 
 ---
 
-**Qué necesito de ti**: los puntos 1, 2, 3 y 6 del apartado 7. Los demás son
-propuestas que puedo ejecutar sin que decidas nada.
+---
+
+## 9. Qué está hecho ya (5 nov 2026)
+
+· **El registro de aperturas se ve** en el data room, y lo ve la fundadora.
+· **50 MB por archivo** en el data room, declarado en el propio cajón.
+· **Los plazos de conservación** están en configuración, marcados como
+  provisionales. **Nada los aplica todavía**: el borrado automático se
+  construye cuando sean firmes, porque borrar por un plazo provisional es la
+  clase de error que no tiene vuelta atrás.
+· **`<Evidencia>`** funciona en las tres formas: subir, elegir del data room
+  y pegar un enlace.
+
+Queda la pantalla del registro de actividad en Administración y el plegable
+de versiones anteriores.

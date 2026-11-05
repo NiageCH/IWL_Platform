@@ -9,6 +9,43 @@ como es**.
 
 ---
 
+## 2026-11-05 · Evidencia, que es lo que pedías en todas las pantallas · commit PENDIENTE
+
+**Qué cambió**
+· **`<Evidencia>`**, en sus tres formas: subir un archivo, elegir uno que ya está en el data room, o pegar un enlace. Las tres dejan el mismo rastro —qué, a qué, quién y cuándo— en el registro de actividad.
+· **Funciona ya en las tareas**, que es donde dijiste que se usara primero. Cada tarea enseña en qué se apoya y quién lo adjuntó.
+· **El registro de aperturas se ve**, y lo ve la fundadora: en su data room, plegado bajo «Quién ha abierto estos documentos».
+· **50 MB por archivo** en el data room, y **los plazos de conservación** en configuración, marcados como provisionales.
+· Cuatro pruebas nuevas, y la suite sube a **352 en los dos motores**.
+
+**Me equivoqué en la página de archivos**
+
+La página decía que **nadie escribía** en el registro de aperturas. Es falso: la escritura estaba desde el principio, en el mismo sitio donde se firma el enlace. La tabla está vacía en local porque ningún documento de la semilla tiene fichero, así que no hay nada que abrir, y leí «vacía» como «no se escribe».
+
+No cambia tu decisión —querías verlo, y eso sí faltaba— pero sí cambia el trabajo: era una pantalla, no una tubería. Lo he corregido en la página, con la corrección fechada y a la vista en vez de reescribir el párrafo.
+
+**Qué decidí yo**
+· **El archivo adjunto va al data room, no a un cajón de adjuntos.** Lo que respalda un hito es un documento de la compañía; tenerlo en dos sitios es tenerlo en ninguno. Va a la carpeta «evidencia», la única que no es un área de due diligence.
+· **Elegir uno que ya está, en el mismo sitio que subir.** Parecía un detalle y no lo es: el mismo contrato respalda tres cosas distintas, y subirlo tres veces es la manera de acabar con tres versiones que no coinciden. Por eso son tres pestañas visibles y no un desplegable.
+· **Quitar una evidencia no borra el documento.** Es decir «esto no respalda aquello», no «este archivo no existió».
+· **Los plazos no se aplican todavía.** Están declarados para poder contestar qué se guarda y cuánto, que era la pregunta sin respuesta. Borrar por un plazo provisional es la clase de error que no tiene vuelta atrás.
+· **Adjuntar no devuelve mensaje**: el acuse es la evidencia apareciendo en su fila. Con mensaje, el panel se queda abierto tapándola.
+
+**Lo que encontré de paso**
+
+La regla vieja de la tabla de evidencias decía «o cuelga de una hipótesis o cuelga de una sección», y era verdad mientras la evidencia solo servía para el business plan. Añadir la regla nueva sin quitar la vieja dejaba la función inservible: una evidencia colgada de una tarea cumplía la nueva y chocaba con la vieja, y el error que salía era «los datos no cumplen una condición de la base», que no dice cuál.
+
+**Estado**
+· 116 unitarias · 136 RLS · **352 de interfaz en Chromium y WebKit**, en verde.
+· **Falta de tu lista de archivos**: la pantalla del registro de actividad en Administración y el plegable de versiones anteriores.
+· **Falta de `<Evidencia>`**: usarla en el cuestionario técnico, el plan de trabajo técnico, el cambio de estado de hitos y el de puntos del checklist. La pieza está; es enchufarla en cada sitio.
+· **No he tocado nada de la subida a producción**, que está en espera.
+
+**Siguiente**
+Enchufar `<Evidencia>` en los cuatro sitios que faltan, y después quitar la fila de cuadritos de colores de todas las pantallas.
+
+---
+
 ## 2026-11-04 · Safari, y la página de archivos y registro · commit 8599171
 
 **Qué cambió**

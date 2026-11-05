@@ -4,6 +4,53 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-05 · Revisión de Rodrigo como dirección (rev-admin)
+
+1. **«Scorecards de la cohorte» está bien escrito**: cohorte es femenino. Se queda. Revisa que no aparezca «el cohorte» en ninguna pantalla.
+2. **Encargar una tarea con adjuntos.** Ya está en `<Evidencia>`; confirma que encargar una tarea es de los primeros sitios donde se usa.
+3. **Embudo, el recorrido de la candidatura: estático y monocromo.** Mismo tratamiento que Recorrido: línea de pasos con el color de su estado, el paso actual destacado y cuántos días lleva en él. En la vista general del embudo, cada candidatura con su paso y su estado en una línea.
+4. **Personas y accesos: filtro por tipo.** Equipo IWL · Ingeniería Niage · Mentores · Fundadoras · Candidatas · Cuentas de revisión. Y búsqueda por nombre o correo.
+5. **Recorrido: demasiado texto y monocromo.** Además de plegar los tramos completados: línea de tiempo con los tramos como bloques proporcionales a su duración, «hoy» marcado, hitos como puntos de color sobre ella. Cada tramo abre con su objetivo en una línea y tres cifras (hitos, horas de IWL, semanas). El texto largo, detrás de «Ver detalle».
+6. **Evaluación técnica: no se entiende qué significa cada número.** Al puntuar una dimensión, el revisor ve los cinco niveles (0 a 4) **con su descripción para esa dimensión**, el nivel objetivo de la etapa marcado, y elige uno pulsando la descripción, no escribiendo un número. Si `tech_maturity_levels` ya tiene esas descripciones, se enseñan; si no, entrega la tabla de descripciones por dimensión en `docs/` para que Rodrigo y Juan Mishima la validen.
+7. **Materias de la aportación: no se entiende para qué sirve.** Es configuración: las seis materias con las que se clasifican las horas de IWL. Una línea arriba que lo diga, y al lado de cada materia cuántas horas tiene registradas y en cuántas compañías. Si no se puede borrar una materia con horas, que lo diga.
+
+**Decisión pendiente de Rodrigo, no construir:** entrar con Google. Ver la respuesta en el chat; habrá entrada si se aprueba.
+
+Orden: va detrás de `<Evidencia>` y de quitar la fila de cuadritos.
+
+---
+
+## 2026-11-05 · Archivos y registro aprobado, y subida a producción
+
+### Decisiones de Rodrigo sobre `IWL_Doc_ArchivosYRegistro`
+
+1. **Registro de aperturas: sí**, una línea por cada enlace firmado. Y además **la fundadora ve quién ha abierto los documentos de su compañía**, en su data room.
+2. **Pantalla del registro de actividad: sí.** Completa en Administración con filtro por compañía y fecha; las últimas diez líneas en la ficha de cada compañía.
+3. **Plazos de conservación, provisionales** hasta que los valide la asesoría: documentos del Acuerdo, la relación más seis años · registro de accesos, dos años · registro de actividad, mientras exista la compañía. Se declaran en configuración, no en código, y la página lo dice como provisional.
+4. **50 MB por archivo** en el data room.
+5. Puntos 4, 5 y 7: de acuerdo con tus propuestas.
+
+Con esto, **`<Evidencia>` queda desbloqueado**. Va antes que la fila de cuadritos: Rodrigo lo está pidiendo en todas las pantallas.
+
+### Subida a producción: EN ESPERA
+
+**No ejecutar nada de este bloque.** Rodrigo quiere revisar antes las vistas de IWL (dirección, equipo, Niage y mentores). Cuando lo autorice, habrá una entrada nueva que lo diga. Lo de abajo queda como el plan que se seguirá entonces.
+
+Antes de subir nada, en este orden, y cada paso en la bitácora:
+
+1. **Lista lo que hay hoy en la nube**: compañías, cuentas y su rol, y si el registro está cerrado (`disable_signup: true`).
+2. **Correos del equipo a los reales.** En la nube no entra ninguna cuenta `@iwl.es`. Rodrigo pasa a `rodrigo@niage.es`. Del resto, si no hay correo real confirmado, la cuenta no se crea en la nube y se lista como pendiente.
+3. **Migraciones** (`db push`) y **datos**: configuración del programa, los cuatro proyectos reales (La Pepi, Siren, Igor Labs, Proyecto Baires), **sin AgrolabX**, y la demostración Marea Clínica marcada como `is_demo`.
+4. **Cuentas de revisión en la nube**, con contraseñas nuevas, en `.accesos-revision.md` separadas de las locales.
+5. **Ninguna cuenta de fundadora todavía.** Sus correos están sin confirmar.
+6. **Código:** si el `git push` te lo bloquea, deja los comandos exactos en la bitácora y Rodrigo los lanza. Lo mismo con cualquier paso que necesite sus credenciales.
+7. Después del despliegue, comprueba en la URL de producción, con Chromium y WebKit, que entran las cuentas de revisión y que cada una ve lo que dice la tabla de visibilidad. Capturas en la bitácora.
+8. **`.accesos-nube.md` del 29 de septiembre se borra** cuando las cuentas nuevas funcionen.
+
+Si algo de esto falla, se para y se cuenta. No se sube a medias.
+
+---
+
 ## 2026-11-04 · Segunda revisión de Rodrigo (en Chrome)
 
 **1. Fuera la fila de cuadritos de colores, en todas las pantallas.** Cinco colores seguidos no se leen como avance; se leen como ruido. Sustituye a la regla «barra segmentada» de `IWL_Doc_EstadosVisuales`:
