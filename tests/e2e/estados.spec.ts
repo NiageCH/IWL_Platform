@@ -15,42 +15,48 @@ import { USUARIOS, entrarComo } from "./entrada";
  * la semilla tendría hoy y no dentro de un mes.
  */
 
-test("el due diligence abre con la barra de segmentos, un cuadrado por punto", async ({
-  page,
-}) => {
-  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/diligencia");
-
-  const barra = page.getByRole("list", { name: "Puntos del checklist" });
-  await expect(barra).toBeVisible();
-
-  const cuadrados = await barra.getByRole("listitem").count();
-  const puntos = await page.locator("li[id^='punto-']").count();
-
-  expect(puntos).toBeGreaterThan(0);
-  expect(cuadrados).toBe(puntos);
-});
-
-test("el recuento de la barra suma exactamente los puntos que hay", async ({
+test("el due diligence abre con su avance: cuántos hechos de cuántos", async ({
   page,
 }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/diligencia");
 
   /*
-   * La barra se ve; el recuento se lee. Es lo único que le queda a quien no
-   * distingue los tonos, así que tiene que cuadrar con lo que hay.
+   * Era una fila de cuadritos, uno por punto. Cinco colores seguidos no
+   * se leen como avance, así que ahora es una barra de un solo color con
+   * su par al lado.
    */
-  const bloque = page
-    .locator("section")
-    .filter({ hasText: "Due diligence" })
-    .first();
+  const barra = page.getByRole("img", { name: /Puntos del checklist/ }).first();
+  await expect(barra).toBeVisible();
 
-  const texto = await bloque.innerText();
-  const sumas = [...texto.matchAll(/(\d+)\s+(hecho|en curso|por hacer|atención|vencido)/g)];
+  const puntos = await page.locator("li[id^='punto-']").count();
+  expect(puntos).toBeGreaterThan(0);
 
-  expect(sumas.length).toBeGreaterThan(0);
+  const etiqueta = (await barra.getAttribute("aria-label")) ?? "";
+  const [, hechos, total] = etiqueta.match(/(\d+) de (\d+)/) ?? [];
+  expect(Number(total)).toBe(puntos);
+  expect(Number(hechos)).toBeLessThanOrEqual(puntos);
+});
 
-  const total = sumas.reduce((t, m) => t + Number(m[1]), 0);
-  expect(total).toBe(await page.locator("li[id^='punto-']").count());
+test("solo salen las excepciones, y pulsarlas filtra la lista", async ({
+  page,
+}) => {
+  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/diligencia");
+
+  /*
+   * Lo que va según lo previsto no ocupa sitio: el hueco de la barra ya
+   * lo dice. Solo se nombra lo vencido y lo que pide atención, que es lo
+   * que hace que una excepción se note.
+   */
+  const vencidos = page.getByRole("link", { name: /vencidos?$/ }).first();
+  await expect(vencidos).toBeVisible();
+
+  const todos = await page.locator("li[id^='punto-']").count();
+  await vencidos.click();
+  await expect(page.getByText("Ver todo").first()).toBeVisible();
+
+  const filtrados = await page.locator("li[id^='punto-']").count();
+  expect(filtrados).toBeGreaterThan(0);
+  expect(filtrados).toBeLessThan(todos);
 });
 
 test("cada pastilla de estado lleva su icono, no solo su color", async ({
@@ -110,7 +116,7 @@ test("la fundadora ve los mismos cinco estados que IWL", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/diligencia");
 
   await expect(
-    page.getByRole("list", { name: "Puntos del checklist" }),
+    page.getByRole("img", { name: /Puntos del checklist/ }).first(),
   ).toBeVisible();
 
   const leyenda = page.getByText("Estados", { exact: true });

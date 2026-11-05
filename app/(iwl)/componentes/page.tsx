@@ -6,6 +6,7 @@ import {
   BarraPorEstado,
   BarraProgreso,
 } from "@/components/ui/barra-progreso";
+import { Avance } from "@/components/ui/avance";
 import {
   BarraSegmentada,
   Estado,
@@ -203,9 +204,32 @@ export default async function Componentes() {
       </Bloque>
 
       <Bloque>
-        <TituloBloque accion={<Metadato>Repartido por estado</Metadato>}>
-          Barra por estado y barra segmentada
+        <TituloBloque accion={<Metadato>Lo hecho y lo que se ha salido</Metadato>}>
+          Avance
         </TituloBloque>
+        <div className="flex flex-col gap-6 px-4 py-4">
+          <Avance etiqueta="Hitos del plan" elementos={EJEMPLO} />
+          <Avance
+            etiqueta="Todo según lo previsto"
+            elementos={EJEMPLO.filter((e) => e.estado !== "vencido" && e.estado !== "atencion")}
+          />
+        </div>
+        <p className="border-t border-filete px-4 py-2.5 text-xs text-metadato">
+          Sin excepciones no hay pastillas. Es lo que hace que una excepción
+          se note.
+        </p>
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>Retirada el 5 nov 2026</Metadato>}>
+          Barra segmentada
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-2.5 text-xs text-secundario">
+          Cinco colores seguidos no se leen como avance: se leen como ruido,
+          y había que contar cuadrados para saber si quedaba algo en rojo. Se
+          queda aquí para poder compararla con la de arriba, y no se usa en
+          ninguna pantalla.
+        </p>
         <div className="flex flex-col gap-5 px-4 py-4">
           <BarraPorEstado etiqueta="Hitos del plan" tramos={EJEMPLO} />
           <BarraSegmentada etiqueta="Hitos del plan" segmentos={EJEMPLO} />

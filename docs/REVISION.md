@@ -4,6 +4,64 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-05 · Tamaño de las cifras, con medidas
+
+Rodrigo sigue viendo las cifras desproporcionadas, también «Horas entregadas 244 de 350» en Aportación (punto 3 de la segunda revisión, aún sin hacer). Para no interpretar, medidas fijas para `<Cifra>` en toda la plataforma:
+
+| Tamaño | Número | Uso |
+|---|---|---|
+| Normal | Montserrat 600 · 20 px · `tabular-nums` | Toda cifra dentro de una tarjeta |
+| Destacada | Montserrat 600 · 28 px | Una sola por pantalla como máximo |
+
+· **Sin Roboto Mono en las cifras grandes.** El mono se queda para tablas, fechas y metadatos; a 30 px o más es lo que las hace verse enormes.
+· **«de 350» va aparte**, en 14 px y gris (`zinc-500`): «**244** de 350 h». El número que importa en grande; la referencia, pequeña.
+· Unidades pegadas al número y en el tamaño pequeño: «**9,8** meses», «**13.900** €».
+· Rótulo encima en 12 px, nota debajo en 13 px.
+· Aplica en todas las pantallas a la vez, desde el componente. Captura de Aportación, Resumen y KPI antes y después, en Chromium y WebKit.
+
+Va en la tanda de quitar los cuadritos, que es la siguiente.
+
+---
+
+## 2026-11-05 · Mi perfil, para todos los usuarios
+
+Hoy `/perfil` solo cambia la contraseña. Cargo, áreas, biografía y CV existen en `profiles`, pero solo los edita Administración. Cada persona tiene que poder mantener su propio perfil.
+
+**Campos, en `/perfil` y editables por la propia persona:**
+· **Foto.** Cajón nuevo `avatares`: PNG, JPEG o WebP, 2 MB, recorte cuadrado al subir. Sustituye a las iniciales en la barra lateral, comentarios, tareas, sesiones y listas de personas. Sin foto, siguen las iniciales.
+· **Nombre visible** y **cargo** (`job_title`) y **organización**.
+· **Resumen**: biografía corta, 300 caracteres como máximo, con contador.
+· **LinkedIn**: enlace validado a `linkedin.com/in/…`. Se enseña como icono pulsable junto al nombre.
+· **Áreas de experiencia** (`expertise`), elegidas de una lista cerrada que se mantiene en configuración, no texto libre. Es lo que alimenta «Qué perfil falta» en el inicio del mentor.
+· **CV** (ya existe `cv_path`): subir y reemplazar desde aquí.
+· **Teléfono**, opcional y oculto por defecto; la persona decide si lo ve su compañía.
+· Contraseña, como hoy, en un bloque aparte.
+
+**Quién ve el perfil de quién**, con la misma regla que todo lo demás:
+· IWL ve todos.
+· Una fundadora ve los de su equipo, sus mentores asignados, su revisor de Niage y el equipo de IWL. Nunca los de otra compañía.
+· Un mentor ve los de las fundadoras de sus compañías asignadas y el equipo de IWL.
+· Al pulsar el nombre o la foto de alguien en cualquier pantalla se abre su ficha en panel lateral.
+
+**Primera entrada:** si a una persona le falta foto, resumen o, siendo mentor, áreas, su inicio muestra «Completa tu perfil» como acción en Atención. Barra de avance de un solo color.
+
+Administración sigue pudiendo editar cualquier perfil, y cada cambio queda en el registro de actividad.
+
+Orden: después de quitar los cuadritos, antes de la revisión de dirección.
+
+---
+
+## 2026-11-05 · Revisión de Rodrigo como mentor
+
+1. **La fila de cuadritos sigue en todas las pantallas** que ha visto como mentor. Ya está pedido quitarla; que no quede ni una.
+2. **Espacio de mentoría.** Lee `docs/IWL_Doc_EspacioMentoria_ES_v1_20261105.md`: sesiones con preparación y acta, notas del mentor, conversación por compañía y seguimiento. **Reactiva la fase A del calendario**, solo esa (cuenta organizadora de IWL, invitaciones con Meet). La fase B y la IA siguen aparcadas.
+   · Pendiente de Rodrigo: qué cuenta de Google Workspace organiza las sesiones.
+   · El modelo de datos de este espacio va en el mismo archivo de modelo de datos de los tableros, que espera aprobación.
+
+Orden: `<Evidencia>` · quitar cuadritos · revisión de dirección · tableros y espacio de mentoría (modelo de datos primero).
+
+---
+
 ## 2026-11-05 · Revisión de Rodrigo como dirección (rev-admin)
 
 1. **«Scorecards de la cohorte» está bien escrito**: cohorte es femenino. Se queda. Revisa que no aparezca «el cohorte» en ninguna pantalla.

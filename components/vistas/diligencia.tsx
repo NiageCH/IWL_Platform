@@ -9,12 +9,13 @@ import {
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
+import { Estado, LeyendaEstados } from "@/components/ui/estado";
 import {
-  BarraSegmentada,
-  Estado,
-  LeyendaEstados,
-  type Segmento,
-} from "@/components/ui/estado";
+  Avance,
+  FiltroPuesto,
+  filtroDe,
+  type ElementoAvance,
+} from "@/components/ui/avance";
 import { estadoVisual } from "@/lib/estados";
 import { leerAperturas } from "@/lib/datos/evidencia";
 import { EstadoPunto } from "@/components/formularios/diligencia";
@@ -47,8 +48,11 @@ const ESTADOS: Record<string, string> = {
 
 export async function VistaDiligencia({
   resumen,
+  ver,
 }: {
   resumen: NonNullable<ResumenCompania>;
+  /** El estado por el que se está filtrando, si se pulsó una excepción */
+  ver?: string | string[];
 }) {
   const [{ areas, areasCatalogo, puntos, hallazgos, documentos }, aperturas] =
     await Promise.all([
@@ -64,7 +68,7 @@ export async function VistaDiligencia({
   /** Un cuadrado por punto, en el orden en que se repasan */
   const segmentos = (
     puntosDelArea: (typeof areas)[number]["puntos"],
-  ): Segmento[] =>
+  ): ElementoAvance[] =>
     puntosDelArea.map((p) => ({
       id: p.id,
       estado: estadoVisual("punto_dd", {
@@ -73,10 +77,12 @@ export async function VistaDiligencia({
         vence: p.due_date,
       }),
       rotulo: p.title,
-      href: `#punto-${p.id}`,
     }));
 
   const todos = areas.flatMap((a) => segmentos(a.puntos));
+
+  const base = permisos.esIwl ? `/cartera/${compania.slug}/diligencia` : "/proyecto/diligencia";
+  const filtro = filtroDe(ver);
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,7 +105,11 @@ export async function VistaDiligencia({
             Due diligence
           </TituloBloque>
           <div className="px-4 py-4">
-            <BarraSegmentada segmentos={todos} etiqueta="Puntos del checklist" />
+            <Avance
+              elementos={todos}
+              etiqueta="Puntos del checklist"
+              href={base}
+            />
           </div>
         </Bloque>
       ) : null}
@@ -160,11 +170,21 @@ export async function VistaDiligencia({
 
             {/* El área entera, antes de su lista */}
             <div className="border-b border-filete px-4 py-3">
-              <BarraSegmentada
-                segmentos={segmentos(area.puntos)}
+              <Avance
+                elementos={segmentos(area.puntos)}
                 etiqueta={`Puntos de ${area.nombre}`}
               />
             </div>
+
+            {filtro ? (
+              <FiltroPuesto
+                estado={filtro}
+                cuantos={
+                  segmentos(area.puntos).filter((p) => p.estado === filtro).length
+                }
+                href={base}
+              />
+            ) : null}
 
             <ul className="divide-y divide-filete">
               {area.puntos.map((punto) => {
@@ -173,6 +193,8 @@ export async function VistaDiligencia({
                   caducado: punto.caducado,
                   vence: punto.due_date,
                 });
+
+                if (filtro && visual !== filtro) return null;
 
                 return (
                   <li

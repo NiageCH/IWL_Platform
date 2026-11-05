@@ -5,10 +5,16 @@ import { VistaDiligencia } from "@/components/vistas/diligencia";
 
 export const metadata = { title: "Due diligence general · Plataforma IWL" };
 
-export default async function Pagina({ params }: PageProps<"/cartera/[slug]/diligencia">) {
+export default async function Pagina({
+  params,
+  searchParams,
+}: PageProps<"/cartera/[slug]/diligencia">) {
   const { slug } = await params;
   const resumen = await companiaPorSlug(slug);
   const movimiento = await leerMovimiento(resumen.compania.id);
+
+  /* El estado por el que se filtra, cuando se pulsa una excepción de la barra */
+  const { ver } = await searchParams;
 
   return (
     <>
@@ -19,7 +25,7 @@ export default async function Pagina({ params }: PageProps<"/cartera/[slug]/dili
         seccionActiva="diligencia"
       />
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
-        <VistaDiligencia resumen={resumen} />
+        <VistaDiligencia resumen={resumen} ver={ver} />
       </main>
     </>
   );

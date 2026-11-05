@@ -12,7 +12,8 @@ import {
   AbrirDocumento,
   AdjuntarBusinessPlan,
 } from "@/components/formularios/documentos";
-import { BarraSegmentada, Estado } from "@/components/ui/estado";
+import { Estado } from "@/components/ui/estado";
+import { Avance } from "@/components/ui/avance";
 import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 
@@ -182,19 +183,18 @@ export async function VistaPlan({
         {/*
           El plan entero, de un vistazo y antes de la lista.
 
-          Un cuadrado por sección: cuántas están validadas y cuántas
-          esperan respuesta se ve sin leer las nueve filas. Un comentario
-          sin responder pone su sección en ámbar aunque la sección en sí
-          vaya bien, porque es lo que de verdad frena.
+          Cuántas validadas sobre el total, y debajo solo lo que se ha
+          salido. Un comentario sin responder pone su sección en ámbar
+          aunque la sección en sí vaya bien, porque es lo que de verdad
+          frena.
         */}
         <div className="border-b border-filete px-4 py-3">
-          <BarraSegmentada
+          <Avance
             etiqueta="Secciones del business plan"
-            segmentos={ordenadas.map((s) => ({
+            elementos={ordenadas.map((s) => ({
               id: s.id,
               estado: visualSeccion(s, sinResponderDe(s.id)),
               rotulo: s.bp_section_templates?.name ?? "Sección",
-              href: `#seccion-${s.id}`,
             }))}
           />
         </div>

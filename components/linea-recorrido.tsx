@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { BarraSegmentada, NodoEstado, type Segmento } from "@/components/ui/estado";
+import { NodoEstado, type Segmento } from "@/components/ui/estado";
+import { Avance } from "@/components/ui/avance";
 import { ESTADOS, estadoVisual } from "@/lib/estados";
 import type { Etapa } from "@/lib/datos/ruta";
 import { cn } from "@/lib/utils";
@@ -110,9 +111,9 @@ export function BarraHitos({ etapas, sueltos }: { etapas: Etapa[]; sueltos: Etap
   if (todos.length === 0) return null;
 
   return (
-    <BarraSegmentada
+    <Avance
       etiqueta="Hitos del plan"
-      segmentos={todos.map((h) => ({
+      elementos={todos.map((h) => ({
         id: h.id,
         estado: estadoVisual("hito", { estado: h.estado, fecha: h.fecha }),
         rotulo: h.titulo,

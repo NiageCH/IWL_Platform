@@ -9,6 +9,39 @@ como es**.
 
 ---
 
+## 2026-11-05 · Fuera los cuadritos · commit PENDIENTE
+
+**Qué cambió**
+· **`<Avance>`** sustituye a la fila de cuadritos **en las cuatro pantallas donde estaba**: Due diligence general —arriba y en cada área—, Qué falta, Business plan y los hitos del Recorrido. No queda ninguna.
+· Una barra verde con el hueco en gris y el par al lado —«22 de 29»—, y **debajo solo las excepciones**: «2 vencidos», «1 en atención», como pastillas. Sin excepciones no hay nada.
+· **Pulsar una excepción filtra la lista.** Va en la dirección —`?ver=vencido`— así que se puede enlazar y compartir, y la pantalla avisa de que está filtrada con un «Ver todo» al lado.
+· Captura en `avance-chromium.png` y `avance-safari.png`.
+· La barra segmentada se queda en `/componentes` **marcada como retirada**, con el porqué escrito al lado y sin usarse en ninguna pantalla.
+
+**Lo que cazó la prueba**
+
+Dibujé la pastilla enlazada a mano, con las clases de la pastilla pero sin el icono. Pasó lo que esa pieza existe para evitar: un estado sin su icono, distinguible solo por el color. Lo encontró la prueba de «cada pastilla lleva su icono», que llevaba ahí desde el 30 de octubre.
+
+El arreglo es el bueno: `<Estado>` acepta ahora un destino y se dibuja ella sola como enlace. Nadie vuelve a tener que acordarse del icono.
+
+**Qué decidí yo**
+· **El filtro va en la dirección, no en estado de cliente.** Un «enséñame los dos vencidos» se puede pegar en un mensaje, y al volver con el navegador la pantalla está como estaba.
+· **«2 vencidos» y «1 en atención»**, concordando. Con una sola forma salía «1 vencidos», y eso delata que la frase la escribió una máquina.
+· **Lo que va en curso o por hacer no se nombra.** Es lo normal, y el hueco de la barra ya lo dice. Nombrarlo todo era volver a la fila de cuadritos con palabras.
+· **La barra segmentada no se borra**, se retira a la vista en `/componentes`. Poder comparar las dos es lo que hace que la decisión se sostenga dentro de un mes.
+
+**Estado**
+· 116 unitarias · 136 RLS · **352 de interfaz en Chromium y WebKit**, en verde.
+· **«El cohorte» no aparece en ninguna pantalla.** Lo he buscado en todo el código y los documentos: solo está en tu propia nota de REVISION.
+· **Encargar una tarea con adjuntos: confirmado.** Es el primer sitio donde se usa `<Evidencia>`, desde ayer.
+· Sigue faltando enchufar `<Evidencia>` en el cuestionario técnico, el plan técnico y los cambios de estado de hitos y puntos.
+· **No he tocado nada de la subida a producción.**
+
+**Siguiente**
+«Mi perfil» para todas las personas: foto, cargo, resumen, LinkedIn, áreas, CV y teléfono, con la ficha en panel lateral al pulsar un nombre.
+
+---
+
 ## 2026-11-05 · Evidencia, que es lo que pedías en todas las pantallas · commit 7f0c8d4
 
 **Qué cambió**

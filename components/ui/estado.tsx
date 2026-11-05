@@ -38,6 +38,7 @@ export function Estado({
   rotulo,
   motivo,
   soloIcono = false,
+  href,
 }: {
   valor: EstadoVisual;
   /**
@@ -52,17 +53,35 @@ export function Estado({
   motivo?: string;
   /** Para una tabla donde no cabe la palabra. Sigue llevándola para quien no ve */
   soloIcono?: boolean;
+  /**
+   * A dónde lleva pulsarla.
+   *
+   * Una pastilla que lleva a algún sitio sigue siendo una pastilla: mismo
+   * icono y misma palabra. Se intentó una vez dibujando el enlace a mano
+   * y salió sin icono, que es justo lo que esta pieza existe para evitar.
+   */
+  href?: string;
 }) {
   const Icono = ICONOS[valor];
   const nombre = rotulo ?? ESTADOS[valor].nombre;
 
-  return (
-    <span
-      className={cn("estado", `es-${valor}`, soloIcono && "estado-solo-icono")}
-      title={motivo ?? (soloIcono ? nombre : undefined)}
-    >
+  const dentro = (
+    <>
       <Icono aria-hidden="true" className="size-3.5 shrink-0" strokeWidth={2.25} />
       {soloIcono ? <span className="sr-only">{nombre}</span> : nombre}
+    </>
+  );
+
+  const clases = cn("estado", `es-${valor}`, soloIcono && "estado-solo-icono");
+  const titulo = motivo ?? (soloIcono ? nombre : undefined);
+
+  return href ? (
+    <Link href={href} className={clases} title={titulo}>
+      {dentro}
+    </Link>
+  ) : (
+    <span className={clases} title={titulo}>
+      {dentro}
     </span>
   );
 }

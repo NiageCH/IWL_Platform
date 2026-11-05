@@ -13,7 +13,8 @@ import {
   EstadoTarea,
   NuevaTarea,
 } from "@/components/formularios/tareas";
-import { BarraSegmentada, Estado } from "@/components/ui/estado";
+import { Estado } from "@/components/ui/estado";
+import { Avance } from "@/components/ui/avance";
 import { Evidencia } from "@/components/formularios/evidencia";
 import {
   leerDocumentosElegibles,
@@ -96,9 +97,9 @@ export async function VistaQueFalta({
       */}
       {tareas.length > 0 ? (
         <div className="border-b border-filete px-4 py-3">
-          <BarraSegmentada
+          <Avance
             etiqueta="Tareas del proyecto"
-            segmentos={tareas.map((t) => ({
+            elementos={tareas.map((t) => ({
               id: t.id,
               estado: visualTarea(t),
               rotulo: t.title,
