@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-05 · Evidencia, que es lo que pedías en todas las pantallas · commit PENDIENTE
+## 2026-11-05 · Evidencia, que es lo que pedías en todas las pantallas · commit 7f0c8d4
 
 **Qué cambió**
 · **`<Evidencia>`**, en sus tres formas: subir un archivo, elegir uno que ya está en el data room, o pegar un enlace. Las tres dejan el mismo rastro —qué, a qué, quién y cuándo— en el registro de actividad.
