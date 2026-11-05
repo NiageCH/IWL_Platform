@@ -9,7 +9,7 @@ como es**.
 
 ---
 
-## 2026-11-05 · Una sola dirección: ride.inceptionwlab.es · commit PENDIENTE
+## 2026-11-05 · Una sola dirección: ride.inceptionwlab.es · commit 00c6ebf
 
 **Qué cambió**
 · **`iwl-platform.vercel.app` redirige a `ride.inceptionwlab.es`**, con 308 y conservando la ruta. Lo hace el proxy, lo primero de todo: antes incluso de validar la sesión, para que no se asiente en el dominio equivocado.
