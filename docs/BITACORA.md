@@ -9,6 +9,72 @@ como es**.
 
 ---
 
+## 2026-11-05 · Fusión: dominio y cambio de contraseña juntos en main · commit 74bf289
+
+**Qué cambió**
+· **La rama del cambio de contraseña está fusionada en `main`**, con los tres commits del dominio dentro. Hubo conflicto en tres ficheros y quedan las dos cosas.
+· **`proxy.ts`**: primero la redirección de `iwl-platform.vercel.app` a `ride.inceptionwlab.es`, tal como estaba en `main`; después la sesión y, al final, la barrera de la contraseña temporal.
+· **Fuera mi redirección con `DOMINIO_CANONICO`.** Las dos hacían lo mismo, y la de `main` ya estaba probada y en marcha. En la entrada anterior te pedía crear esa variable en Vercel: **no hace falta**, olvídala.
+· **`DESPLIEGUE.md`**: el texto de `main` en los dos bloques en conflicto. La sección «El dominio propio» se queda en lo que no estaba en otro sitio: el registro DNS, por si hay que rehacerlo.
+· **`docs/BITACORA.md`**: las dos entradas enteras, por orden de hora.
+
+**Qué decidí yo**
+· **Me quedé con la redirección de `main` y no con la mía**, aunque la mía no redirigía `/auth`. Con las URL de redirección de Supabase apuntando solo a `ride`, ningún enlace de entrada nuevo sale con el dominio viejo. Lo único que se rompería es un enlace que ya estuviera en un buzón, y no hay correo montado.
+· **En Supabase, solo `ride`.** Tu revisión pedía mantener también la URL de `vercel.app` durante la transición. La sesión del dominio pidió quitarla, después y con el dominio ya activo, y he seguido esa.
+· **La fusión se hizo en la rama y `main` solo avanzó** (`--ff-only`). Así los conflictos se resolvieron y probaron fuera de tu copia de trabajo, y `main` no pasó por ningún estado sin probar.
+· **No he hecho push.**
+
+### Los comandos de la nube, actualizados
+
+Todos desde la carpeta del proyecto, donde está `.env.produccion`. **El orden importa**: la pantalla de cambio tiene que estar desplegada antes de crear cuentas con contraseña temporal, y la cuenta nueva tiene que funcionar antes de borrar la vieja.
+
+```bash
+# 1. Las 13 cuentas, sin tocar nada. Pégame la tabla antes de seguir.
+npm run cuentas:nube -- --listar
+
+# 2. La migración de la contraseña temporal
+npx supabase db push
+
+# 3. Publicar y desplegar
+git push
+npx vercel --prod
+```
+
+**4. Panel de Supabase**
+· Authentication → Sign In / Providers → **Allow new users to sign up: OFF**
+· Authentication → URL Configuration → **Site URL**: `https://ride.inceptionwlab.es`
+· **Redirect URLs**: `https://ride.inceptionwlab.es/auth/confirmar`, y **quita** las de `iwl-platform.vercel.app`
+
+**5. Vercel** → Settings → Environment Variables → Production
+· `NEXT_PUBLIC_SITE_URL` = `https://ride.inceptionwlab.es`, y vuelve a desplegar (`npx vercel --prod`)
+
+```bash
+# 6. Las cuentas del equipo, con contraseña temporal. Escribe .accesos-nube.md
+npm run cuentas:nube
+
+# 7. Las cuentas de revisión
+npm run cuentas:revision -- --nube
+```
+
+**8. En `https://ride.inceptionwlab.es`, con `rodrigo@niage.es`**
+· Te pedirá cambiar la contraseña: es la pantalla nueva funcionando.
+· Administración → Compañías → **borrar con todo** qqq, pirulo, ttttttt y w.
+· Administración → Personas → borrar `rodrigo@nonage.es`, las `@iwl.es` y las de prueba. Después de las compañías, porque una cuenta con trabajo registrado no se deja borrar. La que se siga negando, archívala.
+· Reparte `.accesos-nube.md` y bórralo.
+
+### Qué necesito que decidas
+1. La tabla del paso 1: sigue pendiente, y no sigo con las cuentas hasta verla.
+2. ¿Hago yo el `git push`, o lo haces tú? Hasta ahora lo has hecho tú.
+
+### Estado
+· Sobre la fusión: 116 unitarias · 139 RLS · **356 de interfaz en verde y 4 saltadas**, en Chromium y WebKit, sin un solo fallo. Entran las dos pruebas del dominio de `main`.
+· Producción: sin tocar. Registro abierto, Site URL vieja, migración sin aplicar, código sin desplegar.
+
+**Siguiente**
+La tabla de cuentas, comprobar producción tras el despliegue, y «Mi perfil».
+
+---
+
 ## 2026-11-05 · Cambio de contraseña obligatorio, y la nube pendiente de ti · commit 6c2f137
 
 **Qué cambió**
