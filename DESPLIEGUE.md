@@ -149,6 +149,23 @@ SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… \
   node scripts/alta.mjs tu@correo.com admin_iwl "" "" "Tu Nombre"
 ```
 
+### Quién tiene cuenta, y quitar las que sobran
+
+Quién debe tener cuenta en la nube está en `scripts/cuentas-lista.mjs`: el
+equipo y las cuentas de revisión. Contra esa lista:
+
+```bash
+npm run cuentas:nube -- --listar               # todas, y cuáles sobran
+npm run cuentas:nube -- --limpiar              # qué borraría, sin borrar
+npm run cuentas:nube -- --limpiar --confirmar  # borra las que sobran
+```
+
+Antes de borrar escribe en `docs/constancia/` —que no se versiona— quién
+era cada cuenta y qué hizo: al borrarla, su trabajo se queda sin autor y
+sus comentarios y objeciones se van con ella. Y se niega a hacer nada
+mientras `rodrigo@niage.es` no haya entrado y cambiado su contraseña
+temporal: es la cuenta de dirección que tiene que quedar funcionando.
+
 ## 5 · La aplicación
 
 En Vercel, **Add New → Project** y elige el repositorio `IWL_Platform`.

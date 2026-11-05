@@ -37,56 +37,11 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const PREFIJO = "rodrigo+rev-";
-
-/**
- * `vinculo` describe qué hay que montarle además de la cuenta:
- *   · null            — el rol basta, ve toda la cartera
- *   · {papel}         — miembro de la compañía de demostración con ese papel
- *   · {candidatura}   — se le da acceso a una candidatura en NDA firmado
- */
-const CUENTAS = [
-  {
-    alias: "admin", nombre: "Revisión · Dirección",
-    rol: "admin_iwl", vinculo: null,
-    ve: "Toda la plataforma, incluida la configuración del programa",
-  },
-  {
-    alias: "equipo", nombre: "Revisión · Equipo IWL",
-    rol: "equipo_iwl", vinculo: null,
-    ve: "Toda la cartera y el embudo, sin configuración",
-  },
-  {
-    alias: "niage", nombre: "Revisión · Ingeniería Niage",
-    rol: "revisor_niage", vinculo: { papel: "revisor_niage" },
-    ve: "Solo la demostración, con el due diligence técnico editable",
-  },
-  {
-    alias: "mentor1", nombre: "Revisión · Mentor principal",
-    rol: "mentor", vinculo: { papel: "mentor_principal" },
-    ve: "Solo la demostración, como quien la coordina",
-  },
-  {
-    alias: "mentor2", nombre: "Revisión · Mentor secundario",
-    rol: "mentor", vinculo: { papel: "mentor_secundario" },
-    ve: "Solo la demostración, sin aportación ni hallazgos técnicos",
-  },
-  {
-    alias: "fundadora", nombre: "Revisión · Fundadora",
-    rol: "fundadora", vinculo: { papel: "fundadora" },
-    ve: "Su proyecto y nada más",
-  },
-  {
-    alias: "lector", nombre: "Revisión · Lector externo",
-    rol: "lector_externo", vinculo: { papel: "fundadora" },
-    ve: "Su proyecto, en solo lectura",
-  },
-  {
-    alias: "candidata", nombre: "Revisión · Candidata",
-    rol: "candidata", vinculo: { candidatura: true },
-    ve: "Su candidatura y el due diligence que tiene por entregar",
-  },
-];
+// La lista vive aparte porque la limpieza de la nube la necesita también
+import {
+  PREFIJO_REVISION as PREFIJO,
+  REVISION as CUENTAS,
+} from "./cuentas-lista.mjs";
 
 /** La que se sustituye: era una cuenta suelta, sin este criterio */
 const A_RETIRAR = ["candidata.prueba@iwl.es"];

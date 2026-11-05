@@ -71,3 +71,7 @@ informes/
 # Añadidos sin querer el 5 nov 2026: git los trata como repositorio embebido
 # y un clon se los encuentra vacíos.
 .claude/worktrees/
+
+# Constancia de las cuentas borradas en la nube: correos, nombres y lo que
+# cada una hizo en compañías reales. Se guarda, pero no en el repositorio.
+docs/constancia/
