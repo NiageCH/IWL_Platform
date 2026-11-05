@@ -66,3 +66,8 @@ informes/
 
 # Contraseñas de las cuentas de revisión, generadas al azar
 .accesos-revision.md
+
+# Los worktrees de Claude Code son copias de trabajo del propio repositorio.
+# Añadidos sin querer el 5 nov 2026: git los trata como repositorio embebido
+# y un clon se los encuentra vacíos.
+.claude/worktrees/
