@@ -12,7 +12,8 @@ Tiempo: unos cuarenta minutos, casi todos esperando.
 
 | | |
 |---|---|
-| Aplicación | https://ride.inceptionwlab.es — mientras se activa el DNS, https://iwl-platform.vercel.app |
+| Aplicación | https://ride.inceptionwlab.es |
+| | `iwl-platform.vercel.app` sigue sirviendo y **redirige** al dominio de arriba |
 | Supabase | proyecto `IWL-Platform`, región `eu-central-1` (Fráncfort) |
 | Vercel | proyecto `iwl-platform`, cuenta `niagech` |
 
@@ -90,8 +91,12 @@ En el panel de Supabase, **Authentication → Sign In / Providers**:
 
 En **Authentication → URL Configuration**:
 
-- **Site URL**: la dirección que te dé Vercel en el paso 5
-- **Redirect URLs**: añade `https://<tu-dominio>/auth/confirmar`
+- **Site URL**: `https://ride.inceptionwlab.es`
+- **Redirect URLs**: añade `https://ride.inceptionwlab.es/auth/confirmar`
+
+  Y **quita** las de `iwl-platform.vercel.app` si están: ese dominio
+  redirige, así que un enlace de entrada que apunte ahí daría un salto de
+  más y, en un correo, un salto de más es donde se pierde la gente.
 
 Eso solo hace falta para los enlaces de «no recuerdo mi contraseña». Con
 contraseña no se usa.
@@ -164,41 +169,31 @@ acceso al repositorio puede desplegar una rama.
 
 **Deploy**. Tarda unos tres minutos.
 
-Cuando termine, copia la dirección que te da y vuelve al paso 3 para ponerla
-como Site URL.
+El dominio de producción es `ride.inceptionwlab.es`, ya activo en Vercel.
+Pon también la variable **`NEXT_PUBLIC_SITE_URL=https://ride.inceptionwlab.es`**:
+es de donde salen los enlaces enteros que se reparten —el de la convocatoria
+y el privado de cada candidata— y sin ella se componen con el dominio de
+Vercel.
 
 ## El dominio propio
 
-La plataforma vive en `ride.inceptionwlab.es`. Se monta en este orden, y el
-orden importa: cada paso supone que el anterior ya responde.
+Ya está montado. Si hubiera que rehacerlo, o moverlo a otro proyecto:
 
 1. **Vercel** → proyecto `iwl-platform` → **Settings → Domains → Add** →
-   `ride.inceptionwlab.es`. Vercel enseña el registro que espera.
-2. **DNS de `inceptionwlab.es`**, donde esté el dominio:
+   `ride.inceptionwlab.es`.
+2. **DNS de `inceptionwlab.es`**:
 
    | Tipo | Nombre | Valor | TTL |
    |---|---|---|---|
    | `CNAME` | `ride` | el que enseñe Vercel; si no enseña otro, `cname.vercel-dns.com` | 3600 |
 
-   Si en el DNS ya hay un registro `ride` de cualquier tipo, se quita: un
-   `CNAME` no puede convivir con otro registro del mismo nombre.
-3. Esperar a que Vercel ponga **Valid Configuration** y emita el
-   certificado. Suele ser cuestión de minutos; con un TTL alto, horas.
-4. **Supabase** → Authentication → URL Configuration:
-   - **Site URL**: `https://ride.inceptionwlab.es`
-   - **Redirect URLs**: `https://ride.inceptionwlab.es/auth/confirmar` y,
-     mientras dure la transición, `https://iwl-platform.vercel.app/auth/confirmar`
-5. **Vercel** → Settings → Environment Variables → en **Production**,
-   `DOMINIO_CANONICO` = `ride.inceptionwlab.es`, y volver a desplegar. Desde
-   ese momento `iwl-platform.vercel.app` redirige a `ride.inceptionwlab.es`
-   con la misma ruta. Lo hace `proxy.ts`, y deja `/auth` sin redirigir para
-   no romper un enlace de entrada que ya hubiera salido con la dirección
-   vieja.
-6. Pasadas unas semanas, quitar la dirección vieja de las Redirect URLs.
+   Un `CNAME` no convive con otro registro del mismo nombre: si había uno,
+   se quita.
+3. Supabase, como en el paso 3, y `NEXT_PUBLIC_SITE_URL`, como en el 5.
 
-El código no lleva la dirección escrita en ningún sitio. Los enlaces que se
-reparten —convocatoria, candidaturas— salen de `VERCEL_PROJECT_PRODUCTION_URL`,
-que Vercel apunta solo al dominio propio en cuanto lo es de producción.
+La redirección de `iwl-platform.vercel.app` no se configura: la hace
+`proxy.ts` siempre que la petición llega con ese nombre. Los dos nombres
+están en `lib/direccion.ts`.
 
 ## 6 · Comprobar
 
@@ -229,7 +224,7 @@ esto solo mueve dónde corre el código que habla con la base. Se comprueba en
 la cabecera, que tiene la forma `<borde>::<región de la función>`:
 
 ```bash
-curl -s -o /dev/null -D - https://iwl-platform.vercel.app/entrar \
+curl -s -o /dev/null -D - https://ride.inceptionwlab.es/entrar \
   | grep -i x-vercel-id
 # cdg1::fra1::…   ← borde en París, función en Fráncfort
 ```
@@ -259,9 +254,9 @@ Para comprobar que ha entrado de verdad, sin fiarse de que el despliegue diga
 del lienzo:
 
 ```bash
-CSS=$(curl -s -L https://iwl-platform.vercel.app/entrar \
+CSS=$(curl -s -L https://ride.inceptionwlab.es/entrar \
   | grep -oE '/_next/static/[^"]*\.css' | head -1)
-curl -s "https://iwl-platform.vercel.app$CSS" | grep -o "color-lienzo:[^;]*"
+curl -s "https://ride.inceptionwlab.es$CSS" | grep -o "color-lienzo:[^;]*"
 ```
 
 **Se puede quitar el paso 2** conectando el proyecto al repositorio desde
@@ -294,6 +289,8 @@ Esto es una prueba. Antes de que entre gente de fuera de IWL:
 - **Un proveedor de correo.** Sin él no funcionan los enlaces de recuperación
   ni las alertas del paso 14. Resend tiene plan gratuito y se configura en
   Authentication → Emails.
+- ~~Un dominio propio.~~ **Hecho**: `ride.inceptionwlab.es`, activo en Vercel
+  desde el 5 de noviembre. El de `vercel.app` redirige a él desde el proxy.
 - **Copias de seguridad.** El plan gratuito de Supabase no las hace. El Pro
   guarda siete días.
 - ~~Que cada persona cambie su contraseña.~~ Hecho: la plataforma lo pide en

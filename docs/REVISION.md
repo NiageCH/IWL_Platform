@@ -4,6 +4,33 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-05 · Respuestas sobre la subida (pasos 1 a 3)
+
+Bien parado donde paraste. Respuestas:
+
+1. **Cambio de contraseña obligatorio: sí, constrúyelo antes de que Rodrigo reparta.** Pantalla mínima: al entrar con la marca puesta, solo se puede cambiar la contraseña o salir.
+2. **Las cuatro de prueba se borran en la nube.** Solo sirven a las pruebas locales; en producción son ruido. Se quedan en el seed versionado.
+3. **`rodrigo@nonage.es` y todas las `@iwl.es` se borran** cuando Rodrigo haya entrado con `rodrigo@niage.es` y lo confirme. De acuerdo con el orden.
+4. **Marea sin historia en la nube: de acuerdo.** La revisión completa de la demo se hace en local.
+5. **El registro estuvo abierto desde septiembre.** Lista en la bitácora las 13 cuentas de la nube con correo, rol, fecha de alta y último acceso, y marca cualquiera que no reconozcas. Si alguien se dio de alta sin ser del equipo, se dice antes de seguir.
+6. **Site URL: `https://ride.inceptionwlab.es`**, con `https://ride.inceptionwlab.es/auth/confirmar` y, mientras dure la transición, también `https://iwl-platform.vercel.app/auth/confirmar` como redirecciones permitidas.
+7. Deja en la bitácora cómo cargar `.env.produccion` para `cuentas:revision`, con el comando exacto que Rodrigo tiene que pegar.
+
+---
+
+## 2026-11-05 · Subdominio de producción
+
+Rodrigo elige **`ride.inceptionwlab.es`** como dirección de la plataforma.
+
+Cuando termine la subida a producción, prepara el cambio y deja en la bitácora, para Rodrigo:
+1. El dominio a añadir en Vercel (proyecto `iwl-platform`) y el registro DNS exacto que hay que crear en `inceptionwlab.es`.
+2. Lo que cambias tú cuando el registro esté activo: Site URL y URL de redirección en Supabase, metadatos y cualquier enlace absoluto en el código.
+3. Que `iwl-platform.vercel.app` redirija a `ride.inceptionwlab.es`.
+
+El correo de la plataforma, cuando se contrate, saldrá del mismo dominio.
+
+---
+
 ## 2026-11-05 · README al día y GitHub
 
 El README es del 2 de octubre y no cuenta lo que hay. Antes de que Rodrigo publique en GitHub:

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { rutaRenombrada } from "@/lib/renombres";
+import { DOMINIO_PRODUCCION, DOMINIO_VERCEL } from "@/lib/direccion";
 
 /**
  * Refresco de sesión y guardia de rutas.
@@ -11,26 +12,24 @@ import { rutaRenombrada } from "@/lib/renombres";
  */
 export async function proxy(request: NextRequest) {
   /*
-   * Una sola dirección pública. Quien abra la vieja de Vercel acaba en la
-   * del dominio propio, con la misma ruta.
+   * Una sola dirección.
    *
-   * Solo se enciende con `DOMINIO_CANONICO`, que se pone en Vercel cuando el
-   * DNS ya responde: si redirigiera antes, mandaría a una dirección que no
-   * existe todavía. Solo en producción, para no arrastrar las vistas
-   * previas. Y `/auth` no se toca: un enlace de entrada que salió con la
-   * dirección vieja lleva su verificación en una cookie de esa dirección, y
-   * redirigirlo a mitad lo dejaría sin ella.
+   * Vercel sirve el proyecto también en `iwl-platform.vercel.app`, y ahí
+   * funciona todo: se entra, se guardan enlaces y se reparten. El
+   * problema llega después —un enlace privado de candidata dura semanas y
+   * el dominio de Vercel depende del nombre del proyecto— así que el
+   * viejo manda al nuevo y no hay dos sitios donde mirar.
+   *
+   * Va lo primero de todo, antes incluso de validar la sesión: no tiene
+   * sentido pedirle el usuario al servidor de auth para una petición que
+   * se va a redirigir, y así la sesión no se asienta en el dominio
+   * equivocado —que es como alguien acaba con dos sesiones sin entender
+   * por qué una no ve lo que la otra sí.
    */
-  const canonico = process.env.DOMINIO_CANONICO;
-  if (
-    canonico &&
-    process.env.VERCEL_ENV === "production" &&
-    request.nextUrl.hostname !== canonico &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
+  if (request.headers.get("host") === DOMINIO_VERCEL) {
     const destino = request.nextUrl.clone();
+    destino.host = DOMINIO_PRODUCCION;
     destino.protocol = "https:";
-    destino.hostname = canonico;
     destino.port = "";
     return NextResponse.redirect(destino, 308);
   }
