@@ -101,19 +101,16 @@ const TONOS_ICONO = {
 export type TonoIcono = keyof typeof TONOS_ICONO;
 
 /**
- * La escala de tamaños de una cifra. Dos, y las mismas en todas partes.
+ * Una cifra, con su rótulo encima y su contexto al lado.
  *
- * Había tres sin querer: la cifra normal a 2 rem, la destacada a 2,5 y los
- * titulares de tarjeta con su propia tipografía. En pantallas distintas, la
- * misma clase de dato salía de tamaños distintos —«75 %» del Recorrido no
- * medía lo mismo que «Preparación de ronda» al lado—, y eso hace que una
- * parezca más importante que la otra sin que nadie lo haya decidido.
+ * Dos tamaños y nada más —20 px y 28 px, los dos en Montserrat 600— y las
+ * mismas medidas en todas las pantallas. Antes cada una elegía, y eso es
+ * lo que hacía que «246 de 350» saliera a 32 px en monoespaciado y partido
+ * en dos líneas, al lado de un rótulo de 12.
+ *
+ * La unidad y la referencia van **pegadas al número y pequeñas**: «244 de
+ * 350 h» es un número y un contexto, no dos números del mismo peso.
  */
-const ESCALA = {
-  normal: "text-[2rem]",
-  protagonista: "text-[2.5rem] font-semibold",
-} as const;
-
 export function Cifra({
   valor,
   etiqueta,
@@ -124,6 +121,8 @@ export function Cifra({
   estado,
   ayuda,
   href,
+  unidad,
+  referencia,
 }: {
   valor: ReactNode;
   etiqueta: string;
@@ -156,6 +155,10 @@ export function Cifra({
   ayuda?: ReactNode;
   /** Dónde se ve el detalle de esta cifra. Lo que se cuenta, se pulsa */
   href?: string;
+  /** Euros, meses, horas. Pegada al número y en pequeño */
+  unidad?: string;
+  /** Contra qué se compara: «de 350 h», «de 8.000 € comprometidos» */
+  referencia?: string;
 }) {
   const cuerpo = (
     <div className="flex min-w-0 flex-col gap-1">
@@ -167,26 +170,24 @@ export function Cifra({
         La cifra manda en la tarjeta y tiene que verse desde lejos. Antes era
         del tamaño de un titular pequeño y competía con su propia etiqueta.
       */}
-      {href ? (
-        <Link
-          href={href}
-          className={cn(
-            "cifra enlace w-fit leading-none tracking-tight text-titular",
-            destacada ? ESCALA.protagonista : ESCALA.normal,
-          )}
-        >
-          {valor}
-        </Link>
-      ) : (
-        <span
-          className={cn(
-            "cifra leading-none tracking-tight text-titular",
-            destacada ? ESCALA.protagonista : ESCALA.normal,
-          )}
-        >
-          {valor}
-        </span>
-      )}
+      <span
+        className={cn(
+          "cifra-dato text-titular",
+          destacada && "cifra-dato-destacada",
+        )}
+      >
+        {href ? (
+          <Link href={href} className="enlace">
+            {valor}
+          </Link>
+        ) : (
+          valor
+        )}
+        {unidad ? <span className="cifra-contexto"> {unidad}</span> : null}
+        {referencia ? (
+          <span className="cifra-contexto"> {referencia}</span>
+        ) : null}
+      </span>
       {estado ? (
         <span>
           {/* Las palabras de una cifra, no las del trabajo: una cifra no
@@ -194,7 +195,9 @@ export function Cifra({
           <Estado valor={estado} rotulo={ROTULO_OBJETIVO[estado]} />
         </span>
       ) : null}
-      {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
+      {nota ? (
+        <span className="text-[0.8125rem] text-secundario">{nota}</span>
+      ) : null}
     </div>
   );
 

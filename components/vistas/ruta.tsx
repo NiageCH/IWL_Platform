@@ -154,9 +154,14 @@ export async function VistaRuta({
           <Cifra
             valor={numero(ruta.horasImputadas)}
             etiqueta="Horas de IWL"
+            referencia={
+              ruta.horasPrevistas > 0
+                ? `de ${numero(ruta.horasPrevistas)} h`
+                : undefined
+            }
             nota={
               ruta.horasPrevistas > 0
-                ? `de ${numero(ruta.horasPrevistas)} previstas en el plan`
+                ? "previstas en el plan"
                 : "sin previsión por etapa"
             }
           />

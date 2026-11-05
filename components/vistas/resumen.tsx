@@ -15,7 +15,7 @@ import {
 import { LeyendaEstados } from "@/components/ui/estado";
 import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { ETAPAS, PERFILES } from "@/lib/etiquetas";
-import { euros, numero, porcentaje } from "@/lib/utils";
+import { euros, numero } from "@/lib/utils";
 
 /**
  * Resumen del proyecto. Lo primero que se ve al entrar.
@@ -135,18 +135,21 @@ export async function VistaResumen({
             <div className="grid grid-cols-2 gap-6 px-4 py-4">
               <Cifra
                 etiqueta="MRR"
-                valor={euros(kpis.valores.mrr)}
+                valor={numero(kpis.valores.mrr, 0)}
+                unidad="€"
                 estado={frenteAlObjetivo(kpis.valores.mrr, kpis.objetivos.mrr)}
                 nota={conObjetivo(kpis.objetivos.mrr, euros)}
               />
               <Cifra
                 etiqueta="Crecimiento"
-                valor={porcentaje(kpis.derivados.crecimiento_mrr)}
+                valor={numero(kpis.derivados.crecimiento_mrr, 1)}
+                unidad="%"
                 nota="Respecto al mes anterior"
               />
               <Cifra
                 etiqueta="Caja"
-                valor={euros(kpis.valores.caja)}
+                valor={numero(kpis.valores.caja, 0)}
+                unidad="€"
                 estado={frenteAlObjetivo(kpis.valores.caja, kpis.objetivos.caja)}
                 nota={conObjetivo(kpis.objetivos.caja, euros)}
               />
@@ -155,8 +158,9 @@ export async function VistaResumen({
                 valor={
                   kpis.derivados.runway_meses === null
                     ? "—"
-                    : `${numero(kpis.derivados.runway_meses, 1)} meses`
+                    : numero(kpis.derivados.runway_meses, 1)
                 }
+                unidad={kpis.derivados.runway_meses === null ? undefined : "meses"}
                 nota={`Burn de ${euros(kpis.valores.burn_mensual)}`}
               />
               <Cifra
@@ -173,7 +177,8 @@ export async function VistaResumen({
               />
               <Cifra
                 etiqueta="Coste cloud"
-                valor={porcentaje(kpis.derivados.coste_cloud_sobre_ingresos)}
+                valor={numero(kpis.derivados.coste_cloud_sobre_ingresos, 1)}
+                unidad="%"
                 nota="Sobre ingresos del mes"
               />
             </div>

@@ -111,7 +111,8 @@ export async function VistaAportacion({
           <Cifra
             destacada
             etiqueta="Horas entregadas"
-            valor={`${numero(compromiso.horasEntregadas, 0)} de ${numero(compromiso.horasComprometidas, 0)}`}
+            valor={numero(compromiso.horasEntregadas, 0)}
+            referencia={`de ${numero(compromiso.horasComprometidas, 0)} h`}
             nota={
               compromiso.horasPct === null
                 ? "Sin horas comprometidas"
@@ -120,12 +121,15 @@ export async function VistaAportacion({
           />
           <Cifra
             etiqueta="Caja desembolsada"
-            valor={euros(compromiso.cajaDesembolsada)}
-            nota={`de ${euros(compromiso.cajaComprometida)} comprometidos`}
+            valor={numero(compromiso.cajaDesembolsada, 0)}
+            unidad="€"
+            referencia={`de ${euros(compromiso.cajaComprometida)}`}
+            nota="comprometidos en el Anexo"
           />
           <Cifra
             etiqueta="Valor de las horas"
-            valor={euros(compromiso.valorAplicado)}
+            valor={numero(compromiso.valorAplicado, 0)}
+            unidad="€"
             nota={`${euros(compromiso.descuento)} por debajo de mercado`}
           />
           <Cifra

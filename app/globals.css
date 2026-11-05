@@ -1200,3 +1200,43 @@ details[open] > .desplegable-titulo .flecha-desplegable {
   text-align: left;
   white-space: normal;
 }
+
+/* =========================================================================
+ * Las cifras
+ *
+ * Medidas fijas y las mismas en toda la plataforma, porque la alternativa
+ * —que cada pantalla elija— es lo que hacía que «246 de 350» saliera a 32
+ * píxeles y en dos líneas al lado de un rótulo de 12.
+ *
+ * Montserrat y no Roboto Mono. El monoespaciado alinea columnas, que es
+ * para lo que sirve, pero a partir de 30 px es lo que hace que una cifra
+ * se vea enorme: sus dígitos son anchos y sueltos. Se queda en tablas,
+ * fechas y metadatos. `tabular-nums` da la alineación sin el ancho.
+ * ========================================================================= */
+
+.cifra-dato {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* Una por pantalla como máximo. Si hay dos, ninguna destaca */
+.cifra-dato-destacada {
+  font-size: 1.75rem;
+}
+
+/*
+ * La unidad y la referencia: pegadas al número y pequeñas.
+ *
+ * «244 de 350 h» es un número y un contexto, no dos números. Con los dos
+ * al mismo tamaño hay que leer para saber cuál es cuál.
+ */
+.cifra-contexto {
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--color-metadato);
+}

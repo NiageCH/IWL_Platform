@@ -9,6 +9,33 @@ como es**.
 
 ---
 
+## 2026-11-05 · Las cifras, con tus medidas · commit PENDIENTE
+
+**Qué cambió**
+· **Dos tamaños y las medidas que diste**: Montserrat 600 a 20 px la normal, 28 px la destacada, con `tabular-nums`. **Fuera el monoespaciado de las cifras grandes**; se queda en tablas, fechas y metadatos.
+· **El contexto va aparte y pequeño**, 14 px en gris: «**246** de 350 h», «**13.900** €», «**9,8** meses». El número que importa en grande; la unidad y la referencia, al lado y sin competir.
+· Rótulo encima en 12 px, nota debajo en 13 px.
+· **Sale del componente**, así que cambia en todas las pantallas a la vez.
+· **Capturas antes y después** de Aportación, Resumen y KPI, en los dos motores: `cifras-<pantalla>-<antes|despues>-<motor>.png`.
+
+**Lo que se arregla de paso**
+
+«Horas entregadas 246 de 350» —punto 3 de tu segunda revisión— **se partía en dos líneas**: a 32 px y en monoespaciado, «246 de» no cabía y «350» caía debajo. Ahora cabe en una, con el 246 grande y «de 350 h» pequeño al lado.
+
+**Qué decidí yo**
+· **El símbolo de la moneda y el del porcentaje también son unidad.** «13.900 €» tenía el euro del mismo tamaño que la cifra, y es contexto igual que «meses». Va en pequeño.
+· **Donde había un porcentaje ya formateado, lo he partido**: el número y el «%» por separado. Es el mismo texto en pantalla y una línea más de código, pero si no, la regla tenía una excepción desde el primer día.
+· **No he tocado las cifras de las tablas ni las de la cabecera.** Las tablas alinean columnas, que es para lo que sirve el monoespaciado. La cabecera tiene su propia pieza compacta y no la nombrabas; dime si también.
+
+**Estado**
+· 116 unitarias · 136 RLS · **352 de interfaz en Chromium y WebKit**, en verde.
+· **No he tocado nada de la subida a producción.**
+
+**Siguiente**
+«Mi perfil» para todas las personas: foto, cargo, resumen, LinkedIn, áreas, CV y teléfono, con la ficha en panel lateral al pulsar un nombre.
+
+---
+
 ## 2026-11-05 · Fuera los cuadritos · commit e449313
 
 **Qué cambió**
