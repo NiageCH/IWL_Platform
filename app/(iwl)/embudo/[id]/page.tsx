@@ -4,6 +4,7 @@ import { personaActual, clienteServidor } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
 import { leerCandidatura } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
+import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { direccionBase } from "@/lib/direccion";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
@@ -83,6 +84,7 @@ export default async function FichaCandidatura({
             <span className={cn("pastilla", tonoPaso(estado))}>
               {nombrePaso(estado)}
             </span>
+            {c.is_demo ? <DistintivoDemo que="candidatura" /> : null}
             {c.sector ? <span className="pastilla">{c.sector}</span> : null}
             {c.cohorte ? <span className="pastilla">{c.cohorte}</span> : null}
             {c.website ? (

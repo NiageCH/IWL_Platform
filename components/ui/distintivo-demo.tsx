@@ -1,5 +1,5 @@
 /**
- * Distintivo de compañía de demostración.
+ * Distintivo de compañía o candidatura de demostración.
  *
  * Lleva la palabra dentro y no solo un color, como el resto de pastillas:
  * quien no distinga el tono lee exactamente lo mismo.
@@ -10,11 +10,21 @@
  * estados, no para describir nada. Que no cuente en los agregados lo
  * arregla por dentro; esto lo arregla por fuera.
  */
-export function DistintivoDemo({ compacto = false }: { compacto?: boolean }) {
+export function DistintivoDemo({
+  compacto = false,
+  que = "compania",
+}: {
+  compacto?: boolean;
+  que?: "compania" | "candidatura";
+}) {
   return (
     <span
       className="pastilla [--tono:var(--color-durazno)]"
-      title="Compañía de demostración: no entra en las medias de la cohorte"
+      title={
+        que === "candidatura"
+          ? "Candidatura de demostración: no entra en los números del embudo"
+          : "Compañía de demostración: no entra en las medias de la cohorte"
+      }
     >
       {compacto ? "Demo" : "Demostración"}
     </span>

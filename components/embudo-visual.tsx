@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 
 /**
  * El recorrido del embudo, como un embudo.
@@ -79,6 +80,7 @@ export function FilaCandidatura({
   sector,
   paso,
   tono,
+  demo = false,
   children,
 }: {
   id: string;
@@ -86,6 +88,8 @@ export function FilaCandidatura({
   sector: string | null;
   paso: string;
   tono: string;
+  /** De demostración: se ve, pero no cuenta */
+  demo?: boolean;
   /** El chip con las iniciales o el logo */
   children: React.ReactNode;
 }) {
@@ -98,6 +102,7 @@ export function FilaCandidatura({
       >
         {nombre}
       </Link>
+      {demo ? <DistintivoDemo compacto que="candidatura" /> : null}
       <span className="hidden shrink-0 truncate text-xs text-metadato sm:block sm:max-w-[10rem]">
         {sector ?? "Sin sector"}
       </span>

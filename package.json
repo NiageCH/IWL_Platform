@@ -24,7 +24,8 @@
     "informes": "node scripts/informes.mjs",
     "sembrar:nube": "node scripts/sembrar-nube.mjs",
     "cuentas:revision": "node scripts/cuentas-revision.mjs",
-    "cuentas:nube": "node scripts/cuentas-nube.mjs"
+    "cuentas:nube": "node scripts/cuentas-nube.mjs",
+    "nube:vaciar": "node scripts/nube-vaciar.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

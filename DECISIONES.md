@@ -1726,3 +1726,19 @@ Antes de repartir las contraseñas de producción. Quien entra con una contrase�
 - **No está en RLS.** Una cuenta marcada que llamara a la API directamente con su sesión leería lo mismo que sin marca. Se aceptó: la marca no protege los datos de quien tiene la contraseña —esa persona es la legítima—, sino que asegura que la contraseña deje de conocerla quien la puso. Ponerla en cada política costaba mucho más de lo que añadía.
 - **Repetir la contraseña recibida no vale.** Lo rechaza el propio servidor de acceso y la pantalla lo traduce.
 - **Las cuentas de revisión y las de la semilla no llevan marca.** Son puntos de observación y personas de prueba: pedirles el cambio rompería las pruebas sin proteger nada.
+
+## 2026-11-05 · Candidaturas de demostración, y vaciar la nube en orden
+
+La nube se vacía de pruebas (`npm run nube:vaciar`) y del embudo se quedan tres candidaturas de muestra: abierta, firmada y descartada.
+
+- **`candidaturas.is_demo`, como `companies.is_demo`.** Se ven en el embudo con su distintivo y no entran en ningún número: ni por paso, ni abiertas, firmadas o descartadas, ni en la conversión. Solo las cuenta `leerEmbudo()`, que separa las listas —todas— de las cifras —las reales—. Marcarla es de la dirección (`app.guard_candidatura_demo`), exento sin sesión como todo guardián de autorización.
+- **La vista `embudo_candidaturas` se recreó desde su última definición**, la de `20261001130000_acceso_candidata.sql`. Es la tercera vez que una columna nueva obliga a hacerlo.
+- **Las muestras se buscan por nombre y viven en `scripts/muestras.mjs`.** La abierta es la de la cuenta de revisión `candidata`, así que `cuentas:revision` y `nube:vaciar` leen la misma definición: dos copias acabarían creando dos candidaturas.
+- **La firmada cuelga de la compañía de demostración.** La base no admite una firmada sin compañía (`firmada_tiene_compania`), y no puede ser una real.
+- **El orden al vaciar no es arbitrario:**
+  1. Las candidaturas primero: una firmada no deja borrar su compañía, porque quitarle la compañía violaría ese mismo check.
+  2. Después las muestras, porque una compañía solo puede venir de una candidatura (`company_id` es único).
+  3. Después las compañías.
+  4. Los ficheros, al final: si la base se negara, siguen donde estaban.
+- **El script borra directamente y no por `borrar_compania_con_todo`.** Esa función exige una sesión de dirección y con la clave de servicio no la hay. Los ficheros se quitan por carpeta (`<id>/` en `logos`, `data-room` y `candidaturas`), no por las rutas que guarda la base, que dejaban huérfanos.
+- **Quien creó una línea base no se puede borrar.** Quitarle el autor es un `update`, y `guard_linea_base` rechaza todos. No se ha relajado el guardián: `cuentas:nube -- --limpiar` lo avisa y se salta la cuenta. Vaciar antes de limpiar lo evita, porque la línea base se va con su compañía.

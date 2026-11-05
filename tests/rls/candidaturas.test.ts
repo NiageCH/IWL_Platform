@@ -673,3 +673,67 @@ describe("lo entregado en la selección llega a la compañía", () => {
     await servicio.from("candidatura_documentos").delete().eq("id", doc!.id);
   });
 });
+
+describe("candidaturas de demostración", () => {
+  /*
+   * Marcar una como demostración la saca de los números del embudo, y eso
+   * es de la dirección, igual que con las compañías. Se prueba entrando
+   * como el equipo, que sí puede editar candidaturas: con una fundadora la
+   * prueba pasaría por RLS, sin llegar al guardián.
+   */
+  it("el equipo de IWL no la marca", async () => {
+    const servicio = clienteServicio();
+    const { data: una } = await servicio
+      .from("candidaturas")
+      .select("id, is_demo")
+      .eq("is_demo", false)
+      .order("id")
+      .limit(1)
+      .single();
+
+    const equipo = await entrarComo(USUARIOS.equipoIwl);
+    const { error } = await equipo
+      .from("candidaturas")
+      .update({ is_demo: true })
+      .eq("id", una!.id);
+
+    expect(error?.message).toMatch(/dirección/);
+
+    const { data: despues } = await servicio
+      .from("candidaturas")
+      .select("is_demo")
+      .eq("id", una!.id)
+      .single();
+    expect(despues!.is_demo).toBe(false);
+  });
+
+  it("la dirección sí, y la vista del embudo lo ve", async () => {
+    const servicio = clienteServicio();
+    const { data: una } = await servicio
+      .from("candidaturas")
+      .select("id, is_demo")
+      .eq("is_demo", false)
+      .order("id")
+      .limit(1)
+      .single();
+
+    const iwl = await entrarComo(USUARIOS.admin);
+    try {
+      const { error } = await iwl
+        .from("candidaturas")
+        .update({ is_demo: true })
+        .eq("id", una!.id);
+      expect(error).toBeNull();
+
+      // La vista se recreó para llevar la columna: sin ella, contaría
+      const { data: fila } = await iwl
+        .from("embudo_candidaturas")
+        .select("is_demo")
+        .eq("id", una!.id)
+        .single();
+      expect(fila!.is_demo).toBe(true);
+    } finally {
+      await servicio.from("candidaturas").update({ is_demo: false }).eq("id", una!.id);
+    }
+  });
+});

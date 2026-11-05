@@ -307,3 +307,33 @@ test("la convocatoria se abre y se cierra desde el embudo", async ({ page }) => 
   ).toBeVisible();
   await expect(page.locator('input[name="nombre"]')).toBeVisible();
 });
+
+test("una candidatura de demostración se ve pero no cuenta", async ({ page }) => {
+  /*
+   * Como Marea en la cartera: la de muestra está para enseñarse, así que
+   * sigue en la lista con su distintivo, pero sale de los números. Una
+   * muestra firmada en un embudo de tres reales cambia la conversión entera.
+   */
+  const BROTA = "00000000-0000-0000-0005-000000000001";
+  await entrarComo(page, USUARIOS.equipoIwl, "/embudo");
+
+  // La cifra de la tarjeta de su nota, no la primera ni la última de la rejilla
+  const enProceso = page
+    .getByText("Candidaturas vivas ahora mismo", { exact: true })
+    .locator("xpath=..")
+    .locator(".cifra-dato");
+  const antes = Number((await enProceso.innerText()).replace(/\D/g, ""));
+
+  try {
+    await actualizar("candidaturas", { id: `eq.${BROTA}` }, { is_demo: true });
+    await page.reload();
+
+    await expect(enProceso).toHaveText(String(antes - 1));
+
+    const fila = page.locator("li").filter({ hasText: "Brota Analítica" }).first();
+    await expect(fila).toBeVisible();
+    await expect(fila.getByText("Demo", { exact: true })).toBeVisible();
+  } finally {
+    await actualizar("candidaturas", { id: `eq.${BROTA}` }, { is_demo: false });
+  }
+});

@@ -11,6 +11,7 @@ import { capacidades } from "@/lib/permisos";
 import { leerEmbudo, leerCohortes } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
 import { EmbudoVisual, FilaCandidatura } from "@/components/embudo-visual";
+import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import {
   Bloque,
   Cifra,
@@ -45,6 +46,7 @@ export default async function Embudo() {
     abiertas,
     firmadas,
     descartadas,
+    cuentas,
     porPaso,
     descartesPorPaso,
     conversion,
@@ -107,7 +109,7 @@ export default async function Embudo() {
             icono={Inbox}
             tono="acento"
             etiqueta="En proceso"
-            valor={numero(abiertas.length)}
+            valor={numero(cuentas.abiertas)}
             nota="Candidaturas vivas ahora mismo"
           />
         </Bloque>
@@ -115,7 +117,7 @@ export default async function Embudo() {
           <Cifra
             icono={CheckCircle2}
             etiqueta="Firmadas"
-            valor={numero(firmadas.length)}
+            valor={numero(cuentas.firmadas)}
             nota="Ya están en la cartera"
           />
         </Bloque>
@@ -124,7 +126,7 @@ export default async function Embudo() {
             icono={XCircle}
             tono="mal"
             etiqueta="Descartadas"
-            valor={numero(descartadas.length)}
+            valor={numero(cuentas.descartadas)}
             nota="Con su motivo apuntado"
           />
         </Bloque>
@@ -165,7 +167,7 @@ export default async function Embudo() {
 
       <Bloque className="mb-8">
         <TituloBloque
-          accion={<Metadato>{abiertas.length} en proceso</Metadato>}
+          accion={<Metadato>{cuentas.abiertas} en proceso</Metadato>}
         >
           Candidaturas abiertas
         </TituloBloque>
@@ -185,6 +187,7 @@ export default async function Embudo() {
                 sector={c.sector}
                 paso={nombrePaso(c.estado ?? "presentada")}
                 tono={tonoPaso(c.estado ?? "presentada")}
+                demo={c.is_demo ?? false}
               >
                 <ChipCompania nombre={c.nombre ?? ""} />
               </FilaCandidatura>
@@ -215,6 +218,7 @@ export default async function Embudo() {
                     >
                       {c.nombre}
                     </Link>
+                    {c.is_demo ? <DistintivoDemo compacto que="candidatura" /> : null}
                     <span className="block text-xs text-metadato">
                       Firmó el {c.acuerdo_firmado_on ?? "—"}
                       {c.equity_pct !== null
@@ -268,6 +272,12 @@ export default async function Embudo() {
                   >
                     {c.nombre}
                   </Link>
+                  {c.is_demo ? (
+                    <>
+                      {" "}
+                      <DistintivoDemo compacto que="candidatura" />
+                    </>
+                  ) : null}
                   <p className="text-xs text-metadato">
                     {c.descartada_desde
                       ? `En ${nombrePaso(c.descartada_desde).toLowerCase()} · `

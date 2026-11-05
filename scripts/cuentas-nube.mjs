@@ -305,6 +305,13 @@ ${puestas.map((p) => `| \`${p.email}\` | \`${p.pass}\` | ${p.rol} | ${p.nombre} 
 // · **Las candidaturas no dejan borrar a quien las creó** (`no action`). Se
 //   les quita el autor justo antes, que es lo que el resto de tablas hace
 //   solas, y queda anotado en la constancia.
+//
+// · **Quien creó una línea base no se puede borrar.** Quitarle el autor es
+//   un `update` sobre la línea base, y `guard_linea_base` los rechaza todos:
+//   lo congelado no se edita, lo escriba quien lo escriba. No se fuerza: la
+//   simulación lo avisa y `--confirmar` se salta esa cuenta. Si su compañía
+//   se borra antes —`nube:vaciar`—, la línea base se va con ella y la
+//   cuenta queda libre.
 // -----------------------------------------------------------------------------
 
 /*
@@ -399,7 +406,8 @@ async function limpiarCuentas() {
       `· ${f.correo} (${f.papel}) — ${f.actividad.length} acciones registradas, ` +
         `${f.comentarios.length} comentarios y ${f.objeciones.length} objeciones que se borran, ` +
         `${f.impiden.reduce((n, i) => n + i.ids.length, 0)} filas de candidaturas sin autor, ` +
-        `${f.sinAutor} filas más sin autor`,
+        `${f.sinAutor} filas más sin autor` +
+        (f.congeladas ? `. NO SE PUEDE BORRAR: creó ${f.congeladas} líneas base` : ""),
     );
   }
   console.log(`\nConstancia en ${ruta}`);
@@ -424,6 +432,15 @@ async function limpiarCuentas() {
   console.log("");
   let fallos = 0;
   for (const f of fichas) {
+    if (f.congeladas) {
+      fallos++;
+      console.error(
+        `· ${f.correo}: no la borro. Creó ${f.congeladas} líneas base, y una línea base no se edita: ` +
+          "ni siquiera para quitarle el autor. Borra antes su compañía, o archívala.",
+      );
+      continue;
+    }
+
     for (const { tabla, columna, ids } of f.impiden) {
       if (!ids.length) continue;
       const r = await fetch(`${URL_}/rest/v1/${tabla}?${columna}=eq.${f.id}`, {
@@ -491,6 +508,7 @@ async function ficha(u) {
   );
 
   const cuentas = await Promise.all(SIN_AUTOR.map(([t, c]) => contar(t, `${c}=eq.${id}`)));
+  const congeladas = (await contar("baselines", `created_by=eq.${id}`)) ?? 0;
 
   return {
     id,
@@ -505,6 +523,7 @@ async function ficha(u) {
     objeciones,
     impiden,
     sinAutor: cuentas.reduce((n, c) => n + (c ?? 0), 0),
+    congeladas,
   };
 }
 
@@ -538,6 +557,9 @@ function escribirConstancia(fichas) {
     md.push(`· Alta: ${dia(f.alta)} · Último acceso: ${dia(f.ultimoAcceso)}`);
     md.push(`· Compañías: ${f.companias.join(", ") || "ninguna"}`);
     md.push(`· Filas que se quedan sin autor: ${f.sinAutor}`);
+    if (f.congeladas) {
+      md.push(`· **No se puede borrar**: creó ${f.congeladas} líneas base, que no se editan ni para quitarles el autor.`);
+    }
     const imp = f.impiden.filter((i) => i.ids.length);
     if (imp.length) {
       md.push(`· Candidaturas a las que se quita el autor: ${imp.map((i) => `${i.tabla}.${i.columna} ×${i.ids.length}`).join(", ")}`);

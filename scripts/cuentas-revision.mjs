@@ -42,6 +42,7 @@ import {
   PREFIJO_REVISION as PREFIJO,
   REVISION as CUENTAS,
 } from "./cuentas-lista.mjs";
+import { NOMBRE_REVISION, muestras } from "./muestras.mjs";
 
 /** La que se sustituye: era una cuenta suelta, sin este criterio */
 const A_RETIRAR = ["candidata.prueba@iwl.es"];
@@ -112,7 +113,7 @@ async function quitarlas() {
    * ahí dejaría una fila en el embudo que nadie sabría de dónde salió.
    */
   await fetch(
-    `${url}/rest/v1/candidaturas?nombre=eq.${encodeURIComponent("Revisión · Candidatura")}`,
+    `${url}/rest/v1/candidaturas?nombre=eq.${encodeURIComponent(NOMBRE_REVISION)}`,
     { method: "DELETE", headers: cabeceras() },
   );
 
@@ -168,9 +169,22 @@ async function buscarDemo() {
  */
 async function prepararCandidatura() {
   const ya = await consultar(
-    "candidaturas?nombre=eq.Revisi%C3%B3n%20%C2%B7%20Candidatura&select=id,nombre&limit=1",
+    `candidaturas?nombre=eq.${encodeURIComponent(NOMBRE_REVISION)}&select=id,nombre,is_demo&limit=1`,
   );
-  if (ya[0]) return ya[0];
+  if (ya[0]) {
+    /*
+     * Las de antes de `is_demo` contaban en el embudo como una candidatura
+     * más. Se marca aquí para que no haga falta acordarse.
+     */
+    if (!ya[0].is_demo) {
+      await fetch(`${url}/rest/v1/candidaturas?id=eq.${ya[0].id}`, {
+        method: "PATCH",
+        headers: cabeceras(),
+        body: JSON.stringify({ is_demo: true }),
+      });
+    }
+    return ya[0];
+  }
 
   const cohortes = await consultar("cohorts?select=id&limit=1");
   if (!cohortes[0]) {
@@ -178,23 +192,14 @@ async function prepararCandidatura() {
     process.exit(1);
   }
 
+  // La misma que deja `nube:vaciar`: una sola definición para las dos
+  const { fila } = muestras({ compania: null, hoy: new Date().toISOString().slice(0, 10) })
+    .find((m) => m.clave === "abierta");
+
   const respuesta = await fetch(`${url}/rest/v1/candidaturas`, {
     method: "POST",
     headers: { ...cabeceras(), Prefer: "return=representation" },
-    body: JSON.stringify({
-      cohort_id: cohortes[0].id,
-      nombre: "Revisión · Candidatura",
-      sector: "Demostración",
-      one_liner: "Candidatura de demostración, para recorrer la vista de candidata.",
-      contacto_nombre: "Revisión · Candidata",
-      contacto_email: `${PREFIJO}candidata@niage.es`,
-      /*
-       * En NDA firmado: es el punto en el que una candidata tiene cuenta y
-       * un due diligence por entregar, que es lo que hay que poder mirar.
-       */
-      estado: "nda",
-      origen: "Cuentas de revisión",
-    }),
+    body: JSON.stringify({ cohort_id: cohortes[0].id, ...fila }),
   });
 
   if (!respuesta.ok) {

@@ -166,6 +166,24 @@ sus comentarios y objeciones se van con ella. Y se niega a hacer nada
 mientras `rodrigo@niage.es` no haya entrado y cambiado su contraseña
 temporal: es la cuenta de dirección que tiene que quedar funcionando.
 
+Quien creó una línea base no se puede borrar: lo congelado no se edita,
+ni para quitarle el autor. La limpieza lo avisa y se salta esa cuenta.
+
+### Vaciar los datos de prueba
+
+```bash
+npm run nube:vaciar               # qué borraría, sin borrar
+npm run nube:vaciar -- --confirmar
+```
+
+Borra todas las compañías salvo la de demostración y todas las
+candidaturas salvo tres de muestra —abierta, firmada y descartada—, que
+no cuentan en el embudo. No toca la configuración del programa ni las
+cuentas. Deja constancia en `docs/constancia/`, se niega contra la base
+local salvo con `--local` y contra la nube mientras `rodrigo@niage.es` no
+funcione. Para cargar después las compañías de verdad:
+`docs/IWL_Doc_CargarCompania_ES_v1_20261105.md`.
+
 ## 5 · La aplicación
 
 En Vercel, **Add New → Project** y elige el repositorio `IWL_Platform`.

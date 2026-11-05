@@ -431,8 +431,9 @@ export function FormularioPersona({
             </div>
 
             <p className="text-xs text-metadato">
-              No se envía nada automáticamente. La persona entra pidiendo su
-              enlace en la pantalla de entrada.
+              No se envía nada automáticamente. Pásale la contraseña que se
+              enseña al guardar: entra con ella y la plataforma le pide
+              cambiarla antes de nada.
             </p>
           </>
         )}

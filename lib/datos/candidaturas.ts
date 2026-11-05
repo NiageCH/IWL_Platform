@@ -19,6 +19,14 @@ export async function leerEmbudo() {
   const filas = candidaturas ?? [];
 
   /*
+   * Las de demostración se ven pero no cuentan, igual que Marea en la
+   * cartera. Las listas llevan todas; cada número sale de `reales`.
+   */
+  const reales = filas.filter((f) => !f.is_demo);
+  const abierta = (f: (typeof filas)[number]) =>
+    f.estado !== "firmada" && f.estado !== "descartada";
+
+  /*
    * El reparto por paso.
    *
    * Se cuenta aquí y no con una consulta de agregado porque las filas ya
@@ -26,16 +34,20 @@ export async function leerEmbudo() {
    * memoria es un viaje de ida y vuelta por nada.
    */
   const porPaso = new Map<EstadoCandidatura, number>();
-  for (const f of filas) {
+  for (const f of reales) {
     if (!f.estado) continue;
     porPaso.set(f.estado, (porPaso.get(f.estado) ?? 0) + 1);
   }
 
-  const abiertas = filas.filter(
-    (f) => f.estado !== "firmada" && f.estado !== "descartada",
-  );
+  const abiertas = filas.filter(abierta);
   const firmadas = filas.filter((f) => f.estado === "firmada");
   const descartadas = filas.filter((f) => f.estado === "descartada");
+
+  const cuentas = {
+    abiertas: reales.filter(abierta).length,
+    firmadas: reales.filter((f) => f.estado === "firmada").length,
+    descartadas: reales.filter((f) => f.estado === "descartada").length,
+  };
 
   /*
    * Dónde se cae la gente.
@@ -47,7 +59,9 @@ export async function leerEmbudo() {
   const descartesPorPaso = PASOS_ABIERTOS.map((p) => ({
     paso: p.codigo,
     nombre: p.nombre,
-    cuenta: descartadas.filter((d) => d.descartada_desde === p.codigo).length,
+    cuenta: reales.filter(
+      (d) => d.estado === "descartada" && d.descartada_desde === p.codigo,
+    ).length,
   })).filter((d) => d.cuenta > 0);
 
   return {
@@ -55,6 +69,8 @@ export async function leerEmbudo() {
     abiertas,
     firmadas,
     descartadas,
+    /** Para los números: sin las de demostración */
+    cuentas,
     porPaso,
     descartesPorPaso,
     /*
@@ -63,8 +79,8 @@ export async function leerEmbudo() {
      * una proporción, es una anécdota.
      */
     conversion:
-      firmadas.length + descartadas.length >= 5
-        ? (firmadas.length / (firmadas.length + descartadas.length)) * 100
+      cuentas.firmadas + cuentas.descartadas >= 5
+        ? (cuentas.firmadas / (cuentas.firmadas + cuentas.descartadas)) * 100
         : null,
   };
 }
