@@ -9,7 +9,11 @@
  *   npm run cuentas:revision              crea o actualiza las ocho
  *   npm run cuentas:revision -- --borrar  las quita todas
  *
- * Contra la nube, exporta antes SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
+ *   npm run cuentas:revision -- --nube    lo mismo, contra la nube
+ *
+ * `--nube` lee `.env.produccion`. También vale exportar antes SUPABASE_URL y
+ * SUPABASE_SERVICE_ROLE_KEY, pero pegarlas a mano en la terminal deja la
+ * clave de servicio en el historial del intérprete.
  *
  * Tres decisiones que conviene no deshacer sin pensarlo:
  *
@@ -31,7 +35,7 @@
  * en `.gitignore`. Ni en la semilla, ni en la bitácora, ni por pantalla.
  */
 import { execFileSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const PREFIJO = "rodrigo+rev-";
 
@@ -413,6 +417,25 @@ async function buscarPorCorreo(correo) {
 }
 
 function leerEntorno() {
+  if (process.argv.includes("--nube")) {
+    let texto;
+    try {
+      texto = readFileSync(".env.produccion", "utf8");
+    } catch {
+      console.error("No encuentro .env.produccion en esta carpeta. Es el fichero con la URL y las claves de la nube.");
+      process.exit(1);
+    }
+    const leer = (k) =>
+      texto.match(new RegExp(`^${k}=\\s*"?([^"\\n]+?)"?\\s*$`, "m"))?.[1] ?? "";
+    const url = leer("NEXT_PUBLIC_SUPABASE_URL");
+    const clave = leer("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !clave) {
+      console.error("A .env.produccion le falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.");
+      process.exit(1);
+    }
+    return { url, clave };
+  }
+
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return {
       url: process.env.SUPABASE_URL,

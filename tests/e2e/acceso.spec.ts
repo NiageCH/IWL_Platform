@@ -158,7 +158,7 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-de-siempre-77");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).not.toHaveURL(/\/entrar/);
+  await expect(page).toHaveURL(/\/cambiar-contrasena/);
   await page.getByRole("button", { name: "Salir" }).click();
 
   // Y la dirección se la restablece
@@ -194,7 +194,9 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill(nueva);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).not.toHaveURL(/\/entrar/);
+
+  // Y como la puso la dirección, vuelve a ser temporal
+  await expect(page).toHaveURL(/\/cambiar-contrasena/);
 
   await borrarCuenta(correo);
 });
@@ -229,7 +231,12 @@ test("la dirección no se restablece su propia contraseña desde el panel", asyn
   await expect(page).toHaveURL(/\/perfil/);
 });
 
-test("cada persona cambia su propia contraseña", async ({ page }) => {
+test("la contraseña que pone la dirección se cambia al entrar", async ({ page }) => {
+  /*
+   * Mientras nadie la cambie, la dirección la conoce. Por eso, en la
+   * primera entrada, solo se puede cambiarla o salir: ni la raíz, ni Mi
+   * cuenta, ni ninguna otra dirección escrita a mano.
+   */
   const correo = `cambio.${Date.now()}@iwl.test`;
 
   await entrarComo(page, USUARIOS.admin, "/admin/personas");
@@ -252,15 +259,34 @@ test("cada persona cambia su propia contraseña", async ({ page }) => {
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).not.toHaveURL(/\/entrar/);
+  await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
 
+  // No hay otra salida que cambiarla
   await page.goto("/perfil");
+  await expect(page).toHaveURL(/\/cambiar-contrasena/);
+
+  // Repetir la que te dieron no vale: esa la conoce quien la puso
+  await page.getByLabel("Nueva contraseña").fill("la-primera-clave-9");
+  await page.getByLabel("Otra vez").fill("la-primera-clave-9");
+  await page.getByRole("button", { name: "Guardar y entrar" }).click();
+  await expect(page.getByText("Tiene que ser distinta de la que te dieron.")).toBeVisible();
+
   await page.getByLabel("Nueva contraseña").fill("la-segunda-clave-7");
   await page.getByLabel("Otra vez").fill("la-segunda-clave-7");
+  await page.getByRole("button", { name: "Guardar y entrar" }).click();
+
+  // El acuse es estar dentro
+  await expect(page).not.toHaveURL(/\/cambiar-contrasena|\/entrar/, { timeout: 15_000 });
+
+  // Y ya se puede ir a cualquier sitio, también a cambiarla otra vez
+  await page.goto("/perfil");
+  await expect(page).toHaveURL(/\/perfil/);
+  await page.getByLabel("Nueva contraseña").fill("la-tercera-clave-5");
+  await page.getByLabel("Otra vez").fill("la-tercera-clave-5");
   await page.getByRole("button", { name: "Cambiar contraseña" }).click();
   await expect(page.getByText(/Contraseña cambiada/)).toBeVisible();
 
-  // La nueva vale y la vieja ya no
+  // La nueva vale, la vieja ya no, y entrar ya no pide cambiarla
   /*
    * Salir ya lleva a `/entrar`: se espera a que llegue en vez de pedirlo
    * otra vez. Pedirlo aborta la navegación que acaba de empezar, y en
@@ -273,9 +299,9 @@ test("cada persona cambia su propia contraseña", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByText("El correo o la contraseña no son correctos.")).toBeVisible();
 
-  await page.getByLabel("Contraseña").fill("la-segunda-clave-7");
+  await page.getByLabel("Contraseña").fill("la-tercera-clave-5");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page).not.toHaveURL(/\/entrar/);
+  await expect(page).not.toHaveURL(/\/entrar|\/cambiar-contrasena/, { timeout: 15_000 });
 
   await borrarCuenta(correo);
 });

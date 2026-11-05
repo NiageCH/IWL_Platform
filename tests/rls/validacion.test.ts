@@ -180,10 +180,18 @@ describe("hallazgos técnicos", () => {
   });
 
   it("aceptar un riesgo obliga a escribir el motivo", async () => {
+    /*
+     * Uno abierto, que es lo que se acepta de verdad, y se devuelve tal
+     * cual estaba. Cogía el primero que saliera y lo dejaba «abierto»: el
+     * día que salió el resuelto de la demostración, lo reabrió, y falló una
+     * prueba de interfaz de otro fichero sin relación aparente.
+     */
     const { data: hallazgo } = await servicio
       .from("tech_findings")
-      .select("id")
+      .select("id, status, acceptance_note, resolved_at")
       .eq("company_id", COMPANIAS.marea)
+      .eq("status", "abierto")
+      .order("id")
       .limit(1)
       .single();
 
@@ -208,7 +216,11 @@ describe("hallazgos técnicos", () => {
 
     await servicio
       .from("tech_findings")
-      .update({ status: "abierto", acceptance_note: null })
+      .update({
+        status: hallazgo!.status,
+        acceptance_note: hallazgo!.acceptance_note,
+        resolved_at: hallazgo!.resolved_at,
+      })
       .eq("id", hallazgo!.id);
   });
 });

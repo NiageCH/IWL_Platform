@@ -82,7 +82,8 @@ export default defineConfig({
    * estar abierto mientras se trabaja.
    */
   webServer: {
-    command: "npm run build && npx next start --port 3100",
+    // El puerto sale de BASE_URL: dos copias de trabajo pueden probar a la vez
+    command: `npm run build && npx next start --port ${new URL(BASE).port || 3100}`,
     url: `${BASE}/entrar`,
     reuseExistingServer: false,
     timeout: 240_000,

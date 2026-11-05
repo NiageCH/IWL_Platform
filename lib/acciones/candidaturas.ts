@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
-import { clienteServicio } from "@/lib/supabase/servicio";
+import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
 import {
   error,
@@ -552,6 +552,12 @@ export async function darAccesoCandidata(
   );
 
   let profileId = creada?.user?.id;
+
+  // La pone IWL, así que la candidata la cambia al entrar por primera vez
+  if (profileId) {
+    const { error: falloMarca } = await marcarContrasenaTemporal(servicio, profileId);
+    if (falloMarca) return error(`No se ha podido preparar la cuenta: ${falloMarca.message}`);
+  }
 
   if (falloAlta) {
     if (!/already|registered|exists/i.test(falloAlta.message)) {

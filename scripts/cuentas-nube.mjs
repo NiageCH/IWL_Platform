@@ -104,6 +104,26 @@ const porCorreo = new Map(usuarios.users.map((u) => [u.email, u]));
 console.log(`Instancia: ${URL_}`);
 console.log(`Cuentas hoy: ${usuarios.users.length}\n`);
 
+/*
+ * Todas, con lo que hace falta para reconocerlas. El registro estuvo
+ * abierto desde septiembre: una cuenta que nadie del equipo reconozca es
+ * alguien que se dio de alta por su cuenta.
+ */
+const perfiles = await fetch(`${URL_}/rest/v1/profiles?select=id,role,full_name`, { headers: cab })
+  .then((r) => (r.ok ? r.json() : []));
+const perfil = new Map(perfiles.map((p) => [p.id, p]));
+const dia = (f) => (f ? f.slice(0, 16).replace("T", " ") : "nunca");
+
+console.log("| Correo | Rol | Nombre | Alta | Último acceso |");
+console.log("|---|---|---|---|---|");
+for (const u of [...usuarios.users].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
+  const p = perfil.get(u.id);
+  console.log(
+    `| ${u.email} | ${p?.role ?? "(sin perfil)"} | ${p?.full_name ?? ""} | ${dia(u.created_at)} | ${dia(u.last_sign_in_at)} |`,
+  );
+}
+console.log("");
+
 const sobran = usuarios.users.filter(
   (u) => u.email?.endsWith("@iwl.es") || u.email?.endsWith(".test"),
 );
@@ -126,16 +146,7 @@ for (const persona of EQUIPO) {
     email: persona.email,
     password: pass,
     email_confirm: true,
-    user_metadata: {
-      full_name: persona.nombre,
-      role: persona.rol,
-      /*
-       * La marca está; la pantalla que obliga a cambiarla, no.
-       * Se deja puesta para que el día que exista no haya que volver a
-       * pasar por aquí, y para que quien reparta sepa que es temporal.
-       */
-      debe_cambiar_password: true,
-    },
+    user_metadata: { full_name: persona.nombre, role: persona.rol },
   };
 
   const ya = porCorreo.get(persona.email);
@@ -150,6 +161,24 @@ for (const persona of EQUIPO) {
   if (!respuesta.ok) {
     console.error(`· ${persona.email}: ${respuesta.status} ${(await respuesta.text()).slice(0, 180)}`);
     continue;
+  }
+
+  /*
+   * La contraseña es temporal: en la primera entrada se pide cambiarla.
+   *
+   * En `app_metadata`, que solo escribe la clave de servicio —en
+   * `user_metadata` se la quitaría cualquiera—, y en una llamada aparte y
+   * después: la base borra la marca cada vez que cambia la contraseña, así
+   * que en la misma llamada no llegaría a quedarse.
+   */
+  const { id } = await respuesta.json();
+  const marca = await fetch(`${URL_}/auth/v1/admin/users/${ya?.id ?? id}`, {
+    method: "PUT",
+    headers: cab,
+    body: JSON.stringify({ app_metadata: { debe_cambiar_password: true } }),
+  });
+  if (!marca.ok) {
+    console.error(`· ${persona.email}: puesta, pero sin pedir el cambio (${marca.status}). Vuelve a correr el script.`);
   }
 
   console.log(`· ${persona.email}: ${ya ? "contraseña nueva" : "creada"}`);
@@ -191,10 +220,9 @@ ${puestas.map((p) => `| \`${p.email}\` | \`${p.pass}\` | ${p.rol} | ${p.nombre} 
 
 Se entra en la dirección de producción con correo y contraseña.
 
-**El cambio obligatorio en la primera entrada todavía no existe.** Las
-cuentas llevan la marca \`debe_cambiar_password\`, pero no hay pantalla que
-la haga cumplir: por ahora es un aviso para quien reparte, no una barrera.
-Cada persona la cambia desde Mi perfil.
+En la primera entrada se pide cambiar la contraseña: hasta hacerlo, solo
+se puede cambiarla o salir. La que pone aquí la dirección no vale para
+quedarse.
 `,
 );
 

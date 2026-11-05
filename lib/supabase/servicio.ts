@@ -26,3 +26,21 @@ export function clienteServicio() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
+
+/**
+ * Marca una contraseña como temporal: quien entre con ella tendrá que
+ * cambiarla antes de hacer nada.
+ *
+ * Se llama **después** de poner la contraseña, en una llamada aparte. La
+ * base borra la marca cada vez que cambia la contraseña
+ * (`app.olvidar_contrasena_temporal`), así que si fueran juntas la marca
+ * no llegaría a quedarse.
+ */
+export async function marcarContrasenaTemporal(
+  servicio: ReturnType<typeof clienteServicio>,
+  id: string,
+) {
+  return servicio.auth.admin.updateUserById(id, {
+    app_metadata: { debe_cambiar_password: true },
+  });
+}

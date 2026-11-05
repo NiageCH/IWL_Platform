@@ -10,6 +10,31 @@ import { rutaRenombrada } from "@/lib/renombres";
  * puede configurar.
  */
 export async function proxy(request: NextRequest) {
+  /*
+   * Una sola dirección pública. Quien abra la vieja de Vercel acaba en la
+   * del dominio propio, con la misma ruta.
+   *
+   * Solo se enciende con `DOMINIO_CANONICO`, que se pone en Vercel cuando el
+   * DNS ya responde: si redirigiera antes, mandaría a una dirección que no
+   * existe todavía. Solo en producción, para no arrastrar las vistas
+   * previas. Y `/auth` no se toca: un enlace de entrada que salió con la
+   * dirección vieja lleva su verificación en una cookie de esa dirección, y
+   * redirigirlo a mitad lo dejaría sin ella.
+   */
+  const canonico = process.env.DOMINIO_CANONICO;
+  if (
+    canonico &&
+    process.env.VERCEL_ENV === "production" &&
+    request.nextUrl.hostname !== canonico &&
+    !request.nextUrl.pathname.startsWith("/auth")
+  ) {
+    const destino = request.nextUrl.clone();
+    destino.protocol = "https:";
+    destino.hostname = canonico;
+    destino.port = "";
+    return NextResponse.redirect(destino, 308);
+  }
+
   let respuesta = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -75,6 +100,25 @@ export async function proxy(request: NextRequest) {
     const destino = request.nextUrl.clone();
     destino.pathname = "/entrar";
     destino.searchParams.set("siguiente", ruta);
+    return NextResponse.redirect(destino);
+  }
+
+  /*
+   * Una contraseña que puso otra persona no es de quien entra con ella.
+   * Hasta que la cambie, solo puede cambiarla o salir.
+   *
+   * La marca se lee de `getUser`, que pregunta al servidor, y no del token:
+   * el token conserva la marca hasta que se renueva, y quien acaba de
+   * cambiarla se quedaría encerrado una hora en la pantalla de cambio.
+   */
+  if (
+    user?.app_metadata?.debe_cambiar_password === true &&
+    ruta !== "/cambiar-contrasena" &&
+    !ruta.startsWith("/auth")
+  ) {
+    const destino = request.nextUrl.clone();
+    destino.pathname = "/cambiar-contrasena";
+    destino.search = "";
     return NextResponse.redirect(destino);
   }
 

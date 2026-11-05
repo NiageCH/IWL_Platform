@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
-import { clienteServicio } from "@/lib/supabase/servicio";
+import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
 import {
   error,
@@ -313,6 +313,20 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
   });
 
   let usuarioId = creada?.user?.id;
+
+  /*
+   * La contraseña la ha puesto la dirección, así que es temporal: en la
+   * primera entrada se pide cambiarla. Solo si la cuenta es nueva; si ya
+   * existía, su contraseña no se ha tocado.
+   */
+  if (usuarioId) {
+    const { error: falloMarca } = await marcarContrasenaTemporal(servicio, usuarioId);
+    if (falloMarca) {
+      return error(
+        `La cuenta está creada con la contraseña ${clave}, pero no se ha podido pedir que la cambie al entrar. Vuelve a ponérsela desde la lista: ${falloMarca.message}`,
+      );
+    }
+  }
 
   if (falloAlta) {
     if (!/already|registered|exists/i.test(falloAlta.message)) {
@@ -1039,9 +1053,10 @@ export async function borrarPersona(formData: FormData): Promise<Resultado> {
 // copiarlas y pasarlas. No se guardan en claro en ninguna parte: Supabase
 // solo conserva su hash, y aquí no se escriben en el registro de actividad.
 //
-// Quien las recibe puede cambiarlas desde su perfil. Mientras no lo haga, la
-// dirección las conoce: para una cohorte pequeña es asumible y es lo que
-// permite empezar sin montar antes el envío de correo.
+// Son temporales: quien las recibe tiene que cambiarlas al entrar por
+// primera vez, y hasta entonces solo puede hacer eso o salir. Lo impone el
+// proxy con la marca `debe_cambiar_password`, que pone
+// `marcarContrasenaTemporal` y borra la base al cambiar la contraseña.
 // -----------------------------------------------------------------------------
 
 const MINIMO_CLAVE = 12;
@@ -1082,6 +1097,14 @@ export async function fijarContrasena(formData: FormData): Promise<Resultado> {
     return error(falloAuth.message);
   }
 
+  // Después y aparte: la base borra la marca cada vez que cambia la contraseña
+  const { error: falloMarca } = await marcarContrasenaTemporal(servicio, datos.id);
+  if (falloMarca) {
+    return error(
+      `Contraseña puesta para ${datos.email}, pero no se ha podido pedir que la cambie al entrar: ${falloMarca.message}`,
+    );
+  }
+
   /*
    * En el registro queda que se cambió y para quién, nunca el valor. Un
    * historial de actividad se consulta y se exporta: una contraseña ahí
@@ -1097,7 +1120,7 @@ export async function fijarContrasena(formData: FormData): Promise<Resultado> {
 
   refrescar();
   return ok(
-    `Contraseña puesta para ${datos.email}. Cópiala y pásasela: no se vuelve a enseñar.`,
+    `Contraseña puesta para ${datos.email}. Cópiala y pásasela: no se vuelve a enseñar, y tendrá que cambiarla al entrar.`,
   );
 }
 
@@ -1133,6 +1156,43 @@ export async function cambiarMiContrasena(
   if (falloAuth) return error(falloAuth.message);
 
   return ok("Contraseña cambiada. La próxima vez entra con la nueva.");
+}
+
+/**
+ * Cambiar la contraseña temporal en la primera entrada.
+ *
+ * La misma operación que la de Mi cuenta, con dos diferencias. No devuelve
+ * mensaje: el acuse es entrar en la plataforma, y un mensaje se perdería
+ * con la navegación. Y repetir la contraseña que te dieron no vale, porque
+ * esa la conoce quien la puso.
+ *
+ * La marca la quita la base al cambiar la contraseña
+ * (`app.olvidar_contrasena_temporal`), no esta acción.
+ */
+export async function estrenarContrasena(
+  formData: FormData,
+): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaCambio, formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloAuth } = await supabase.auth.updateUser({
+    password: datos.password,
+  });
+
+  if (falloAuth) {
+    if (/different|same/i.test(falloAuth.message)) {
+      return error("Tiene que ser distinta de la que te dieron.", {
+        password: "Elige otra.",
+      });
+    }
+    if (/session|jwt|expired/i.test(falloAuth.message)) {
+      return error("Tu sesión ha caducado. Sal y vuelve a entrar con la contraseña que te dieron.");
+    }
+    return error(falloAuth.message);
+  }
+
+  return ok();
 }
 
 

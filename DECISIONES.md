@@ -1714,3 +1714,15 @@ Tiene una consecuencia para las pruebas que conviene saber: **lo que está
 dentro de un tramo plegado existe en el marcado y no es visible**. Una
 prueba que busque «el primero» de algo encuentra el del tramo cerrado. Se
 busca el primero visible, o se abre el tramo como lo abriría una persona.
+
+## 2026-11-05 · La contraseña que pone otra persona es temporal
+
+Antes de repartir las contraseñas de producción. Quien entra con una contraseña que puso la dirección —alta, restablecimiento, acceso de una candidata o `npm run cuentas:nube`— no puede hacer nada más que cambiarla o salir.
+
+- **La marca va en `app_metadata`, no en `user_metadata`.** El script la ponía en los metadatos de usuario, y esos los escribe el propio usuario con la clave pública: cualquiera se la quitaba con `updateUser({ data: … })` sin cambiar nada. Los de aplicación solo los escribe la clave de servicio. Lo prueba `tests/rls/contrasena-temporal.test.ts`, entrando como la propia cuenta.
+- **La quita la base, no la aplicación.** El disparador `app.olvidar_contrasena_temporal` sobre `auth.users` la borra cada vez que cambia `encrypted_password`. Así cambiar la propia contraseña sigue yendo con el cliente de sesión, sin clave de servicio, como manda la regla general.
+- **Consecuencia que hay que recordar:** al poner una contraseña temporal, la marca va **en una llamada aparte y después** (`marcarContrasenaTemporal` en `lib/supabase/servicio.ts`). En la misma llamada que la contraseña, el disparador la borraría en el acto.
+- **La barrera está en `proxy.ts`**, que lee la marca de `getUser` —del servidor, no del token—. El token la conserva hasta que se renueva: leída de ahí, quien acaba de cambiarla se quedaría una hora encerrado en la pantalla de cambio.
+- **No está en RLS.** Una cuenta marcada que llamara a la API directamente con su sesión leería lo mismo que sin marca. Se aceptó: la marca no protege los datos de quien tiene la contraseña —esa persona es la legítima—, sino que asegura que la contraseña deje de conocerla quien la puso. Ponerla en cada política costaba mucho más de lo que añadía.
+- **Repetir la contraseña recibida no vale.** Lo rechaza el propio servidor de acceso y la pantalla lo traduce.
+- **Las cuentas de revisión y las de la semilla no llevan marca.** Son puntos de observación y personas de prueba: pedirles el cambio rompería las pruebas sin proteger nada.

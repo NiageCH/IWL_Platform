@@ -168,8 +168,14 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   await page.locator('input[type="password"]').fill(clave!);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
+  // La contraseña la puso IWL: antes de nada, la cambia
+  await expect(page).toHaveURL(/\/cambiar-contrasena/);
+  await page.getByLabel("Nueva contraseña").fill("la-de-ambar-2026");
+  await page.getByLabel("Otra vez").fill("la-de-ambar-2026");
+  await page.getByRole("button", { name: "Guardar y entrar" }).click();
+
   // Aterriza en su candidatura, con su nombre y lo que le piden
-  await expect(page).toHaveURL(/\/candidatura$/);
+  await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
   await expect(
     page.getByRole("heading", { name: "Ámbar Educación" }),
   ).toBeVisible();

@@ -12,7 +12,7 @@ Tiempo: unos cuarenta minutos, casi todos esperando.
 
 | | |
 |---|---|
-| Aplicación | https://iwl-platform.vercel.app |
+| Aplicación | https://ride.inceptionwlab.es — mientras se activa el DNS, https://iwl-platform.vercel.app |
 | Supabase | proyecto `IWL-Platform`, región `eu-central-1` (Fráncfort) |
 | Vercel | proyecto `iwl-platform`, cuenta `niagech` |
 
@@ -130,8 +130,10 @@ SUPABASE_SERVICE_ROLE_KEY=<clave service_role> \
 
 Le pone a cada cuenta una contraseña distinta y deja la tabla en
 `.accesos-nube.md`, que está en `.gitignore`. Repártela y **borra el
-fichero**. Cada persona puede cambiar la suya desde Mi cuenta, y desde
-**Administración → Personas** se le puede poner otra.
+fichero**. Son temporales: en la primera entrada la plataforma pide
+cambiarlas y no deja hacer otra cosa hasta entonces. Desde
+**Administración → Personas** se le puede poner otra, que vuelve a ser
+temporal.
 
 Si no hay seeds locales y la base se queda vacía de personas, la primera
 cuenta —que tiene que ser de dirección, porque es quien puede crear a las
@@ -164,6 +166,39 @@ acceso al repositorio puede desplegar una rama.
 
 Cuando termine, copia la dirección que te da y vuelve al paso 3 para ponerla
 como Site URL.
+
+## El dominio propio
+
+La plataforma vive en `ride.inceptionwlab.es`. Se monta en este orden, y el
+orden importa: cada paso supone que el anterior ya responde.
+
+1. **Vercel** → proyecto `iwl-platform` → **Settings → Domains → Add** →
+   `ride.inceptionwlab.es`. Vercel enseña el registro que espera.
+2. **DNS de `inceptionwlab.es`**, donde esté el dominio:
+
+   | Tipo | Nombre | Valor | TTL |
+   |---|---|---|---|
+   | `CNAME` | `ride` | el que enseñe Vercel; si no enseña otro, `cname.vercel-dns.com` | 3600 |
+
+   Si en el DNS ya hay un registro `ride` de cualquier tipo, se quita: un
+   `CNAME` no puede convivir con otro registro del mismo nombre.
+3. Esperar a que Vercel ponga **Valid Configuration** y emita el
+   certificado. Suele ser cuestión de minutos; con un TTL alto, horas.
+4. **Supabase** → Authentication → URL Configuration:
+   - **Site URL**: `https://ride.inceptionwlab.es`
+   - **Redirect URLs**: `https://ride.inceptionwlab.es/auth/confirmar` y,
+     mientras dure la transición, `https://iwl-platform.vercel.app/auth/confirmar`
+5. **Vercel** → Settings → Environment Variables → en **Production**,
+   `DOMINIO_CANONICO` = `ride.inceptionwlab.es`, y volver a desplegar. Desde
+   ese momento `iwl-platform.vercel.app` redirige a `ride.inceptionwlab.es`
+   con la misma ruta. Lo hace `proxy.ts`, y deja `/auth` sin redirigir para
+   no romper un enlace de entrada que ya hubiera salido con la dirección
+   vieja.
+6. Pasadas unas semanas, quitar la dirección vieja de las Redirect URLs.
+
+El código no lleva la dirección escrita en ningún sitio. Los enlaces que se
+reparten —convocatoria, candidaturas— salen de `VERCEL_PROJECT_PRODUCTION_URL`,
+que Vercel apunta solo al dominio propio en cuanto lo es de producción.
 
 ## 6 · Comprobar
 
@@ -259,8 +294,7 @@ Esto es una prueba. Antes de que entre gente de fuera de IWL:
 - **Un proveedor de correo.** Sin él no funcionan los enlaces de recuperación
   ni las alertas del paso 14. Resend tiene plan gratuito y se configura en
   Authentication → Emails.
-- **Un dominio propio.** Se añade en Vercel y se cambia la Site URL.
 - **Copias de seguridad.** El plan gratuito de Supabase no las hace. El Pro
   guarda siete días.
-- **Que cada persona cambie su contraseña.** Mientras no lo haga, la
-  dirección la conoce. Está en Mi cuenta, y la plataforma lo dice ahí.
+- ~~Que cada persona cambie su contraseña.~~ Hecho: la plataforma lo pide en
+  la primera entrada.
