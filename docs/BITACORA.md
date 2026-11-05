@@ -9,6 +9,97 @@ como es**.
 
 ---
 
+## 2026-11-05 · Cambio de contraseña obligatorio, y la nube pendiente de ti · commit 6c2f137
+
+**Qué cambió**
+· **La primera entrada con una contraseña puesta por otra persona pide cambiarla.** Pantalla `/cambiar-contrasena`, con el aspecto de la entrada: dos campos, «Guardar y entrar» y Salir. No se puede ir a ningún otro sitio, ni escribiendo la dirección a mano. Al guardar se entra en la plataforma.
+· **Se aplica en los cuatro sitios donde la dirección pone una contraseña**: alta desde Personas, restablecer, darle cuenta a una candidata y `npm run cuentas:nube`.
+· **La marca se mudó de `user_metadata` a `app_metadata`.** Donde la ponía el script, cada persona se la podía quitar con la clave pública sin cambiar nada. Ahora solo la escribe la clave de servicio.
+· **La quita la base**, con un disparador en `auth.users` que la borra al cambiar la contraseña (migración `20261105120000_contrasena_temporal`). Cambiar la propia sigue yendo con el cliente de sesión.
+· **Repetir la que te dieron no vale**: «Tiene que ser distinta de la que te dieron.»
+· **`npm run cuentas:nube -- --listar` saca la tabla entera**: correo, rol, nombre, alta y último acceso.
+· **`npm run cuentas:revision -- --nube`** lee `.env.produccion` sola. Ya no hay que pegar claves en la terminal.
+· **`iwl-platform.vercel.app` → `ride.inceptionwlab.es`**, en `proxy.ts`. Está apagado hasta que pongas `DOMINIO_CANONICO` en Vercel.
+· **`DESPLIEGUE.md`** con el dominio paso a paso, y la decisión en `DECISIONES.md`.
+· **Una prueba de RLS reabría el hallazgo resuelto de la demostración.** «Aceptar un riesgo obliga a escribir el motivo» cogía un hallazgo cualquiera de Marea y al terminar lo dejaba «abierto». Cuando salía el resuelto, lo reabría, y fallaba `demostracion-completa` —otro fichero, sin relación aparente—. Ahora coge uno abierto y lo devuelve como estaba. He dejado el de tu base local otra vez resuelto.
+· **El puerto de las pruebas de interfaz sale de `BASE_URL`.** Otra sesión tenía el 3100 ocupado. Ahora dos copias de trabajo pueden probar a la vez.
+
+### Lo que no he podido hacer: la nube
+
+**El clasificador me impide incluso leer producción** («Production Reads»). No he tocado la nube en esta tanda, ni para listar. Quedan para ti los puntos 2, 3, 5 y 6 de tu revisión, más la subida.
+
+**El 5 primero**: hasta ver la lista no sé si alguien se dio de alta por su cuenta, y dijiste que eso se dice antes de seguir. Pégame la salida de esto y la paso aquí, marcando lo que no reconozca:
+
+```bash
+npm run cuentas:nube -- --listar
+```
+
+### Los comandos, en orden
+
+Desde la carpeta del proyecto, que es donde está `.env.produccion`:
+
+```bash
+# 0. Traer este trabajo a main
+git merge worktree-cambio-password-y-nube
+
+# 1. Las 13 cuentas, sin tocar nada. Pégame la tabla.
+npm run cuentas:nube -- --listar
+
+# 2. La migración nueva a la nube
+npx supabase db push
+
+# 3. Publicar y desplegar (antes de repartir: sin esto no hay pantalla de cambio)
+git push
+npx vercel --prod
+
+# 4. Las cuentas del equipo, ya con la marca. Escribe .accesos-nube.md
+npm run cuentas:nube
+
+# 5. Las cuentas de revisión
+npm run cuentas:revision -- --nube
+```
+
+**En el panel de Supabase**, mientras tanto:
+· Authentication → Sign In / Providers → **Allow new users to sign up: OFF**
+· Authentication → URL Configuration → **Site URL** `https://ride.inceptionwlab.es`
+· **Redirect URLs**: `https://ride.inceptionwlab.es/auth/confirmar` y `https://iwl-platform.vercel.app/auth/confirmar`
+
+Poner ya la Site URL nueva no rompe nada aunque el DNS no responda: con contraseña no se usa, y el enlace de «no recuerdo mi contraseña» lleva la dirección desde la que se pide, que está en la lista.
+
+**Después, en la plataforma, con tu cuenta `rodrigo@niage.es`:**
+1. **Administración → Compañías**: «borrar con todo» de qqq, pirulo, ttttttt y w. Queda en el registro qué llevaba cada una y se limpian sus ficheros.
+2. **Administración → Personas**: borrar `rodrigo@nonage.es`, las `@iwl.es` y las cuatro de prueba —`qqqq@q.com`, `w@w.es`, `maria@pitulo.com` y las `.test`— cuando confirmes que entras con la nueva. Las compañías van antes: una cuenta con trabajo registrado no se deja borrar, y mucho de su trabajo cuelga de las compañías de prueba. Si alguna se sigue negando, es que tiene rastro fuera de ellas: archívala.
+
+**El dominio**, cuando quieras, en `DESPLIEGUE.md` → «El dominio propio»:
+1. Vercel → `iwl-platform` → Settings → Domains → Add → `ride.inceptionwlab.es`
+2. En el DNS de `inceptionwlab.es`: **`CNAME` · `ride` · el valor que enseñe Vercel** (si no enseña otro, `cname.vercel-dns.com`) · TTL 3600
+3. Cuando Vercel diga Valid Configuration: variable `DOMINIO_CANONICO=ride.inceptionwlab.es` en Production y volver a desplegar. Desde ahí la dirección vieja redirige.
+
+En el código no hay que tocar nada más: no lleva la dirección escrita, y los enlaces de convocatoria y candidatura salen de la que Vercel da como producción.
+
+### Qué decidí yo
+· **«Las cuatro de prueba» son las compañías**, no cuentas, porque tu pregunta 2 era «¿archivadas o borradas?» sobre qqq, pirulo, ttttttt y w. Las cuentas de prueba las he metido en el borrado del punto 3.
+· **Borrar desde la pantalla y no con un script.** El «borrar con todo» de la dirección ya registra qué se borró y limpia Storage. Un script con la clave de servicio no podría registrarlo a tu nombre y repetiría lo que ya existe.
+· **Las contraseñas de alta, restablecimiento y candidata también son temporales**, no solo las del script. Es la misma situación: la conoce quien la puso.
+· **La barrera está en el proxy, no en RLS.** Una cuenta marcada que fuera directa a la API leería lo mismo que sin marca. La marca asegura que la contraseña deje de conocerla quien la puso; no protege los datos de la persona legítima. Lo explico en `DECISIONES.md`.
+· **Las cuentas de revisión y las de la semilla no llevan marca.** Son puntos de observación y personas de prueba.
+· **La redirección del dominio deja `/auth` fuera**, para no romper un enlace de entrada que ya hubiera salido con la dirección vieja.
+· **El trabajo va en una rama**, `worktree-cambio-password-y-nube`, sacada del `main` local con sus 16 commits sin subir. No he hecho push: lo que va a GitHub lo decides tú, como hasta ahora.
+
+### Qué necesito que decidas
+1. La tabla del punto 5: pégame la salida de `npm run cuentas:nube -- --listar`.
+2. ¿Me das permiso para operar contra producción desde aquí? Mientras no, cada paso en la nube pasa por ti.
+
+### Estado
+· Local: 116 unitarias · 139 RLS, dos veces seguidas (tres nuevas, entrando como la propia cuenta) · interfaz en Chromium y WebKit: 350 en verde y 4 saltadas. Las dos que fallaron eran la de la demostración, por la prueba de RLS de arriba; arreglada, pasan las 12 de ese fichero.
+· La suite de interfaz se cortó dos veces a mitad: un `next start` mío se había quedado huérfano y ocupaba el puerto. Las cifras de arriba son de la pasada completa que vino después.
+· Producción: **sin tocar en esta tanda.** Registro todavía abierto, migración nueva sin aplicar, código sin desplegar.
+
+**Siguiente**
+La tabla de cuentas en cuanto me la pases, comprobar producción tras el despliegue, y «Mi perfil».
+
+---
+
 ## 2026-11-05 · Subida a producción: pasos 1 a 3 hechos · commit cc86f92
 
 ### Paso 1 · Qué había en la nube
