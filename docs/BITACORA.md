@@ -9,6 +9,51 @@ como es**.
 
 ---
 
+## 2026-11-09 · El alta paso a paso y los avisos a dirección · commit e60bcab
+
+Puntos 1 y 2 de la revisión del 9 de noviembre.
+
+**Qué cambió**
+· **La base apunta dos fechas que no se guardaban**: el primer acceso y el cambio de la contraseña temporal. Lo hacen dos disparadores sobre `auth.users`, que solo guardaba el *último* acceso. Nadie las puede editar con sesión, tampoco dirección.
+· **La línea del alta**, en la ficha de cada candidatura (debajo de «Qué ve ella») y en el resumen de cada compañía: cuenta creada · primer acceso · contraseña cambiada · NDA firmado por ella · NDA firmado por IWL · due diligence entregado (x de y) · comité · acuerdo firmado. Cada paso lleva su estado, en palabra e icono; si está hecho, su fecha, y si está en curso, cuántos días lleva.
+· **Atención a los 5 días en el mismo paso, vencido a los 10.** Se cambian en Administración → Programa → «Alta de las personas».
+· **«Recordar»**, en el paso detenido. Abre un correo ya redactado en tu programa de correo o copia el texto para WhatsApp, y apunta en el registro que se lo recordaste y por qué canal.
+· **Avisos en el inicio de dirección** (`/cartera`), arriba del todo y también con la cartera vacía: «Fulana ha entrado por primera vez», que se da por visto con «Entendido». Debajo, «Altas en curso», con las detenidas primero.
+· **Contador en la barra**, lateral y de móvil: avisos sin ver más altas detenidas. Va en «Cartera» y forma parte del nombre del enlace, así que un lector de pantalla también lo dice.
+
+**Qué decidí yo**
+· **«Dirección» es `admin_iwl`.** Solo ese rol ve los avisos y el contador; el equipo de IWL ve la línea en las fichas, pero no los avisos.
+· **El comité de la línea es el de después del due diligence**: un comité anotado después de la contrafirma del NDA, o el paso a «Acuerdo propuesto». El comité de selección del embudo va antes del NDA, y en tu lista el comité venía después de la documentación.
+· **Sin cuenta, nadie está parado.** Crear la cuenta es cosa de IWL, y la línea mide dónde se ha quedado la persona.
+· **«Recordar» solo sale en los pasos de la persona**: primer acceso, contraseña, NDA y documentación. Los de IWL —contrafirmar, comité, acuerdo— no se le recuerdan a ella.
+· **Lo hecho fuera de la plataforma deja en «No aplica» los pasos de antes.** Una compañía que firmó antes de que existiera esto no sale con el NDA pendiente.
+· **Los pasos parados no se guardan como avisos: se calculan**, y desaparecen solos cuando el paso se mueve. Solo se guardan los hechos puntuales, que son los que se dan por vistos.
+· **Las cuentas que ya habían entrado** toman su último acceso como primero: mejor una fecha algo tardía que un «nunca ha entrado» falso. Su fecha de cambio de contraseña no se sabe y queda vacía.
+· **El NDA de la línea ya lee la firma de la plataforma** (`nda_firmas`), que llega con el punto 3. Hasta entonces esos dos pasos salen en curso o por hacer.
+
+**Cómo lo he probado**
+· 11 pruebas unitarias de la línea: umbrales, días naturales, «No aplica», descartadas, sin candidatura.
+· 6 de RLS, entrando como quien menos puede:
+  · el primer acceso se apunta una vez y avisa una vez;
+  · el cambio de contraseña se apunta;
+  · nadie se escribe su primer acceso, ni siquiera dirección;
+  · el equipo de IWL y una fundadora no ven los avisos, y dirección sí.
+· 1 de interfaz, el caso de Agustina: se le da cuenta, entra, cambia la contraseña. Dirección ve el aviso y el contador, lo da por visto, y la ficha marca los tres primeros pasos hechos y el NDA en curso. Parada doce días, sale vencido, y «Recordar» por WhatsApp queda apuntado.
+· Cuatro pruebas del menú buscaban un enlace llamado exactamente «Cartera». Con el contador se llama «Cartera 3 pendientes»; ahora aceptan los dos.
+
+### Qué necesito que decidas
+1. ¿El comité es el de después del due diligence, como lo he puesto?
+2. ¿Los avisos los ve también el equipo de IWL, o solo dirección?
+
+### Estado
+· 133 unitarias · 147 RLS · interfaz: 358 en verde y 4 saltadas en la pasada completa; los 4 fallos eran las pruebas del menú, ya arregladas, y su fichero pasa entero en los dos motores.
+· Migración nueva: `20261109100000_onboarding`.
+
+**Siguiente**
+La situación societaria, que llegó después y va en el mismo formulario de firma, y luego el NDA (punto 3) con tus cinco ajustes.
+
+---
+
 ## 2026-11-09 · Firmar el acuerdo ya no pide el identificador · commit d7959bb
 
 Punto 4 de tu revisión del 9 de noviembre, el que te bloqueaba con Siren. Lo demás va en entradas siguientes, por orden.
