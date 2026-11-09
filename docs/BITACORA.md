@@ -9,6 +9,44 @@ como es**.
 
 ---
 
+## 2026-11-09 · El modelo del flujo de entrada, rehecho con dos vías · commit 8f2c5e3
+
+**Qué cambió**
+· **`docs/IWL_Doc_ModeloFlujoEntrada_ES_v2_20261109.md`**: el modelo de datos rehecho con tu corrección y tus siete respuestas. La versión 1 queda como estaba, como historia.
+· **`docs/IWL_Doc_FlujoEntrada_ES_v2_20261109.md`**: el flujo, en palabras, con las dos vías, la decisión de incorporación y la propuesta de Acuerdo.
+
+Lo principal del modelo:
+· **Tramo y vía**: `tramo` (`entrada` o `incubacion`) y `via` (`aceleracion` o `construccion`). La vía la fija el acta de comité: la propone el estado de entrada y el comité la cambia con motivo.
+· **«Por construir»**, en el due diligence y en el business plan. No cuenta como pendiente ni vencido, ni en el score. Pasa a «por entregar» al enlazarse a un hito con fecha.
+· **La compañía nace al contrafirmar el NDA**, en las dos vías, y la candidata pasa a fundadora en el mismo paso.
+· **La situación societaria** la dice la fundadora una vez, e IWL la confirma.
+· **El estado `diligencia` pasa a llamarse `entrada`**, y `nda` se lee «NDA enviado».
+· **El comité** sale de una lista por defecto en Programa, editable en cada acta. Su acta lleva la vía. «Aplazada» se queda en Comité, con fecha de revisión y aviso ese día.
+· **Un NDA propio de la candidata** cuando su comentario cambia el texto, que anula su firma si IWL aún no ha firmado.
+· **La decisión de incorporación** queda guardada con su base (due diligence o estratégica). Un «no» archiva la compañía como «No incorporada».
+· **Proponer el Acuerdo**: la fundadora lo comenta y lo acepta.
+· **Firmar el Acuerdo**: en Aceleración exige los puntos obligatorios validados; en Construcción, no.
+· **«En entrada»** al lado de la cartera, con la vía en cada fila.
+
+### Qué decidí yo
+· **Los dos documentos son versiones nuevas (v2)**, y las v1 se quedan. El de flujo v1 solo está en tu copia de `main`, sin versionar; el v2 va en la rama.
+· **Pasar de Construcción a Aceleración** lo he dejado como cambio de dirección, con motivo y en el registro, sin volver a comité.
+· **«Por construir» pasa a «por entregar» solo**, en cuanto el punto se enlaza a un hito con fecha, y toma esa fecha.
+
+### Qué necesito que decidas
+Las tres preguntas que quedan están al final del modelo:
+1. ¿Pasar de Construcción a Aceleración necesita comité?
+2. ¿«Por construir» pasa a «por entregar» automáticamente al enlazarlo a un hito con fecha, o lo pasa IWL a mano?
+3. ¿La propuesta de Acuerdo es ya el borrador del Anexo, o son dos cosas?
+
+### Estado
+· Solo documentos: sin código ni migraciones en este paso. Las suites, como en la entrada anterior.
+
+**Siguiente**
+Con tu aprobación, construirlo por el orden de la revisión: reuniones, comité, NDA enviado y comentado, la compañía en entrada con sus dos vías, y «En entrada».
+
+---
+
 ## 2026-11-09 · Prueba_Ro: los dos fallos, y el modelo del nuevo flujo · commit 9b8f463
 
 **Los dos fallos eran uno**
