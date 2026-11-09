@@ -9,6 +9,57 @@ como es**.
 
 ---
 
+## 2026-11-09 · Prueba_Ro: los dos fallos, y el modelo del nuevo flujo · commit 9b8f463
+
+**Los dos fallos eran uno**
+
+**«Con quién se habla» no salía vacío: los datos estaban guardados.** Lo que pasaba es que no se veían.
+· Con un enlace largo en «Lo que ha mandado», o un nombre o un correo largos sin espacios, la columna de la izquierda se estiraba hasta 873 px. Una columna con `fr` no baja nunca del ancho de su contenido más largo sin cortes.
+· Eso empujaba la columna de la derecha, con «Con quién se habla», fuera de la pantalla, entre x = 1180 y x = 1815. La ficha se salía por la derecha y el bloque parecía vacío.
+
+Lo reproduje a 1024, 1180 y 390 px antes de tocar nada.
+
+**Qué cambió**
+· Las columnas de la ficha, con `minmax(0, …)`. Lo que no cabe se corta con sus puntos suspensivos.
+· El nombre de la startup y los datos de contacto se parten antes que salirse.
+· Un desplegable ya no es más ancho que su formulario. Lo sacaba en el móvil el de «Situación societaria», que es mío, de la tanda anterior.
+· Una prueba de interfaz carga una candidatura con enlaces y textos largos y comprueba a 390, 1180 y 1440 px que la página no desborda y que el contacto se ve dentro de la pantalla. Si algo se sale, el mensaje dice qué.
+
+**Y otro fallo que salió buscándolos.** Corregir los datos de una candidatura **borraba en silencio** cinco campos, cada vez que se guardaba: cómo llegó, en qué punto dice estar, cuántas personas son, el liderazgo femenino y las notas. El formulario de corrección no los enseña, y la acción, que usaba el esquema del alta, los dejaba en blanco. Ahora solo se guarda lo que trae el formulario, y una prueba lo comprueba. **Si en producción ya se corrigió alguna candidatura, esos campos pueden haberse perdido** y habría que volver a escribirlos.
+
+**El modelo de datos del nuevo flujo**, para que lo apruebes antes de construir: `docs/IWL_Doc_ModeloFlujoEntrada_ES_v1_20261109.md`. Cubre los puntos 3 a 7:
+· la compañía nace al contrafirmar el NDA, en un «tramo» de due diligence que no cuenta en la cartera;
+· la candidata pasa a fundadora en el mismo paso;
+· la situación societaria es lo primero que se le pregunta;
+· reuniones, con si abrió el enlace;
+· acta de comité con la firma de cada miembro;
+· enviar y comentar el NDA;
+· la vista «En due diligence».
+Lo ya hecho —el NDA, la situación societaria, el alta paso a paso— se reutiliza.
+
+### Qué decidí yo
+· **Primero los fallos y el modelo; nada del flujo nuevo construido.** Pediste el modelo antes, y lo he respetado.
+· **El NDA ya hecho se queda como está** hasta que apruebes el modelo. Funciona, y es la contrafirma sobre la que el modelo engancha la creación de la compañía.
+
+### Qué necesito que decidas
+Las siete preguntas están al final del documento del modelo. En resumen:
+1. ¿El «tramo» va en una columna aparte, y no como una fase más?
+2. ¿Etapa y perfil técnico se dejan vacíos durante el due diligence, y KPI y hoja de ruta se crean al firmar el Acuerdo?
+3. ¿La fundadora dice la situación societaria una vez, y después solo IWL?
+4. ¿Quién forma el comité: se elige en cada acta, o es una lista fija?
+5. ¿Una versión del NDA propia de la candidata, que anula su firma si IWL aún no ha firmado?
+6. ¿Renombro los estados `nda` y `diligencia`?
+7. ¿Qué pasa con una candidatura cuyo acta dice «aplazada»?
+
+### Estado
+· 151 unitarias · 157 RLS · **368 de interfaz en verde y 4 saltadas, dos pasadas seguidas**.
+· Sin migración nueva en este paso.
+
+**Siguiente**
+Lo que digas del modelo, y construirlo por tu orden: reuniones, comité, NDA enviado y comentado, la compañía en due diligence y su vista.
+
+---
+
 ## 2026-11-09 · El NDA, firmado en la plataforma · commit ef6b8db
 
 Punto 3 del onboarding, con tus cinco ajustes. Es la firma sobre la que se apoya el nuevo flujo de entrada: «la contrafirma que lo dispara todo». Crear la compañía al contrafirmar llega con el nuevo corte, cuando apruebes su modelo de datos.
