@@ -258,7 +258,7 @@ export async function VistaDiligencia({
                     {permisos.puedeEscribir &&
                     !punto.caducado &&
                     (permisos.puedeValidar ||
-                      !["en_revision", "validado", "bloqueante"].includes(
+                      !["en_revision", "validado", "bloqueante", "no_aplica"].includes(
                         punto.status,
                       )) ? (
                       <>

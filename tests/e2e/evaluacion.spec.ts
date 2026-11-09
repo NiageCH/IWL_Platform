@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrar, entrarComo } from "./entrada";
+import { USUARIOS, borrar, entrarComo, elegirSituacion } from "./entrada";
 
 /**
  * Abrir, puntuar y publicar una evaluación técnica.
@@ -24,6 +24,7 @@ test("el revisor abre la evaluación, puntúa y la publica", async ({ page }) =>
   await alta.locator('input[name="slug"]').fill(slug);
   await alta.locator('select[name="stage"]').selectOption("semilla");
   await alta.locator('select[name="tech_profile"]').selectOption("software");
+  await elegirSituacion(alta);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/dada de alta/)).toBeVisible();
 

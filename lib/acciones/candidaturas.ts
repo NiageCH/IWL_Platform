@@ -11,6 +11,7 @@ import {
   normalizarWeb,
   primeroLibre,
 } from "@/lib/identificador";
+import { camposSocietarios, exigir, leerFirmantes, paraGuardar } from "@/lib/societario";
 import {
   error,
   fechaOpcional,
@@ -424,13 +425,34 @@ const esquemaFirma = z.object({
     ),
   /** La web de la compañía, como se escriba. Se normaliza en la acción */
   website: z.union([z.string(), z.null()]).optional(),
+  /** Quién firma: las personales una por línea, y quien representa a la sociedad */
+  firmantes: z.union([z.string(), z.null()]).optional(),
+  representante: z.union([z.string(), z.null()]).optional(),
   stage: z.enum(["pre_semilla", "semilla", "serie_a"]),
   tech_profile: z.enum(["software", "software_ia", "hardware"]),
   phase_code: textoOpcional,
   roadmap_template: z.string().trim().nullable().catch(null),
   roadmap_start: fechaOpcional,
   firmado_on: fechaOpcional,
-});
+})
+  .merge(camposSocietarios)
+  .superRefine((d, ctx) => {
+    exigir(d, ctx);
+    const firmantes = leerFirmantes(d.situacion_societaria, d.firmantes, d.representante);
+    if (d.situacion_societaria === "constituida" && !d.representante?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["representante"],
+        message: "Falta quién firma en nombre de la sociedad.",
+      });
+    } else if (firmantes.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["firmantes"],
+        message: "Sin sociedad firman las fundadoras a título personal: escribe sus nombres.",
+      });
+    }
+  });
 
 export async function firmarCandidatura(
   formData: FormData,
@@ -485,16 +507,19 @@ export async function firmarCandidatura(
   const slug = datos.slug || primeroLibre(base, ocupados);
 
   /*
-   * La web se escribe en la candidatura y la firma la copia a la compañía,
-   * como copia el nombre, el sector y lo demás.
+   * La web, la situación societaria y quién firma se escriben en la
+   * candidatura, y la firma los pasa a la compañía. La base se niega a
+   * firmar sin situación ni firmantes, así que no depende de esta pantalla.
    */
-  if (web) {
-    const { error: falloWeb } = await supabase
-      .from("candidaturas")
-      .update({ website: web })
-      .eq("id", datos.id);
-    if (falloWeb) return traducirError(falloWeb);
-  }
+  const { error: falloDatos } = await supabase
+    .from("candidaturas")
+    .update({
+      ...(web ? { website: web } : {}),
+      ...paraGuardar(datos),
+      acuerdo_firmantes: leerFirmantes(datos.situacion_societaria, datos.firmantes, datos.representante),
+    })
+    .eq("id", datos.id);
+  if (falloDatos) return traducirError(falloDatos);
 
   const { error: falloFirma } = await supabase.rpc("firmar_candidatura", {
     p_candidatura: datos.id,
@@ -787,4 +812,36 @@ export async function pedirDocumento(formData: FormData): Promise<Resultado> {
 
   refrescar(datos.candidatura_id);
   return ok("Pedido. Lo verá en su lista.");
+}
+
+/**
+ * La situación societaria de una candidatura, antes de firmar.
+ *
+ * Conviene decirla pronto: el due diligence de selección se pide al llegar
+ * al NDA, y sin sociedad no tiene sentido pedirle la escritura. Al guardarla,
+ * la base ajusta lo que se le pide (`ajustar_peticiones_societarias`).
+ */
+const esquemaSituacion = z
+  .object({ id: uuid })
+  .merge(camposSocietarios)
+  .superRefine((d, ctx) => exigir(d, ctx));
+
+export async function guardarSituacionCandidatura(formData: FormData): Promise<Resultado> {
+  const { fallo } = await soloIwl();
+  if (fallo) return fallo;
+
+  const validado = validar(esquemaSituacion, formData);
+  if (validado.fallo) return validado.fallo;
+  const datos = validado.datos;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase
+    .from("candidaturas")
+    .update(paraGuardar(datos))
+    .eq("id", datos.id);
+
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar(datos.id);
+  return ok("Guardada. Lo que se le pide del due diligence ya va según esta situación.");
 }

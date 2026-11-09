@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * Entrada en la aplicación para los tests de interfaz.
@@ -366,4 +366,26 @@ export async function insertar<T = Record<string, unknown>>(
 
   const [creada] = (await respuesta.json()) as T[];
   return creada;
+}
+
+/**
+ * Rellena la situación societaria de un formulario de alta o de firma.
+ *
+ * Es obligatoria desde que Siren entró sin sociedad. Constituida es la que
+ * menos arrastra —ni hito de constituirla ni puntos que no aplican—, así
+ * que es la que usan las pruebas que no van de esto.
+ */
+export async function elegirSituacion(
+  formulario: Locator,
+  situacion: "sin_constituir" | "en_constitucion" | "constituida" = "constituida",
+): Promise<void> {
+  await formulario.locator('select[name="situacion_societaria"]').selectOption(situacion);
+  if (situacion === "en_constitucion") {
+    await formulario.locator('input[name="constitucion_prevista"]').fill("2027-01-15");
+  }
+  if (situacion === "constituida") {
+    await formulario.locator('select[name="forma_juridica"]').selectOption("sl");
+    await formulario.locator('input[name="denominacion_social"]').fill("Sociedad de prueba SL");
+    await formulario.locator('input[name="cif"]').fill("B00000000");
+  }
 }

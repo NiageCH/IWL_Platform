@@ -5,6 +5,7 @@ import {
   borrar,
   consultar,
   entrarComo,
+  elegirSituacion,
 } from "./entrada";
 
 /**
@@ -102,6 +103,12 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
   await page.getByText("Firmar el acuerdo y crear la compañía").click();
   const firma = page.locator("form", { has: page.locator('input[name="slug"]') });
   await firma.getByLabel("Web de la compañía").fill(`www.${SLUG}.es`);
+  /*
+   * Sin sociedad, como Siren: firman las fundadoras a título personal, y
+   * el campo ya trae a la persona de contacto.
+   */
+  await elegirSituacion(firma, "sin_constituir");
+  await expect(firma.getByLabel(/Firman a título personal/)).not.toHaveValue("");
   await firma.getByRole("button", { name: /Firmar y crear/ }).click();
 
   /*
@@ -122,6 +129,9 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
   // Y existe de verdad, con el identificador sacado del nombre
   await page.goto(`/cartera/${SLUG}`);
   await expect(page.getByRole("heading", { name: STARTUP })).toBeVisible();
+
+  // Con su situación a la vista, como dato
+  await expect(page.getByText("Sin sociedad constituida").first()).toBeVisible();
 
   // Con la web completa, aunque se escribiera sin https
   const [creada] = await consultar<{ website: string | null }>(
@@ -364,6 +374,7 @@ test("un identificador ocupado se dice en su campo, no en un aviso general", asy
   await page.getByText("Firmar el acuerdo y crear la compañía").click();
   const firma = page.locator("form", { has: page.locator('input[name="slug"]') });
 
+  await elegirSituacion(firma, "sin_constituir");
   await firma.getByText("Opciones avanzadas").click();
   await firma
     .getByLabel("Identificador en la plataforma, no es la web")

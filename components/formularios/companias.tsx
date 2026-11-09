@@ -21,6 +21,8 @@ import {
   Texto,
 } from "@/components/ui/formulario";
 import { nombrePersona } from "@/lib/etiquetas";
+import type { DatosSocietarios } from "@/lib/societario";
+import { CamposSituacion } from "@/components/formularios/situacion";
 
 /**
  * Ciclo de vida de una compañía.
@@ -56,6 +58,7 @@ export interface FichaCompania {
   founded_on: string | null;
   female_leadership_pct: number | string | null;
   entry_state: string | null;
+  situacion: Partial<DatosSocietarios>;
   archivada: boolean;
   tiene_actividad: boolean;
 }
@@ -222,6 +225,25 @@ export function EditarCompania({
                     }
                   />
                 </Campo>
+              </div>
+
+              {/*
+                Opcional aquí: las compañías de antes no la tienen, y pedirla
+                para corregir la web bloquearía la ficha. Cambiarla ajusta el
+                due diligence y el hito de constituir la sociedad.
+              */}
+              <div className="border-t border-filete pt-4">
+                <CamposSituacion
+                  inicial={compania.situacion}
+                  obligatorio={false}
+                  errores={
+                    Object.fromEntries(
+                      ["situacion_societaria", "constitucion_prevista", "forma_juridica", "denominacion_social", "cif"]
+                        .map((n) => [n, campo(n)])
+                        .filter(([, e]) => e),
+                    ) as Record<string, string>
+                  }
+                />
               </div>
 
               <div className="flex gap-2">

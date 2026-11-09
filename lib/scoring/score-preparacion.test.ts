@@ -152,3 +152,54 @@ describe("calcularScorePreparacion", () => {
     expect(score.valor).toBe(Math.round(esperado * 10) / 10);
   });
 });
+
+describe("un punto que no aplica", () => {
+  /*
+   * Un proyecto sin sociedad no tiene escritura: si el punto contara como
+   * cero, parecería peor preparado por algo que no se le puede pedir.
+   */
+  it("ni suma ni resta: sale del denominador", () => {
+    const areas: AreaDd[] = [
+      {
+        codigo: "societario_legal",
+        nombre: "Societario y legal",
+        peso: 1,
+        puntos: [punto("escritura", "no_aplica"), punto("pacto", "validado")],
+      },
+    ];
+
+    const [area] = calcularAreas(areas, AHORA);
+    expect(area.valor).toBe(100);
+    expect(area.total).toBe(1);
+    expect(area.pendientes).toBe(0);
+  });
+
+  it("un área donde nada aplica no es un cero que cuente como malo", () => {
+    const areas: AreaDd[] = [
+      {
+        codigo: "societario_legal",
+        nombre: "Societario y legal",
+        peso: 1,
+        puntos: [punto("escritura", "no_aplica"), punto("actas", "no_aplica")],
+      },
+    ];
+
+    expect(calcularAreas(areas, AHORA)[0].total).toBe(0);
+  });
+});
+
+describe("la media con un área que no aplica", () => {
+  it("el área entera fuera de la media, no como un cero", () => {
+    const areas: AreaDd[] = [
+      { codigo: "financiero", nombre: "Financiero", peso: 1, puntos: [punto("a", "validado")] },
+      {
+        codigo: "societario_legal",
+        nombre: "Societario y legal",
+        peso: 1,
+        puntos: [punto("escritura", "no_aplica"), punto("actas", "no_aplica")],
+      },
+    ];
+
+    expect(calcularScorePreparacion(areas, null, 0, AHORA).valor).toBe(100);
+  });
+});

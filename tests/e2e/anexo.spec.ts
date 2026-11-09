@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrar, entrarComo } from "./entrada";
+import { USUARIOS, borrar, entrarComo, elegirSituacion } from "./entrada";
 
 /**
  * Abrir, rellenar y firmar el Anexo de Programa.
@@ -22,6 +22,7 @@ test("el Anexo se abre, se rellena y se firma", async ({ page }) => {
   await alta.locator('input[name="slug"]').fill(slug);
   await alta.locator('select[name="stage"]').selectOption("semilla");
   await alta.locator('select[name="tech_profile"]').selectOption("software");
+  await elegirSituacion(alta);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/dada de alta/)).toBeVisible();
 

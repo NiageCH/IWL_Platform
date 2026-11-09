@@ -11,6 +11,7 @@ import {
   editarCandidatura,
   firmarCandidatura,
   guardarAcuerdo,
+  guardarSituacionCandidatura,
   moverCandidatura,
   quitarEnlace,
   reabrirCandidatura,
@@ -31,6 +32,8 @@ import {
   type EstadoCandidatura,
 } from "@/lib/embudo";
 import { identificadorDe } from "@/lib/identificador";
+import type { DatosSocietarios, Situacion } from "@/lib/societario";
+import { CamposFirmantes, CamposSituacion } from "@/components/formularios/situacion";
 
 const ESTADOS_ENTRADA = [
   { codigo: "idea", nombre: "Idea" },
@@ -432,12 +435,20 @@ export function FirmarAcuerdo({
   nombre,
   plantillas,
   fases,
+  situacion,
+  fundadoras,
 }: {
   id: string;
   nombre: string;
   plantillas: { id: string; name: string }[];
   fases: { code: string; name: string }[];
+  /** Lo que ya se dijo de la sociedad en la candidatura, para no volver a pedirlo */
+  situacion?: Partial<DatosSocietarios>;
+  /** Quién firmaría a título personal si no hay sociedad: la persona de contacto */
+  fundadoras: string;
 }) {
+  const [elegida, setElegida] = useState<Situacion | "">(situacion?.situacion_societaria ?? "");
+
   return (
     <Desplegable titulo={`Firmar el acuerdo y crear la compañía`}>
       <p className="mb-3 text-sm text-secundario">
@@ -503,6 +514,23 @@ export function FirmarAcuerdo({
             >
               <Texto type="date" name="firmado_on" />
             </Campo>
+
+            {/*
+              Desde dónde parte y quién firma. Obligatorio: sin sociedad,
+              lo que se le pide y quién firma cambian.
+            */}
+            <div className="border-t border-filete pt-4">
+              <CamposSituacion
+                inicial={situacion}
+                errores={r.ok ? undefined : r.campos}
+                onCambio={setElegida}
+              />
+            </div>
+            <CamposFirmantes
+              situacion={elegida}
+              fundadoras={fundadoras}
+              errores={r.ok ? undefined : r.campos}
+            />
 
             {/*
               El identificador no se le pide a nadie: sale del nombre. Se
@@ -833,5 +861,28 @@ export function EditarCandidatura({
         )}
       </Formulario>
     </div>
+  );
+}
+
+/** La situación societaria de la candidatura, antes de firmar */
+export function SituacionCandidatura({
+  id,
+  inicial,
+}: {
+  id: string;
+  inicial?: Partial<DatosSocietarios>;
+}) {
+  return (
+    <Formulario accion={guardarSituacionCandidatura} className="px-4 py-4">
+      {(r) => (
+        <>
+          <input type="hidden" name="id" value={id} />
+          <CamposSituacion inicial={inicial} errores={r.ok ? undefined : r.campos} />
+          <div>
+            <Boton variante="secundario">Guardar la situación</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
   );
 }

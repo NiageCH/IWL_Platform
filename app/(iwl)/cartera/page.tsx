@@ -27,6 +27,7 @@ import { cn, euros, numero, porcentaje } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { leerAltasEnCurso, leerAvisos } from "@/lib/datos/onboarding";
 import { AvisosDireccion } from "@/components/vistas/alta";
+import { describirSituacion } from "@/lib/societario";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -267,6 +268,7 @@ export default async function Cartera() {
                   <span className="block truncate text-xs text-metadato">
                     {ETAPAS[c.compania.stage] ?? c.compania.stage}
                     {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
+                    {describirSituacion(c.compania) ? ` · ${describirSituacion(c.compania)}` : ""}
                   </span>
                   {c.compania.is_demo ? (
                     <span className="mt-1 block">

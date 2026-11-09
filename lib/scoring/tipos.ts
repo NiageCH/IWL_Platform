@@ -22,7 +22,9 @@ export type EstadoPuntoDd =
   | "entregado"
   | "en_revision"
   | "validado"
-  | "bloqueante";
+  | "bloqueante"
+  /** No se le puede pedir a este proyecto: una escritura, a quien no tiene sociedad */
+  | "no_aplica";
 
 /** Una dimensión técnica tal como la necesita el cálculo */
 export interface DimensionTecnica {

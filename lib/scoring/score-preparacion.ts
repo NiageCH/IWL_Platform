@@ -20,6 +20,8 @@ const VALOR_ESTADO: Record<EstadoPuntoDd, number> = {
   en_revision: 0.75,
   validado: 1,
   bloqueante: 0,
+  // No se cuenta: sale del denominador antes de llegar aquí
+  no_aplica: 0,
 };
 
 /**
@@ -39,9 +41,15 @@ function estadoEfectivo(
 
 export function calcularAreas(areas: AreaDd[], ahora = new Date()): ResultadoArea[] {
   return areas.map((area) => {
-    const obligatorios = area.puntos.filter((p) => p.obligatorio);
+    /*
+     * Lo que no aplica no existe para el score: ni suma ni resta. Contarlo
+     * como cero haría que un proyecto sin sociedad pareciera peor
+     * preparado por no tener escritura, y lo sin medir no es un cero.
+     */
+    const aplicables = area.puntos.filter((p) => p.estado !== "no_aplica");
+    const obligatorios = aplicables.filter((p) => p.obligatorio);
     // Los puntos opcionales suman si están, pero no restan si faltan
-    const opcionalesAportados = area.puntos.filter(
+    const opcionalesAportados = aplicables.filter(
       (p) => !p.obligatorio && estadoEfectivo(p.estado, p.caducaEl, ahora) !== "pendiente",
     );
     const contados = [...obligatorios, ...opcionalesAportados];
@@ -53,7 +61,7 @@ export function calcularAreas(areas: AreaDd[], ahora = new Date()): ResultadoAre
 
     const valor = contados.length === 0 ? 0 : redondear((suma / contados.length) * 100);
 
-    const estadosEfectivos = area.puntos.map((p) =>
+    const estadosEfectivos = aplicables.map((p) =>
       estadoEfectivo(p.estado, p.caducaEl, ahora),
     );
 
@@ -62,7 +70,7 @@ export function calcularAreas(areas: AreaDd[], ahora = new Date()): ResultadoAre
       nombre: area.nombre,
       peso: area.peso,
       valor,
-      total: area.puntos.length,
+      total: aplicables.length,
       validados: estadosEfectivos.filter((e) => e === "validado").length,
       pendientes: estadosEfectivos.filter((e) => e === "pendiente").length,
       bloqueantes: estadosEfectivos.filter((e) => e === "bloqueante").length,
@@ -85,8 +93,20 @@ export function calcularScorePreparacion(
 ): ScorePreparacion {
   const resultados = calcularAreas(areas, ahora);
 
-  let sumaPonderada = resultados.reduce((acc, a) => acc + a.peso * a.valor, 0);
-  let pesoTotal = resultados.reduce((acc, a) => acc + a.peso, 0);
+  /*
+   * Un área donde no aplica nada —todo lo societario de un proyecto sin
+   * sociedad— no entra en la media. Con su cero dentro, el proyecto
+   * parecería peor preparado por algo que no se le puede pedir.
+   */
+  const noAplica = new Set(
+    areas
+      .filter((a) => a.puntos.length > 0 && a.puntos.every((p) => p.estado === "no_aplica"))
+      .map((a) => a.codigo),
+  );
+  const medibles = resultados.filter((r) => !noAplica.has(r.codigo));
+
+  let sumaPonderada = medibles.reduce((acc, a) => acc + a.peso * a.valor, 0);
+  let pesoTotal = medibles.reduce((acc, a) => acc + a.peso, 0);
 
   let aportacionTecnica: ScorePreparacion["aportacionTecnica"] = null;
 

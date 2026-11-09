@@ -5,6 +5,7 @@ import {
   borrar,
   consultar,
   entrarComo,
+  elegirSituacion,
 } from "./entrada";
 
 /*
@@ -240,6 +241,7 @@ test("una compañía con histórico se borra, pero con todo a la vista", async (
   await alta.locator('input[name="slug"]').fill(slug);
   await alta.locator('select[name="stage"]').selectOption("semilla");
   await alta.locator('select[name="tech_profile"]').selectOption("software");
+  await elegirSituacion(alta);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/dada de alta/)).toBeVisible();
 

@@ -124,6 +124,13 @@ export default async function AdminCompanias() {
     founded_on: c.founded_on,
     female_leadership_pct: c.female_leadership_pct,
     entry_state: c.entry_state,
+    situacion: {
+      situacion_societaria: c.situacion_societaria,
+      constitucion_prevista: c.constitucion_prevista,
+      forma_juridica: c.forma_juridica,
+      denominacion_social: c.denominacion_social,
+      cif: c.cif,
+    },
     archivada: c.archived_at !== null,
     tiene_actividad: c.tiene_actividad ?? true,
   });

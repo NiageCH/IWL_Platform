@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/primitivas";
 import {
   AccesoCandidata,
+  SituacionCandidatura,
   AcuerdoCandidatura,
   AnotarEvento,
   DescartarCandidatura,
@@ -405,6 +406,29 @@ export default async function FichaCandidatura({
             </div>
           </Bloque>
 
+          {/*
+            Desde dónde parte. Mejor decirlo antes del NDA: lo que se le
+            pide del due diligence depende de que haya sociedad. Firmada,
+            la situación es de la compañía y se cambia en su ficha.
+          */}
+          {estado !== "firmada" ? (
+            <Bloque>
+              <TituloBloque accion={<Metadato>Desde dónde parte</Metadato>}>
+                Situación societaria
+              </TituloBloque>
+              <SituacionCandidatura
+                id={c.id!}
+                inicial={{
+                  situacion_societaria: c.situacion_societaria,
+                  constitucion_prevista: c.constitucion_prevista,
+                  forma_juridica: c.forma_juridica,
+                  denominacion_social: c.denominacion_social,
+                  cif: c.cif,
+                }}
+              />
+            </Bloque>
+          ) : null}
+
           {estado !== "firmada" && estado !== "descartada" ? (
             <Bloque>
               <FirmarAcuerdo
@@ -412,6 +436,14 @@ export default async function FichaCandidatura({
                 nombre={c.nombre ?? ""}
                 plantillas={plantillas.data ?? []}
                 fases={fases.data ?? []}
+                situacion={{
+                  situacion_societaria: c.situacion_societaria,
+                  constitucion_prevista: c.constitucion_prevista,
+                  forma_juridica: c.forma_juridica,
+                  denominacion_social: c.denominacion_social,
+                  cif: c.cif,
+                }}
+                fundadoras={c.contacto_nombre ?? ""}
               />
               <DescartarCandidatura id={c.id!} />
             </Bloque>

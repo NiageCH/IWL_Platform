@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { AJUSTES_BASE, USUARIOS, ajustar, borrar, entrarComo } from "./entrada";
+import { AJUSTES_BASE, USUARIOS, ajustar, borrar, entrarComo, elegirSituacion } from "./entrada";
 
 /**
  * Administración.
@@ -55,6 +55,11 @@ test("dar de alta una compañía la deja lista para trabajar", async ({ page }) 
   await alta.locator('input[name="slug"]').fill(slug);
   await alta.locator('select[name="stage"]').selectOption("semilla");
   await alta.locator('select[name="tech_profile"]').selectOption("hardware");
+  /*
+   * Sin sociedad, como Siren: es la situación que más cambia lo que se le
+   * pide, así que es la que se comprueba aquí.
+   */
+  await elegirSituacion(alta, "sin_constituir");
   await alta.getByRole("button", { name: "Dar de alta" }).click();
 
   await expect(page.getByText(/dada de alta, con su checklist/)).toBeVisible();
@@ -62,6 +67,17 @@ test("dar de alta una compañía la deja lista para trabajar", async ({ page }) 
   // Y la compañía tiene con qué trabajar desde el primer momento
   await page.goto(`/cartera/${slug}/diligencia`);
   await expect(page.getByText("Societario y legal").first()).toBeVisible();
+
+  // Sin sociedad: la escritura no aplica, y se pide lo que la sustituye
+  await expect(page.getByText("Sin sociedad constituida").first()).toBeVisible();
+  await expect(page.getByText("Pacto entre fundadoras").first()).toBeVisible();
+  await expect(
+    page.locator("li").filter({ hasText: "Escritura de constitución" }).getByText("No aplica").first(),
+  ).toBeVisible();
+
+  // Y la hoja de ruta lleva el hito de constituirla
+  await page.goto(`/cartera/${slug}/ruta`);
+  await expect(page.getByText("Constituir la sociedad")).toBeVisible();
 
   await page.goto(`/cartera/${slug}/plan`);
   await expect(page.getByText("Necesidad de capital").first()).toBeVisible();
@@ -78,6 +94,7 @@ test("el identificador se valida antes de crear nada", async ({ page }) => {
 
   await alta.locator('input[name="name"]').fill("Con identificador repetido");
   await alta.locator('input[name="slug"]').fill("marea-clinica");
+  await elegirSituacion(alta);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
 
   await expect(

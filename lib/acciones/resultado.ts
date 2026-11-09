@@ -43,6 +43,13 @@ const ETIQUETAS: Record<string, string> = {
   slug: "el identificador en la plataforma",
   roadmap_start: "la fecha de arranque",
   firmado_on: "la fecha de la firma",
+  situacion_societaria: "la situación societaria",
+  constitucion_prevista: "la fecha prevista de constitución",
+  forma_juridica: "la forma jurídica",
+  denominacion_social: "la denominación social",
+  cif: "el CIF",
+  firmantes: "quién firma",
+  representante: "quién firma por la sociedad",
   nombre: "el nombre",
   pais: "el país",
 };

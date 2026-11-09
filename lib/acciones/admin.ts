@@ -5,6 +5,7 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
+import { camposSocietarios, exigir, paraGuardar } from "@/lib/societario";
 import {
   error,
   fechaOpcional,
@@ -91,7 +92,10 @@ const esquemaCompania = z.object({
     ),
   founded_on: fechaOpcional,
   website: textoOpcional,
-});
+})
+  // Desde dónde parte: obligatorio al dar de alta, como al firmar
+  .merge(camposSocietarios)
+  .superRefine((d, ctx) => exigir(d, ctx));
 
 /**
  * Alta de una compañía.
@@ -106,7 +110,7 @@ export async function crearCompania(formData: FormData): Promise<Resultado> {
 
   const supabase = await clienteServidor();
 
-  const { error: falloBase } = await supabase.rpc("crear_compania", {
+  const { data: nueva, error: falloBase } = await supabase.rpc("crear_compania", {
     p_name: datos.name,
     p_slug: datos.slug,
     // Los opcionales se envían como undefined y no como null: la función
@@ -133,6 +137,17 @@ export async function crearCompania(formData: FormData): Promise<Resultado> {
     }
     return traducirError(falloBase);
   }
+
+  /*
+   * La situación va después de crearla: la función de alta no la conoce, y
+   * escribirla dispara `ajustar_societario`, que pone «No aplica» a lo
+   * societario y el hito de constituirla cuando no hay sociedad.
+   */
+  const { error: falloSituacion } = await supabase
+    .from("companies")
+    .update(paraGuardar(datos))
+    .eq("id", nueva as string);
+  if (falloSituacion) return traducirError(falloSituacion);
 
   refrescar();
   return ok(
@@ -176,6 +191,21 @@ const esquemaFicha = z.object({
     100,
     "Un porcentaje entre 0 y 100.",
   ),
+  /*
+   * La situación societaria, opcional al editar: las compañías de antes
+   * no la tienen, y pedirla para corregir la web bloquearía la ficha. Si
+   * llega, se valida igual que al dar de alta.
+   */
+  situacion_societaria: z
+    .union([camposSocietarios.shape.situacion_societaria, z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  constitucion_prevista: camposSocietarios.shape.constitucion_prevista,
+  forma_juridica: camposSocietarios.shape.forma_juridica,
+  denominacion_social: camposSocietarios.shape.denominacion_social,
+  cif: camposSocietarios.shape.cif,
+}).superRefine((d, ctx) => {
+  if (d.situacion_societaria) exigir({ ...d, situacion_societaria: d.situacion_societaria }, ctx);
 });
 
 /** La etapa y la fase las mueve IWL: deciden el nivel objetivo y el score */
@@ -184,11 +214,25 @@ export async function editarCompania(formData: FormData): Promise<Resultado> {
   if (fallo) return fallo;
 
   const supabase = await clienteServidor();
-  const { id, slug, ...cambios } = datos;
+  const {
+    id,
+    slug,
+    situacion_societaria,
+    constitucion_prevista,
+    forma_juridica,
+    denominacion_social,
+    cif,
+    ...cambios
+  } = datos;
+
+  // Sin situación elegida, lo societario no se toca
+  const societario = situacion_societaria
+    ? paraGuardar({ situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social, cif })
+    : {};
 
   const { error: falloBase } = await supabase
     .from("companies")
-    .update(cambios)
+    .update({ ...cambios, ...societario })
     .eq("id", id);
 
   if (falloBase) return traducirError(falloBase);

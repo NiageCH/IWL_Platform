@@ -39,7 +39,7 @@ function refrescar(slug: string) {
 const esquemaEstado = z.object({
   slug: textoObligatorio(),
   id: uuid,
-  status: z.enum(["pendiente", "entregado", "en_revision", "validado", "bloqueante"]),
+  status: z.enum(["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica"]),
   notes: textoOpcional,
 });
 

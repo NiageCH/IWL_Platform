@@ -1,5 +1,6 @@
 "use client";
 
+import { CamposSituacion } from "@/components/formularios/situacion";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { FileText, KeyRound } from "lucide-react";
@@ -234,6 +235,11 @@ export function FormularioCompania({
               <Campo etiqueta="Web">
                 <Texto name="website" type="url" placeholder="https://" />
               </Campo>
+            </div>
+
+            {/* Desde dónde parte: cambia qué se le pide y qué hito tiene delante */}
+            <div className="border-t border-filete pt-4">
+              <CamposSituacion errores={!resultado.ok ? resultado.campos : undefined} />
             </div>
 
             <div className="grid gap-4 border-t border-filete pt-4 sm:grid-cols-2">

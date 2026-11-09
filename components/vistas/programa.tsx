@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { ResumenCompania } from "@/lib/datos/compania";
+import { equityPendiente } from "@/lib/societario";
 import {
   Bloque,
   Metadato,
@@ -159,8 +160,20 @@ export async function VistaPrograma({
               etiqueta="Equity"
               valor={
                 anexo.data.equity_pct === null
-                  ? "—"
+                  ? equityPendiente(compania.situacion_societaria)
+                    ? "Pendiente"
+                    : "—"
                   : `${numero(Number(anexo.data.equity_pct), 0)} %`
+              }
+              /*
+               * Sin sociedad no hay participaciones que comprar: el equity
+               * queda pendiente de constituirla, ligado a su hito. La
+               * cláusula la define Luciana con asesoría legal.
+               */
+              nota={
+                equityPendiente(compania.situacion_societaria)
+                  ? "Equity pendiente de constitución: va con el hito «Constituir la sociedad»"
+                  : undefined
               }
             />
           </div>

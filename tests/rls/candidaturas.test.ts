@@ -569,7 +569,21 @@ describe("lo entregado en la selección llega a la compañía", () => {
       .single();
     documentoId = doc!.id;
 
-    // Y firma
+    /*
+     * Y firma. Sin situación societaria ni firmantes la base no deja
+     * firmar; con sociedad, porque lo entregado es la escritura.
+     */
+    await servicio
+      .from("candidaturas")
+      .update({
+        situacion_societaria: "constituida",
+        forma_juridica: "sl",
+        denominacion_social: "Cauce Salud SL",
+        cif: "B00000000",
+        acuerdo_firmantes: [{ nombre: "Representante de prueba", calidad: "representante" }],
+      })
+      .eq("id", CAUCE);
+
     const { data: nueva } = await iwl.rpc("firmar_candidatura", {
       p_candidatura: CAUCE,
       p_slug: `rls-cauce-${Date.now()}`,
@@ -594,7 +608,15 @@ describe("lo entregado en la selección llega a la compañía", () => {
 
     await servicio
       .from("candidaturas")
-      .update({ estado: "en_revision", company_id: null })
+      .update({
+        estado: "en_revision",
+        company_id: null,
+        situacion_societaria: null,
+        forma_juridica: null,
+        denominacion_social: null,
+        cif: null,
+        acuerdo_firmantes: [],
+      })
       .eq("id", CAUCE);
 
     if (companyId) await servicio.from("companies").delete().eq("id", companyId);

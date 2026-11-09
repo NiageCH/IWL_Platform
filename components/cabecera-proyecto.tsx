@@ -16,6 +16,7 @@ import type { NombreIcono } from "@/lib/secciones";
 import { MenuAcciones } from "@/components/menu-acciones";
 import { numero } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
+import { describirSituacion } from "@/lib/societario";
 
 /**
  * Cabecera fija de todas las pantallas del proyecto (§4.1): fase, semáforo,
@@ -86,6 +87,10 @@ export function CabeceraProyecto({
           </div>
 
           <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
+          {/* Desde dónde parte: un dato, no una alerta */}
+          {describirSituacion(compania) ? (
+            <Metadato>{describirSituacion(compania)}</Metadato>
+          ) : null}
           {/*
             El motivo, escrito al lado y con su enlace.
             

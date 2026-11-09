@@ -6,6 +6,7 @@ import { NuevaAportacion } from "@/components/formularios/ruta";
 import { EnlacesInforme } from "@/components/informe/enlace";
 import { RegistroRapidoHoras } from "@/components/formularios/programa";
 import type { ResumenCompania } from "@/lib/datos/compania";
+import { equityPendiente } from "@/lib/societario";
 import {
   Bloque,
   Cifra,
@@ -100,7 +101,10 @@ export async function VistaAportacion({
         <TituloBloque
           accion={
             compromiso.equityPct !== null ? (
-              <Metadato>Equity acordado {numero(compromiso.equityPct, 0)} %</Metadato>
+              <Metadato>
+                Equity acordado {numero(compromiso.equityPct, 0)} %
+                {equityPendiente(compania.situacion_societaria) ? " · pendiente de constitución" : ""}
+              </Metadato>
             ) : undefined
           }
         >

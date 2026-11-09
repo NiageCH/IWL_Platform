@@ -51,6 +51,16 @@ export function EstadoPunto({
             {puedeValidar ? <option value="en_revision">En revisión</option> : null}
             {puedeValidar ? <option value="validado">Validado</option> : null}
             {puedeValidar ? <option value="bloqueante">Bloqueante</option> : null}
+            {/*
+              Que no aplique lo decide quien valida. A quien no valida se le
+              enseña, pero no puede elegirlo: si no, el desplegable diría
+              «Pendiente» de un punto que no se le pide.
+            */}
+            {puedeValidar || estado === "no_aplica" ? (
+              <option value="no_aplica" disabled={!puedeValidar}>
+                No aplica
+              </option>
+            ) : null}
           </Seleccion>
         </>
       )}

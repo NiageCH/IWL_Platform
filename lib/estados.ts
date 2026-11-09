@@ -177,6 +177,7 @@ export function estadoVisual<E extends keyof Filas>(
        * todavía y uno cuya escritura caducó la semana pasada piden cosas
        * distintas.
        */
+      if (f.estado === "no_aplica") return "no_aplica";
       if (f.caducado) return "vencido";
       if (f.estado === "validado") return "hecho";
       if (f.estado === "bloqueante") return "vencido";

@@ -7,6 +7,7 @@ import {
   entrarComo,
   ficherosEn,
   subirFichero,
+  elegirSituacion,
 } from "./entrada";
 
 /**
@@ -68,6 +69,7 @@ test("borrar una compañía con todo se lleva también sus ficheros", async ({
   await alta.locator('input[name="slug"]').fill(slug);
   await alta.locator('select[name="stage"]').selectOption("semilla");
   await alta.locator('select[name="tech_profile"]').selectOption("software");
+  await elegirSituacion(alta);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/dada de alta, con su checklist/)).toBeVisible();
 
