@@ -225,7 +225,11 @@ export function Seleccion({
   return (
     <select
       {...props}
-      className={cn(CLASES_CAMPO, error && "border-mal", className)}
+      /*
+       * `max-w-full`: un desplegable mide lo que su opción más larga, y una
+       * larga lo sacaba de su formulario en el móvil.
+       */
+      className={cn(CLASES_CAMPO, "max-w-full", error && "border-mal", className)}
     >
       {children}
     </select>

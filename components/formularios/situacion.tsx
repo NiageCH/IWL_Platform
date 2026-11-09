@@ -26,7 +26,7 @@ export function CamposSituacion({
   const [situacion, setSituacion] = useState<Situacion | "">(inicial?.situacion_societaria ?? "");
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Campo
         etiqueta="Situación societaria"
         obligatorio={obligatorio}
@@ -119,7 +119,7 @@ export function CamposFirmantes({
   const conSociedad = situacion === "constituida";
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {conSociedad ? (
         <Campo
           etiqueta="Firma en nombre de la sociedad"

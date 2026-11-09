@@ -139,7 +139,19 @@ export async function editarCandidatura(
 
   const validado = validar(esquemaEdicion, formData);
   if (validado.fallo) return validado.fallo;
-  const { id, ...datos } = validado.datos;
+  const { id, ...todos } = validado.datos;
+
+  /*
+   * Solo lo que trae el formulario.
+   *
+   * El esquema es el del alta, y un campo opcional que no llega se queda en
+   * nulo. Guardar la ficha borraba así lo que el formulario de edición no
+   * enseña —cómo llegó, en qué punto dice estar, cuántas son, las notas—,
+   * en silencio y cada vez.
+   */
+  const datos = Object.fromEntries(
+    Object.entries(todos).filter(([campo]) => formData.has(campo)),
+  ) as Partial<typeof todos>;
 
   const supabase = await clienteServidor();
   const { error: falloEdicion } = await supabase

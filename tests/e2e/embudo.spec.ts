@@ -6,6 +6,7 @@ import {
   consultar,
   entrarComo,
   elegirSituacion,
+  insertar,
 } from "./entrada";
 
 /**
@@ -388,4 +389,101 @@ test("un identificador ocupado se dice en su campo, no en un aviso general", asy
 
   const [duna] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${DUNA}` }, "estado");
   expect(duna.estado).not.toBe("firmada");
+});
+
+test("la ficha de una candidatura no se sale de la pantalla con un enlace largo", async ({
+  page,
+}) => {
+  /*
+   * Lo que vio Rodrigo con Prueba_Ro: la ficha se salía por la derecha y
+   * «Con quién se habla» parecía vacío. Era lo mismo: un enlace largo
+   * estiraba la columna de la izquierda y empujaba la de la derecha fuera
+   * de la pantalla. Los datos estaban.
+   */
+  const c = await insertar<{ id: string }>("candidaturas", {
+    cohort_id: COHORTE,
+    nombre: `Ficha Ancha ${SELLO}`,
+    contacto_nombre: "Persona de contacto con nombre largo",
+    contacto_email: `e2e.ancha.${SELLO}@ejemplo.test`,
+    notas: "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnop?usp=sharing",
+  });
+  await insertar("candidatura_enlaces", {
+    candidatura_id: c.id,
+    titulo: "Pitch",
+    url: "https://docs.google.com/presentation/d/1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstu/edit",
+  });
+
+  try {
+    await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
+    for (const ancho of [390, 1180, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      /*
+       * Se espera a que se asiente: justo después de cambiar el ancho, con
+       * la máquina cargada, la medida puede pillar la página a medio
+       * recolocar y dar unos píxeles de más que no son de nada. Un desborde
+       * de verdad no se va, y el mensaje nombra qué se sale.
+       */
+      const medir = () =>
+        page.evaluate(() => {
+          const ancho = document.documentElement.clientWidth;
+          const culpables = Array.from(document.querySelectorAll("body *"))
+            .filter((el) => el.getBoundingClientRect().right > ancho + 1)
+            .slice(-3)
+            .map((el) => `${el.tagName.toLowerCase()}.${String((el as HTMLElement).className).slice(0, 50)}`);
+          return `${document.documentElement.scrollWidth - ancho} px ${culpables.join(" | ")}`.trim();
+        });
+      await expect.poll(medir, { message: `A ${ancho} px la ficha se sale` }).toBe("0 px");
+
+      // Y el contacto se ve, dentro de la pantalla
+      const correo = page.getByRole("link", { name: `e2e.ancha.${SELLO}@ejemplo.test` });
+      await correo.scrollIntoViewIfNeeded();
+      const caja = await correo.boundingBox();
+      expect(caja!.x + caja!.width).toBeLessThanOrEqual(ancho);
+    }
+  } finally {
+    await borrar("candidaturas", { id: c.id });
+  }
+});
+
+test("corregir los datos no borra lo que el formulario no enseña", async ({ page }) => {
+  /*
+   * El formulario de corrección no lleva cómo llegó, en qué punto dice
+   * estar, cuántas son ni las notas. Guardarlo los dejaba en blanco, cada
+   * vez y sin decir nada.
+   */
+  const c = await insertar<{ id: string }>("candidaturas", {
+    cohort_id: COHORTE,
+    nombre: `Sin Perder ${SELLO}`,
+    contacto_nombre: "Quien Sea",
+    contacto_email: `e2e.sinperder.${SELLO}@ejemplo.test`,
+    origen: "Recomendación de una mentora",
+    estado_declarado: "mvp",
+    equipo_personas: 3,
+    notas: "Notas que no se pueden perder",
+  });
+
+  try {
+    await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
+    await page.getByRole("button", { name: "Corregir los datos" }).click();
+    await page.getByLabel("Sector").fill("Salud");
+    // El de este formulario: «El acuerdo» tiene otro «Guardar»
+    const correccion = page.locator("form", { has: page.getByLabel("Sector") });
+    await correccion.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText("Ficha actualizada.")).toBeVisible();
+
+    const [despues] = await consultar<Record<string, unknown>>(
+      "candidaturas",
+      { id: `eq.${c.id}` },
+      "sector, origen, estado_declarado, equipo_personas, notas",
+    );
+    expect(despues).toEqual({
+      sector: "Salud",
+      origen: "Recomendación de una mentora",
+      estado_declarado: "mvp",
+      equipo_personas: 3,
+      notas: "Notas que no se pueden perder",
+    });
+  } finally {
+    await borrar("candidaturas", { id: c.id });
+  }
 });

@@ -83,7 +83,8 @@ export default async function FichaCandidatura({
       <header className="mt-4 mb-8 flex flex-wrap items-start gap-4">
         <ChipCompania nombre={c.nombre ?? ""} tamano="md" />
         <div className="min-w-0 flex-1">
-          <h1 className="titular-marca text-3xl text-titular">{c.nombre}</h1>
+          {/* Un nombre de una sola palabra larga se parte antes que salirse */}
+          <h1 className="titular-marca text-3xl text-titular [overflow-wrap:anywhere]">{c.nombre}</h1>
           <p className="mt-1 text-sm text-secundario">
             {c.one_liner ?? "Sin descripción todavía."}
           </p>
@@ -181,8 +182,17 @@ export default async function FichaCandidatura({
         </Bloque>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="flex flex-col gap-6">
+      {/*
+        Las columnas con `minmax(0, …)` y las celdas con `min-w-0`.
+
+        Con `fr` a secas, una columna nunca es más estrecha que su contenido
+        más ancho sin cortes. Un enlace largo en «Lo que ha mandado» la
+        estiraba hasta 873 px y empujaba «Con quién se habla» fuera de la
+        pantalla: se veía vacío y los datos estaban. Así, lo que no cabe se
+        corta con sus puntos suspensivos, que es lo que pide el `truncate`.
+      */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-6">
           <Bloque>
             <TituloBloque accion={<Metadato>{enlaces.length}</Metadato>}>
               Lo que ha mandado
@@ -275,20 +285,20 @@ export default async function FichaCandidatura({
           </Bloque>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           <Bloque>
             <TituloBloque>Con quién se habla</TituloBloque>
             <dl className="flex flex-col gap-2 px-5 py-4 text-sm">
               <div className="flex justify-between gap-3">
                 <dt className="text-metadato">Nombre</dt>
-                <dd className="text-right text-cuerpo">
+                <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
                   {c.contacto_nombre}
                   {c.contacto_cargo ? ` · ${c.contacto_cargo}` : ""}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-metadato">Correo</dt>
-                <dd className="text-right">
+                <dd className="min-w-0 text-right [overflow-wrap:anywhere]">
                   <a
                     href={`mailto:${c.contacto_email}`}
                     className="enlace text-cuerpo"
@@ -300,7 +310,7 @@ export default async function FichaCandidatura({
               {c.contacto_telefono ? (
                 <div className="flex justify-between gap-3">
                   <dt className="text-metadato">Teléfono</dt>
-                  <dd className="text-right text-cuerpo">
+                  <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
                     {c.contacto_telefono}
                   </dd>
                 </div>
@@ -308,18 +318,18 @@ export default async function FichaCandidatura({
               {c.pais ? (
                 <div className="flex justify-between gap-3">
                   <dt className="text-metadato">País</dt>
-                  <dd className="text-right text-cuerpo">{c.pais}</dd>
+                  <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">{c.pais}</dd>
                 </div>
               ) : null}
               {c.origen ? (
                 <div className="flex justify-between gap-3">
                   <dt className="text-metadato">Cómo llegó</dt>
-                  <dd className="text-right text-cuerpo">{c.origen}</dd>
+                  <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">{c.origen}</dd>
                 </div>
               ) : null}
               <div className="flex justify-between gap-3">
                 <dt className="text-metadato">Dice estar en</dt>
-                <dd className="text-right text-cuerpo">
+                <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
                   {c.estado_declarado
                     ? ESTADOS_ENTRADA[c.estado_declarado]
                     : "Sin decir"}
@@ -328,7 +338,7 @@ export default async function FichaCandidatura({
               {c.equipo_personas !== null ? (
                 <div className="flex justify-between gap-3">
                   <dt className="text-metadato">Equipo</dt>
-                  <dd className="text-right text-cuerpo">
+                  <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
                     {c.equipo_personas} personas
                   </dd>
                 </div>
