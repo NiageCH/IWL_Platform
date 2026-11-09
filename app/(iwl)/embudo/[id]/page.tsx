@@ -6,6 +6,8 @@ import { leerCandidatura } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { direccionBase } from "@/lib/direccion";
+import { leerAltaCandidatura } from "@/lib/datos/onboarding";
+import { BloqueAlta } from "@/components/vistas/alta";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
   Bloque,
@@ -58,9 +60,10 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases] = await Promise.all([
+  const [plantillas, fases, alta] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
+    leerAltaCandidatura(id),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -378,6 +381,13 @@ export default async function FichaCandidatura({
               base={base}
             />
           </Bloque>
+
+          {/*
+            Dónde se ha quedado la candidata: si entró, si cambió la
+            contraseña, si firmó. Sin cuenta, la línea dice que el siguiente
+            paso es darle una, y nadie está parado.
+          */}
+          <BloqueAlta altas={[alta]} candidaturaId={c.id!} direccion={base} />
 
           <Bloque>
             <TituloBloque accion={<Metadato>NDA, estado y equity</Metadato>}>

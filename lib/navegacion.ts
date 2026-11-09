@@ -19,6 +19,8 @@ export interface EntradaMenu {
   icono: NombreIcono;
   /** Para marcar la entrada abierta también en sus subrutas */
   prefijo?: string;
+  /** Cuántas cosas esperan a quien mira: avisos y altas detenidas */
+  contador?: number;
 }
 
 export function menuDe(rol: string | undefined | null): EntradaMenu[] {

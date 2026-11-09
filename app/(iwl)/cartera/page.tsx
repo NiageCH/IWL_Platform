@@ -25,6 +25,8 @@ import {
 import { bandaDe } from "@/lib/datos/cohorte";
 import { cn, euros, numero, porcentaje } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
+import { leerAltasEnCurso, leerAvisos } from "@/lib/datos/onboarding";
+import { AvisosDireccion } from "@/components/vistas/alta";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -96,9 +98,21 @@ export default async function Cartera() {
     compromisos,
   } = await leerCartera();
 
+  /*
+   * Lo que espera a dirección va arriba del todo, y también con la cartera
+   * vacía: justo cuando se está cargando la primera compañía es cuando más
+   * importa saber si su fundadora ha entrado.
+   */
+  const esDireccion = persona.role === "admin_iwl";
+  const [avisos, altas] = esDireccion
+    ? await Promise.all([leerAvisos(), leerAltasEnCurso()])
+    : [[], []];
+  const paraDireccion = esDireccion ? <AvisosDireccion avisos={avisos} altas={altas} /> : null;
+
   if (companias.length === 0) {
     return (
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
+        {paraDireccion}
         <Bloque>
           <TituloBloque>Cartera</TituloBloque>
           <SinDatos>No hay compañías asignadas todavía.</SinDatos>
@@ -125,6 +139,8 @@ export default async function Cartera() {
         empieza algo. Un panel se orienta por el tamaño del titular, no por
         una marca decorativa.
       */}
+      {paraDireccion}
+
       <header className="mb-8">
         <h1 className="titular-marca text-3xl text-titular sm:text-4xl">
           {cohorte?.name ?? "Cartera"}

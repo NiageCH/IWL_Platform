@@ -1,4 +1,5 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import {
   CeldaNumero,
   FilaTarifa,
@@ -68,6 +69,10 @@ export default async function AdminPrograma() {
 
   const pesosMadurez = (ajuste("pesos_madurez") ?? {}) as Record<string, number>;
   const objetivos = (ajuste("objetivos_traccion") ?? {}) as Record<string, number>;
+  const umbralesAlta = (ajuste("onboarding_umbrales") ?? {}) as {
+    atencion_dias?: number;
+    vencido_dias?: number;
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -87,6 +92,22 @@ export default async function AdminPrograma() {
           un punto bloqueante en el due diligence y cualquier hito del Anexo que
           condicione el estado. Eso no se configura.
         </p>
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>Cuándo avisa un paso parado</Metadato>}>
+          Alta de las personas
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Cada persona que se da de alta pasa por la cuenta, el primer acceso,
+          la contraseña, el NDA y la documentación. Si lleva en el mismo paso
+          más días de estos, su ficha y tu inicio lo marcan en atención o
+          vencido, y el contador de la barra lo cuenta.
+        </p>
+        <FormularioUmbralesAlta
+          atencion={umbralesAlta.atencion_dias ?? 5}
+          vencido={umbralesAlta.vencido_dias ?? 10}
+        />
       </Bloque>
 
       <Bloque>

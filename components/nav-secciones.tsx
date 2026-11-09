@@ -64,6 +64,8 @@ export type Seccion = {
   href: string;
   nombre: string;
   icono?: NombreIcono;
+  /** Lo que espera a quien mira, como en la barra lateral */
+  contador?: number;
 };
 
 /**
@@ -106,6 +108,12 @@ export function NavSecciones({
               />
             ) : null}
             {s.nombre}
+            {s.contador ? (
+              <span className="cifra rounded-full border border-filete px-1.5 text-xs">
+                {s.contador}
+                <span className="sr-only"> pendientes</span>
+              </span>
+            ) : null}
           </Link>
         );
       })}

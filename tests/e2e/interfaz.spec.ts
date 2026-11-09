@@ -10,6 +10,10 @@ import { USUARIOS, entrarComo } from "./entrada";
  * que no se pierda en el siguiente retoque.
  */
 
+
+/** La entrada del menú, con o sin el contador de dirección */
+const ENTRADA_CARTERA = /^Cartera(\s+\d+\s+pendientes)?$/;
+
 test("el menú marca dónde estás y se lee como un control", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera");
 
@@ -19,7 +23,12 @@ test("el menú marca dónde estás y se lee como un control", async ({ page }) =
    * la abierta se distingue de las demás y que lo dice también la
    * accesibilidad, no solo el color.
    */
-  const cartera = page.getByRole("link", { name: "Cartera", exact: true });
+  /*
+   * «Cartera» a secas o con el contador de dirección detrás —«Cartera 3
+   * pendientes»—, que es parte del nombre a propósito: quien no ve el
+   * número también tiene que oírlo.
+   */
+  const cartera = page.getByRole("link", { name: ENTRADA_CARTERA });
   await expect(cartera).toHaveClass(/item-lateral-activo/);
   await expect(cartera).toHaveAttribute("aria-current", "page");
 
@@ -251,7 +260,7 @@ test("hay un solo menú a la vista, nunca los dos ni ninguno", async ({
     await page.setViewportSize({ width: w, height: 900 });
 
     const visibles = await page
-      .getByRole("link", { name: "Cartera", exact: true })
+      .getByRole("link", { name: ENTRADA_CARTERA })
       .count();
 
     expect(visibles, `A ${w} px no hay exactamente un menú visible`).toBe(1);

@@ -334,3 +334,36 @@ export async function subirFichero(
     );
   }
 }
+
+/**
+ * Crea una fila con la clave de servicio y la devuelve.
+ *
+ * Para preparar lo que una prueba necesita sin pasar por la pantalla que
+ * no está probando. Lo que se cree así se borra en el `finally` de la
+ * prueba: crear y no limpiar es dejarle basura a la siguiente pasada.
+ */
+export async function insertar<T = Record<string, unknown>>(
+  tabla: string,
+  fila: Record<string, unknown>,
+): Promise<T> {
+  const { url, clave } = supabase();
+  const respuesta = await fetch(`${url}/rest/v1/${tabla}`, {
+    method: "POST",
+    headers: {
+      apikey: clave,
+      Authorization: `Bearer ${clave}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(fila),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(
+      `No se ha podido crear en ${tabla}: ${respuesta.status} ${await respuesta.text()}`,
+    );
+  }
+
+  const [creada] = (await respuesta.json()) as T[];
+  return creada;
+}

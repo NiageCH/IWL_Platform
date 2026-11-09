@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { personaActual } from "@/lib/supabase/servidor";
 import { menuDe } from "@/lib/navegacion";
+import { contarPendientesDireccion } from "@/lib/datos/onboarding";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavLateral, type EntradaLateral } from "./nav-lateral";
@@ -58,6 +59,16 @@ export async function BarraLateral() {
    * lista, y quién ve qué se decide por capacidad en `lib/permisos.ts`.
    */
   const entradas: EntradaLateral[] = menuDe(persona.role);
+
+  /*
+   * El contador de dirección va en Cartera, que es su inicio: ahí están
+   * los avisos y las altas detenidas que cuenta.
+   */
+  if (persona.role === "admin_iwl") {
+    const pendientes = await contarPendientesDireccion();
+    const cartera = entradas.find((e) => e.href === "/cartera");
+    if (cartera && pendientes) cartera.contador = pendientes;
+  }
 
   const nombre = persona.full_name ?? persona.email ?? "";
 

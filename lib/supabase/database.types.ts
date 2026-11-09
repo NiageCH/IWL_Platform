@@ -201,6 +201,97 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"avisos": {
+                  Row: {
+                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"profile_id": string | null,"tipo": string
+                  }
+                  Insert: {
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"tipo": string
+                  }
+                  Update: {
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "avisos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "avisos_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_cerrado_por_fkey"
+      columns: ["cerrado_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_cerrado_por_fkey"
+      columns: ["cerrado_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_cerrado_por_fkey"
+      columns: ["cerrado_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "avisos_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "avisos_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"baselines": {
                   Row: {
                     "company_id": string,"content": NonNullable<Json>,"created_at": string,"created_by": string | null,"id": string,"kind": Database["public"]['Enums']["tipo_linea_base"],"notes": string | null,"stage": Database["public"]['Enums']["company_stage"],"taken_on": string
@@ -2556,6 +2647,85 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"nda_firmas": {
+                  Row: {
+                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"documento_id": string | null,"firmado_at": string | null,"firmado_ip": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"texto_version": string | null
+                  }
+                  Insert: {
+                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"texto_version"?: string | null
+                  }
+                  Update: {
+                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"texto_version"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "nda_firmas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: true
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: true
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "nda_firmas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: true
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_contrafirmante_id_fkey"
+      columns: ["contrafirmante_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_contrafirmante_id_fkey"
+      columns: ["contrafirmante_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_contrafirmante_id_fkey"
+      columns: ["contrafirmante_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_documento_id_fkey"
+      columns: ["documento_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_documentos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_documento_id_fkey"
+      columns: ["documento_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_firmante_id_fkey"
+      columns: ["firmante_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_firmante_id_fkey"
+      columns: ["firmante_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_firmante_id_fkey"
+      columns: ["firmante_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"objections": {
                   Row: {
                     "company_id": string,"created_at": string,"entity": string,"entity_id": string,"id": string,"raised_by": string,"reason": string,"resolution": string | null,"resolved_at": string | null,"resolved_by": string | null,"status": Database["public"]['Enums']["estado_objecion"],"updated_at": string
@@ -2683,13 +2853,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "archived_at": string | null,"bio": string | null,"created_at": string,"cv_path": string | null,"email": string,"expertise": (string)[],"full_name": string | null,"id": string,"is_active": boolean,"job_title": string | null,"organization_id": string | null,"role": Database["public"]['Enums']["app_role"],"updated_at": string
+                    "archived_at": string | null,"bio": string | null,"contrasena_cambiada_at": string | null,"created_at": string,"cv_path": string | null,"email": string,"expertise": (string)[],"full_name": string | null,"id": string,"is_active": boolean,"job_title": string | null,"organization_id": string | null,"primer_acceso_at": string | null,"role": Database["public"]['Enums']["app_role"],"updated_at": string
                   }
                   Insert: {
-                    "archived_at"?: string | null,"bio"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email": string,"expertise"?: (string)[],"full_name"?: string | null,"id": string,"is_active"?: boolean,"job_title"?: string | null,"organization_id"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
+                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email": string,"expertise"?: (string)[],"full_name"?: string | null,"id": string,"is_active"?: boolean,"job_title"?: string | null,"organization_id"?: string | null,"primer_acceso_at"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
                   }
                   Update: {
-                    "archived_at"?: string | null,"bio"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email"?: string,"expertise"?: (string)[],"full_name"?: string | null,"id"?: string,"is_active"?: boolean,"job_title"?: string | null,"organization_id"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
+                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email"?: string,"expertise"?: (string)[],"full_name"?: string | null,"id"?: string,"is_active"?: boolean,"job_title"?: string | null,"organization_id"?: string | null,"primer_acceso_at"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
                   }
                   Relationships: [
                     {

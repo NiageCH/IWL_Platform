@@ -11,6 +11,8 @@ export type EntradaLateral = {
   icono: keyof typeof ICONOS;
   /** Marca la entrada como abierta también en sus subrutas */
   prefijo?: string;
+  /** Lo que espera a quien mira. Con su número y su nombre, no solo un punto */
+  contador?: number;
 };
 
 /**
@@ -54,6 +56,15 @@ export function NavLateral({ entradas }: { entradas: EntradaLateral[] }) {
               <Icono className="size-4" strokeWidth={2} />
             </span>
             {e.nombre}
+            {e.contador ? (
+              <span
+                className="cifra ml-auto rounded-full border border-filete bg-white/10 px-2 py-0.5 text-xs text-titular"
+                title={`${e.contador} ${e.contador === 1 ? "cosa espera" : "cosas esperan"} a dirección`}
+              >
+                {e.contador}
+                <span className="sr-only"> pendientes</span>
+              </span>
+            ) : null}
           </Link>
         );
       })}

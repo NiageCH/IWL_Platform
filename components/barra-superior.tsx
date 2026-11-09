@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { personaActual } from "@/lib/supabase/servidor";
 import { menuDe } from "@/lib/navegacion";
+import { contarPendientesDireccion } from "@/lib/datos/onboarding";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavSecciones } from "./nav-secciones";
@@ -26,6 +27,14 @@ const ROLES: Record<string, string> = {
  */
 export async function BarraSuperior() {
   const persona = await personaActual();
+
+  // El mismo contador de dirección que la barra lateral, para el móvil
+  const secciones = persona ? menuDe(persona.role) : [];
+  if (persona?.role === "admin_iwl") {
+    const pendientes = await contarPendientesDireccion();
+    const cartera = secciones.find((s) => s.href === "/cartera");
+    if (cartera && pendientes) cartera.contador = pendientes;
+  }
 
   return (
     <Oscuro className="sticky top-0 z-20 border-b border-filete bg-lienzo text-cuerpo">
@@ -62,7 +71,7 @@ export async function BarraSuperior() {
             ve qué se decide por capacidad en un solo sitio.
           */}
           {persona ? (
-            <NavSecciones className="mb-0" secciones={menuDe(persona.role)} />
+            <NavSecciones className="mb-0" secciones={secciones} />
           ) : null}
           {/* Quién eres, y la puerta a cambiar tu contraseña */}
           {persona ? (
