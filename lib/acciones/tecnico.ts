@@ -144,6 +144,16 @@ export async function abrirEvaluacion(formData: FormData): Promise<Resultado> {
     return error("Ya hay una evaluación abierta sin publicar. Termina esa.");
   }
 
+  /*
+   * La evaluación técnica se mide contra el objetivo de su etapa y su
+   * perfil. En entrada todavía no los tiene: se dice en vez de suponerlos.
+   */
+  if (!compania.stage || !compania.tech_profile) {
+    return error(
+      "Para evaluarla hace falta su etapa de inversión y su perfil técnico. Fíjalos en su ficha antes de abrir la evaluación.",
+    );
+  }
+
   const { error: falloBase } = await supabase.from("tech_assessments").insert({
     company_id: datos.company_id,
     reviewer_id: persona.id,

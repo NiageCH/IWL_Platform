@@ -40,19 +40,24 @@ export const PASOS = [
     codigo: "preseleccionada",
     nombre: "Preseleccionada",
     descripcion: "El comité ha dicho que sí.",
-    siguiente: "Firmar el NDA",
+    siguiente: "Enviar el NDA",
   },
   {
     codigo: "nda",
-    nombre: "NDA firmado",
-    descripcion: "Se le puede pedir la información del due diligence.",
-    siguiente: "Empezar el due diligence",
+    nombre: "NDA enviado",
+    descripcion: "Tiene cuenta y el NDA delante. Faltan las firmas.",
+    siguiente: "Firmar el NDA las dos partes",
   },
   {
-    codigo: "diligencia",
-    nombre: "Due diligence",
-    descripcion: "Se está mirando a fondo y fijando en qué estado entra.",
-    siguiente: "Proponer el acuerdo",
+    /*
+     * Antes «diligencia»: el due diligence de la candidata. Desde el nuevo
+     * corte, con el NDA firmado ya existe la compañía, y la entrada es
+     * due diligence en Aceleración o diagnóstico en Construcción.
+     */
+    codigo: "entrada",
+    nombre: "En entrada",
+    descripcion: "Ya es compañía. Due diligence o diagnóstico, según la vía.",
+    siguiente: "Decidir la incorporación",
   },
   {
     codigo: "acuerdo",
@@ -122,7 +127,7 @@ export function siguientePaso(
 export function tonoPaso(codigo: EstadoCandidatura): string {
   if (codigo === "firmada") return "[--tono:var(--color-bien)]";
   if (codigo === "descartada") return "[--tono:var(--color-metadato)]";
-  if (codigo === "acuerdo" || codigo === "diligencia" || codigo === "nda") {
+  if (codigo === "acuerdo" || codigo === "entrada" || codigo === "nda") {
     return "[--tono:var(--color-acento-texto)]";
   }
   if (codigo === "preseleccionada") return "[--tono:var(--color-menta)]";

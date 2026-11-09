@@ -118,7 +118,7 @@ export default async function Comparativa() {
     return {
       nombre: c.compania.name,
       slug: c.compania.slug,
-      etapa: ETAPAS[c.compania.stage] ?? c.compania.stage,
+      etapa: c.compania.stage ? (ETAPAS[c.compania.stage] ?? c.compania.stage) : "Sin etapa",
       pctObjetivo: exigido > 0 ? (alcanzado / exigido) * 100 : null,
       sinEvaluar: c.scoreTecnico.sinEvaluar.length,
     };

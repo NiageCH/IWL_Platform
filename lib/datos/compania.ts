@@ -38,6 +38,7 @@ export async function leerCompania(slug: string) {
       `id, name, slug, sector, one_liner, stage, tech_profile, entry_state, phase_id,
        female_leadership_pct, founded_on, website, logo_path, is_demo,
        situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social, cif,
+       tramo, via,
        phases ( code, name, order_index ),
        cohorts ( name )`,
     )

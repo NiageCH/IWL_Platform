@@ -82,8 +82,8 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
     "reunión",
     "comité",
     "preseleccionada",
-    "nda firmado",
-    "due diligence",
+    "nda enviado",
+    "en entrada",
     "acuerdo propuesto",
   ]) {
     await page

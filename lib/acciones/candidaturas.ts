@@ -39,7 +39,7 @@ const ESTADOS = [
   "comite",
   "preseleccionada",
   "nda",
-  "diligencia",
+  "entrada",
   "acuerdo",
   "firmada",
   "descartada",

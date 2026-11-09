@@ -266,7 +266,7 @@ export default async function Cartera() {
                     {c.compania.name}
                   </Link>
                   <span className="block truncate text-xs text-metadato">
-                    {ETAPAS[c.compania.stage] ?? c.compania.stage}
+                    {c.compania.stage ? (ETAPAS[c.compania.stage] ?? c.compania.stage) : "Sin etapa todavía"}
                     {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
                     {describirSituacion(c.compania) ? ` · ${describirSituacion(c.compania)}` : ""}
                   </span>

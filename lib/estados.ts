@@ -178,6 +178,8 @@ export function estadoVisual<E extends keyof Filas>(
        * distintas.
        */
       if (f.estado === "no_aplica") return "no_aplica";
+      // Por construir: por hacer, sin fecha que lo apure
+      if (f.estado === "por_construir") return "pendiente";
       if (f.caducado) return "vencido";
       if (f.estado === "validado") return "hecho";
       if (f.estado === "bloqueante") return "vencido";

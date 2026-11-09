@@ -445,7 +445,7 @@ describe("la documentación del due diligence", () => {
 
   it("y no se duplica si se vuelve a pasar por NDA", async () => {
     const iwl = await entrarComo(USUARIOS.admin);
-    await iwl.from("candidaturas").update({ estado: "diligencia" }).eq("id", CAUCE);
+    await iwl.from("candidaturas").update({ estado: "entrada" }).eq("id", CAUCE);
     await iwl.from("candidaturas").update({ estado: "nda" }).eq("id", CAUCE);
 
     const { data } = await iwl

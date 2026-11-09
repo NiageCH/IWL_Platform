@@ -66,9 +66,13 @@ export async function VistaResumen({
           </p>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
             <Metadato>{compania.sector ?? "Sin sector"}</Metadato>
-            <Metadato>{ETAPAS[compania.stage] ?? compania.stage}</Metadato>
             <Metadato>
-              {PERFILES[compania.tech_profile] ?? compania.tech_profile}
+              {compania.stage ? (ETAPAS[compania.stage] ?? compania.stage) : "Sin etapa todavía"}
+            </Metadato>
+            <Metadato>
+              {compania.tech_profile
+                ? (PERFILES[compania.tech_profile] ?? compania.tech_profile)
+                : "Sin perfil todavía"}
             </Metadato>
             {compania.website ? (
               <a

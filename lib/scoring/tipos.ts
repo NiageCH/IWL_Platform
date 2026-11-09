@@ -24,7 +24,9 @@ export type EstadoPuntoDd =
   | "validado"
   | "bloqueante"
   /** No se le puede pedir a este proyecto: una escritura, a quien no tiene sociedad */
-  | "no_aplica";
+  | "no_aplica"
+  /** Se hará con IWL dentro del programa. No se mide hasta que tenga fecha */
+  | "por_construir";
 
 /** Una dimensión técnica tal como la necesita el cálculo */
 export interface DimensionTecnica {

@@ -36,6 +36,12 @@ export async function leerCartera() {
      * arrastrando el score de su último mes ensucia todas las medias.
      */
     .is("archived_at", null)
+    /*
+     * Ni las que están en entrada: aceptadas pero sin Acuerdo, todavía no
+     * son de la cartera. Se ven aparte, en «En entrada», y no cuentan en
+     * ninguna media.
+     */
+    .eq("tramo", "incubacion")
     .order("name");
 
   const [resumenes, movimientos, bandas] = await Promise.all([

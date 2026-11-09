@@ -20,8 +20,9 @@ const VALOR_ESTADO: Record<EstadoPuntoDd, number> = {
   en_revision: 0.75,
   validado: 1,
   bloqueante: 0,
-  // No se cuenta: sale del denominador antes de llegar aquí
+  // No se cuentan: salen del denominador antes de llegar aquí
   no_aplica: 0,
+  por_construir: 0,
 };
 
 /**
@@ -46,7 +47,13 @@ export function calcularAreas(areas: AreaDd[], ahora = new Date()): ResultadoAre
      * como cero haría que un proyecto sin sociedad pareciera peor
      * preparado por no tener escritura, y lo sin medir no es un cero.
      */
-    const aplicables = area.puntos.filter((p) => p.estado !== "no_aplica");
+    /*
+     * Tampoco lo que está por construir: se hará dentro del programa, y
+     * hasta que tenga fecha en un hito no es un pendiente de nadie.
+     */
+    const aplicables = area.puntos.filter(
+      (p) => p.estado !== "no_aplica" && p.estado !== "por_construir",
+    );
     const obligatorios = aplicables.filter((p) => p.obligatorio);
     // Los puntos opcionales suman si están, pero no restan si faltan
     const opcionalesAportados = aplicables.filter(
@@ -100,7 +107,11 @@ export function calcularScorePreparacion(
    */
   const noAplica = new Set(
     areas
-      .filter((a) => a.puntos.length > 0 && a.puntos.every((p) => p.estado === "no_aplica"))
+      .filter(
+        (a) =>
+          a.puntos.length > 0 &&
+          a.puntos.every((p) => p.estado === "no_aplica" || p.estado === "por_construir"),
+      )
       .map((a) => a.codigo),
   );
   const medibles = resultados.filter((r) => !noAplica.has(r.codigo));

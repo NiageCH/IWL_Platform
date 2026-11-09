@@ -53,12 +53,16 @@ export const NIVELES = [
   "Gestionado",
 ] as const;
 
-export function etapa(valor: Etapa): string {
-  return ETAPAS[valor] ?? valor;
+/*
+ * Admiten nulo: una compañía en entrada todavía no tiene etapa ni perfil.
+ * Se deciden al firmar el Acuerdo.
+ */
+export function etapa(valor: Etapa | null): string {
+  return valor === null ? "Sin etapa todavía" : (ETAPAS[valor] ?? valor);
 }
 
-export function perfil(valor: Perfil): string {
-  return PERFILES[valor] ?? valor;
+export function perfil(valor: Perfil | null): string {
+  return valor === null ? "Sin perfil todavía" : (PERFILES[valor] ?? valor);
 }
 
 export function estadoEntrada(valor: Entrada | null): string | null {

@@ -76,7 +76,7 @@ export async function componerEntradaMadurez(
       .from("milestones")
       .select("status, due_date")
       .eq("company_id", resumen.compania.id),
-    objetivoTraccion(resumen.compania.stage),
+    resumen.compania.stage ? objetivoTraccion(resumen.compania.stage) : Promise.resolve(null),
   ]);
 
   const exigibles = (hitos ?? []).filter(

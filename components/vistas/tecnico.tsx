@@ -200,7 +200,9 @@ export async function VistaTecnico({
             contra lo que se le pide a una serie A.
           */}
           <p className="border-b border-filete px-4 py-2 text-xs text-metadato">
-            Sobre el objetivo de {ETAPAS[compania.stage]?.toLowerCase() ?? compania.stage}
+            {compania.stage
+              ? `Sobre el objetivo de ${ETAPAS[compania.stage]?.toLowerCase() ?? compania.stage}`
+              : "Sin etapa todavía: el objetivo se fija al firmar el Acuerdo"}
           </p>
           <div className="px-4 py-4">
             <ScorecardRadar dimensiones={scoreTecnico.dimensiones} />

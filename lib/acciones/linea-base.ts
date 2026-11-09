@@ -112,6 +112,10 @@ export async function congelarLineaBase(formData: FormData): Promise<Resultado> 
     horas_iwl: (horas ?? []).reduce((t, h) => t + Number(h.hours ?? 0), 0),
   };
 
+  if (!resumen.compania.stage) {
+    return error("Esta compañía todavía no tiene etapa de inversión: se fija al firmar el Acuerdo. Una línea base sin etapa no se puede comparar con nada.");
+  }
+
   const { error: falloBase } = await supabase.from("baselines").insert({
     company_id: resumen.compania.id,
     kind: datos.kind,
