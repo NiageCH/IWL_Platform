@@ -9,6 +9,62 @@ como es**.
 
 ---
 
+## 2026-11-09 · Situación societaria: proyectos sin sociedad · commit 2f52a14
+
+**Qué cambió**
+· **«Situación societaria» en la candidatura y en la compañía**: sin constituir (personas físicas), en constitución con fecha prevista, o constituida con forma jurídica, denominación social y CIF. Cada opción enseña solo sus campos, y cada error sale en su campo.
+  · Es **obligatoria al firmar** el Acuerdo y al dar de alta una compañía directamente. La base se niega a firmar sin ella.
+  · En la ficha de la candidatura hay un bloque propio para decirla antes del NDA.
+  · En la ficha de una compañía se puede cambiar; es opcional, para no bloquear la edición de las que ya existían.
+· **Quién firma**, en «Firmar el acuerdo». Sin sociedad, las fundadoras a título personal, una por línea; el campo trae ya a la persona de contacto. Con sociedad, quien la representa, y además las fundadoras si el Acuerdo lo pide. Se guarda en la candidatura.
+· **Due diligence sin sociedad**:
+  · Escritura, pacto de socios, cap table certificada, libro de actas y cuentas anuales pasan a **No aplica**, con el motivo escrito. Es un estado nuevo, y lo pone o lo quita solo quien valida.
+  · Se piden en su lugar **Pacto entre fundadoras** y **Titularidad de lo construido** (código, marca y dominio).
+  · Lo mismo vale para el due diligence de selección de la candidata.
+  · Lo ya entregado no se toca: solo cambia lo que estaba pendiente.
+· **«No aplica» no cuenta en el score**: sale del denominador. Si en un área no aplica nada, el área entera queda fuera de la media. Lo sin medir no es un cero.
+· **Hito «Constituir la sociedad»** en la hoja de ruta, con la fecha prevista. Si la fecha cambia, el hito la sigue. Al darlo por cumplido:
+  · la compañía pasa sola a constituida;
+  · se vuelve a pedir lo societario;
+  · la ficha marca «Sociedad constituida · faltan sus datos» hasta que se escriban.
+  Quien coordina el proyecto puede cumplir el hito, pero no escribir la situación a mano.
+· **Equity**: en «Programa y Anexo» y en «Aportación» pone «Equity pendiente de constitución», ligado al hito. No se redacta nada.
+· **Se ve como dato, no como alerta**: en la cabecera de la compañía y en la fila de la cartera.
+
+**Qué decidí yo**
+· **«Y similares»** son cinco puntos: escritura, pacto de socios, cap table certificada, libro de actas y cuentas anuales. Las cuentas anuales también presuponen una sociedad. Declaración de litigios, marcas y vesting siguen pidiéndose, porque también los tiene una persona física.
+· **El pacto de socios lo sustituye el pacto entre fundadoras.** Sin sociedad no hay socios, pero sí un reparto previsto.
+· **El hito no condiciona el estado invertible.** El equity ya queda pendiente de él; bloquear también la inversión es decisión tuya.
+· **Constituida por el hito, sin datos**: no se adivinan. La ficha lo dice hasta que alguien escriba la forma, la denominación y el CIF.
+· **Los firmantes solo se guardan al firmar desde el embudo.** El alta directa no registra el Acuerdo.
+· **Con sociedad, firmar pide quién la representa**, y las fundadoras quedan opcionales: el punto abierto de la Propuesta §17 sigue abierto.
+
+**Cómo lo he probado**
+· 9 pruebas unitarias de la situación —qué exige cada una, cómo se enseña, quién firma— y 3 del score con «No aplica».
+· 4 de RLS, entrando como quien menos puede:
+  · la fundadora no se cambia la situación;
+  · sin sociedad, la base pone el hito y los dos puntos nuevos;
+  · el mentor que coordina no escribe la situación a mano, pero al cumplir el hito la sociedad queda constituida;
+  · la fundadora no se marca un punto como «No aplica».
+· En interfaz:
+  · el alta directa de una compañía sin sociedad comprueba la escritura en «No aplica», el pacto entre fundadoras y el hito;
+  · la firma desde el embudo, sin sociedad, comprueba los firmantes ya rellenos y la situación en la ficha.
+· Seis pruebas que daban de alta compañías ahora eligen la situación. Una de RLS que firmaba sin ella también, y deja su candidatura como estaba.
+
+### Qué necesito que decidas
+1. ¿Son esos cinco los puntos que exigen sociedad?
+2. ¿El hito «Constituir la sociedad» debe condicionar el estado invertible?
+3. ¿El alta directa también tiene que registrar quién firma el Acuerdo?
+
+### Estado
+· 145 unitarias · 151 RLS, dos veces seguidas · **362 de interfaz en verde y 4 saltadas**, en Chromium y WebKit.
+· Migraciones nuevas: `20261109110000_enums_societarios` y `20261109120000_situacion_societaria`.
+
+**Siguiente**
+El NDA dentro de la plataforma (punto 3), con tus cinco ajustes.
+
+---
+
 ## 2026-11-09 · El alta paso a paso y los avisos a dirección · commit e60bcab
 
 Puntos 1 y 2 de la revisión del 9 de noviembre.
