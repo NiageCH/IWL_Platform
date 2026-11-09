@@ -3,6 +3,7 @@ import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
 import { CerrarAviso } from "@/components/formularios/cerrar-aviso";
+import { ContrafirmarNda } from "@/components/formularios/nda-iwl";
 import type { AltaDe, AltaEnCurso, Aviso } from "@/lib/datos/onboarding";
 import type { ClavePaso, Paso } from "@/lib/onboarding";
 import { fecha } from "@/lib/utils";
@@ -140,8 +141,12 @@ export function AvisosDireccion({
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
                 {a.candidaturaId ? (
                   <Link href={`/embudo/${a.candidaturaId}`} className="enlace text-xs">
-                    {a.tipo === "nda_firmado" ? "Firmar por IWL" : "Ver su alta"}
+                    {a.tipo === "nda_firmado" ? "Leer el NDA" : "Ver su alta"}
                   </Link>
+                ) : null}
+                {/* Firmar ahí mismo, sin ir a la ficha */}
+                {a.tipo === "nda_firmado" && a.candidaturaId ? (
+                  <ContrafirmarNda candidaturaId={a.candidaturaId} />
                 ) : null}
                 {a.tipo === "primer_acceso" ? <CerrarAviso id={a.id} /> : null}
               </li>

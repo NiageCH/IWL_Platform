@@ -8,6 +8,8 @@ import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { direccionBase } from "@/lib/direccion";
 import { leerAltaCandidatura } from "@/lib/datos/onboarding";
 import { BloqueAlta } from "@/components/vistas/alta";
+import { BloqueNda } from "@/components/vistas/nda";
+import { leerNda } from "@/lib/datos/nda";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
   Bloque,
@@ -61,10 +63,11 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta] = await Promise.all([
+  const [plantillas, fases, alta, nda] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
+    leerNda(id),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -389,6 +392,12 @@ export default async function FichaCandidatura({
             paso es darle una, y nadie está parado.
           */}
           <BloqueAlta altas={[alta]} candidaturaId={c.id!} direccion={base} />
+
+          <BloqueNda
+            candidaturaId={c.id!}
+            nda={nda}
+            esDireccion={persona.role === "admin_iwl"}
+          />
 
           <Bloque>
             <TituloBloque accion={<Metadato>NDA, estado y equity</Metadato>}>

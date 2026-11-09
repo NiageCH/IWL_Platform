@@ -389,3 +389,29 @@ export async function elegirSituacion(
     await formulario.locator('input[name="cif"]').fill("B00000000");
   }
 }
+
+/**
+ * Quita del almacenamiento lo que una prueba subió bajo una carpeta.
+ *
+ * Borrar la fila no se lleva el fichero: Postgres no sabe de Storage. Lo
+ * que la prueba creó se borra entero, ficheros incluidos.
+ */
+export async function quitarFicheros(bucket: string, carpeta: string): Promise<void> {
+  const { url, clave } = supabase();
+  const cab = { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" };
+  const lista = await fetch(`${url}/storage/v1/object/list/${bucket}`, {
+    method: "POST",
+    headers: cab,
+    body: JSON.stringify({ prefix: carpeta, limit: 1000, offset: 0 }),
+  });
+  if (!lista.ok) return;
+  const rutas = ((await lista.json()) as { name: string; id: string | null }[])
+    .filter((e) => e.id !== null)
+    .map((e) => `${carpeta}/${e.name}`);
+  if (!rutas.length) return;
+  await fetch(`${url}/storage/v1/object/${bucket}`, {
+    method: "DELETE",
+    headers: cab,
+    body: JSON.stringify({ prefixes: rutas }),
+  });
+}

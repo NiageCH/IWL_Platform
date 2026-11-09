@@ -649,9 +649,11 @@ export function AccesoCandidata({
             <>
               <input type="hidden" name="id" value={id} />
               <p className="text-sm text-secundario">
-                Al firmar el NDA, dale cuenta: se la crea con{" "}
+                Dale cuenta cuando toque el NDA: se la crea con{" "}
                 <strong>{correo}</strong>, enseña una contraseña{" "}
-                <strong>una sola vez</strong> y anula el enlace privado.
+                <strong>una sola vez</strong> y anula el enlace privado. Al
+                entrar cambiará la contraseña, y lo primero que verá es el NDA
+                para firmarlo.
               </p>
               <Boton variante="secundario">
                 Darle cuenta para el due diligence

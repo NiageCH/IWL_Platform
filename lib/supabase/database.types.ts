@@ -2649,13 +2649,13 @@ isOneToOne: false
                   ]
                 },"nda_firmas": {
                   Row: {
-                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"documento_id": string | null,"firmado_at": string | null,"firmado_ip": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"texto_version": string | null
+                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"plantilla_id": string | null,"texto_hash": string | null,"texto_version": string | null
                   }
                   Insert: {
-                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"texto_version"?: string | null
+                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Update: {
-                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"texto_version"?: string | null
+                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Relationships: [
                     {
@@ -2721,6 +2721,43 @@ isOneToOne: false
     },{
       foreignKeyName: "nda_firmas_firmante_id_fkey"
       columns: ["firmante_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_firmas_plantilla_id_fkey"
+      columns: ["plantilla_id"]
+isOneToOne: false
+      referencedRelation: "nda_plantillas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"nda_plantillas": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"hash": string,"id": string,"texto": string,"version": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"hash": string,"id"?: string,"texto": string,"version": number
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"hash"?: string,"id"?: string,"texto"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "nda_plantillas_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_plantillas_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_plantillas_created_by_fkey"
+      columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -4123,6 +4160,9 @@ isOneToOne: false
             "anadir_enlace_con_token":
 { Args: { "p_titulo": string,"p_token": string,"p_url": string }; Returns: undefined
                            },
+"apuntar_documento_nda":
+{ Args: { "p_candidatura": string,"p_documento": string }; Returns: undefined
+                           },
 "archivar_compania":
 { Args: { "motivo"?: string,"target_company": string }; Returns: undefined
                            },
@@ -4141,6 +4181,9 @@ isOneToOne: false
 "contenido_compania":
 { Args: { "target_company": string }; Returns: Json
                            },
+"contrafirmar_nda":
+{ Args: { "p_candidatura": string,"p_ip": string,"p_profile": string,"p_ua": string }; Returns: undefined
+                           },
 "convocatoria_abierta":
 { Args: Record<PropertyKey, never>; Returns: {
               "cierra": string,"nombre": string,"texto": string
@@ -4152,8 +4195,14 @@ isOneToOne: false
 "dar_acceso_candidatura":
 { Args: { "p_candidatura": string,"p_profile": string }; Returns: undefined
                            },
+"estado_nda":
+{ Args: { "p_candidatura": string }; Returns: string
+                           },
 "firmar_candidatura":
 { Args: { "p_candidatura": string,"p_firmado_on"?: string,"p_phase_code"?: string,"p_roadmap_start"?: string,"p_roadmap_template"?: string,"p_slug": string,"p_stage": Database["public"]['Enums']["company_stage"],"p_tech_profile": Database["public"]['Enums']["company_tech_profile"] }; Returns: string
+                           },
+"firmar_nda":
+{ Args: { "p_candidatura": string,"p_ip": string,"p_nombre": string,"p_plantilla": string,"p_profile": string,"p_ua": string }; Returns: undefined
                            },
 "instanciar_hoja_de_ruta":
 { Args: { "inicio"?: string,"target_annex"?: string,"target_company": string,"template": string }; Returns: number
@@ -4185,6 +4234,9 @@ isOneToOne: false
                            },
 "reabrir_update":
 { Args: { "target_update": string }; Returns: undefined
+                           },
+"registrar_nda_externo":
+{ Args: { "p_candidatura": string,"p_documento": string,"p_firmado_on": string,"p_profile": string,"p_url": string }; Returns: undefined
                            },
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined

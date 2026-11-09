@@ -174,10 +174,13 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   await page.getByLabel("Otra vez").fill("la-de-ambar-2026");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
 
-  // Aterriza en su candidatura, con su nombre y lo que le piden
+  /*
+   * Aterriza en su candidatura, y lo primero que ve es el NDA: hasta
+   * firmarlo no ve nada más. La firma tiene su propia prueba (nda.spec.ts).
+   */
   await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
   await expect(
-    page.getByRole("heading", { name: "Ámbar Educación" }),
+    page.getByRole("heading", { name: "Antes de seguir, el NDA" }),
   ).toBeVisible();
 });
 
