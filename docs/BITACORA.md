@@ -9,6 +9,43 @@ como es**.
 
 ---
 
+## 2026-11-09 · Flujo de entrada, 1 de 6: tramo, vía y «por construir» · commit 29ab9bc
+
+Con el modelo v2 aprobado, construyo los puntos 3 a 7 en este orden, cada uno con su commit y su entrada:
+1. la base, que es esto;
+2. las reuniones;
+3. el acta de comité;
+4. enviar y comentar el NDA;
+5. la compañía en entrada, la decisión de incorporación y el Anexo como propuesta;
+6. «En entrada».
+Al final, la guía de carga rehecha.
+
+**Qué cambió**
+· **Tramo y vía en la compañía**: `tramo` (`entrada` o `incubacion`, por defecto incubación) y `via` (`aceleracion` o `construccion`). Las compañías de hoy quedan en incubación y no cambian.
+· **En entrada no cuenta**: no sale en la cartera ni en ninguna media. Como la comparativa y la cohorte se calculan desde la cartera, quedan fuera también.
+· **La vía la cambia solo dirección**, y solo de Construcción a Aceleración. Al pasar, lo que estaba por construir pasa a por entregar.
+· **«Por construir»**, un estado nuevo en el due diligence y en el business plan:
+  · no cuenta como pendiente ni vencido, ni en el score;
+  · en pantalla es «Por hacer», sin fecha;
+  · pasa solo a «por entregar» al enlazarse a un hito con fecha (`dd_items.milestone_id`), y toma esa fecha, también si el hito la estrena después;
+  · ponerlo o quitarlo a mano es de quien valida, como «No aplica».
+· **`diligencia` pasa a llamarse `entrada`**, y en pantalla «En entrada». `nda` pasa a decir «NDA enviado».
+  · Tres funciones de la base llevaban el valor escrito como texto, y habrían fallado al ejecutarse, no al crearse. Se recrean desde su definición vigente cambiando solo ese valor.
+· **Etapa y perfil técnico pueden estar vacíos en entrada.** En pantalla, «Sin etapa todavía». Lo que se calcula contra ellos lo dice en vez de suponerlos: la línea base y la evaluación técnica piden fijarlos antes.
+
+### Qué decidí yo
+· **El aviso al mentor principal al cambiar la vía** va con el punto 5, que es donde está el cambio de vía en pantalla. Aquí está la regla de la base.
+· **Lo que no se puede calcular sin etapa se niega con un mensaje**, no se calcula con una supuesta: una línea base con la etapa inventada no se podría comparar con nada.
+
+### Estado
+· 151 unitarias · 157 RLS · **368 de interfaz en verde y 4 saltadas**.
+· Migraciones nuevas: `20261109150000_enums_entrada` y `20261109151000_tramo_via`.
+
+**Siguiente**
+Las reuniones: proponerla, anotarla y saber si abrió el enlace.
+
+---
+
 ## 2026-11-09 · El modelo del flujo de entrada, rehecho con dos vías · commit 8f2c5e3
 
 **Qué cambió**
