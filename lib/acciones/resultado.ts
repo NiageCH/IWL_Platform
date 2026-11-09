@@ -40,6 +40,9 @@ const ETIQUETAS: Record<string, string> = {
   enlace_2: "enlace al caso de negocio",
   enlace_3: "el enlace adicional",
   website: "la web",
+  slug: "el identificador en la plataforma",
+  roadmap_start: "la fecha de arranque",
+  firmado_on: "la fecha de la firma",
   nombre: "el nombre",
   pais: "el país",
 };

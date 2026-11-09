@@ -94,9 +94,14 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
   await expect(page.getByText("Cambio de paso").first()).toBeVisible();
 
   // Y se firma, que es lo que crea la compañía
+  /*
+   * Sin escribir el identificador: sale del nombre. Y la web como la
+   * escribiría cualquiera, sin https. Las dos cosas iban en un solo campo
+   * rotulado «Dirección web», y escribir la web impedía firmar.
+   */
   await page.getByText("Firmar el acuerdo y crear la compañía").click();
   const firma = page.locator("form", { has: page.locator('input[name="slug"]') });
-  await firma.locator('input[name="slug"]').fill(SLUG);
+  await firma.getByLabel("Web de la compañía").fill(`www.${SLUG}.es`);
   await firma.getByRole("button", { name: /Firmar y crear/ }).click();
 
   /*
@@ -114,9 +119,17 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
     page.getByRole("link", { name: /Ver su ficha en la cartera/ }),
   ).toBeVisible();
 
-  // Y existe de verdad
+  // Y existe de verdad, con el identificador sacado del nombre
   await page.goto(`/cartera/${SLUG}`);
   await expect(page.getByRole("heading", { name: STARTUP })).toBeVisible();
+
+  // Con la web completa, aunque se escribiera sin https
+  const [creada] = await consultar<{ website: string | null }>(
+    "companies",
+    { slug: `eq.${SLUG}` },
+    "website",
+  );
+  expect(creada.website).toBe(`https://www.${SLUG}.es`);
 
   /*
    * Y lo firmado queda congelado.
@@ -336,4 +349,32 @@ test("una candidatura de demostración se ve pero no cuenta", async ({ page }) =
   } finally {
     await actualizar("candidaturas", { id: `eq.${BROTA}` }, { is_demo: false });
   }
+});
+
+test("un identificador ocupado se dice en su campo, no en un aviso general", async ({
+  page,
+}) => {
+  /*
+   * El fallo que paró la firma de Siren: un mensaje arriba que no decía de
+   * qué campo era. Aquí se escribe a mano uno que ya existe y se comprueba
+   * que el error sale debajo del campo, con las opciones abiertas, y que no
+   * se ha firmado nada.
+   */
+  await entrarComo(page, USUARIOS.admin, `/embudo/${DUNA}`);
+  await page.getByText("Firmar el acuerdo y crear la compañía").click();
+  const firma = page.locator("form", { has: page.locator('input[name="slug"]') });
+
+  await firma.getByText("Opciones avanzadas").click();
+  await firma
+    .getByLabel("Identificador en la plataforma, no es la web")
+    .fill("marea-clinica");
+  await firma.getByRole("button", { name: /Firmar y crear/ }).click();
+
+  await expect(
+    firma.getByText(/Ya hay una compañía con «marea-clinica»\. Prueba con marea-clinica-2\./),
+  ).toBeVisible();
+  await expect(firma.getByText("Revisa este campo: el identificador en la plataforma.")).toBeVisible();
+
+  const [duna] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${DUNA}` }, "estado");
+  expect(duna.estado).not.toBe("firmada");
 });

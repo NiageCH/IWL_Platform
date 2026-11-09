@@ -30,6 +30,7 @@ import {
   siguientePaso,
   type EstadoCandidatura,
 } from "@/lib/embudo";
+import { identificadorDe } from "@/lib/identificador";
 
 const ESTADOS_ENTRADA = [
   { codigo: "idea", nombre: "Idea" },
@@ -449,20 +450,11 @@ export function FirmarAcuerdo({
             <input type="hidden" name="id" value={id} />
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo
-                etiqueta="Dirección web"
-                ayuda="Minúsculas y guiones. Es lo que irá en la URL."
-                error={r.ok ? undefined : r.campos?.slug}
+                etiqueta="Web de la compañía"
+                ayuda="Opcional. Como la escribas: siren.es, www.siren.es…"
+                error={r.ok ? undefined : r.campos?.website}
               >
-                <Texto
-                  name="slug"
-                  placeholder={nombre
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[̀-ͯ]/g, "")
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-|-$/g, "")}
-                  required
-                />
+                <Texto name="website" placeholder="siren.es" autoComplete="off" />
               </Campo>
               <Campo etiqueta="Etapa de inversión">
                 <Seleccion name="stage" defaultValue="pre_semilla">
@@ -498,13 +490,41 @@ export function FirmarAcuerdo({
                   ))}
                 </Seleccion>
               </Campo>
-              <Campo etiqueta="Empieza el">
+              <Campo
+                etiqueta="Empieza el"
+                error={r.ok ? undefined : r.campos?.roadmap_start}
+              >
                 <Texto type="date" name="roadmap_start" />
               </Campo>
             </div>
-            <Campo etiqueta="Acuerdo firmado el">
+            <Campo
+              etiqueta="Acuerdo firmado el"
+              error={r.ok ? undefined : r.campos?.firmado_on}
+            >
               <Texto type="date" name="firmado_on" />
             </Campo>
+
+            {/*
+              El identificador no se le pide a nadie: sale del nombre. Se
+              pedía, rotulado «Dirección web», y quien escribía la web se
+              quedaba sin poder firmar. Si el error es suyo, se abre solo:
+              un error dentro de algo plegado es un error que no se ve.
+            */}
+            <details className="text-sm" open={!r.ok && Boolean(r.campos?.slug)}>
+              <summary className="accion cursor-pointer text-xs text-secundario">
+                Opciones avanzadas
+              </summary>
+              <div className="mt-3">
+                <Campo
+                  etiqueta="Identificador en la plataforma, no es la web"
+                  ayuda={`Vacío, se usa ${identificadorDe(nombre) || "uno sacado del nombre"}. Es lo que sale en la dirección de su ficha y no se puede cambiar después.`}
+                  error={r.ok ? undefined : r.campos?.slug}
+                >
+                  <Texto name="slug" placeholder={identificadorDe(nombre)} autoComplete="off" />
+                </Campo>
+              </div>
+            </details>
+
             <Boton>Firmar y crear la compañía</Boton>
           </>
         )}

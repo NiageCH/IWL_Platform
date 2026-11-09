@@ -6,6 +6,12 @@ import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
 import {
+  FORMA_IDENTIFICADOR,
+  identificadorDe,
+  normalizarWeb,
+  primeroLibre,
+} from "@/lib/identificador";
+import {
   error,
   fechaOpcional,
   ok,
@@ -404,13 +410,20 @@ export async function anotarEvento(formData: FormData): Promise<Resultado> {
 
 const esquemaFirma = z.object({
   id: uuid,
+  /*
+   * El identificador en la plataforma. Normalmente vacío: sale del nombre.
+   * Solo se escribe a mano en «Opciones avanzadas».
+   */
   slug: z
-    .string()
-    .trim()
-    .regex(
-      /^[a-z0-9]+(-[a-z0-9]+)*$/,
-      "Minúsculas, números y guiones. Es lo que irá en la dirección web.",
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => (v ?? "").trim())
+    .refine(
+      (v) => v === "" || FORMA_IDENTIFICADOR.test(v),
+      "Solo minúsculas, números y guiones, como siren o la-pepi. No es la web: esa va en su campo.",
     ),
+  /** La web de la compañía, como se escriba. Se normaliza en la acción */
+  website: z.union([z.string(), z.null()]).optional(),
   stage: z.enum(["pre_semilla", "semilla", "serie_a"]),
   tech_profile: z.enum(["software", "software_ia", "hardware"]),
   phase_code: textoOpcional,
@@ -429,10 +442,63 @@ export async function firmarCandidatura(
   if (validado.fallo) return validado.fallo;
   const datos = validado.datos;
 
+  let web: string | null;
+  try {
+    web = normalizarWeb(datos.website);
+  } catch (e) {
+    return error("Revisa este campo: la web de la compañía.", {
+      website: (e as Error).message,
+    });
+  }
+
   const supabase = await clienteServidor();
+
+  const { data: candidatura } = await supabase
+    .from("candidaturas")
+    .select("nombre")
+    .eq("id", datos.id)
+    .maybeSingle();
+  if (!candidatura) return error("Esa candidatura ya no está.");
+
+  /*
+   * El identificador: el escrito a mano tal cual, o el que sale del nombre
+   * con el primer número libre. Escrito a mano y ocupado, se dice en su
+   * campo; generado, no se le pregunta a nadie.
+   */
+  const base = datos.slug || identificadorDe(candidatura.nombre);
+  if (!base) {
+    return error("Revisa este campo: el identificador en la plataforma.", {
+      slug: "El nombre no da para un identificador. Escríbelo en «Opciones avanzadas».",
+    });
+  }
+  const { data: parecidos } = await supabase
+    .from("companies")
+    .select("slug")
+    .like("slug", `${base}%`);
+  const ocupados = (parecidos ?? []).map((c) => c.slug);
+
+  if (datos.slug && ocupados.includes(datos.slug)) {
+    return error("Revisa este campo: el identificador en la plataforma.", {
+      slug: `Ya hay una compañía con «${datos.slug}». Prueba con ${primeroLibre(datos.slug, ocupados)}.`,
+    });
+  }
+  const slug = datos.slug || primeroLibre(base, ocupados);
+
+  /*
+   * La web se escribe en la candidatura y la firma la copia a la compañía,
+   * como copia el nombre, el sector y lo demás.
+   */
+  if (web) {
+    const { error: falloWeb } = await supabase
+      .from("candidaturas")
+      .update({ website: web })
+      .eq("id", datos.id);
+    if (falloWeb) return traducirError(falloWeb);
+  }
+
   const { error: falloFirma } = await supabase.rpc("firmar_candidatura", {
     p_candidatura: datos.id,
-    p_slug: datos.slug,
+    p_slug: slug,
     p_stage: datos.stage,
     p_tech_profile: datos.tech_profile,
     p_phase_code: datos.phase_code ?? undefined,
