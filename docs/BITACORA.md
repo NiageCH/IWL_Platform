@@ -9,6 +9,37 @@ como es**.
 
 ---
 
+## 2026-11-09 · Firmar el acuerdo ya no pide el identificador · commit d7959bb
+
+Punto 4 de tu revisión del 9 de noviembre, el que te bloqueaba con Siren. Lo demás va en entradas siguientes, por orden.
+
+**Qué cambió**
+· **«Web de la compañía» es un campo propio y opcional.** Acepta `siren.es`, `www.siren.es` o con `https://`, y guarda la dirección completa: `https://siren.es`. Si lo escrito no es una web, el error sale debajo del campo: «Eso no parece una web. Escríbela como siren.es o www.siren.es».
+· **El identificador sale del nombre** y no se le pide a nadie. Si ya existe, coge el primero libre: `siren-2`. Se puede escribir a mano en **Opciones avanzadas**, bajo el rótulo «Identificador en la plataforma, no es la web». Si se escribe uno que ya existe, el error sale en su campo, con la sección abierta, y propone el siguiente libre.
+· **El aviso de arriba nombra el campo**: «Revisa este campo: la web de la compañía», o «el identificador en la plataforma». Antes decía «Revisa los campos marcados».
+· Las fechas de arranque y de firma también muestran su error debajo.
+· Las dos funciones nuevas, `identificadorDe` y `normalizarWeb`, viven en `lib/identificador.ts`, con seis pruebas unitarias.
+
+**Qué decidí yo**
+· **La web se escribe en la candidatura antes de firmar**, y la firma la copia a la compañía junto con el nombre, el sector y lo demás. Así no hace falta tocar la función de la base.
+· **Un identificador escrito a mano y ocupado se rechaza**: no se le pone número sin preguntar. Si quien lo escribe lo eligió a propósito, cambiárselo en silencio sería peor.
+· **El alta directa (Administración → Compañías) sigue pidiendo el identificador.** Allí se rotula «Identificador (minúsculas y guiones)» y no se confunde con la web. Si prefieres que también salga del nombre, es el mismo cambio.
+
+**Cómo lo he probado**
+· La prueba de interfaz que firma una candidatura ahora no escribe el identificador y escribe la web como `www.…`. Comprueba que la compañía nace con el identificador sacado del nombre y con la web completa.
+· Una prueba nueva escribe a mano un identificador ocupado y comprueba tres cosas: que el error sale en su campo, que la sección se abre y que no se firma nada.
+
+**Para Siren, en producción:** con esto desplegado, en «Firmar el acuerdo y crear la compañía» escribe `siren.es` en «Web de la compañía» y deja «Opciones avanzadas» como está. Saldrá `siren`, salvo que ya exista una compañía con ese identificador; `nube:vaciar` se las habría llevado todas.
+
+### Estado
+· 122 unitarias · 141 RLS · **360 de interfaz en verde y 4 saltadas**, en Chromium y WebKit.
+· No hay migración en este paso: basta con desplegar.
+
+**Siguiente**
+Los puntos 1 y 2: los pasos de alta en la ficha y los avisos para dirección.
+
+---
+
 ## 2026-11-05 · `nube:vaciar`, `--reponer` y la guía para cargar compañías · commit b6b934b
 
 **Qué cambió**
