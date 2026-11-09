@@ -9,6 +9,40 @@ como es**.
 
 ---
 
+## 2026-11-09 · Flujo de entrada, 2 de 6: reuniones · commit 968c8e3
+
+**Qué cambió**
+· **«Proponer reunión»**, en la ficha de la candidatura, bloque «Reuniones».
+  · Dos o tres franjas, en hora de Madrid, con su duración.
+  · Al proponerla queda guardada y se abre un correo ya escrito para la persona de contacto: le habla por su nombre, numera las franjas con el día de la semana y dice que son hora de Madrid.
+  · Sin proveedor de correo, el correo se abre en el programa de quien la propone.
+· **«Anotar la reunión»**: fecha, quién estuvo (de IWL y de la candidatura, una persona por línea), qué se habló, cómo quedó (seguir, no seguir, pendiente) y adjuntos.
+  · Se puede anotar la que se propuso o una que no pasó por aquí.
+  · Los adjuntos van al expediente de la candidatura, colgando de la reunión.
+· **Las dos dejan su evento en el historial** del expediente: «Reunión propuesta» y «Reunión · Seguir».
+· **Ella ve «Reunión propuesta»** mientras haya una sin celebrar, con qué hacer: responder al correo con la franja que le vaya.
+· **Si abrió su enlace**: en «Qué ve ella», «Abrió su enlace el 9 nov · la última vez, el 12 nov», o «Todavía no ha abierto su enlace». Lo apunta la propia página del enlace. Si quien lo abre es de IWL, comprobándolo antes de mandarlo, no cuenta.
+
+### Qué decidí yo
+· **La apertura la apunta una función aparte**, no `ver_candidatura`. Esa solo lee, y una lectura que escribe no puede marcarse como estable.
+· **«Reunión propuesta» sale de la base** (`momento_de`), como el resto de momentos. Las dos funciones que lo enseñan se recrean desde su definición vigente, cambiando solo esa llamada.
+· **La conclusión va escrita, no en un color.** Es una decisión, no un estado de trabajo, así que no usa `<Estado>`.
+· **Al menos dos franjas**: con una sola, si no le va, se pierde un correo.
+
+**Cómo lo he probado**
+· 5 unitarias: la hora de Madrid en invierno y en verano, la franja contada con su día, el correo y los asistentes.
+· 3 de RLS: las reuniones solo las ve IWL; con una propuesta sin celebrar, ella ve «Reunión propuesta»; y la apertura se apunta sin sesión, sin mover la primera vez.
+· 1 de interfaz, de punta a punta: ella abre el enlace, IWL lo ve, propone dos franjas, ella ve la reunión propuesta, se anota, y el historial lleva los dos eventos.
+
+### Estado
+· 156 unitarias · 160 RLS · **369 de interfaz en verde y 4 saltadas**. Hubo un fallo en WebKit, en «la dirección restablece la contraseña»: una carrera de navegación que la propia prueba ya documenta, ajena a esto. Repetida sola, pasa tres de tres.
+· Migración nueva: `20261109160000_reuniones`.
+
+**Siguiente**
+El acta de comité, con la firma de cada miembro, la vía, el PDF y el aplazamiento.
+
+---
+
 ## 2026-11-09 · Flujo de entrada, 1 de 6: tramo, vía y «por construir» · commit 29ab9bc
 
 Con el modelo v2 aprobado, construyo los puntos 3 a 7 en este orden, cada uno con su commit y su entrada:
