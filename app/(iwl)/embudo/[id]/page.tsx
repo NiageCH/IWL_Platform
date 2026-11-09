@@ -9,6 +9,8 @@ import { direccionBase } from "@/lib/direccion";
 import { leerAltaCandidatura } from "@/lib/datos/onboarding";
 import { BloqueAlta } from "@/components/vistas/alta";
 import { BloqueNda } from "@/components/vistas/nda";
+import { AperturaEnlace, BloqueReuniones } from "@/components/vistas/reuniones";
+import { leerReuniones } from "@/lib/datos/reuniones";
 import { leerNda } from "@/lib/datos/nda";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
@@ -63,11 +65,12 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta, nda] = await Promise.all([
+  const [plantillas, fases, alta, nda, reuniones] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
     leerNda(id),
+    leerReuniones(id),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -193,6 +196,15 @@ export default async function FichaCandidatura({
       */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
+          <BloqueReuniones
+            reuniones={reuniones}
+            candidaturaId={c.id!}
+            contacto={c.contacto_nombre ?? ""}
+            correo={c.contacto_email}
+            startup={c.nombre ?? ""}
+            abierta={estado !== "firmada" && estado !== "descartada"}
+          />
+
           <Bloque>
             <TituloBloque accion={<Metadato>{enlaces.length}</Metadato>}>
               Lo que ha mandado
@@ -387,6 +399,11 @@ export default async function FichaCandidatura({
             >
               Qué ve ella
             </TituloBloque>
+            {!c.profile_id ? (
+              <div className="px-5 pt-3">
+                <AperturaEnlace abierto={c.enlace_abierto_at} visto={c.enlace_visto_at} />
+              </div>
+            ) : null}
             <AccesoCandidata
               id={c.id!}
               token={c.token}

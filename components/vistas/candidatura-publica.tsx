@@ -70,6 +70,13 @@ const MOMENTOS: Record<
     icono: Clock,
     tono: "[--tono:var(--color-durazno)]",
   },
+  reunion_propuesta: {
+    titulo: "Reunión propuesta",
+    cuerpo:
+      "Te hemos escrito con unas fechas para conocernos. Dinos cuál os va mejor respondiendo a ese correo; si no lo encuentras, mira en el correo no deseado.",
+    icono: Clock,
+    tono: "[--tono:var(--color-cielo)]",
+  },
   avanzando: {
     titulo: "Avanzando",
     cuerpo:

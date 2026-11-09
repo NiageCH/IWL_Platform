@@ -502,13 +502,13 @@ isOneToOne: false
                   ]
                 },"candidatura_documentos": {
                   Row: {
-                    "bytes": number | null,"candidatura_id": string,"created_at": string,"created_by": string | null,"id": string,"mime": string | null,"nombre": string,"peticion_id": string | null,"storage_path": string
+                    "bytes": number | null,"candidatura_id": string,"created_at": string,"created_by": string | null,"id": string,"mime": string | null,"nombre": string,"peticion_id": string | null,"reunion_id": string | null,"storage_path": string
                   }
                   Insert: {
-                    "bytes"?: number | null,"candidatura_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre": string,"peticion_id"?: string | null,"storage_path": string
+                    "bytes"?: number | null,"candidatura_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre": string,"peticion_id"?: string | null,"reunion_id"?: string | null,"storage_path": string
                   }
                   Update: {
-                    "bytes"?: number | null,"candidatura_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre"?: string,"peticion_id"?: string | null,"storage_path"?: string
+                    "bytes"?: number | null,"candidatura_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"mime"?: string | null,"nombre"?: string,"peticion_id"?: string | null,"reunion_id"?: string | null,"storage_path"?: string
                   }
                   Relationships: [
                     {
@@ -558,6 +558,12 @@ isOneToOne: false
       columns: ["peticion_id"]
 isOneToOne: false
       referencedRelation: "candidatura_peticiones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_documentos_reunion_id_fkey"
+      columns: ["reunion_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_reuniones"
       referencedColumns: ["id"]
     }
                   ]
@@ -714,15 +720,82 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"candidaturas": {
+                },"candidatura_reuniones": {
                   Row: {
-                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": NonNullable<Json>,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string,"company_id": string | null,"constitucion_prevista": string | null,"contacto_cargo": string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"],"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string,"is_demo": boolean,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"sector": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"token": string | null,"token_anulado_at": string | null,"updated_at": string,"website": string | null
+                    "asistentes": NonNullable<Json>,"candidatura_id": string,"celebrada_on": string | null,"conclusion": string | null,"created_at": string,"created_by": string | null,"franjas": NonNullable<Json>,"id": string,"notas": string | null,"propuesta_at": string | null,"propuesta_por": string | null
                   }
                   Insert: {
-                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id": string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_cargo"?: string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre": string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
+                    "asistentes"?: NonNullable<Json>,"candidatura_id": string,"celebrada_on"?: string | null,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"notas"?: string | null,"propuesta_at"?: string | null,"propuesta_por"?: string | null
                   }
                   Update: {
-                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id"?: string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_cargo"?: string | null,"contacto_email"?: string,"contacto_nombre"?: string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre"?: string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
+                    "asistentes"?: NonNullable<Json>,"candidatura_id"?: string,"celebrada_on"?: string | null,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"notas"?: string | null,"propuesta_at"?: string | null,"propuesta_por"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "candidatura_reuniones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_propuesta_por_fkey"
+      columns: ["propuesta_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_propuesta_por_fkey"
+      columns: ["propuesta_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidatura_reuniones_propuesta_por_fkey"
+      columns: ["propuesta_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"candidaturas": {
+                  Row: {
+                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": NonNullable<Json>,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string,"company_id": string | null,"constitucion_prevista": string | null,"contacto_cargo": string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"enlace_abierto_at": string | null,"enlace_visto_at": string | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"],"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string,"is_demo": boolean,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"sector": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"token": string | null,"token_anulado_at": string | null,"updated_at": string,"website": string | null
+                  }
+                  Insert: {
+                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id": string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_cargo"?: string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre": string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
+                  }
+                  Update: {
+                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id"?: string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_cargo"?: string | null,"contacto_email"?: string,"contacto_nombre"?: string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre"?: string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
                   }
                   Relationships: [
                     {
@@ -3946,7 +4019,7 @@ isOneToOne: true
                   ]
                 },"embudo_candidaturas": {
                   Row: {
-                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": Json | null,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string | null,"cohorte": string | null,"company_id": string | null,"company_slug": string | null,"constitucion_prevista": string | null,"contacto_cargo": string | null,"contacto_email": string | null,"contacto_nombre": string | null,"contacto_telefono": string | null,"created_at": string | null,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"enlaces": number | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"] | null,"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string | null,"is_demo": boolean | null,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string | null,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"sector": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"token": string | null,"token_anulado_at": string | null,"ultimo_movimiento": string | null,"updated_at": string | null,"website": string | null
+                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": Json | null,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string | null,"cohorte": string | null,"company_id": string | null,"company_slug": string | null,"constitucion_prevista": string | null,"contacto_cargo": string | null,"contacto_email": string | null,"contacto_nombre": string | null,"contacto_telefono": string | null,"created_at": string | null,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"enlace_abierto_at": string | null,"enlace_visto_at": string | null,"enlaces": number | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"] | null,"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string | null,"is_demo": boolean | null,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string | null,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"sector": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"token": string | null,"token_anulado_at": string | null,"ultimo_movimiento": string | null,"updated_at": string | null,"website": string | null
                   }
                   Relationships: [
                     {
@@ -4240,6 +4313,9 @@ isOneToOne: false
                            },
 "reabrir_update":
 { Args: { "target_update": string }; Returns: undefined
+                           },
+"registrar_apertura_enlace":
+{ Args: { "p_token": string }; Returns: undefined
                            },
 "registrar_nda_externo":
 { Args: { "p_candidatura": string,"p_documento": string,"p_firmado_on": string,"p_profile": string,"p_url": string }; Returns: undefined

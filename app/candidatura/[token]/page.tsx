@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
+import { esIwl, personaActual } from "@/lib/supabase/servidor";
 import { Marco } from "@/components/marco";
 import {
   CandidaturaPublica,
@@ -47,6 +48,15 @@ export default async function PorEnlace({
    * con una dirección real.
    */
   if (!vista) notFound();
+
+  /*
+   * Dirección quiere saber si lo ha abierto y cuándo. Si quien mira es de
+   * IWL, comprobando el enlace antes de mandarlo, no cuenta como suyo.
+   */
+  const quienMira = await personaActual();
+  if (!esIwl(quienMira?.role)) {
+    await supabase.rpc("registrar_apertura_enlace", { p_token: token });
+  }
 
   return (
     <Marco tema="oscuro">
