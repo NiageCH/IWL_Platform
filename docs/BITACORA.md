@@ -9,6 +9,52 @@ como es**.
 
 ---
 
+## 2026-11-09 · El NDA, firmado en la plataforma · commit ef6b8db
+
+Punto 3 del onboarding, con tus cinco ajustes. Es la firma sobre la que se apoya el nuevo flujo de entrada: «la contrafirma que lo dispara todo». Crear la compañía al contrafirmar llega con el nuevo corte, cuando apruebes su modelo de datos.
+
+**Qué cambió**
+· **La plantilla**, en Administración → Programa → «Plantilla del NDA».
+  · Empieza vacía. Mientras lo esté, la candidata ve «Tu NDA está en preparación» y no puede firmar nada provisional.
+  · Guardar crea una versión nueva; ninguna se edita ni se borra, tampoco con la clave de servicio.
+  · El número de versión y el hash SHA-256 los calcula la base.
+  · Dice que es firma electrónica simple y que Luciana la valida antes de usarla con fundadoras reales, y de dónde sacar el texto (Drive).
+· **La puerta**: al entrar, después de cambiar la contraseña, la candidata **solo ve el NDA**. Lo firma con su nombre completo y la casilla de aceptación, y se le dice qué queda registrado. Lo decide la base (`estado_nda`), no la pantalla.
+· **La contrafirma**, desde el aviso «X ha firmado el NDA. Falta la firma de IWL», con el botón «Firmar por IWL» ahí mismo; también desde la ficha. Firma una persona de dirección, con su nombre. Al contrafirmar:
+  · se genera el PDF con las dos firmas y va al data room de la candidatura;
+  · la candidatura pasa a «NDA firmado», que pide su due diligence;
+  · el aviso se cierra solo.
+· **El rastro**, en la última página del PDF: nombre, correo, fecha y hora en Madrid y en UTC, IP y navegador de cada firmante, versión y hash. El navegador también se guarda en `nda_firmas`.
+· **NDA firmado fuera**: en la ficha, «Se firmó fuera de la plataforma», con el PDF o un enlace y la fecha. Cuenta igual y abre la puerta.
+· **La candidata se entera**: «IWL ha firmado el NDA. Ya puedes empezar el due diligence», hasta que entrega algo, y un botón para abrir el NDA firmado.
+· El texto de «Darle cuenta» ya no dice «al firmar el NDA»: ahora la cuenta va antes, y el NDA es lo primero que ve.
+
+**Qué decidí yo**
+· **Firmar y contrafirmar van con la clave de servicio, y es la excepción escrita.** La IP solo la conoce este servidor: si la función se pudiera llamar con la sesión, cada cual se escribiría la IP que quisiera. La acción comprueba la sesión; las funciones no se exponen a nadie con sesión, y una prueba lo confirma.
+· **`<Evidencia>` no sirve tal cual**, porque va atada a una compañía y su data room, y el NDA es de una candidatura. El NDA de fuera tiene su propio formulario con las mismas dos formas, archivo o enlace, y queda en el data room de la candidatura.
+· **Las candidaturas que ya tenían NDA puesto a mano** no se paran en la puerta: su NDA sale como «no aplica».
+· **Una plantilla de prueba en la semilla local** (`09_nda_prueba.sql`), que dice en su primera línea que no es un NDA. Las versiones no se borran, así que una prueba no puede crear la suya sin dejarla para siempre. A la nube no llega: `sembrar:nube` solo sube la configuración.
+· **Dependencia nueva: `pdf-lib` 1.17.1**, en JavaScript puro, para generar el PDF en el servidor de Vercel. Tras fusionar, en tu copia hace falta `npm install`.
+
+**Cómo lo he probado**
+· 6 unitarias del PDF: horas de Madrid y UTC, IP y navegador de las dos partes, el texto largo que pasa de página, un carácter que Helvetica no sabe dibujar.
+· 6 de RLS:
+  · nadie con sesión llama a la firma, ni la fundadora ni dirección;
+  · una versión no se edita ni se borra;
+  · solo dirección crea versiones;
+  · el hash es el SHA-256 del texto exacto;
+  · una fundadora no sabe nada del NDA ajeno, e IWL sí.
+· 1 de interfaz, de punta a punta: cuenta, contraseña, solo el NDA, sin la casilla no firma, firma, aviso, «Firmar por IWL», el rastro en la base, la candidatura en «NDA firmado», el PDF, y ella viendo que ya puede empezar.
+
+### Estado
+· 151 unitarias · 157 RLS, dos veces seguidas · **364 de interfaz en verde y 4 saltadas**.
+· Migraciones nuevas: `20261109130000_nda` y `20261109140000_estado_nda`.
+
+**Siguiente**
+Los dos fallos de Prueba_Ro y, después, el modelo de datos del nuevo flujo de entrada, para tu aprobación.
+
+---
+
 ## 2026-11-09 · Situación societaria: proyectos sin sociedad · commit 2f52a14
 
 **Qué cambió**
