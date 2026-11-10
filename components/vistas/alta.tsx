@@ -113,17 +113,35 @@ export function BloqueAlta({
 export function AvisosDireccion({
   avisos,
   altas,
+  revisiones = [],
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
+  /** Candidaturas aplazadas en comité cuya fecha de revisión ha llegado */
+  revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
       <Bloque>
-        <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>
+        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length} sin ver</Metadato>}>
           Avisos
         </TituloBloque>
-        {avisos.length === 0 ? (
+        {revisiones.length ? (
+          <ul className="divide-y divide-filete border-b border-filete">
+            {revisiones.map((r) => (
+              <li key={r.candidaturaId} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+                <span className="min-w-0 flex-1 text-sm text-titular">
+                  {r.nombre}: toca volver a mirarla en comité
+                </span>
+                <span className="cifra text-xs text-metadato">{fecha(r.revisionOn)}</span>
+                <Link href={`/embudo/${r.candidaturaId}`} className="enlace text-xs">
+                  Redactar el acta
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {avisos.length === 0 && revisiones.length === 0 ? (
           <SinDatos>
             Nada nuevo. Cuando alguien entre por primera vez o firme el NDA,
             te lo dirá aquí.

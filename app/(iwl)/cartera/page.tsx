@@ -26,6 +26,7 @@ import { bandaDe } from "@/lib/datos/cohorte";
 import { cn, euros, numero, porcentaje } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { leerAltasEnCurso, leerAvisos } from "@/lib/datos/onboarding";
+import { leerRevisionesComite } from "@/lib/datos/comite";
 import { AvisosDireccion } from "@/components/vistas/alta";
 import { describirSituacion } from "@/lib/societario";
 
@@ -105,10 +106,12 @@ export default async function Cartera() {
    * importa saber si su fundadora ha entrado.
    */
   const esDireccion = persona.role === "admin_iwl";
-  const [avisos, altas] = esDireccion
-    ? await Promise.all([leerAvisos(), leerAltasEnCurso()])
-    : [[], []];
-  const paraDireccion = esDireccion ? <AvisosDireccion avisos={avisos} altas={altas} /> : null;
+  const [avisos, altas, revisiones] = esDireccion
+    ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
+    : [[], [], []];
+  const paraDireccion = esDireccion ? (
+    <AvisosDireccion avisos={avisos} altas={altas} revisiones={revisiones} />
+  ) : null;
 
   if (companias.length === 0) {
     return (

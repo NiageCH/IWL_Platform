@@ -3,6 +3,8 @@ import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { PlantillaNda } from "@/components/formularios/nda-iwl";
 import { fecha } from "@/lib/utils";
 import { leerPlantillaVigente } from "@/lib/datos/nda";
+import { ComiteDefecto } from "@/components/formularios/comite";
+import { leerComiteDefecto, leerPersonasIwl } from "@/lib/datos/comite";
 import {
   CeldaNumero,
   FilaTarifa,
@@ -72,7 +74,11 @@ export default async function AdminPrograma() {
 
   const pesosMadurez = (ajuste("pesos_madurez") ?? {}) as Record<string, number>;
   const objetivos = (ajuste("objetivos_traccion") ?? {}) as Record<string, number>;
-  const plantillaNda = await leerPlantillaVigente();
+  const [plantillaNda, personasIwl, comiteDefecto] = await Promise.all([
+    leerPlantillaVigente(),
+    leerPersonasIwl(),
+    leerComiteDefecto(),
+  ]);
   const umbralesAlta = (ajuste("onboarding_umbrales") ?? {}) as {
     atencion_dias?: number;
     vencido_dias?: number;
@@ -145,6 +151,18 @@ export default async function AdminPrograma() {
           ) : null}
         </div>
         <PlantillaNda vigente={plantillaNda?.texto ?? ""} />
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>{comiteDefecto.length} personas</Metadato>}>
+          Comité por defecto
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Salen marcadas al redactar cada acta de comité, y se pueden cambiar
+          en ella. El acta se cierra cuando firman todas las que estén
+          marcadas.
+        </p>
+        <ComiteDefecto personas={personasIwl} marcados={comiteDefecto} />
       </Bloque>
 
       <Bloque>

@@ -11,6 +11,9 @@ import { BloqueAlta } from "@/components/vistas/alta";
 import { BloqueNda } from "@/components/vistas/nda";
 import { AperturaEnlace, BloqueReuniones } from "@/components/vistas/reuniones";
 import { leerReuniones } from "@/lib/datos/reuniones";
+import { BloqueComite } from "@/components/vistas/comite";
+import { leerActas, leerComiteDefecto, leerPersonasIwl } from "@/lib/datos/comite";
+import { viaPropuesta } from "@/lib/comite";
 import { leerNda } from "@/lib/datos/nda";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
@@ -65,12 +68,15 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta, nda, reuniones] = await Promise.all([
+  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
     leerNda(id),
     leerReuniones(id),
+    leerActas(id),
+    leerPersonasIwl(),
+    leerComiteDefecto(),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -199,6 +205,19 @@ export default async function FichaCandidatura({
           <BloqueReuniones
             reuniones={reuniones}
             candidaturaId={c.id!}
+            contacto={c.contacto_nombre ?? ""}
+            correo={c.contacto_email}
+            startup={c.nombre ?? ""}
+            abierta={estado !== "firmada" && estado !== "descartada"}
+          />
+
+          <BloqueComite
+            actas={actas}
+            candidaturaId={c.id!}
+            yo={persona.id}
+            personas={personasIwl}
+            porDefecto={comiteDefecto}
+            viaPropuesta={viaPropuesta(c.estado_verificado ?? c.estado_declarado)}
             contacto={c.contacto_nombre ?? ""}
             correo={c.contacto_email}
             startup={c.nombre ?? ""}
