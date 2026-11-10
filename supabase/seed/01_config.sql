@@ -163,6 +163,25 @@ from (values
 join dd_areas a on a.code = v.area_code
 on conflict (code) do nothing;
 
+-- Lo que depende de que haya sociedad. La migración
+-- `20261109120000_situacion_societaria.sql` hace lo mismo, pero corre antes
+-- que esta semilla: tras un `db:reset` no encontraba ni las áreas ni los
+-- puntos, y no marcaba nada. Aquí es donde existen.
+update dd_item_templates
+set requiere_sociedad = true
+where code in ('sl_escritura', 'sl_pacto_socios', 'sl_cap_table', 'sl_actas', 'fin_cuentas');
+
+insert into dd_item_templates (area_id, code, title, description, is_required, order_index, solo_sin_sociedad)
+select a.id, v.code, v.title, v.description, true, v.orden, true
+from (values
+  ('sl_pacto_fundadoras', 'Pacto entre fundadoras',
+   'Cómo prevén repartirse la sociedad cuando se constituya, y qué aporta cada una mientras tanto.', 10),
+  ('sl_titularidad', 'Titularidad de lo construido',
+   'A nombre de quién están hoy el código, la marca y el dominio, y el compromiso de aportarlos a la sociedad.', 11)
+) as v(code, title, description, orden)
+join dd_areas a on a.code = 'societario_legal'
+on conflict (code) do nothing;
+
 -- -----------------------------------------------------------------------------
 -- Dimensiones técnicas (§4.4)
 -- -----------------------------------------------------------------------------
