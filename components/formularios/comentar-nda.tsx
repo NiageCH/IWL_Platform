@@ -6,16 +6,21 @@ import { AreaTexto, Boton, Campo, Desplegable, Formulario } from "@/components/u
 /**
  * Comentar el NDA, del lado de la candidata. El formulario se queda
  * montado y vacío después de enviar: el mensaje dice que llegó, y el
- * comentario sale en la lista de encima.
+ * comentario sale en la lista de encima. Si ella ya ha firmado, lo que
+ * comenta llega antes de la firma de IWL, y la ayuda lo dice así.
  */
-export function ComentarNda() {
+export function ComentarNda({ firmadoPorElla = false }: { firmadoPorElla?: boolean }) {
   return (
     <Formulario accion={comentarNda} className="gap-3">
       {(r) => (
         <>
           <Campo
             etiqueta="Comentar el NDA"
-            ayuda="Si algo no te encaja o no lo entiendes, dínoslo antes de firmar"
+            ayuda={
+              firmadoPorElla
+                ? "Si algo no te encaja, dínoslo. Lo vemos antes de que firme IWL."
+                : "Si algo no te encaja o no lo entiendes, dínoslo antes de firmar"
+            }
             error={r.ok ? undefined : r.campos?.texto}
           >
             <AreaTexto name="texto" rows={3} />

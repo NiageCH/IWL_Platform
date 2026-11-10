@@ -116,7 +116,7 @@ export default async function MiCandidatura() {
               cuanto firme, al entrar irás a tu compañía en la plataforma.
             </p>
             <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
-            <ComentarNda />
+            <ComentarNda firmadoPorElla />
           </div>
         ) : null}
         {nda.estado === "firmado" && vista.puede_subir && entregados === 0 ? (

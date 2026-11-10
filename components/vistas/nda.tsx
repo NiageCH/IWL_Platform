@@ -107,8 +107,8 @@ export function BloqueNda({
         {estado === "por_firmar" ? (
           <p>
             Lo verá nada más entrar, en la versión {plantilla?.version}
-            {plantilla?.candidatura_id ? ", que es solo suya" : ""}. Hasta que
-            lo firme no ve nada más; antes puede comentarlo.
+            {plantilla?.candidatura_id ? ", que es solo suya" : ""}, encima de
+            su candidatura. Puede comentarlo antes de firmar.
           </p>
         ) : null}
         <ComentariosNda comentarios={comentarios} candidaturaId={candidaturaId} responder={abierto} />

@@ -40,6 +40,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
   try {
     await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
     await page.getByRole("button", { name: "Enviar el NDA" }).click();
+    await expect(page.getByText(/Lo verá nada más entrar, en la versión \d+, encima de su candidatura\. Puede comentarlo antes de firmar\./)).toBeVisible();
     const mensaje = await page.getByText(/NDA enviado a/).innerText();
     const temporal = mensaje.match(/contraseña es ([^\s]+)/)![1];
     await salir(page);
@@ -63,6 +64,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     await page.getByLabel("He leído el NDA y lo acepto.").check();
     await page.getByRole("button", { name: "Firmar el NDA" }).click();
     await expect(page.getByText(/Has firmado el NDA\. Falta la firma de Inception Woman Lab/)).toBeVisible();
+    await expect(page.getByText("Si algo no te encaja, dínoslo. Lo vemos antes de que firme IWL.")).toBeVisible();
     await salir(page);
 
     // Dirección: el aviso lleva a responder
