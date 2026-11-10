@@ -9,6 +9,70 @@ como es**.
 
 ---
 
+## 2026-11-10 · Producción: sin texto de NDA no se envía, y con el NDA pendiente ve su candidatura · commit 45cd207
+
+Tu entrada «Producción: la candidata con NDA pendiente no ve nada más», antes que lo de Construcción.
+
+**Qué cambió**
+· **Sin plantilla de NDA, «Enviar el NDA» no se puede pulsar.**
+  · Sale desactivado, con el motivo («Falta cargar la plantilla del NDA…») y el enlace «Cargarla en Administración → Programa».
+  · La acción lo comprueba **antes de crear la cuenta**, que es lo que no tiene vuelta.
+  · Si la base aun así rechaza el acceso, la cuenta recién creada se borra: no queda huérfana.
+· **Lo impide también la base**, por los dos caminos:
+  · darle cuenta a una candidata en Preseleccionada o en «NDA enviado»;
+  · pasar una candidatura a «NDA enviado», también con «Pasar a…».
+  · Un NDA firmado fuera de la plataforma sigue pasando: no necesita texto.
+· **Con el NDA pendiente, ella ve su candidatura.** Arriba, una tarjeta de **siguiente paso**:
+  · «Firma el NDA», con el texto, los comentarios y la firma;
+  · o «Tu NDA está en preparación».
+
+  Debajo, **su candidatura entera**, como la veía por el enlace. Detrás del NDA queda solo lo nuevo y confidencial: la sala de datos y lo que comparta IWL.
+· **Textos**: fuera «no tienes que hacer nada más hasta entonces»; ahora «Te avisaremos cuando esté listo para firmar. Mientras, aquí tienes tu candidatura.». Fuera las rayas: «Antes de compartir información confidencial, en las dos direcciones, firmamos un acuerdo de confidencialidad. Léelo y fírmalo aquí. Después firmará Inception Woman Lab.»
+
+### Qué decidí yo
+· **«Ver su candidatura» es la misma vista del enlace** (`CandidaturaPublica`), sin quitarle nada. Es lo que pedías: estado, lo que envió y lo que aportó.
+· **El título de la tarjeta va como `h2`**: el `h1` de la página es el nombre de su startup, como en el enlace.
+· **Con plantilla propia de ella también vale.** La comprobación es «no hay ninguna que le aplique», genérica o suya.
+
+### Cómo lo he probado
+· **Sin texto de NDA, a mano.** En la base de pruebas siempre hay una plantilla: la semilla carga una, y las versiones no se borran, ni con la clave de servicio. Así que no cabe en una suite. Lo he probado en una transacción que las quita y se deshace al final, con tres casos:
+  · dar acceso: rechazado, y el enlace sigue vivo sin cuenta;
+  · pasar a «NDA enviado»: rechazado;
+  · NDA firmado fuera: aceptado, y nace la compañía.
+· Las pruebas de interfaz del NDA comprueban ahora que, con el NDA pendiente, se ve debajo el nombre de su candidatura.
+
+### Para desplegarlo
+Desde la carpeta del proyecto, con `main` en `878d956` como lo dejaste:
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push        # entra 20261110160000_nda_sin_plantilla_no_se_envia
+git push
+npx vercel --prod
+```
+
+`docs/REVISION.md` tiene en `main` tus cambios sin guardar, y la rama lleva tu versión de hoy. Apártalo antes de fusionar, como en la entrada anterior.
+
+**La candidata que se quedó atascada** no necesita nada: con esto ve su candidatura y «Tu NDA está en preparación». En cuanto cargues la plantilla en Administración → Programa, verá el NDA para firmar.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 170 unitarias · 199 RLS, dos veces seguidas · **368 de interfaz en verde y 4 saltadas** (los informes en PDF).
+  · En la primera pasada falló una vez en Safari «una candidatura recorre el embudo»: la firma de la candidatura de antes, que esto no toca. La pantalla no tenía error; el clic no llegó.
+  · Sola en Safari pasó tres de tres, y la pasada completa siguiente salió limpia.
+· Corrección a la entrada anterior: decía 33 commits por delante de `main` y eran 32.
+
+**Siguiente**
+Lo de «Construcción: no se trabaja sin Acuerdo»:
+1. el tope del tramo de entrada;
+2. la horquilla de equity;
+3. el equity comprometido sin sociedad;
+4. las horas solo desde la firma.
+
+---
+
 ## 2026-11-10 · La guía de carga rehecha, y la rama lista para desplegar · commit d4ec373
 
 **Qué cambió**
