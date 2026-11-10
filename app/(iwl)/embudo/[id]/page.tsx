@@ -224,8 +224,7 @@ export default async function FichaCandidatura({
             reuniones={reuniones}
             candidaturaId={c.id!}
             contacto={c.contacto_nombre ?? ""}
-            correo={c.contacto_email}
-            startup={c.nombre ?? ""}
+            personas={personasIwl}
             abierta={estado !== "firmada" && estado !== "descartada"}
           />
 

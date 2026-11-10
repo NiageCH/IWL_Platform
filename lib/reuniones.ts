@@ -1,13 +1,12 @@
 /**
- * Las reuniones con una candidata: el texto con que se proponen y la forma
- * en que se guardan sus asistentes.
+ * Las reuniones con una candidata: sus franjas en hora de Madrid, en qué
+ * punto está cada una, el fichero de calendario y cómo se guardan sus
+ * asistentes.
  *
- * Sin proveedor de correo, «Proponer reunión» abre un correo ya redactado
- * en el programa de quien lo envía. El texto lo escribe una persona a otra:
- * para qué es la reunión, las franjas en hora de Madrid —para que no haya
- * duda de zona— y qué hacer para elegir una.
+ * La reunión se acuerda dentro de la plataforma: IWL propone franjas, ella
+ * elige una o propone otras, hasta que una queda confirmada.
  *
- * Cálculo puro: lo usan la acción y el formulario, y se prueba solo.
+ * Cálculo puro: lo usan las acciones y las pantallas, y se prueba solo.
  */
 
 // `type` y no `interface`: se guardan como JSON, y una interfaz no encaja en ese tipo
@@ -16,6 +15,82 @@ export type Franja = {
   inicio: string;
   fin: string;
 };
+
+export type EstadoReunion = "propuesta" | "contrapropuesta" | "confirmada" | "celebrada" | "cancelada";
+
+/** Cómo se llama cada estado, junto a su `<Estado>` */
+export const ROTULO_REUNION: Record<EstadoReunion, string> = {
+  propuesta: "Propuesta",
+  contrapropuesta: "Contrapropuesta",
+  confirmada: "Confirmada",
+  celebrada: "Celebrada",
+  cancelada: "Cancelada",
+};
+
+/** Las franjas que todavía se pueden elegir: las que no han empezado */
+export function franjasVigentes(franjas: Franja[], ahora = new Date()): Franja[] {
+  return franjas.filter((f) => new Date(f.inicio) > ahora);
+}
+
+/** Propuesta o contrapropuesta con todas sus franjas pasadas: hay que proponer otras */
+export function caducada(estado: string, franjas: Franja[], ahora = new Date()): boolean {
+  return (estado === "propuesta" || estado === "contrapropuesta") && franjasVigentes(franjas, ahora).length === 0;
+}
+
+export const FORMATOS = {
+  videollamada: "por videollamada",
+  presencial: "en persona",
+} as const;
+export type Formato = keyof typeof FORMATOS;
+
+/**
+ * El fichero de calendario de una reunión confirmada (RFC 5545), para
+ * «Añadir a mi calendario». Las horas van en UTC: cada calendario las pone
+ * en la zona de quien lo abre.
+ */
+export function ics(d: {
+  uid: string;
+  franja: Franja;
+  titulo: string;
+  descripcion?: string | null;
+  lugar?: string | null;
+  ahora?: Date;
+}): string {
+  const utc = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  // Comas, puntos y comas y saltos se escapan; líneas de más de 75 octetos se doblan
+  const texto = (t: string) => t.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  const doblar = (linea: string) => {
+    const partes: string[] = [];
+    let resto = linea;
+    while (new TextEncoder().encode(resto).length > 75) {
+      let corte = 75;
+      while (new TextEncoder().encode(resto.slice(0, corte)).length > 75) corte--;
+      partes.push(resto.slice(0, corte));
+      resto = ` ${resto.slice(corte)}`;
+    }
+    partes.push(resto);
+    return partes.join("\r\n");
+  };
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Inception Woman Lab//Plataforma//ES",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${d.uid}@inceptionwlab.es`,
+    `DTSTAMP:${utc((d.ahora ?? new Date()).toISOString())}`,
+    `DTSTART:${utc(d.franja.inicio)}`,
+    `DTEND:${utc(d.franja.fin)}`,
+    `SUMMARY:${texto(d.titulo)}`,
+    ...(d.descripcion ? [`DESCRIPTION:${texto(d.descripcion)}`] : []),
+    ...(d.lugar ? [`LOCATION:${texto(d.lugar)}`] : []),
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ]
+    .map(doblar)
+    .join("\r\n");
+}
 
 export type Conclusion = "seguir" | "no_seguir" | "pendiente";
 
@@ -48,24 +123,6 @@ export function describirFranja(f: Franja): string {
       hour12: false,
     }).format(new Date(iso));
   return `${dia}, de ${hora(f.inicio)} a ${hora(f.fin)}`;
-}
-
-export function textoPropuestaReunion(
-  contacto: string,
-  startup: string,
-  franjas: Franja[],
-): { asunto: string; cuerpo: string } {
-  const pila = contacto.split(" ")[0] || contacto;
-  const lista = franjas.map((f, i) => `  ${i + 1}. ${describirFranja(f)}`).join("\n");
-  return {
-    asunto: `${startup} · una conversación con Inception Woman Lab`,
-    cuerpo:
-      `Hola, ${pila}:\n\n` +
-      `Hemos leído vuestra candidatura y nos gustaría conoceros para hablar de ${startup}. ` +
-      `Te propongo estas franjas, en hora de Madrid:\n\n${lista}\n\n` +
-      `Dime cuál os va mejor, o si ninguna os encaja, y buscamos otra.\n\n` +
-      `Un saludo,\nEquipo de Inception Woman Lab`,
-  };
 }
 
 /**

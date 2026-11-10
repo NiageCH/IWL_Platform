@@ -24,7 +24,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
       .eq("resumen_avisos", "diario"),
     servicio
       .from("avisos")
-      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, email ), companies ( name ), candidaturas ( nombre )")
+      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre )")
       .is("cerrado_at", null)
       .order("created_at"),
   ]);
@@ -38,11 +38,12 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
     const lista = suyos
       .map((a) => {
         const quien = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
+        const candidatura = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null } | null;
         const donde =
           (a.companies as unknown as { name: string } | null)?.name ??
           (a.candidaturas as unknown as { nombre: string } | null)?.nombre ??
           null;
-        return `· ${textoAviso(a.tipo, quien?.full_name ?? quien?.email ?? "Alguien", donde)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
+        return `· ${textoAviso(a.tipo, quien?.full_name ?? quien?.email ?? candidatura?.contacto_nombre ?? "Alguien", donde)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
       })
       .join("\n");
     const r = await notificar(

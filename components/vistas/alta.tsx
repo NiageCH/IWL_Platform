@@ -183,7 +183,9 @@ export function AvisosDireccion({
                       ? "Leer el NDA"
                       : a.tipo === "nda_comentario"
                         ? "Responder"
-                        : "Ver su alta"}
+                        : a.tipo.startsWith("reunion_")
+                          ? "Ver la reunión"
+                          : "Ver su alta"}
                   </Link>
                 ) : null}
                 {a.companiaSlug && !a.candidaturaId ? (

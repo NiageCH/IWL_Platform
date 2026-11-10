@@ -131,6 +131,8 @@ export interface Filas {
   etapa: { estado: string; fin?: string | null };
   /** Una compañía toma el peor estado de lo que tiene abierto */
   compania: { estados: EstadoVisual[] };
+  /** Una reunión con una candidata; `caducada` si todas sus franjas han pasado sin elegir */
+  reunion: { estado: string; caducada?: boolean };
 }
 
 /**
@@ -255,6 +257,18 @@ export function estadoVisual<E extends keyof Filas>(
     case "compania": {
       const f = fila as Filas["compania"];
       return peor(f.estados);
+    }
+
+    case "reunion": {
+      const f = fila as Filas["reunion"];
+      if (f.estado === "celebrada") return "hecho";
+      if (f.estado === "cancelada") return "no_aplica";
+      // Todas las franjas pasadas sin elegir: hay que proponer otras
+      if (f.caducada) return "vencido";
+      // Ella ha propuesto otras: le toca a IWL
+      if (f.estado === "contrapropuesta") return "atencion";
+      if (f.estado === "confirmada") return "curso";
+      return "pendiente";
     }
   }
 

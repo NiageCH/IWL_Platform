@@ -1770,3 +1770,13 @@ El NDA y el acta de comité salen de la misma plantilla, `DocumentoIwl` en `lib/
 - **El hash del acta es el de `contenidoActa`.** Recoge los campos que el acta congela desde la primera firma y a los miembros por su id: si cambia un nombre, el hash no. El mensaje de un descarte no entra, porque es comunicación y no deliberación.
 - **Lo calcula la aplicación al cerrar el acta y lo guarda la base** (`comite_actas.contenido_hash`). Una vez puesto no cambia, ni sin sesión, porque es integridad. Las actas cerradas antes de existir el hash lo guardan la primera vez que dirección regenera su PDF, y el PDF lo dice.
 - **Regenerar no borra el PDF de antes.** Queda en el expediente, y el acta apunta al nuevo.
+
+## 2026-11-11 · El correo, y la reunión acordada en la plataforma
+
+- **Una sola entrada para el correo, `notificar`**, y un adaptador por proveedor (`lib/correo/proveedores.ts`). Cambiar de proveedor es escribir otro adaptador.
+- **Nunca hace fallar la acción que lo provoca.** Si el correo no sale, queda «sin enviar» en `correos`, con «Reintentar» en la ficha.
+- **En `correos` se guardan el evento y sus datos, no el correo escrito.** Al reintentar se vuelve a escribir. El enlace para elegir contraseña del correo del NDA se genera en cada envío y no se guarda: quien lo tuviera entraría en su cuenta.
+- **La reunión la acuerdan las dos partes en la plataforma.** Estados: propuesta → contrapropuesta → confirmada → celebrada / cancelada. Ella responde por `reunion_elegir` y `reunion_contraproponer`, funciones `security definer` que reciben su testigo o miran su sesión, como todo lo que hace desde el enlace privado. No hay política para `anon`.
+- **Una franja pasada no se elige**, y la base lo comprueba. Si pasan todas sin elegir, la reunión está caducada: se calcula al leer (`caducada` en `lib/reuniones.ts`), y el cron diario deja un aviso a IWL una sola vez (`avisar_reuniones_caducadas`).
+- **Las acciones de IWL sobre la reunión no devuelven mensaje.** Proponer, aceptar o cancelar cambian el estado, y con él desaparece el formulario que lo hizo. El acuse es la reunión cambiada, y si el correo salió lo dice el bloque «Correos» de la misma ficha.
+- **«Añadir a mi calendario» es un `.ics` en un enlace `data:`.** Sin integración con Google, que sigue aparcada, y sin ruta que proteger.

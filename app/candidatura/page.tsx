@@ -12,6 +12,8 @@ import { leerNda } from "@/lib/datos/nda";
 import { AbrirNda } from "@/components/formularios/abrir-nda";
 import { ComentarNda } from "@/components/formularios/comentar-nda";
 import { ComentariosNda } from "@/components/vistas/nda";
+import { TarjetaReunion } from "@/components/vistas/reunion-candidata";
+import { leerReunionDeElla } from "@/lib/datos/reuniones";
 
 export const metadata = { title: "Tu candidatura · Plataforma IWL" };
 
@@ -41,7 +43,7 @@ export default async function MiCandidatura() {
    * nada más que el NDA. Sin plantilla cargada, se le dice que está en
    * preparación y no se le deja firmar nada provisional.
    */
-  const nda = await leerNda(vista.id);
+  const [nda, reunion] = await Promise.all([leerNda(vista.id), leerReunionDeElla()]);
   const entregados = (peticiones ?? []).reduce(
     (n: number, p: { entregados?: number }) => n + (p.entregados ?? 0),
     0,
@@ -130,6 +132,9 @@ export default async function MiCandidatura() {
             <AbrirNda candidaturaId={vista.id} />
           </div>
         ) : null}
+
+        {/* La reunión, si hay una en juego: es su siguiente paso */}
+        {reunion ? <TarjetaReunion reunion={reunion} /> : null}
 
         <CandidaturaPublica vista={vista} />
 

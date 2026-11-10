@@ -283,7 +283,10 @@ export interface Aviso {
     | "nda_comentario"
     | "situacion_dicha"
     | "anexo_comentario"
-    | "cambio_via";
+    | "cambio_via"
+    | "reunion_elegida"
+    | "reunion_contrapropuesta"
+    | "reunion_caducada";
   created_at: string;
   persona: string;
   candidaturaId: string | null;
@@ -304,7 +307,7 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   let consulta = supabase
     .from("avisos")
     .select(
-      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre), companies(name, slug)",
+      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre, contacto_nombre), companies(name, slug)",
     )
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
@@ -313,13 +316,14 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
 
   return (data ?? []).map((a) => {
     const p = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
-    const c = a.candidaturas as unknown as { nombre: string } | null;
+    const c = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null } | null;
     const co = a.companies as unknown as { name: string; slug: string } | null;
     return {
       id: a.id,
       tipo: a.tipo as Aviso["tipo"],
       created_at: a.created_at,
-      persona: p?.full_name ?? p?.email ?? "Alguien",
+      // Sin cuenta todavía —responde desde su enlace—, por su nombre de contacto
+      persona: p?.full_name ?? p?.email ?? c?.contacto_nombre ?? "Alguien",
       candidaturaId: a.candidatura_id,
       companiaSlug: co?.slug ?? null,
       donde: c?.nombre ?? co?.name ?? null,

@@ -73,7 +73,7 @@ const MOMENTOS: Record<
   reunion_propuesta: {
     titulo: "Reunión propuesta",
     cuerpo:
-      "Te hemos escrito con unas fechas para conocernos. Dinos cuál os va mejor respondiendo a ese correo; si no lo encuentras, mira en el correo no deseado.",
+      "Estamos acordando una reunión para conoceros: la tienes arriba, con sus fechas.",
     icono: Clock,
     tono: "[--tono:var(--color-cielo)]",
   },

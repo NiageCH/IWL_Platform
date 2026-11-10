@@ -861,13 +861,13 @@ isOneToOne: false
                   ]
                 },"candidatura_reuniones": {
                   Row: {
-                    "asistentes": NonNullable<Json>,"candidatura_id": string,"celebrada_on": string | null,"conclusion": string | null,"created_at": string,"created_by": string | null,"franjas": NonNullable<Json>,"id": string,"notas": string | null,"propuesta_at": string | null,"propuesta_por": string | null
+                    "asistentes": NonNullable<Json>,"caducada_avisada_at": string | null,"cancelada_at": string | null,"cancelada_motivo": string | null,"candidatura_id": string,"celebrada_on": string | null,"conclusion": string | null,"confirmada_at": string | null,"created_at": string,"created_by": string | null,"direccion": string | null,"elegida": Json | null,"enlace": string | null,"estado": string,"formato": string | null,"franjas": NonNullable<Json>,"id": string,"nota": string | null,"nota_candidata": string | null,"notas": string | null,"personas_iwl": (string)[],"propuesta_at": string | null,"propuesta_de": string,"propuesta_por": string | null
                   }
                   Insert: {
-                    "asistentes"?: NonNullable<Json>,"candidatura_id": string,"celebrada_on"?: string | null,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"notas"?: string | null,"propuesta_at"?: string | null,"propuesta_por"?: string | null
+                    "asistentes"?: NonNullable<Json>,"caducada_avisada_at"?: string | null,"cancelada_at"?: string | null,"cancelada_motivo"?: string | null,"candidatura_id": string,"celebrada_on"?: string | null,"conclusion"?: string | null,"confirmada_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"direccion"?: string | null,"elegida"?: Json | null,"enlace"?: string | null,"estado"?: string,"formato"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"nota"?: string | null,"nota_candidata"?: string | null,"notas"?: string | null,"personas_iwl"?: (string)[],"propuesta_at"?: string | null,"propuesta_de"?: string,"propuesta_por"?: string | null
                   }
                   Update: {
-                    "asistentes"?: NonNullable<Json>,"candidatura_id"?: string,"celebrada_on"?: string | null,"conclusion"?: string | null,"created_at"?: string,"created_by"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"notas"?: string | null,"propuesta_at"?: string | null,"propuesta_por"?: string | null
+                    "asistentes"?: NonNullable<Json>,"caducada_avisada_at"?: string | null,"cancelada_at"?: string | null,"cancelada_motivo"?: string | null,"candidatura_id"?: string,"celebrada_on"?: string | null,"conclusion"?: string | null,"confirmada_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"direccion"?: string | null,"elegida"?: Json | null,"enlace"?: string | null,"estado"?: string,"formato"?: string | null,"franjas"?: NonNullable<Json>,"id"?: string,"nota"?: string | null,"nota_candidata"?: string | null,"notas"?: string | null,"personas_iwl"?: (string)[],"propuesta_at"?: string | null,"propuesta_de"?: string,"propuesta_por"?: string | null
                   }
                   Relationships: [
                     {
@@ -4740,6 +4740,9 @@ isOneToOne: false
 "archivar_compania":
 { Args: { "motivo"?: string,"target_company": string }; Returns: undefined
                            },
+"avisar_reuniones_caducadas":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "borrar_compania":
 { Args: { "target_company": string }; Returns: undefined
                            },
@@ -4834,6 +4837,17 @@ isOneToOne: false
                            },
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined
+                           },
+"reunion_contraproponer":
+{ Args: { "p_franjas": Json,"p_nota"?: string,"p_reunion": string,"p_token"?: string }; Returns: undefined
+                           },
+"reunion_elegir":
+{ Args: { "p_inicio": string,"p_reunion": string,"p_token"?: string }; Returns: undefined
+                           },
+"reunion_vigente":
+{ Args: { "p_token"?: string }; Returns: {
+              "cancelada_motivo": string,"direccion": string,"elegida": Json,"enlace": string,"estado": string,"formato": string,"franjas": Json,"id": string,"nota": string,"nota_candidata": string,"personas_iwl": (string)[],"propuesta_de": string
+            }[]
                            },
 "testigo_de_candidatura":
 { Args: { "p_id": string }; Returns: string

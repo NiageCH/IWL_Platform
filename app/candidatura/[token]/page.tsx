@@ -12,6 +12,8 @@ import {
 } from "@/components/formularios/candidatura-publica";
 import { Desplegable } from "@/components/ui/formulario";
 import { CORREO_CONTACTO } from "@/lib/contacto";
+import { TarjetaReunion } from "@/components/vistas/reunion-candidata";
+import { leerReunionDeElla } from "@/lib/datos/reuniones";
 
 export const metadata = {
   title: "Tu candidatura · Inception Woman Lab",
@@ -58,9 +60,13 @@ export default async function PorEnlace({
     await supabase.rpc("registrar_apertura_enlace", { p_token: token });
   }
 
+  const reunion = await leerReunionDeElla(token);
+
   return (
     <Marco tema="oscuro">
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+        {/* La reunión, si hay una en juego: es su siguiente paso */}
+        {reunion ? <TarjetaReunion reunion={reunion} token={token} /> : null}
         <CandidaturaPublica
           vista={vista}
           /*
