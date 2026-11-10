@@ -9,6 +9,139 @@ como es**.
 
 ---
 
+## 2026-11-10 · La guía de carga rehecha, y la rama lista para desplegar · commit d4ec373
+
+**Qué cambió**
+· **`docs/IWL_Doc_CargarCompania_ES_v2_20261110.md`**, con el nuevo corte y Siren de ejemplo (Construcción, sin sociedad). Catorce pasos: candidatura → reunión → comité → NDA, que es donde nace la compañía → «En entrada» → situación → decisión → Acuerdo → equipo → ficha → hoja de ruta → KPI → paso a Aceleración → alta directa. Al final, «Si algo no cuadra».
+· La versión 1 queda marcada como sustituida, sin tocar su contenido.
+· Lleva ya la regla de tu entrada de hoy: **no se trabaja sin Acuerdo**, y el Acuerdo se firma aunque no haya sociedad. Lo demás de esa entrada (tope de 14 días, horquilla de equity, equity comprometido, horas desde la firma) no está construido; la guía no lo da por hecho.
+
+### Qué decidí yo
+· **De Siren va solo el nombre de la compañía**, que ya está en el repositorio en varios sitios. Ninguna persona.
+· **Los rótulos los he comprobado contra el código**, no de memoria.
+
+## Para desplegar
+
+Desde la carpeta del proyecto (`~/Desktop/IWL_Platform`), donde están `.env.produccion` y el enlace a Supabase.
+
+**0. Antes de fusionar.** En `main` tienes `docs/REVISION.md` modificado sin guardar, y la rama lleva tu versión de hoy. Si no lo has tocado desde la última entrada, la fusión solo necesita que lo apartes:
+
+```bash
+cp docs/REVISION.md ~/REVISION-copia.md      # por si acaso
+git checkout -- docs/REVISION.md
+```
+
+Después de fusionar, `diff ~/REVISION-copia.md docs/REVISION.md` no tiene que dar nada. Si da algo, es que escribiste después: vuelve a copiar la tuya encima. El otro fichero suelto, `docs/IWL_Doc_FlujoEntrada_ES_v1_20261109.md`, no está en la rama y no estorba.
+
+**1 a 5.**
+
+```bash
+# 1. Fusión en main
+git merge --ff-only worktree-limpiar-cuentas-nube
+
+# 2. Dependencias: entra pdf-lib, para los PDF del NDA y del acta
+npm install
+
+# 3. La base primero: el código nuevo pide columnas nuevas
+npx supabase db push
+
+# 4. Publicar
+git push
+
+# 5. Desplegar
+npx vercel --prod
+```
+
+No hace falta ninguna variable nueva en Vercel ni en Supabase.
+
+### Qué migraciones entran (16)
+
+| Migración | Qué hace |
+|---|---|
+| `20261109100000_onboarding` | Avisos y seguimiento del alta |
+| `20261109110000_enums_societarios` | Valores de la situación societaria |
+| `20261109120000_situacion_societaria` | Situación en candidatura y compañía, y lo societario que depende de ella |
+| `20261109130000_nda` | El NDA firmado en la plataforma |
+| `20261109140000_estado_nda` | En qué punto está el NDA |
+| `20261109150000_enums_entrada` | `diligencia` pasa a `entrada`; «por construir»; tramo y vía |
+| `20261109151000_tramo_via` | Tramo y vía en la compañía; «por construir» con los hitos |
+| `20261109160000_reuniones` | Proponer y anotar reuniones; si abrió el enlace |
+| `20261109170000_comite` | El acta de comité y sus firmas |
+| `20261109171000_comite_cascada` | Borrar una candidatura con sus actas |
+| `20261110100000_nda_comentarios` | Comentar el NDA y la versión solo para ella |
+| `20261110120000_compania_en_entrada` | La compañía nace al contrafirmar; la decisión de incorporación |
+| `20261110130000_sin_peticiones_de_candidatura` | Ya no se piden documentos a la candidatura |
+| `20261110140000_enums_anexo_propuesto` | Estados del Anexo propuesto |
+| `20261110141000_anexo_propuesta_y_acuerdo` | La propuesta, sus comentarios, firmar el Acuerdo y el cambio de vía |
+| `20261110150000_anexo_siempre_aceptado` | Ningún Anexo sin su aceptación; «Dar acceso» |
+
+Las compañías que ya hay quedan en incubación, sin vía, y no cambian. Los Anexos firmados siguen firmados. Los valores de enum van en su propia migración, porque Postgres no deja usarlos en la misma en que se crean.
+
+### Qué comprobar en producción
+
+1. **Entra como dirección.** La cartera tiene que tener las mismas compañías y cifras que antes. No sale «En entrada»: todavía no hay ninguna.
+2. **Administración → Programa**:
+   · el **comité por defecto**: marca quién firma las actas;
+   · la **Plantilla del NDA**. La nube no tiene texto de NDA, y sin él la candidata ve «Tu NDA está en preparación» y no puede firmar.
+3. **Una vuelta entera con una candidatura de prueba**, con un correo tuyo con alias (`rodrigo+prueba@niage.es`) y marcada como demostración, para que no cuente en el embudo:
+   · acta de comité preseleccionada, en Construcción;
+   · **Enviar el NDA**, y ella lo firma;
+   · **Firmar por IWL** desde el aviso;
+   · tiene que aparecer en «En entrada», y al entrar como ella, «¿Desde dónde partís?».
+4. **Sigue en ella**:
+   · confirmar la situación;
+   · decidir «Sí»;
+   · abrir el Anexo y proponérselo;
+   · aceptarlo como ella;
+   · **Firmar el Acuerdo y el Anexo**: pasa a la cartera.
+
+   Luego bórrala con `npm run nube:vaciar` (lee la constancia antes de `--confirmar`), o archívala si prefieres conservarla.
+5. **El enlace de una candidatura sin cuenta** sigue abriendo su página.
+
+### Qué necesito que decidas
+Nada para desplegar.
+
+### Estado
+· Rama `worktree-limpiar-cuentas-nube`, 33 commits por delante de `main`.
+· Última pasada completa, la del paso 6: 170 unitarias · 199 RLS, dos veces seguidas · 368 de interfaz y 4 saltadas (los informes en PDF). Después solo han entrado documentos.
+
+**Siguiente**
+Paro aquí para el despliegue, como pediste. Lo siguiente es lo de tu entrada «Construcción: no se trabaja sin Acuerdo», que no frena el despliegue:
+1. el tope del tramo de entrada en Construcción;
+2. la horquilla de equity por vía;
+3. el equity sin sociedad, comprometido hasta constituir;
+4. las horas solo desde la firma.
+
+---
+
+## 2026-11-10 · Flujo de entrada, 6 de 6: «En entrada», al lado de la cartera · commit 3a0c674
+
+**Qué cambió**
+· **Bloque «En entrada»**, arriba de la cartera, solo para IWL: las compañías con el NDA firmado por las dos partes y sin Acuerdo. Las «No incorporadas» no salen.
+  · Cada fila lleva su vía, los días que lleva y **su paso**, y a quién le toca: a ella, a IWL o a dirección. El orden es situación, confirmación, due diligence (solo Aceleración), decisión, propuesta, aceptación y firma.
+  · **Aceleración**: «Due diligence: x de y obligatorios validados», **Validar** (a su due diligence) y **Recordar**, el de siempre, con el texto del due diligence.
+  · **Construcción**: el diagnóstico, con Reunión, Ficha y Situación, cada una hecha o por hacer.
+· **No salen en la lista de la cartera ni en sus cifras** (ya lo hacía el paso 1).
+· **El contador de dirección cuenta las que esperan a dirección**, que es decidir la incorporación. Confirmar la situación ya tiene su aviso, y no se cuenta dos veces.
+
+### Qué decidí yo
+· **«Decidir la incorporación» sale en Aceleración solo con lo obligatorio validado.** Antes, el paso es el due diligence y le toca a ella. Dirección puede decidir igual cuando quiera: la lista dice el paso, no lo impone.
+· **«Ficha» del diagnóstico es tener sector y frase.** No había una definición. Si la ficha tiene que tener más, dímelo.
+· **La reunión del diagnóstico es una reunión celebrada en su candidatura**, la del paso 2.
+· **Un revisor de Niage o un mentor no ven el bloque**, aunque aterricen en la cartera: es de IWL.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 170 unitarias · 199 RLS, dos veces seguidas · **368 de interfaz en verde y 4 saltadas**.
+· Sin migraciones.
+
+**Siguiente**
+La guía de carga.
+
+---
+
 ## 2026-11-10 · Ningún Anexo sin su aceptación, y ella con cuenta antes del Acuerdo · commit a50dfbf
 
 Las dos respuestas de REVISION del 10 nov, «Paso 5 cerrado».
