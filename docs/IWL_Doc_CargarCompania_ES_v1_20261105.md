@@ -2,6 +2,8 @@
 
 Versión 1 · 5 nov 2026 · Inception Woman Lab
 
+> **Sustituida por la versión 2** (`IWL_Doc_CargarCompania_ES_v2_20261110.md`): la compañía ya no nace al firmar el Acuerdo sino al contrafirmar el NDA. Esta se conserva como estaba.
+
 Guía práctica para volver a cargar las compañías reales en producción (https://ride.inceptionwlab.es) y comprobar que el recorrido funciona. Se hace con una cuenta de **Dirección IWL** (`admin_iwl`): la entrada **Administración** de la barra lateral solo la ve ese rol. La nube parte sin compañías salvo la de demostración, «Marea Clínica»; las fases, los KPI, los recorridos y las cohortes ya están cargados por `sembrar:nube`.
 
 El orden importa: **entrada → ficha → equipo → Anexo → hoja de ruta → hitos → KPI**. Cada paso dice dónde se hace, quién puede, y qué hay que ver en pantalla después.

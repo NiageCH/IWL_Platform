@@ -4,6 +4,23 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · Construcción: no se trabaja sin Acuerdo, y más equity
+
+**Decisión de Rodrigo.** En Construcción IWL aporta valor desde el primer día (business plan, estrategia comercial, producto). Por eso:
+· **Regla para las dos vías: no se trabaja sin Acuerdo firmado.** El tramo de entrada en Construcción es un diagnóstico corto para decidir, no para construir.
+· **El Acuerdo se firma aunque no haya sociedad.** El equity queda comprometido y se materializa al constituir. «Constituir la sociedad» es el primer hito del Anexo.
+· **Entrar antes cuesta más equity**: la horquilla de Construcción es más alta que la de Aceleración. Las cifras las fija Luciana; no las pongas tú.
+
+**Qué cambia en la plataforma** (después del paso 6 y la guía de carga, sin frenar el despliegue):
+1. **Tope del tramo de entrada en Construcción**, en Programa, por defecto 14 días desde que nace la compañía. Al llegar, Atención y aviso a dirección («… lleva 14 días en entrada sin Acuerdo»); a la semana, Vencido. En Aceleración no hay tope: el due diligence ya tiene sus avisos.
+2. **Horquilla de equity por vía**, en Programa, vacía hasta que Luciana la fije. Al proponer el Anexo se enseña como referencia; salirse de ella pide motivo, que queda en el registro. Con la horquilla vacía, no se bloquea nada.
+3. **Equity sin sociedad**: si la situación es «sin constituir» o «en constitución», el Anexo lo enseña como «Comprometido · se materializa al constituir», y proponerlo exige el hito «Constituir la sociedad» con fecha. Cuando IWL confirme la sociedad constituida, pasa a «Materializado» con la fecha.
+4. **Horas solo desde la firma.** Si hoy se pueden registrar horas de acompañamiento en una compañía en entrada, quítalo: la base lo impide y la pantalla dice por qué. «Horas entregadas» cuenta desde la firma del Acuerdo.
+
+Lo legal (instrumento sin SL, qué pasa si constituyen sin IWL o el proyecto muere antes) lo cierra Luciana. Aquí solo va lo que la plataforma enseña y exige.
+
+---
+
 ## 2026-11-10 · Paso 5 cerrado. Dos respuestas y el orden
 
 Bien el paso 5 (81f9492 y 37ea32a), y bien retirar la prueba que vivía de un fichero local. Respuestas:
