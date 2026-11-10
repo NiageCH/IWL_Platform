@@ -6,7 +6,9 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
-import { generarPdfActa, viaPropuesta, type Decision, type Via } from "@/lib/comite";
+import { createHash } from "node:crypto";
+import { contenidoActa, viaPropuesta, type Decision, type Via } from "@/lib/comite";
+import { generarPdfActa } from "@/lib/acta-pdf";
 
 /**
  * El acta de comité: redactarla, firmarla y, cuando firman todos, su PDF.
@@ -171,33 +173,44 @@ export async function firmarActa(formData: FormData): Promise<Resultado> {
   return ok();
 }
 
-async function guardarPdfActa(actaId: string, autor: string): Promise<string | null> {
+/**
+ * El PDF de un acta cerrada, al expediente, y su hash.
+ *
+ * El hash es el de lo firmado (`contenidoActa`). Al cerrar se guarda; al
+ * regenerar se vuelve a calcular y tiene que dar lo mismo, porque el acta
+ * no se puede editar desde la primera firma. Las cerradas antes de que
+ * existiera el hash lo guardan la primera vez que se regeneran, y el PDF lo
+ * dice.
+ */
+async function guardarPdfActa(actaId: string, autor: string, regenerar = false): Promise<string | null> {
   const servicio = clienteServicio();
   const { data: acta } = await servicio
     .from("comite_actas")
-    .select("*, candidaturas(nombre), comite_firmas(firmado_at, firmado_ip, firmado_ua, profiles(full_name, email))")
+    .select(
+      "*, candidaturas(nombre, contacto_nombre, contacto_apellidos, cohorts(name)), comite_firmas(profile_id, firmado_at, firmado_ip, firmado_ua, profiles(full_name, last_name, email))",
+    )
     .eq("id", actaId)
     .single();
   if (!acta) return "no se encuentra el acta";
+  if (!acta.cerrada_at) return "el acta todavía no está firmada por todos";
 
-  const firmas = (acta.comite_firmas as unknown as {
+  const filas = (acta.comite_firmas as unknown as {
+    profile_id: string;
     firmado_at: string;
     firmado_ip: string | null;
     firmado_ua: string | null;
-    profiles: { full_name: string | null; email: string | null } | null;
-  }[])
-    .sort((a, b) => a.firmado_at.localeCompare(b.firmado_at))
-    .map((f) => ({
-      nombre: f.profiles?.full_name ?? f.profiles?.email ?? "—",
-      correo: f.profiles?.email ?? null,
-      cuando: f.firmado_at,
-      ip: f.firmado_ip,
-      navegador: f.firmado_ua,
-    }));
+    profiles: { full_name: string | null; last_name: string | null; email: string | null } | null;
+  }[]).sort((a, b) => a.firmado_at.localeCompare(b.firmado_at));
+  const firmas = filas.map((f) => ({
+    nombre: [f.profiles?.full_name, f.profiles?.last_name].filter(Boolean).join(" ") || f.profiles?.email || "—",
+    correo: f.profiles?.email ?? null,
+    cuando: f.firmado_at,
+    ip: f.firmado_ip,
+    navegador: f.firmado_ua,
+  }));
 
-  const nombre = (acta.candidaturas as unknown as { nombre: string } | null)?.nombre ?? "";
-  const bytes = await generarPdfActa({
-    candidatura: nombre,
+  const contenido = {
+    actaId: acta.id,
     candidaturaId: acta.candidatura_id,
     fecha: acta.fecha,
     resumen: acta.resumen,
@@ -207,22 +220,49 @@ async function guardarPdfActa(actaId: string, autor: string): Promise<string | n
     viaMotivo: acta.via_motivo,
     motivo: acta.motivo,
     revisionOn: acta.revision_on,
+    puedeVolver: acta.puede_volver,
+    miembros: filas.map((f) => f.profile_id),
+  };
+  const hash = createHash("sha256").update(contenidoActa(contenido), "utf8").digest("hex");
+  if (acta.contenido_hash && acta.contenido_hash !== hash) {
+    return "su contenido no coincide con el hash que se guardó al cerrarla, así que no se rehace";
+  }
+
+  const supabase = await clienteServidor();
+  if (!acta.contenido_hash) {
+    const { error: falloHash } = await supabase.from("comite_actas").update({ contenido_hash: hash }).eq("id", actaId);
+    if (falloHash) return falloHash.message;
+  }
+
+  const c = acta.candidaturas as unknown as {
+    nombre: string;
+    contacto_nombre: string | null;
+    contacto_apellidos: string | null;
+    cohorts: { name: string } | null;
+  } | null;
+  const bytes = await generarPdfActa({
+    ...contenido,
+    candidatura: c?.nombre ?? "",
+    contacto: [c?.contacto_nombre, c?.contacto_apellidos].filter(Boolean).join(" ") || "—",
+    cohorte: c?.cohorts?.name ?? "—",
     firmas,
+    hash,
+    regenerado: regenerar ? { cerradaAt: acta.cerrada_at, hashDeEntonces: !!acta.contenido_hash } : undefined,
     generado: new Date().toISOString(),
   });
 
-  const supabase = await clienteServidor();
   const ruta = `${acta.candidatura_id}/${Date.now()}-acta-comite.pdf`;
   const { error: falloSubida } = await supabase.storage
     .from("candidaturas")
     .upload(ruta, bytes, { contentType: "application/pdf" });
   if (falloSubida) return falloSubida.message;
 
+  const fecha = acta.fecha.split("-").reverse().join("-");
   const { data: doc, error: falloFicha } = await supabase
     .from("candidatura_documentos")
     .insert({
       candidatura_id: acta.candidatura_id,
-      nombre: `Acta de comité del ${acta.fecha.split("-").reverse().join("-")}.pdf`,
+      nombre: regenerar ? `Acta de comité del ${fecha} (regenerada).pdf` : `Acta de comité del ${fecha}.pdf`,
       storage_path: ruta,
       mime: "application/pdf",
       bytes: bytes.length,
@@ -235,8 +275,26 @@ async function guardarPdfActa(actaId: string, autor: string): Promise<string | n
     return falloFicha.message;
   }
 
+  // El PDF de antes se queda en el expediente; el acta apunta al nuevo
   await supabase.from("comite_actas").update({ documento_id: doc.id }).eq("id", actaId);
   return null;
+}
+
+/**
+ * Rehacer el PDF de un acta cerrada con el diseño de ahora. Solo dirección.
+ * El de entonces no se borra, y el nuevo dice que es regenerado y de dónde
+ * sale su hash.
+ */
+export async function regenerarPdfActa(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ acta_id: z.string().uuid(), candidatura_id: z.string().uuid() }), formData);
+  if (fallo) return fallo;
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+  if (persona.role !== "admin_iwl") return error("Regenerar el PDF de un acta es de la dirección de IWL.");
+
+  const problema = await guardarPdfActa(datos.acta_id, persona.id, true);
+  refrescar(datos.candidatura_id);
+  return problema ? error(`El PDF no se ha podido regenerar: ${problema}.`) : ok("PDF regenerado. El de antes sigue en el expediente.");
 }
 
 /** Quién forma el comité por defecto: se marca al redactar cada acta */

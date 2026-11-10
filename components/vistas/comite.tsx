@@ -1,7 +1,7 @@
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Estado } from "@/components/ui/estado";
 import { AbrirDocumento } from "@/components/formularios/expediente";
-import { BorrarActa, FirmarActa, RedactarActa } from "@/components/formularios/comite";
+import { RegenerarPdfActa, BorrarActa, FirmarActa, RedactarActa } from "@/components/formularios/comite";
 import type { Acta } from "@/lib/datos/comite";
 import { DECISIONES, VIAS, type Via } from "@/lib/comite";
 import { fecha } from "@/lib/utils";
@@ -22,6 +22,7 @@ export function BloqueComite({
   correo,
   startup,
   abierta,
+  esDireccion = false,
 }: {
   actas: Acta[];
   candidaturaId: string;
@@ -33,6 +34,8 @@ export function BloqueComite({
   correo: string | null;
   startup: string;
   abierta: boolean;
+  /** Regenerar el PDF de un acta cerrada es de dirección */
+  esDireccion?: boolean;
 }) {
   return (
     <Bloque>
@@ -71,6 +74,7 @@ export function BloqueComite({
                   {meToca ? <FirmarActa actaId={a.id} candidaturaId={candidaturaId} /> : null}
                   {firmadas === 0 ? <BorrarActa actaId={a.id} candidaturaId={candidaturaId} /> : null}
                   {a.documento ? <AbrirDocumento documento={a.documento} /> : null}
+                  {a.cerradaAt && esDireccion ? <RegenerarPdfActa actaId={a.id} candidaturaId={candidaturaId} /> : null}
                   {a.cerradaAt && a.decision === "descartada" && a.mensaje && correo ? (
                     <a
                       href={`mailto:${correo}?subject=${encodeURIComponent(`${startup} · Inception Woman Lab`)}&body=${encodeURIComponent(a.mensaje)}`}

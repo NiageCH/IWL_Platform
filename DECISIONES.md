@@ -1759,3 +1759,14 @@ El NDA salía en PDF como texto plano. Ahora la plantilla lleva marcas —una li
 - **Las fuentes van incrustadas desde `lib/fuentes/`** (Montserrat y Roboto Mono, licencia OFL). Se leen del disco, así que `next.config.ts` las incluye en el despliegue con `outputFileTracingIncludes`. Sin eso, en Vercel el PDF falla al contrafirmar y en local no se ve.
 - **`lineasFirma` y `FirmaNda` viven en `lib/pdf.ts`.** El acta de comité las usa, y `lib/comite` llega a componentes de cliente. Si las importara de `lib/nda-pdf`, que lee del disco, el navegador recibiría un `fs`.
 - **`npm run nda:muestra`** genera el PDF de una plantilla en sus dos variantes, con datos inventados. Sirve para mirar una plantilla antes de pegarla en Programa.
+
+## 2026-11-11 · Una sola plantilla de documento IWL, y el hash del acta
+
+El NDA y el acta de comité salen de la misma plantilla, `DocumentoIwl` en `lib/pdf.ts`. Lo mismo valdrá para el Acuerdo y el Anexo. Cada documento decide qué dice y la plantilla decide cómo se ve: membrete en la primera página, cabecera en las demás, pie con folio y el registro de firmas en página aparte.
+
+- **`lib/pdf.ts` lee del disco, así que es solo de servidor.** Lo que puede llegar al navegador —`hora`, `lineasFirma`— vive en `lib/firmas.ts`, y `lib/comite.ts` ya no importa nada de PDF. El PDF del acta está en `lib/acta-pdf.ts`.
+- **Los datos de la sociedad están en un solo sitio**, `lib/iwl.ts`. El membrete los lee de ahí.
+- **Un párrafo se parte entre páginas**, pero sin dejar una línea suelta arriba ni abajo, y un rótulo va con las dos primeras líneas de lo que le sigue. Las cláusulas enteras juntas dejaban un tercio de página en blanco. Los bloques de firmas, la decisión del acta y cada firmante del registro no se parten.
+- **El hash del acta es el de `contenidoActa`.** Recoge los campos que el acta congela desde la primera firma y a los miembros por su id: si cambia un nombre, el hash no. El mensaje de un descarte no entra, porque es comunicación y no deliberación.
+- **Lo calcula la aplicación al cerrar el acta y lo guarda la base** (`comite_actas.contenido_hash`). Una vez puesto no cambia, ni sin sesión, porque es integridad. Las actas cerradas antes de existir el hash lo guardan la primera vez que dirección regenera su PDF, y el PDF lo dice.
+- **Regenerar no borra el PDF de antes.** Queda en el expediente, y el acta apunta al nuevo.

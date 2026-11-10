@@ -21,6 +21,7 @@
     "claves": "node scripts/claves.mjs",
     "snapshots": "tsx scripts/snapshots.mts",
     "nda:muestra": "tsx scripts/nda-muestra.mts",
+    "acta:muestra": "tsx scripts/acta-muestra.mts",
     "altas:locales": "node scripts/altas-locales.mjs",
     "informes": "node scripts/informes.mjs",
     "sembrar:nube": "node scripts/sembrar-nube.mjs",

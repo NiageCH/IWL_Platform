@@ -237,6 +237,7 @@ export default async function FichaCandidatura({
             correo={c.contacto_email}
             startup={c.nombre ?? ""}
             abierta={estado !== "firmada" && estado !== "descartada"}
+            esDireccion={persona.role === "admin_iwl"}
           />
 
           <Bloque>

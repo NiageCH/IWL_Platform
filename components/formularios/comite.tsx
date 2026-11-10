@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { borrarActa, firmarActa, guardarComiteDefecto, redactarActa } from "@/lib/acciones/comite";
+import { regenerarPdfActa, borrarActa, firmarActa, guardarComiteDefecto, redactarActa } from "@/lib/acciones/comite";
 import { DECISIONES, VIAS, mensajeDescarte, type Decision, type Via } from "@/lib/comite";
 import {
   AreaTexto,
@@ -174,6 +174,26 @@ export function FirmarActa({ actaId, candidaturaId }: { actaId: string; candidat
           <input type="hidden" name="candidatura_id" value={candidaturaId} />
           <button type="submit" className="accion text-xs font-medium text-titular">
             Firmar el acta
+          </button>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Rehacer el PDF de un acta cerrada con el diseño de ahora: solo dirección.
+ * Se queda montado con su mensaje: el acuse dice que el de antes sigue.
+ */
+export function RegenerarPdfActa({ actaId, candidaturaId }: { actaId: string; candidaturaId: string }) {
+  return (
+    <Formulario accion={regenerarPdfActa}>
+      {() => (
+        <>
+          <input type="hidden" name="acta_id" value={actaId} />
+          <input type="hidden" name="candidatura_id" value={candidaturaId} />
+          <button type="submit" className="accion text-xs">
+            Regenerar el PDF
           </button>
         </>
       )}

@@ -1233,13 +1233,13 @@ isOneToOne: false
                   ]
                 },"comite_actas": {
                   Row: {
-                    "candidatura_id": string,"cerrada_at": string | null,"created_at": string,"created_by": string | null,"decision": string,"documento_id": string | null,"fecha": string,"id": string,"mensaje": string | null,"motivo": string | null,"puede_volver": boolean | null,"resumen": string,"revision_on": string | null,"via": Database["public"]['Enums']["via_entrada"] | null,"via_motivo": string | null,"via_propuesta": Database["public"]['Enums']["via_entrada"] | null
+                    "candidatura_id": string,"cerrada_at": string | null,"contenido_hash": string | null,"created_at": string,"created_by": string | null,"decision": string,"documento_id": string | null,"fecha": string,"id": string,"mensaje": string | null,"motivo": string | null,"puede_volver": boolean | null,"resumen": string,"revision_on": string | null,"via": Database["public"]['Enums']["via_entrada"] | null,"via_motivo": string | null,"via_propuesta": Database["public"]['Enums']["via_entrada"] | null
                   }
                   Insert: {
-                    "candidatura_id": string,"cerrada_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision": string,"documento_id"?: string | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen": string,"revision_on"?: string | null,"via"?: Database["public"]['Enums']["via_entrada"] | null,"via_motivo"?: string | null,"via_propuesta"?: Database["public"]['Enums']["via_entrada"] | null
+                    "candidatura_id": string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision": string,"documento_id"?: string | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen": string,"revision_on"?: string | null,"via"?: Database["public"]['Enums']["via_entrada"] | null,"via_motivo"?: string | null,"via_propuesta"?: Database["public"]['Enums']["via_entrada"] | null
                   }
                   Update: {
-                    "candidatura_id"?: string,"cerrada_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision"?: string,"documento_id"?: string | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen"?: string,"revision_on"?: string | null,"via"?: Database["public"]['Enums']["via_entrada"] | null,"via_motivo"?: string | null,"via_propuesta"?: Database["public"]['Enums']["via_entrada"] | null
+                    "candidatura_id"?: string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision"?: string,"documento_id"?: string | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen"?: string,"revision_on"?: string | null,"via"?: Database["public"]['Enums']["via_entrada"] | null,"via_motivo"?: string | null,"via_propuesta"?: Database["public"]['Enums']["via_entrada"] | null
                   }
                   Relationships: [
                     {

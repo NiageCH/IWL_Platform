@@ -1,36 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PDFDocument } from "pdf-lib";
-import {
-  generarPdfActa,
-  lineasRastroActa,
-  mensajeDescarte,
-  textoActa,
-  viaPropuesta,
-  type DatosActa,
-} from "./comite";
-
-const firma = (nombre: string, cuando: string) => ({
-  nombre,
-  correo: `${nombre.toLowerCase()}@niage.es`,
-  cuando,
-  ip: "203.0.113.9",
-  navegador: "Mozilla/5.0",
-});
-
-const ACTA: DatosActa = {
-  candidatura: "Siren",
-  candidaturaId: "00000000-0000-0000-0000-000000000009",
-  fecha: "2026-11-20",
-  resumen: "Equipo sólido, producto en MVP.",
-  decision: "preseleccionada",
-  via: "aceleracion",
-  viaPropuesta: "construccion",
-  viaMotivo: "Ya tiene dos clínicas pagando el piloto.",
-  motivo: null,
-  revisionOn: null,
-  firmas: [firma("Rodrigo", "2026-11-20T10:00:00Z"), firma("Luciana", "2026-11-20T12:00:00Z")],
-  generado: "2026-11-20T12:00:05Z",
-};
+import { contenidoActa, mensajeDescarte, viaPropuesta } from "./comite";
 
 describe("la vía que se propone", () => {
   it("idea, prototipo y MVP construyen; con clientes o facturación, aceleran", () => {
@@ -43,30 +12,29 @@ describe("la vía que se propone", () => {
   });
 });
 
-describe("el acta", () => {
-  it("dice la decisión, la vía y, si cambió, por qué", () => {
-    const t = textoActa(ACTA);
-    expect(t).toContain("Decisión: Preseleccionada");
-    expect(t).toContain("Vía de entrada: Aceleración");
-    expect(t).toContain("Motivo del cambio: Ya tiene dos clínicas pagando el piloto.");
-    expect(t).toContain("Miembros: Rodrigo, Luciana");
+describe("lo firmado de un acta", () => {
+  const BASE = {
+    actaId: "a",
+    candidaturaId: "c",
+    fecha: "2026-11-20",
+    resumen: "Equipo sólido.",
+    decision: "descartada" as const,
+    via: null,
+    viaPropuesta: null,
+    viaMotivo: null,
+    motivo: "Fuera del foco.",
+    revisionOn: null,
+    puedeVolver: true,
+    miembros: ["p2", "p1"],
+  };
+
+  it("no depende del orden de los miembros: son personas, no una lista", () => {
+    expect(contenidoActa(BASE)).toBe(contenidoActa({ ...BASE, miembros: ["p1", "p2"] }));
   });
 
-  it("aplazada, con su fecha de revisión", () => {
-    const t = textoActa({ ...ACTA, decision: "aplazada", via: null, revisionOn: "2026-12-15" });
-    expect(t).toContain("Se revisa el 15/12/2026.");
-  });
-
-  it("el rastro lleva la firma de cada miembro, numerada", () => {
-    const r = lineasRastroActa(ACTA).join("\n");
-    expect(r).toContain("Firma 1 de 2");
-    expect(r).toContain("Firma 2 de 2");
-    expect(r).toContain("luciana@niage.es");
-  });
-
-  it("y sale en PDF, con el rastro en su propia página", async () => {
-    const pdf = await PDFDocument.load(await generarPdfActa(ACTA));
-    expect(pdf.getPageCount()).toBe(2);
+  it("cambia si cambia algo de lo que se congela al firmar", () => {
+    expect(contenidoActa(BASE)).not.toBe(contenidoActa({ ...BASE, motivo: "Otro." }));
+    expect(contenidoActa(BASE)).not.toBe(contenidoActa({ ...BASE, puedeVolver: false }));
   });
 });
 

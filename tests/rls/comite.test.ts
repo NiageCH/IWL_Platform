@@ -127,6 +127,25 @@ describe("el acta", () => {
     expect(data).toEqual({ estado: "descartada", descartada_motivo: "Fuera de la tesis de inversión", descartada_desde: "comite" });
   });
 
+  it("el hash de lo firmado: solo con el acta cerrada, y una vez puesto no cambia, ni sin sesión", async () => {
+    const c = await candidaturaEnComite();
+    const admin = await perfil(USUARIOS.admin);
+    const id = await acta(c, { decision: "aplazada", revision_on: "2026-12-15" }, [admin]);
+    const servicio = clienteServicio();
+    const hash = (x: string) => x.repeat(64);
+
+    const abierta = await servicio.from("comite_actas").update({ contenido_hash: hash("a") }).eq("id", id);
+    expect(abierta.error?.message).toMatch(/cuando el acta está firmada por todos/);
+
+    await firmar(id, admin);
+    expect((await servicio.from("comite_actas").update({ contenido_hash: hash("a") }).eq("id", id)).error).toBeNull();
+    const otra = await servicio.from("comite_actas").update({ contenido_hash: hash("b") }).eq("id", id);
+    expect(otra.error?.message).toMatch(/El hash de un acta no cambia/);
+    // Y nada que no sea un SHA-256
+    const raro = await servicio.from("comite_actas").update({ contenido_hash: "no" }).eq("id", id);
+    expect(raro.error).not.toBeNull();
+  });
+
   it("lo que cada decisión pide, lo exige la base", async () => {
     const c = await candidaturaEnComite();
     const servicio = clienteServicio();

@@ -48,14 +48,29 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     );
     expect(despues).toEqual({ estado: "preseleccionada", via: "construccion" });
 
-    const [cerrada] = await consultar<{ documento_id: string | null; cerrada_at: string | null }>(
+    const [cerrada] = await consultar<{ documento_id: string | null; cerrada_at: string | null; contenido_hash: string | null }>(
       "comite_actas",
       { candidatura_id: `eq.${c.id}` },
-      "documento_id, cerrada_at",
+      "documento_id, cerrada_at, contenido_hash",
     );
     expect(cerrada.cerrada_at).toBeTruthy();
     expect(cerrada.documento_id).toBeTruthy();
+    // Al cerrarla se guarda el hash de lo firmado
+    expect(cerrada.contenido_hash).toMatch(/^[0-9a-f]{64}$/);
     await expect(page.getByText(/Acta de comité del/).first()).toBeVisible();
+
+    // Dirección la regenera: PDF nuevo, el de antes se queda, el hash no cambia
+    await page.getByRole("button", { name: "Regenerar el PDF" }).click();
+    await expect(page.getByText("PDF regenerado. El de antes sigue en el expediente.")).toBeVisible({ timeout: 15_000 });
+    const [rehecha] = await consultar<{ documento_id: string; contenido_hash: string }>(
+      "comite_actas",
+      { candidatura_id: `eq.${c.id}` },
+      "documento_id, contenido_hash",
+    );
+    expect(rehecha.contenido_hash).toBe(cerrada.contenido_hash);
+    expect(rehecha.documento_id).not.toBe(cerrada.documento_id);
+    const docs = await consultar("candidatura_documentos", { candidatura_id: `eq.${c.id}`, nombre: "like.Acta de comité*" }, "id");
+    expect(docs.length).toBe(2);
   } finally {
     await quitarFicheros("candidaturas", c.id);
     await borrar("candidaturas", { id: c.id });

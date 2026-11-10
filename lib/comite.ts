@@ -1,8 +1,6 @@
-import { documentoFirmado, hora, lineasFirma, type FirmaNda } from "@/lib/pdf";
-
 /**
- * El acta de comité: la vía que se propone, el mensaje de un descarte y el
- * PDF con la firma de cada miembro.
+ * El acta de comité: la vía que se propone, el mensaje de un descarte y lo
+ * que firman sus miembros. El PDF, en `lib/acta-pdf.ts`.
  *
  * Cálculo puro: sin base de datos, para usarlo igual en el formulario, en
  * la acción y en el PDF, y probarlo solo.
@@ -61,8 +59,17 @@ export function mensajeDescarte(contacto: string, startup: string, puedeVolver: 
   );
 }
 
-export interface DatosActa {
-  candidatura: string;
+/**
+ * Lo firmado de un acta: los campos que su guardián congela desde la primera
+ * firma (`guard_acta_firmada`) y quién forma el comité, por su id —un nombre
+ * puede cambiar, una persona no—. El mensaje de un descarte no entra: es
+ * comunicación, no deliberación, y no va en el acta.
+ *
+ * El hash del acta es el SHA-256 de este texto. Se guarda al cerrarla, y al
+ * regenerar su PDF se vuelve a calcular y tiene que coincidir.
+ */
+export interface ContenidoActa {
+  actaId: string;
   candidaturaId: string;
   fecha: string;
   resumen: string;
@@ -72,50 +79,30 @@ export interface DatosActa {
   viaMotivo: string | null;
   motivo: string | null;
   revisionOn: string | null;
-  firmas: FirmaNda[];
-  generado: string;
+  puedeVolver: boolean | null;
+  miembros: string[];
 }
 
-/** El cuerpo del acta, tal como se lee en el PDF */
-export function textoActa(d: DatosActa): string {
-  const partes = [
-    `Fecha del comité: ${d.fecha.split("-").reverse().join("/")}`,
-    `Miembros: ${d.firmas.map((f) => f.nombre).join(", ")}`,
-    "",
-    "Resumen",
-    d.resumen,
-    "",
-    `Decisión: ${DECISIONES[d.decision]}`,
-  ];
-  if (d.decision === "preseleccionada" && d.via) {
-    partes.push(`Vía de entrada: ${VIAS[d.via]}`);
-    if (d.viaPropuesta && d.viaPropuesta !== d.via) {
-      partes.push(`La propuesta por su estado de entrada era ${VIAS[d.viaPropuesta]}. Motivo del cambio: ${d.viaMotivo ?? "—"}`);
-    }
-  }
-  if (d.motivo) partes.push(`Motivo: ${d.motivo}`);
-  if (d.decision === "aplazada" && d.revisionOn) {
-    partes.push(`Se revisa el ${d.revisionOn.split("-").reverse().join("/")}.`);
-  }
-  return partes.join("\n");
-}
-
-export function lineasRastroActa(d: DatosActa): string[] {
+export function contenidoActa(c: ContenidoActa): string {
   return [
-    `Candidatura: ${d.candidatura} (${d.candidaturaId})`,
-    "",
-    ...d.firmas.flatMap((f, i) => lineasFirma(`Firma ${i + 1} de ${d.firmas.length}`, f)),
-    `Documento generado: ${hora(d.generado, "Europe/Madrid")} (Madrid) · ${hora(d.generado, "UTC")} (UTC)`,
-    "Firma electrónica simple, registrada por la plataforma de Inception Woman Lab.",
-  ];
+    "Acta del comité de selección",
+    `Acta: ${c.actaId}`,
+    `Candidatura: ${c.candidaturaId}`,
+    `Fecha: ${c.fecha}`,
+    `Decisión: ${c.decision}`,
+    `Vía: ${c.via ?? ""}`,
+    `Vía propuesta: ${c.viaPropuesta ?? ""}`,
+    `Motivo del cambio de vía: ${c.viaMotivo ?? ""}`,
+    `Motivo: ${c.motivo ?? ""}`,
+    `Revisión: ${c.revisionOn ?? ""}`,
+    `Puede volver a presentarse: ${c.puedeVolver === null ? "" : c.puedeVolver ? "sí" : "no"}`,
+    `Miembros: ${[...c.miembros].sort().join(", ")}`,
+    "Resumen:",
+    c.resumen,
+  ].join("\n");
 }
 
-export function generarPdfActa(d: DatosActa): Promise<Uint8Array> {
-  return documentoFirmado({
-    titulo: "Acta de comité",
-    subtitulo: d.candidatura,
-    texto: textoActa(d),
-    tituloRastro: "Rastro de las firmas del comité",
-    rastro: lineasRastroActa(d),
-  });
+/** Una fecha `AAAA-MM-DD` como se lee: `DD/MM/AAAA` */
+export function fechaActa(iso: string): string {
+  return iso.split("-").reverse().join("/");
 }
