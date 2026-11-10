@@ -9,6 +9,46 @@ como es**.
 
 ---
 
+## 2026-11-10 · Flujo de entrada, 4 de 6: enviar y comentar el NDA · commit 85bcbf0
+
+**Qué cambió**
+· **«Enviar el NDA»**, en «Qué ve ella», desde Preseleccionada:
+  · crea la cuenta y anula el enlace privado, como antes;
+  · pasa la candidatura a «NDA enviado», con su evento en el historial;
+  · enseña la contraseña una sola vez y deja **el correo ya escrito**: dónde entrar, con qué correo y contraseña, y que puede comentar el NDA o firmarlo. Se abre en el programa de correo o se copia para WhatsApp, y se queda puesto hasta pulsar «Hecho».
+· **Antes del comité no sale el botón**, y la pantalla dice que llega con el acta firmada.
+· **La candidata comenta el NDA** debajo del texto, antes de firmar o mientras falta la firma de IWL.
+  · Cada comentario llega como aviso a dirección («… ha comentado el NDA», con «Responder»).
+  · IWL responde en la ficha y ella ve la respuesta en su pantalla.
+  · Responder cierra el aviso. Un comentario no se edita.
+· **«Cambiar el texto solo para ella»**, en el bloque del NDA, solo dirección.
+  · Guarda una versión propia de esa candidatura, partiendo del texto que tiene. La genérica no cambia.
+  · Solo la ven IWL y esa candidata.
+  · **Si ella había firmado y IWL no, su firma se anula**. El historial dice qué había firmado (versión, hash y fecha) y ella vuelve a ver el NDA para firmar.
+  · **Con las dos firmas, la base no deja guardar otra versión**, ni comentar.
+· **Firmar exige la versión que le toca**: la propia si la tiene, si no la genérica. Antes valía cualquiera que mandara el formulario.
+· Migración `20261110100000_nda_comentarios`.
+
+### Qué decidí yo
+· **Fuera de Preseleccionada sin cuenta, el botón sigue siendo «Darle cuenta»** y no mueve el paso. Es para las que llegaron a NDA a mano antes de esto.
+· **El paso a «NDA enviado» va en la misma acción que la cuenta**, no en la función de la base. Si fallara después de crear la cuenta, el mensaje lo dice y enseña igualmente la contraseña.
+· **La firma anulada se borra**, no se marca. `nda_firmas` es una fila por candidatura. Lo que firmó queda en el historial con su versión y su hash, que es lo que sirve de prueba.
+· **Responder es de todo IWL**; cambiar el texto, solo de dirección, como la plantilla genérica.
+· **La versión propia sigue la numeración de todas**: si la genérica es la 1, la de ella es la 2. Así un número de versión no se repite nunca.
+· **«Hecho» quita el correo ya escrito, pero no el aviso con la contraseña**, que sigue como antes hasta recargar la página.
+· Dos pruebas daban cuenta a candidaturas de la semilla que están antes del comité. Ahora crean la suya en Preseleccionada, y otra prueba comprueba que antes del comité no hay botón.
+
+### Qué necesito que decidas
+1. La pregunta de la entrada anterior sigue abierta: la semilla local de la demostración no pone «en revisión» ni «bloqueante» tras un reinicio.
+
+### Estado
+· 164 unitarias · 173 RLS, dos veces seguidas · **374 de interfaz en verde, 4 saltadas y 2 en rojo**: las de la demostración, como en la entrada anterior.
+
+**Siguiente**
+La compañía en entrada al contrafirmar el NDA, la decisión de incorporación y el Anexo como propuesta de Acuerdo.
+
+---
+
 ## 2026-11-10 · Flujo de entrada, 3 de 6: acta de comité · commit c6c58d1
 
 **Qué cambió**
