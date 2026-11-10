@@ -6,6 +6,7 @@ import {
   borrarCuenta,
   consultar,
   entrarComo,
+  insertar,
 } from "./entrada";
 
 /**
@@ -113,17 +114,41 @@ test("un enlace inventado no dice si existe o no", async ({ page }) => {
   expect(respuesta?.status()).toBe(404);
 });
 
-test("al darle cuenta, el enlace deja de valer", async ({ page }) => {
-  const token = await tokenDe(BROTA);
+/**
+ * Una candidatura recién creada en Preseleccionada, que es desde donde se
+ * envía el NDA. Las de la semilla están antes del comité, y moverlas
+ * dejaría sus cambios de paso en el historial.
+ */
+async function preseleccionada(sufijo: string) {
+  const correo = `e2e.envio.${sufijo}.${Date.now()}@ejemplo.test`;
+  CORREOS.push(correo);
+  const c = await insertar<{ id: string; token: string }>("candidaturas", {
+    cohort_id: COHORTE,
+    nombre: `Envío NDA ${sufijo} ${Date.now()}`,
+    contacto_nombre: "Candidata Envío",
+    contacto_email: correo,
+    estado: "preseleccionada",
+  });
+  return { ...c, correo };
+}
 
+test("antes del comité no se envía el NDA", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, `/embudo/${BROTA}`);
+  await expect(page.getByText(/El NDA se envía cuando el comité la preselecciona/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enviar el NDA" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Darle cuenta/ })).toHaveCount(0);
+});
+
+test("al enviar el NDA, el enlace deja de valer y pasa a «NDA enviado»", async ({ page }) => {
+  const c = await preseleccionada("enlace");
+  const token = await tokenDe(c.id);
+
+  await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
 
   // El enlace se enseña para poder mandarlo a mano
   await expect(page.getByText(new RegExp(token.slice(0, 12)))).toBeVisible();
 
-  await page
-    .getByRole("button", { name: /Darle cuenta para el due diligence/ })
-    .click();
+  await page.getByRole("button", { name: "Enviar el NDA" }).click();
 
   /*
    * El mensaje tiene que salir, y aquí no es un detalle: lleva la
@@ -131,8 +156,18 @@ test("al darle cuenta, el enlace deja de valer", async ({ page }) => {
    * precisamente para que darle la cuenta no se lleve por delante la
    * credencial antes de que nadie pueda copiarla.
    */
-  await expect(page.getByText(/Acceso dado a/)).toBeVisible();
+  await expect(page.getByText(/NDA enviado a/)).toBeVisible();
   await expect(page.getByText(/no se vuelve a enseñar/)).toBeVisible();
+
+  // Y el correo ya escrito, con su acceso, hasta que se pulse «Hecho»
+  const correo = page.getByLabel("Correo para ella, con su acceso");
+  await expect(correo).toHaveValue(new RegExp(`Correo: ${c.correo.replace(/\./g, "\\.")}`));
+  await expect(page.getByRole("link", { name: "Abrir el correo" })).toHaveAttribute("href", /^mailto:/);
+  await page.getByRole("button", { name: "Hecho" }).click();
+  await expect(correo).toHaveCount(0);
+
+  const [despues] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${c.id}` }, "estado");
+  expect(despues.estado).toBe("nda");
 
   // Y desde fuera, el enlace ya no abre nada
   const respuesta = await page.goto(`/candidatura/${token}`);
@@ -148,15 +183,15 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
    * para acabar en «no tienes compañía». Verdad, pero inútil: todavía no la
    * tiene, y lo suyo estaba en otra dirección que nadie le había dicho.
    */
-  // Se le da cuenta desde el embudo, que es el único camino
-  await entrarComo(page, USUARIOS.admin, `/embudo/${AMBAR}`);
-  await page
-    .getByRole("button", { name: /Darle cuenta para el due diligence/ })
-    .click();
-  await expect(page.getByText(/Acceso dado a/)).toBeVisible();
+  const c = await preseleccionada("aterriza");
+
+  // Se le envía el NDA desde el embudo, que es el único camino
+  await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
+  await page.getByRole("button", { name: "Enviar el NDA" }).click();
+  await expect(page.getByText(/NDA enviado a/)).toBeVisible();
 
   // La contraseña se enseña una vez: se saca del propio mensaje
-  const mensaje = await page.getByText(/Acceso dado a/).innerText();
+  const mensaje = await page.getByText(/NDA enviado a/).innerText();
   const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
   expect(clave).toBeTruthy();
 
@@ -164,14 +199,14 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   await page.getByRole("button", { name: "Salir" }).first().click();
   await page.waitForURL(/\/entrar/);
 
-  await page.locator('input[type="email"]').fill("hola@ambar.test");
+  await page.locator('input[type="email"]').fill(c.correo);
   await page.locator('input[type="password"]').fill(clave!);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   // La contraseña la puso IWL: antes de nada, la cambia
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
-  await page.getByLabel("Nueva contraseña").fill("la-de-ambar-2026");
-  await page.getByLabel("Otra vez").fill("la-de-ambar-2026");
+  await page.getByLabel("Nueva contraseña").fill("la-de-envio-2026");
+  await page.getByLabel("Otra vez").fill("la-de-envio-2026");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
 
   /*
@@ -399,6 +434,7 @@ test.afterAll(async () => {
    */
   for (const correo of CORREOS) {
     await borrar("candidaturas", { contacto_email: correo });
+    await borrarCuenta(correo);
   }
   await borrarCuenta("hola@brota.test");
   await borrarCuenta("hola@ambar.test");

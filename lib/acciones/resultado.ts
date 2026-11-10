@@ -8,7 +8,12 @@ import { z } from "zod";
  * excepción se reserva para lo que de verdad es un fallo.
  */
 export type Resultado =
-  | { ok: true; mensaje?: string }
+  | {
+      ok: true;
+      mensaje?: string;
+      /** Lo que el formulario necesita para seguir, como el correo ya escrito con un acceso */
+      datos?: Record<string, string>;
+    }
   | { ok: false; error: string; campos?: Record<string, string> };
 
 export function error(mensaje: string, campos?: Record<string, string>): Resultado {

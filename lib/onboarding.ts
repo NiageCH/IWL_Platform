@@ -192,3 +192,27 @@ export function textoRecordatorio(
   const cuerpo = `Hola, ${pila}: ${qué[paso] ?? `seguimos con tu alta en la plataforma de Inception Woman Lab. Entra en ${direccion} para ver qué falta.`}\n\nCualquier duda, responde a este mensaje.\n\nEquipo de Inception Woman Lab`;
   return { asunto: "Tu alta en la plataforma de Inception Woman Lab", cuerpo };
 }
+
+/**
+ * El correo que acompaña al NDA: dónde entrar, con qué correo y con qué
+ * contraseña, y qué va a ver. La contraseña va escrita porque todavía no
+ * hay envío de correo desde la plataforma: lo manda la persona de IWL desde
+ * su programa, y la candidata la cambia al entrar.
+ */
+export function textoEnvioNda(
+  nombre: string,
+  correo: string,
+  clave: string,
+  direccion: string,
+): { asunto: string; cuerpo: string } {
+  const pila = nombre.split(" ")[0] || nombre;
+  const cuerpo =
+    `Hola, ${pila}:\n\n` +
+    `El comité de Inception Woman Lab ha preseleccionado vuestra candidatura. Antes de seguir firmamos un acuerdo de confidencialidad (NDA), y lo tienes en la plataforma.\n\n` +
+    `Entra en ${direccion}/entrar con:\n` +
+    `· Correo: ${correo}\n` +
+    `· Contraseña: ${clave}\n\n` +
+    `Al entrar te pedirá elegir tu propia contraseña. Después verás el NDA: puedes comentarlo si algo no te encaja, o firmarlo ahí mismo. Cuando firmemos también nosotras, empezamos.\n\n` +
+    `Cualquier duda, responde a este mensaje.\n\nEquipo de Inception Woman Lab`;
+  return { asunto: "Vuestro NDA con Inception Woman Lab", cuerpo };
+}

@@ -143,8 +143,8 @@ export function AvisosDireccion({
         ) : null}
         {avisos.length === 0 && revisiones.length === 0 ? (
           <SinDatos>
-            Nada nuevo. Cuando alguien entre por primera vez o firme el NDA,
-            te lo dirá aquí.
+            Nada nuevo. Cuando alguien entre por primera vez, comente o firme
+            el NDA, te lo dirá aquí.
           </SinDatos>
         ) : (
           <ul className="divide-y divide-filete">
@@ -153,13 +153,19 @@ export function AvisosDireccion({
                 <span className="min-w-0 flex-1 text-sm text-titular">
                   {a.tipo === "primer_acceso"
                     ? `${a.persona} ha entrado por primera vez`
-                    : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
+                    : a.tipo === "nda_comentario"
+                      ? `${a.persona} ha comentado el NDA`
+                      : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
                   {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
                 </span>
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
                 {a.candidaturaId ? (
                   <Link href={`/embudo/${a.candidaturaId}`} className="enlace text-xs">
-                    {a.tipo === "nda_firmado" ? "Leer el NDA" : "Ver su alta"}
+                    {a.tipo === "nda_firmado"
+                      ? "Leer el NDA"
+                      : a.tipo === "nda_comentario"
+                        ? "Responder"
+                        : "Ver su alta"}
                   </Link>
                 ) : null}
                 {/* Firmar ahí mismo, sin ir a la ficha */}

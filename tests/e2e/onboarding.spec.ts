@@ -42,8 +42,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     const fila = (paso: string) => page.locator("ol li").filter({ hasText: paso });
     await expect(fila("Cuenta creada").getByText("Por hacer")).toBeVisible();
 
-    await page.getByRole("button", { name: /Darle cuenta para el due diligence/ }).click();
-    const mensaje = await page.getByText(/Acceso dado a/).innerText();
+    await page.getByRole("button", { name: "Enviar el NDA" }).click();
+    const mensaje = await page.getByText(/NDA enviado a/).innerText();
     const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
     expect(clave).toBeTruthy();
 

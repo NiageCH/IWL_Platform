@@ -59,6 +59,7 @@ export async function guardarPlantillaNda(formData: FormData): Promise<Resultado
   const { data: vigente } = await supabase
     .from("nda_plantillas")
     .select("texto")
+    .is("candidatura_id", null)
     .order("version", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -118,6 +119,106 @@ export async function firmarNda(formData: FormData): Promise<Resultado> {
   refrescar(candidaturaId);
   // El acuse es la pantalla cambiada: deja de pedirle la firma
   return ok();
+}
+
+// -----------------------------------------------------------------------------
+// Comentarlo, responder y la versión propia
+// -----------------------------------------------------------------------------
+
+/**
+ * La candidata comenta el NDA. Sobre qué versión y de quién lo pone la
+ * base, y también si todavía se puede comentar; el aviso a dirección sale
+ * de ahí.
+ */
+export async function comentarNda(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ texto: z.string().trim().min(3, "Escribe qué quieres comentar.") }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { data: candidaturaId } = await supabase.rpc("mi_candidatura_id");
+  if (!candidaturaId) return error("No encontramos tu candidatura. Escríbenos.");
+
+  const { error: falloBase } = await supabase
+    .from("nda_comentarios")
+    .insert({ candidatura_id: candidaturaId, texto: datos.texto });
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar(candidaturaId);
+  return ok("Enviado. Te responderemos aquí mismo; mientras tanto puedes firmar o esperar a la respuesta.");
+}
+
+export async function responderComentarioNda(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      id: z.string().uuid(),
+      candidatura_id: z.string().uuid(),
+      respuesta: z.string().trim().min(3, "Escribe la respuesta."),
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { data, error: falloBase } = await supabase
+    .from("nda_comentarios")
+    .update({ respuesta: datos.respuesta })
+    .eq("id", datos.id)
+    .is("respuesta", null)
+    .select("id");
+  if (falloBase) return traducirError(falloBase);
+  if (!data?.length) return error("Ese comentario ya está respondido, o tu cuenta no puede responderlo.");
+
+  refrescar(datos.candidatura_id);
+  // El acuse es la respuesta, que sale ya en su sitio
+  return ok();
+}
+
+/**
+ * Una versión del NDA solo para esta candidatura, cuando un comentario
+ * cambia el texto. Si ella ya había firmado y IWL no, su firma se anula y
+ * se le vuelve a pedir; con las dos firmas, la base no deja. Lo dice el
+ * mensaje, porque es una consecuencia que no se ve desde aquí.
+ */
+export async function guardarNdaPropio(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    esquemaPlantilla.extend({ candidatura_id: z.string().uuid() }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { data: vigenteId } = await supabase.rpc("plantilla_nda_de", { p_candidatura: datos.candidatura_id });
+  if (vigenteId) {
+    const { data: vigente } = await supabase.from("nda_plantillas").select("texto").eq("id", vigenteId).maybeSingle();
+    if (vigente?.texto.trim() === datos.texto) {
+      return error("Es el mismo texto que ya tiene. Cambia lo que haga falta antes de guardar.");
+    }
+  }
+  const { data: firmaPrevia } = await supabase
+    .from("nda_firmas")
+    .select("firmado_at")
+    .eq("candidatura_id", datos.candidatura_id)
+    .maybeSingle();
+
+  const { data, error: falloBase } = await supabase
+    .from("nda_plantillas")
+    .insert({ texto: datos.texto, version: 0, hash: "", candidatura_id: datos.candidatura_id })
+    .select("version")
+    .single();
+  if (falloBase) {
+    if (falloBase.code === "42501") return error("El texto del NDA lo cambia la dirección de IWL.");
+    return traducirError(falloBase);
+  }
+
+  refrescar(datos.candidatura_id);
+  return ok(
+    firmaPrevia
+      ? `Guardada como versión ${data.version}, solo para ella. Su firma anterior queda anulada: la verá para firmar de nuevo.`
+      : `Guardada como versión ${data.version}, solo para ella. Es la que verá para firmar.`,
+  );
 }
 
 // -----------------------------------------------------------------------------

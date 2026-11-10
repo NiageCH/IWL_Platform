@@ -32,6 +32,7 @@ import {
   type EstadoCandidatura,
 } from "@/lib/embudo";
 import { identificadorDe } from "@/lib/identificador";
+import { textoEnvioNda } from "@/lib/onboarding";
 import type { DatosSocietarios, Situacion } from "@/lib/societario";
 import { CamposFirmantes, CamposSituacion } from "@/components/formularios/situacion";
 
@@ -562,6 +563,60 @@ export function FirmarAcuerdo({
 }
 
 /**
+ * El correo con su acceso, ya escrito: sin proveedor de correo, se abre en
+ * el programa de quien lo envía, o se copia para WhatsApp. Lleva la
+ * contraseña, así que se queda puesto hasta que alguien pulse «Hecho».
+ */
+function MensajeEnvioNda({
+  nombre,
+  correo,
+  clave,
+  base,
+  alTerminar,
+}: {
+  nombre: string;
+  correo: string;
+  clave: string;
+  base: string;
+  alTerminar: () => void;
+}) {
+  const [copiado, setCopiado] = useState(false);
+  const { asunto, cuerpo } = textoEnvioNda(nombre, correo, clave, base);
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-filete bg-elevado p-3">
+      <textarea
+        readOnly
+        value={cuerpo}
+        rows={9}
+        aria-label="Correo para ella, con su acceso"
+        className="w-full rounded-md border border-filete bg-papel px-3 py-2 text-xs text-titular"
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <a
+          href={`mailto:${correo}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`}
+          className="accion text-xs"
+        >
+          Abrir el correo
+        </a>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText(cuerpo);
+            setCopiado(true);
+          }}
+          className="accion text-xs"
+        >
+          {copiado ? "Copiado" : "Copiar para WhatsApp"}
+        </button>
+        <button type="button" onClick={alTerminar} className="accion text-xs">
+          Hecho
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * El acceso de la candidata: el enlace privado y, llegado el NDA, su cuenta.
  *
  * El enlace se enseña para copiarlo y mandarlo a mano, porque todavía no hay
@@ -573,6 +628,7 @@ export function AccesoCandidata({
   tieneCuenta,
   correo,
   base,
+  estado,
 }: {
   id: string;
   token: string | null;
@@ -580,8 +636,12 @@ export function AccesoCandidata({
   correo: string;
   /** La dirección de la plataforma, para componer el enlace entero */
   base: string;
+  /** En qué paso está: el NDA se envía desde Preseleccionada */
+  estado: string;
 }) {
   const [copiado, setCopiado] = useState(false);
+  const [hecho, setHecho] = useState(false);
+  const antesDelComite = ["presentada", "en_revision", "reunion", "comite"].includes(estado);
   const enlace = token ? `${base}/candidatura/${token}` : null;
 
   return (
@@ -644,23 +704,47 @@ export function AccesoCandidata({
         pudiera copiarla.
       */}
       <Formulario accion={darAccesoCandidata}>
-        {() =>
-          tieneCuenta ? null : (
+        {(r) => {
+          // Lo que se enseña una sola vez se cierra a mano, con «Hecho»
+          if (r.ok && r.datos?.clave) {
+            return hecho ? null : (
+              <MensajeEnvioNda
+                nombre={r.datos.nombre}
+                correo={r.datos.correo}
+                clave={r.datos.clave}
+                base={base}
+                alTerminar={() => setHecho(true)}
+              />
+            );
+          }
+          if (tieneCuenta) return null;
+          if (antesDelComite) {
+            return (
+              <p className="text-sm text-secundario">
+                El NDA se envía cuando el comité la preselecciona: con el acta
+                firmada, aquí saldrá «Enviar el NDA».
+              </p>
+            );
+          }
+          const enviar = estado === "preseleccionada";
+          return (
             <>
               <input type="hidden" name="id" value={id} />
               <p className="text-sm text-secundario">
-                Dale cuenta cuando toque el NDA: se la crea con{" "}
+                {enviar ? "Enviar el NDA le crea la cuenta" : "Se le crea la cuenta"} con{" "}
                 <strong>{correo}</strong>, enseña una contraseña{" "}
-                <strong>una sola vez</strong> y anula el enlace privado. Al
-                entrar cambiará la contraseña, y lo primero que verá es el NDA
-                para firmarlo.
+                <strong>una sola vez</strong> y anula el enlace privado
+                {enviar ? ", y la candidatura pasa a «NDA enviado»" : ""}. Te
+                deja el correo ya escrito para mandárselo. Al entrar cambiará
+                la contraseña, y lo primero que verá es el NDA, para
+                comentarlo o firmarlo.
               </p>
               <Boton variante="secundario">
-                Darle cuenta para el due diligence
+                {enviar ? "Enviar el NDA" : "Darle cuenta para el due diligence"}
               </Boton>
             </>
-          )
-        }
+          );
+        }}
       </Formulario>
     </div>
   );

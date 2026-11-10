@@ -190,9 +190,15 @@ add(M, "/embudo/<id>", "admin@iwl.test", "Si la candidatura retrocede, los deber
 add(M, "/embudo/<id>", "admin@iwl.test", "Pedir un documento concreto de más",
     "Añadir una petición con su nombre y para cuándo.",
     "Se añade a la lista y ella la ve en su pantalla.")
-add(M, "/embudo/<id>", "admin@iwl.test", "Darle cuenta para el due diligence",
-    "Pulsar «Darle cuenta para el due diligence».",
-    "Enseña el correo y la contraseña UNA SOLA VEZ, y avisa de que no se vuelve a enseñar. Copiarla.")
+add(M, "/embudo/<id>", "admin@iwl.test", "Enviar el NDA desde Preseleccionada",
+    "Con una candidatura en Preseleccionada, pulsar «Enviar el NDA».",
+    "Pasa a «NDA enviado». Enseña la contraseña UNA SOLA VEZ y el correo ya escrito para ella, que se queda hasta pulsar «Hecho». Antes del comité, el botón no sale.")
+add(M, "/candidatura", "la candidata", "Comentar el NDA",
+    "Antes de firmar, escribir un comentario y enviarlo.",
+    "Sale en la lista, «Sin responder todavía». A dirección le llega el aviso «… ha comentado el NDA».")
+add(M, "/embudo/<id>", "admin@iwl.test", "Responder y cambiar el NDA solo para ella",
+    "Responder el comentario. Después, «Cambiar el texto solo para ella», tocar algo y guardar.",
+    "Ella ve la respuesta. Si ya había firmado, su firma se anula, el historial lo dice y vuelve a ver el NDA para firmar, en la versión nueva.")
 add(M, "/candidatura/<testigo>", "sin cuenta", "El enlace privado deja de valer",
     "Después de darle cuenta, abrir el enlace privado de antes.",
     "404. Desde que tiene cuenta, se entra por la puerta.")

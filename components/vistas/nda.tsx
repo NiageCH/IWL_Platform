@@ -6,7 +6,8 @@ import {
   RegenerarPdfNda,
   RegistrarNdaExterno,
 } from "@/components/formularios/nda-iwl";
-import type { EstadoNda } from "@/lib/datos/nda";
+import { NdaPropio, ResponderComentarioNda } from "@/components/formularios/comentar-nda";
+import type { ComentarioNda, EstadoNda } from "@/lib/datos/nda";
 import type { EstadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 
@@ -23,6 +24,48 @@ const ESTADO: Record<EstadoNda, { visual: EstadoVisual; rotulo: string }> = {
  * dirección puede hacer en cada uno. Contrafirmar y registrar uno de fuera
  * son de dirección; la base lo vuelve a comprobar.
  */
+/**
+ * Lo que ella ha comentado del NDA y lo que se le ha respondido. Lo ven
+ * las dos partes; responder es de IWL, y solo se le pasa a esa pantalla.
+ */
+export function ComentariosNda({
+  comentarios,
+  candidaturaId,
+  responder = false,
+}: {
+  comentarios: ComentarioNda[];
+  candidaturaId: string;
+  responder?: boolean;
+}) {
+  if (!comentarios.length) return null;
+  return (
+    <ul className="flex flex-col gap-3">
+      {comentarios.map((c) => (
+        <li key={c.id} className="flex flex-col gap-1.5 rounded-lg border border-filete px-4 py-3 text-sm">
+          <p className="text-xs text-metadato">
+            Comentario del {fecha(c.created_at)}
+            {c.version ? ` · sobre la versión ${c.version}` : ""}
+          </p>
+          <p className="whitespace-pre-wrap text-titular [overflow-wrap:anywhere]">{c.texto}</p>
+          {c.respuesta ? (
+            <div className="border-l-2 border-filete pl-3">
+              <p className="text-xs text-metadato">
+                Respuesta de {c.respondidoPor ?? "Inception Woman Lab"}
+                {c.respondido_at ? ` el ${fecha(c.respondido_at)}` : ""}
+              </p>
+              <p className="whitespace-pre-wrap text-secundario [overflow-wrap:anywhere]">{c.respuesta}</p>
+            </div>
+          ) : responder ? (
+            <ResponderComentarioNda id={c.id} candidaturaId={candidaturaId} />
+          ) : (
+            <p className="text-xs text-metadato">Sin responder todavía</p>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function BloqueNda({
   candidaturaId,
   nda,
@@ -31,7 +74,8 @@ export function BloqueNda({
   candidaturaId: string;
   nda: {
     estado: EstadoNda;
-    plantilla: { version: number } | null;
+    plantilla: { version: number; texto: string; candidatura_id: string | null } | null;
+    comentarios: ComentarioNda[];
     firma: {
       firmante_nombre: string | null;
       firmado_at: string | null;
@@ -45,7 +89,8 @@ export function BloqueNda({
   };
   esDireccion: boolean;
 }) {
-  const { estado, firma, plantilla } = nda;
+  const { estado, firma, plantilla, comentarios } = nda;
+  const abierto = estado === "por_firmar" || estado === "esperando_iwl";
   const e = ESTADO[estado];
 
   return (
@@ -61,10 +106,12 @@ export function BloqueNda({
         ) : null}
         {estado === "por_firmar" ? (
           <p>
-            Lo verá nada más entrar, en la versión {plantilla?.version}. Hasta
-            que lo firme no ve nada más.
+            Lo verá nada más entrar, en la versión {plantilla?.version}
+            {plantilla?.candidatura_id ? ", que es solo suya" : ""}. Hasta que
+            lo firme no ve nada más; antes puede comentarlo.
           </p>
         ) : null}
+        <ComentariosNda comentarios={comentarios} candidaturaId={candidaturaId} responder={abierto} />
         {firma?.firmado_at ? (
           <p>
             {firma.externo ? "Firmado fuera de la plataforma" : `Firmado por ${firma.firmante_nombre}`} el{" "}
@@ -88,6 +135,13 @@ export function BloqueNda({
           ) : null}
         </div>
       </div>
+      {esDireccion && abierto && plantilla ? (
+        <NdaPropio
+          candidaturaId={candidaturaId}
+          texto={plantilla.texto}
+          firmadoPorElla={estado === "esperando_iwl"}
+        />
+      ) : null}
       {esDireccion && estado !== "firmado" && estado !== "no_aplica" ? (
         <RegistrarNdaExterno candidaturaId={candidaturaId} />
       ) : null}

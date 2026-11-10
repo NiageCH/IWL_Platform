@@ -276,7 +276,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 
 export interface Aviso {
   id: string;
-  tipo: "primer_acceso" | "nda_firmado";
+  tipo: "primer_acceso" | "nda_firmado" | "nda_comentario";
   created_at: string;
   persona: string;
   candidaturaId: string | null;

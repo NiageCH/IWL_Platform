@@ -6,6 +6,7 @@ import {
   pasosDeOnboarding,
   textoRecordatorio,
   type DatosOnboarding,
+  textoEnvioNda,
 } from "./onboarding";
 
 const HOY = "2026-11-09";
@@ -161,5 +162,16 @@ describe("lo de alrededor", () => {
     const { cuerpo } = textoRecordatorio("primer_acceso", "Agustina Gómez", "https://ride.inceptionwlab.es");
     expect(cuerpo).toMatch(/^Hola, Agustina:/);
     expect(cuerpo).toContain("https://ride.inceptionwlab.es/entrar");
+  });
+});
+
+describe("el correo que acompaña al NDA", () => {
+  it("le habla por su nombre y le da dirección, correo y contraseña", () => {
+    const { asunto, cuerpo } = textoEnvioNda("Agustina Gómez", "ella@ejemplo.test", "clave-temporal", "https://iwl.test");
+    expect(asunto).toMatch(/NDA/);
+    expect(cuerpo).toMatch(/^Hola, Agustina:/);
+    expect(cuerpo).toContain("https://iwl.test/entrar");
+    expect(cuerpo).toContain("· Correo: ella@ejemplo.test");
+    expect(cuerpo).toContain("· Contraseña: clave-temporal");
   });
 });

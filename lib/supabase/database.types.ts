@@ -2824,6 +2824,79 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"nda_comentarios": {
+                  Row: {
+                    "candidatura_id": string,"created_at": string,"id": string,"plantilla_id": string | null,"profile_id": string | null,"respondido_at": string | null,"respondido_por": string | null,"respuesta": string | null,"texto": string
+                  }
+                  Insert: {
+                    "candidatura_id": string,"created_at"?: string,"id"?: string,"plantilla_id"?: string | null,"profile_id"?: string | null,"respondido_at"?: string | null,"respondido_por"?: string | null,"respuesta"?: string | null,"texto": string
+                  }
+                  Update: {
+                    "candidatura_id"?: string,"created_at"?: string,"id"?: string,"plantilla_id"?: string | null,"profile_id"?: string | null,"respondido_at"?: string | null,"respondido_por"?: string | null,"respuesta"?: string | null,"texto"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "nda_comentarios_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "nda_comentarios_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_plantilla_id_fkey"
+      columns: ["plantilla_id"]
+isOneToOne: false
+      referencedRelation: "nda_plantillas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"nda_firmas": {
                   Row: {
                     "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"plantilla_id": string | null,"texto_hash": string | null,"texto_version": string | null
@@ -2911,16 +2984,34 @@ isOneToOne: false
                   ]
                 },"nda_plantillas": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"hash": string,"id": string,"texto": string,"version": number
+                    "candidatura_id": string | null,"created_at": string,"created_by": string | null,"hash": string,"id": string,"texto": string,"version": number
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"hash": string,"id"?: string,"texto": string,"version": number
+                    "candidatura_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"hash": string,"id"?: string,"texto": string,"version": number
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"hash"?: string,"id"?: string,"texto"?: string,"version"?: number
+                    "candidatura_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"hash"?: string,"id"?: string,"texto"?: string,"version"?: number
                   }
                   Relationships: [
                     {
+      foreignKeyName: "nda_plantillas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "candidaturas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "nda_plantillas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["candidatura_id"]
+    },{
+      foreignKeyName: "nda_plantillas_candidatura_id_fkey"
+      columns: ["candidatura_id"]
+isOneToOne: false
+      referencedRelation: "embudo_candidaturas"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "nda_plantillas_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -4405,6 +4496,9 @@ isOneToOne: false
                            },
 "persona_tiene_actividad":
 { Args: { "target_profile": string }; Returns: boolean
+                           },
+"plantilla_nda_de":
+{ Args: { "p_candidatura": string }; Returns: string
                            },
 "presentar_candidatura":
 { Args: { "p_contacto_cargo"?: string,"p_contacto_email": string,"p_contacto_nombre": string,"p_contacto_telefono"?: string,"p_enlaces"?: Json,"p_equipo_personas"?: number,"p_estado_declarado"?: Database["public"]['Enums']["estado_entrada"],"p_liderazgo_femenino_pct"?: number,"p_nombre": string,"p_one_liner"?: string,"p_origen"?: string,"p_pais"?: string,"p_sector"?: string,"p_website"?: string }; Returns: string

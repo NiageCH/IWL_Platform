@@ -10,6 +10,8 @@ import { SalaDeDatosCandidata } from "@/components/formularios/sala-candidata";
 import { FirmarNdaCandidata } from "@/components/formularios/firmar-nda";
 import { leerNda } from "@/lib/datos/nda";
 import { AbrirNda } from "@/components/formularios/abrir-nda";
+import { ComentarNda } from "@/components/formularios/comentar-nda";
+import { ComentariosNda } from "@/components/vistas/nda";
 
 export const metadata = { title: "Tu candidatura · Plataforma IWL" };
 
@@ -68,6 +70,10 @@ export default async function MiCandidatura() {
                   version={nda.plantilla.version}
                   texto={nda.plantilla.texto}
                 />
+                <div className="mt-8 flex flex-col gap-4 border-t border-filete pt-6">
+                  <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
+                  <ComentarNda />
+                </div>
               </>
             ) : (
               <p className="text-sm text-secundario">
@@ -91,10 +97,14 @@ export default async function MiCandidatura() {
         </div>
 
         {nda.estado === "esperando_iwl" ? (
-          <p className="tarjeta mb-6 p-5 text-sm text-secundario" role="status">
-            Has firmado el NDA. Falta la firma de Inception Woman Lab; en
-            cuanto firme, aquí mismo verás qué documentación te pedimos.
-          </p>
+          <div className="tarjeta mb-6 flex flex-col gap-4 p-5 text-sm text-secundario">
+            <p role="status">
+              Has firmado el NDA. Falta la firma de Inception Woman Lab; en
+              cuanto firme, aquí mismo verás qué documentación te pedimos.
+            </p>
+            <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
+            <ComentarNda />
+          </div>
         ) : null}
         {nda.estado === "firmado" && vista.puede_subir && entregados === 0 ? (
           <p className="tarjeta mb-6 p-5 text-sm text-titular" role="status">

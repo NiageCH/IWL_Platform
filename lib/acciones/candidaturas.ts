@@ -614,6 +614,10 @@ export async function configurarConvocatoria(
 // -----------------------------------------------------------------------------
 
 /**
+ * Enviar el NDA, desde Preseleccionada: darle cuenta y pasar a «NDA
+ * enviado» en un paso. Fuera de Preseleccionada solo le da la cuenta, como
+ * antes: hay candidaturas que llegaron a NDA a mano.
+ *
  * Darle cuenta, al firmar el NDA.
  *
  * Es el momento en que empieza a entregar material del due diligence, y el
@@ -683,10 +687,29 @@ export async function darAccesoCandidata(
 
   if (falloAcceso) return traducirError(falloAcceso);
 
+  // El cambio de paso deja su evento en el historial por sí solo
+  const enviado = candidatura.estado === "preseleccionada";
+  if (enviado) {
+    const { error: falloPaso } = await supabase.from("candidaturas").update({ estado: "nda" }).eq("id", id);
+    if (falloPaso) {
+      return error(
+        `Tiene cuenta, pero no ha pasado a «NDA enviado»: ${falloPaso.message}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar.`,
+      );
+    }
+  }
+
   refrescar(id);
-  return ok(
-    `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
-  );
+  return {
+    ok: true,
+    mensaje: enviado
+      ? `NDA enviado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`
+      : `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
+    datos: {
+      correo: candidatura.contacto_email!,
+      nombre: candidatura.contacto_nombre ?? "",
+      clave,
+    },
+  };
 }
 
 /**

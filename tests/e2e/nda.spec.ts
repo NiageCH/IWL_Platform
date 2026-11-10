@@ -42,8 +42,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y queda el PDF con su rastr
 
   try {
     await entrarComo(page, USUARIOS.admin, `/embudo/${candidatura.id}`);
-    await page.getByRole("button", { name: /Darle cuenta para el due diligence/ }).click();
-    const mensaje = await page.getByText(/Acceso dado a/).innerText();
+    await page.getByRole("button", { name: "Enviar el NDA" }).click();
+    const mensaje = await page.getByText(/NDA enviado a/).innerText();
     const temporal = mensaje.match(/contraseña es ([^\s]+)/)![1];
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);

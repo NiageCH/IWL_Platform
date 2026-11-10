@@ -429,6 +429,7 @@ export default async function FichaCandidatura({
               tieneCuenta={Boolean(c.profile_id)}
               correo={c.contacto_email ?? ""}
               base={base}
+              estado={estado}
             />
           </Bloque>
 
