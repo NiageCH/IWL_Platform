@@ -9,6 +9,79 @@ como es**.
 
 ---
 
+## 2026-11-10 · El NDA personalizado: marcadores, datos de la firmante y texto completado · commit fc469f1
+
+Tu entrada «El NDA se personaliza». No he tocado el texto legal: los marcadores los pone Luciana en la plantilla.
+
+**Qué cambió**
+· **Marcadores en la plantilla**, `{{nombre}}`, de una lista cerrada:
+  · de la candidatura: `{{startup}}` y `{{contraparte_nombre}}` (la persona de contacto);
+  · de la firma: `{{fecha_efecto}}` y `{{lugar}}`;
+  · de ella: `{{documento}}` y `{{domicilio}}`, y si es sociedad `{{denominacion}}`, `{{nif}}` y `{{cargo}}`;
+  · bloques `{{#si_sociedad}}…{{/si_sociedad}}` y `{{#si_persona}}…{{/si_persona}}`.
+
+  La lista está en la pantalla de la plantilla, en «Marcadores que se pueden usar». Un marcador desconocido, o un bloque sin cerrar, no deja guardar: lo dice el formulario y lo impide la base.
+· **Persona física o sociedad**: «constituida» es sociedad; sin constituir o en constitución, persona física. Si la situación societaria no se ha dicho todavía, que antes del NDA es lo normal, se le pregunta a ella: «Firmas como persona física / en nombre de una sociedad constituida».
+· **«Tus datos para el NDA»**, antes de firmar. Solo los campos que su texto pide. El texto de debajo se completa mientras escribe, y mientras falte algo no se puede firmar.
+· **Lo firmado es el texto completado.** El hash es el de ese texto, y se guardan el texto (`texto_firmado`) y los datos que rellenó (`datos`). La base calcula el hash sobre lo que recibe y rechaza un texto con huecos.
+· **La fecha de efecto.** Mientras falta una firma, el texto dice «la fecha de la última firma». Al contrafirmar IWL, que es la última, se escribe la fecha y se guarda el texto final con su hash (`texto_final`, `texto_final_hash`).
+  · Ese es el texto del PDF.
+  · El rastro de la última página lleva los dos hashes: el del texto que firmó ella y el del texto con la fecha, y dice que solo cambia eso.
+· **Sin corchetes.** Una plantilla con un hueco entre corchetes no se envía:
+  · «Enviar el NDA» bloqueado, con el motivo y el primer hueco;
+  · la base lo impide al dar cuenta y al pasar a «NDA enviado»;
+  · quien ya tenga cuenta ve «Tu NDA está en preparación», nunca un texto con corchetes.
+
+  En Programa, el bloque de la plantilla dice si está lista o qué le falta.
+· **El lugar**, en Programa → «Lugar de firma», con Málaga por defecto.
+· La plantilla de prueba de la semilla local lleva ahora los marcadores, así que las pruebas recorren lo mismo que una candidata.
+
+### Qué decidí yo
+· **La fecha de efecto va en dos tiempos.** Pediste «la de la última firma», pero esa fecha no existe cuando firma ella, y lo que firma no puede cambiar después. Ella firma el texto con «la fecha de la última firma». El PDF lleva el mismo texto con la fecha escrita, con su propio hash y la explicación. Pregunta 1.
+· **`{{contraparte_nombre}}` es la persona de contacto de la candidatura.** Si está mal escrita, se corrige en «Corregir los datos» antes de enviar. No es el nombre que ella escribe al firmar, que puede no coincidir.
+· **La plantilla del NDA solo para ella cumple las mismas reglas** que la genérica: marcadores, huecos y bloqueo.
+· **Los NDA firmados antes de esto** no tienen datos ni texto completado: su PDF sale de la plantilla, como hasta ahora.
+
+### Cómo lo he probado
+· 8 unitarias: completar persona y sociedad, huecos, campos que pide, marcadores desconocidos y bloques sin cerrar, y el rastro con los dos hashes.
+· 6 de RLS, con una versión solo para una candidata nueva, porque la genérica no se puede tocar en pruebas:
+  · un marcador desconocido no se guarda;
+  · con corchetes, ni cuenta ni «NDA enviado», y ella ve «en preparación»;
+  · un texto con hueco no se firma;
+  · el hash es el del texto que llega, con los datos guardados;
+  · la contrafirma guarda el texto final y su hash.
+· De interfaz, la del NDA de punta a punta: elige «persona física», rellena documento y domicilio, ve el texto completado, firma, y lo firmado y el texto final con la fecha quedan en la base.
+
+### Qué necesito que decidas
+1. **¿Vale la fecha de efecto en dos tiempos?** Ella firma «con efecto desde la fecha de la última firma», y el PDF final lleva la fecha. La alternativa es que `{{fecha_efecto}}` no esté en el texto que se firma y la fecha vaya solo en el rastro del PDF.
+
+### Estado
+· 178 unitarias · 205 RLS, dos veces seguidas, tras reiniciar desde cero · **368 de interfaz en verde y 4 saltadas** (los informes en PDF).
+· Migración nueva: `20261110170000_nda_personalizado`. Va junto con la del arreglo anterior, `20261110160000`.
+
+### Para desplegar los dos
+Desde la carpeta del proyecto, con `main` en `878d956`. Antes, aparta tu `docs/REVISION.md` sin guardar, como siempre.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push        # entran 20261110160000 y 20261110170000
+git push
+npx vercel --prod
+```
+
+**Después, en producción:**
+· **Administración → Programa → Plantilla del NDA.** El bloque dirá «No se puede enviar todavía» y el primer hueco entre corchetes de la plantilla que cargaste. Hasta que Luciana cambie los corchetes por marcadores y se guarde como versión nueva, el NDA no se envía y la candidata que ya tiene cuenta ve «en preparación».
+· **El lugar** sale como Málaga; se cambia ahí mismo.
+
+**Siguiente**
+Lo de «Construcción: no se trabaja sin Acuerdo»:
+1. el tope del tramo de entrada;
+2. la horquilla de equity;
+3. el equity comprometido sin sociedad;
+4. las horas solo desde la firma.
+
+---
+
 ## 2026-11-10 · Producción: sin texto de NDA no se envía, y con el NDA pendiente ve su candidatura · commit 45cd207
 
 Tu entrada «Producción: la candidata con NDA pendiente no ve nada más», antes que lo de Construcción.
