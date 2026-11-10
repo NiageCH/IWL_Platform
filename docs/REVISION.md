@@ -4,6 +4,254 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · Paso 5, primera mitad: aprobado. Dos respuestas
+
+Bien la primera mitad del paso 5 (1570b74). Respuestas:
+
+1. **Sí, deja de generar los documentos de la candidatura al enviar el NDA.** En el modelo v2 los documentos viven en la compañía y generarlos dos veces crea duplicados que alguien acabará rellenando en el sitio equivocado. Las candidaturas anteriores conservan los suyos, sin tocarlos. **Las pruebas de acceso que dependían de ellos se adaptan a los documentos de la compañía**: comprueban lo mismo (quién ve qué) sobre el objeto nuevo. No se mantiene una función muerta para que pase una prueba.
+2. **Sí, quita esa combinación de la semilla de demostración.** Y además: **ninguna prueba versionada puede depender de un fichero sin versionar.** Haz que la prueba de la demostración cree sus propios datos o que lea la semilla que sí está en el repo; si lo que tiene que comprobar solo existe en mi fichero local, la prueba sobra. Objetivo: las tres suites en verde en cualquier máquina, sin excepciones conocidas.
+
+Sigue con la segunda mitad (Anexo como propuesta, firma desde la compañía con la puerta del due diligence solo en Aceleración, KPI y hoja de ruta al firmar, cambio de vía con aviso al mentor principal). Al cerrarla, la guía de carga rehecha.
+
+---
+
+## 2026-11-09 · Modelo del flujo de entrada v2: aprobado
+
+Modelo v2 (`IWL_Doc_ModeloFlujoEntrada_ES_v2_20261109.md`) **aprobado**. Respuestas a las tres preguntas:
+
+1. **Pasar de Construcción a Aceleración lo decide dirección, con motivo.** Sin comité: es un cambio de vía dentro del programa, no una nueva selección. Queda en el registro y avisa al mentor principal.
+2. **«Por construir» pasa a «por entregar» solo al enlazarse a un hito con fecha**, y IWL puede cambiarlo además a mano, con motivo. Lo automático es la regla; lo manual, la excepción registrada.
+3. **La propuesta de Acuerdo es el Anexo en borrador, no un objeto aparte.** Un solo documento que avanza: borrador → propuesto a la fundadora → comentado → aceptado → firmado. Así no se teclean dos veces el equity, las horas, los pilares y los hitos. El Acuerdo general (las secciones 1 a 12) es fijo y se firma junto al Anexo aceptado.
+
+Construye ya los puntos 3 a 7 con este modelo, en el orden que propongas, cada uno con su commit y su entrada en la bitácora. Rehaz la guía de carga con el nuevo corte al final.
+
+---
+
+## 2026-11-09 · Respuesta al modelo del flujo de entrada: dos vías, no un due diligence para todas
+
+**Corrección de fondo de Rodrigo.** El due diligence de entrada solo tiene sentido para una compañía que ya factura y entra a acelerar. Un proyecto en idea o MVP no tiene due diligence que hacer antes de ser aceptado: su construcción documental se hace **de la mano con IWL, dentro del programa**. El modelo tiene que reflejarlo.
+
+### Dos vías de entrada
+
+| Vía | Para quién | Entre el NDA y el Acuerdo | El checklist de due diligence |
+|---|---|---|---|
+| **Aceleración** | Factura o tiene tracción | Due diligence de entrada: **condiciona** el Acuerdo | Puntos «por entregar», con avance, avisos y «Recordar» |
+| **Construcción** | Idea, prototipo o MVP | Diagnóstico corto: reunión, ficha y situación societaria. **No hay puerta documental** | Los mismos puntos como **«por construir»**: se trabajan en la incubación, dentro de la hoja de ruta, sin avisos de vencimiento hasta que tengan fecha en un hito |
+
+· **La vía la decide el comité**, en el acta, junto con la decisión. Sale propuesta por el estado de entrada (idea, prototipo y MVP → Construcción; con ingresos o tracción → Aceleración) y el comité la puede cambiar con motivo.
+· Se puede **pasar de Construcción a Aceleración** más adelante, cuando empiece a facturar: queda en el registro.
+
+### La decisión de incorporación, igual en las dos vías
+
+Rodrigo lo concreta: una vez aceptada, IWL analiza lo que hay y decide si sigue. Esa decisión cierra el tramo de entrada en las dos vías y abre el Acuerdo.
+
+· **«Decidir la incorporación»**, en la compañía en entrada, solo dirección. Registra: **base de la decisión** (`due_diligence` o `estrategica`), motivo, fecha y quién decide. En Aceleración la base normal es el due diligence; en Construcción, la estratégica. Las dos valen en cualquier vía, con su motivo.
+· Decisión **sí** → **«Proponer el Acuerdo»**: etapa, equity, qué aporta IWL, situación societaria y firmantes. La fundadora **ve la propuesta en Mi compañía**, puede comentarla y la acepta. Después se firma el Acuerdo y su Anexo y la compañía pasa a incubación.
+· Decisión **no** → la compañía se archiva como «No incorporada», con el motivo y el mensaje para ella en la voz de IWL.
+· En **Construcción**, también el **business plan** nace con sus secciones «por construir»: hay fundadoras que todavía no lo tienen, y se escribe con IWL dentro del programa. No cuenta como pendiente en la entrada.
+
+### Cambios al modelo propuesto
+
+· **`companies.tramo`** pasa a `('entrada', 'incubacion')`, no `due_diligence`. Y columna nueva **`companies.via`** `('aceleracion', 'construccion')`, fijada por el acta de comité.
+· La compañía sigue naciendo **al contrafirmar el NDA**, en `tramo = 'entrada'`, en las dos vías: así la fundadora trabaja desde el principio en Mi compañía.
+· En Construcción, el Acuerdo se puede firmar sin ningún punto de due diligence validado. En Aceleración, el Acuerdo exige los puntos marcados como obligatorios.
+· «En due diligence» de la cartera pasa a **«En entrada»**, con la vía visible en cada fila.
+· `dd_items` gana un estado **«por construir»**, que no cuenta como pendiente ni como vencido, y que pasa a «por entregar» cuando se enlaza a un hito con fecha.
+
+### Las siete preguntas, con eso
+
+1. Tramo aparte: **sí**, con los valores de arriba y la columna `via`.
+2. Etapa y perfil vacíos en entrada; KPI y hoja de ruta al firmar el Acuerdo: **sí**.
+3. Situación societaria: **la dice la fundadora una vez** y **IWL la confirma** como punto más del diagnóstico o del due diligence.
+4. Comité: **lista por defecto en Programa, marcada al crear el acta, editable en cada una**. El acta se cierra cuando firman todos los elegidos. El acta incluye la **vía**.
+5. NDA propio de la candidata: **sí**, y anula su firma si IWL no ha firmado. Con las dos firmas, un cambio es un NDA nuevo.
+6. «NDA enviado» y `diligencia` = la compañía existe: **sí**. Renombra `diligencia` a algo que valga para las dos vías (por ejemplo `entrada`).
+7. «Aplazada»: **se queda en Comité**, con fecha de revisión obligatoria y aviso ese día.
+
+Rehaz el modelo con esto, actualiza `IWL_Doc_FlujoEntrada` y espera aprobación antes de construir.
+
+---
+
+## 2026-11-09 · Piloto con Prueba_Ro: nuevo flujo de entrada
+
+Rodrigo ha probado el embudo con una candidatura «Prueba_Ro». Lee `docs/IWL_Doc_FlujoEntrada_ES_v1_20261109.md`: **la compañía nace cuando las dos partes han firmado el NDA**, en fase Due diligence, y el due diligence se hace ya en Mi compañía. Sustituye a la sección 1 de la guía de carga en lo que contradiga.
+
+**Fallos encontrados, primero:**
+1. **La ficha de la candidatura se sale por la derecha** de la pantalla. Revísala a 1280, 1440 y móvil.
+2. **«Con quién se habla» sale vacío** aunque Rodrigo rellenó todos los datos. Averigua si no se guardan o si no se pintan, y dilo en la bitácora.
+
+**Después, por este orden**, entregando antes el modelo de datos del nuevo corte y esperando aprobación:
+3. «Proponer reunión» y «Anotar la reunión».
+4. Acta de comité con firma de cada miembro y PDF.
+5. «Enviar el NDA» desde Preseleccionada, comentarios de la candidata al NDA, contrafirma que lo dispara todo.
+6. Creación automática de la compañía en fase Due diligence, la candidata pasa a fundadora, y la situación societaria como primera pregunta.
+7. «En due diligence» separado de la cartera.
+
+Esto absorbe los puntos 1 a 4 de la entrada «Onboarding de Siren» y el diseño del NDA: aplica allí lo que siga valiendo.
+
+---
+
+## 2026-11-09 · Situación societaria: proyectos sin sociedad constituida
+
+Siren no tiene SL constituida, y no será la única. La plataforma hoy da por hecho que hay una sociedad. Hay que poder decir desde dónde parte cada proyecto.
+
+**Campo nuevo en candidatura y compañía: «Situación societaria»**, obligatorio al firmar:
+· **Sin constituir**: proyecto de personas físicas.
+· **En constitución**: con fecha prevista.
+· **Sociedad constituida**: forma jurídica (SL, SA, otra, extranjera), denominación social y CIF/NIF.
+
+**Qué cambia según la situación:**
+· **Quién firma.** Sin sociedad, firman las fundadoras **a título personal**, cada una con su nombre; la ficha de firma lo pide así. Con sociedad, la sociedad representada por quien tenga poder, y además las fundadoras si el Acuerdo lo requiere (punto abierto de la Propuesta §17).
+· **Due diligence societario.** Sin sociedad, los puntos de escritura, libro de actas, cap table certificada y similares pasan a **No aplica** con el motivo, y entran en su lugar: pacto entre fundadoras sobre el reparto previsto y titularidad de lo construido hasta hoy (código, marca, dominio).
+· **Hito automático «Constituir la sociedad»** en la hoja de ruta, con fecha, cuando la situación sea sin constituir o en constitución. Al cumplirlo se piden los datos y los documentos societarios, y la situación cambia sola a constituida.
+· **Equity.** El mecanismo del Acuerdo es la compra de participaciones existentes; sin sociedad no hay participaciones. La ficha muestra «Equity pendiente de constitución» y queda ligado al hito anterior. **La cláusula para este caso la define Luciana con asesoría legal**; la plataforma solo refleja el estado, no redacta nada.
+· La situación se ve en la cabecera de la compañía y en la cartera, como dato y no como alerta.
+
+Va dentro del bloque de onboarding, junto al arreglo de «Firmar acuerdo y crear compañía» (punto 4), porque es el mismo formulario.
+
+---
+
+## 2026-11-09 · Sobre el diseño del NDA en la plataforma (punto 3)
+
+El diseño va bien: puerta decidida por la base, IP registrada desde el servidor con la clave de servicio y el porqué escrito, contrafirma desde el aviso, PDF con pdf-lib. Cinco ajustes:
+
+1. **No redactes el texto del NDA.** IWL ya tiene plantilla en Drive: `IWL_NDA_PlantillaGenerica_ES_v2_20260922` (la más reciente) y `NDA_IWL_Plantilla_Generica` en la carpeta IWL_AGENTE. Deja la pantalla de plantilla **vacía**; Rodrigo o Luciana pegan ahí el texto validado. Mientras la plantilla esté vacía, la candidata ve «Tu NDA está en preparación» y la puerta no se abre, pero tampoco le deja firmar nada provisional.
+2. **Versiones de la plantilla.** Editarla crea una versión nueva; nunca se modifica la que ya se ha firmado. Cada firma guarda la versión y el **hash SHA-256 del texto exacto** que vio. Así se puede demostrar qué firmó aunque la plantilla cambie mañana.
+3. **El rastro, en la última página del PDF**: nombre, correo, fecha y hora (Madrid y UTC), IP y navegador de cada firmante, versión de la plantilla y hash. Guarda también el navegador (`user-agent`) en `nda_firmas`.
+4. **NDA firmado fuera de la plataforma.** Dirección puede subir un PDF ya firmado (en papel o por otro sistema) y marcarlo como firmado, con `<Evidencia>`. Pasa igual a «NDA firmado» y abre la puerta. Hay candidatas que firmarán así.
+5. **Avisar a la candidata** cuando IWL contrafirma: en su pantalla, «IWL ha firmado el NDA. Ya puedes empezar el due diligence», con el siguiente paso.
+
+---
+
+## 2026-11-09 · Onboarding de Siren: lo que Rodrigo encontró al dar de alta a Agustina
+
+Rodrigo ha creado la cuenta de Agustina en producción y el flujo no se sostiene. **Esto va primero, antes que el resto de entradas abiertas**: es justo lo que el piloto tenía que destapar.
+
+### 1. Dirección ve el onboarding paso a paso
+
+En la ficha de cada candidatura y compañía, y resumido en el Inicio de dirección, una línea de pasos con fecha y estado de color:
+
+cuenta creada · **primer acceso** · contraseña cambiada · **NDA firmado por ella** · **NDA firmado por IWL** · due diligence entregado (x de y) · comité · Acuerdo firmado
+
+· Cada paso dice cuántos días lleva la persona en él.
+· **Atención** si lleva más de 5 días sin moverse; **Vencido** a los 10. Umbrales en configuración.
+· Botón **«Recordar»** en el paso detenido. Hasta que haya proveedor de correo: abre un correo ya redactado (`mailto:`) y un mensaje para copiar a WhatsApp. Cada recordatorio queda en el registro.
+
+### 2. Avisos a dirección
+
+En el Inicio de dirección y con contador en la barra lateral:
+· «Agustina Gómez ha entrado por primera vez».
+· «Agustina Gómez ha firmado el NDA. Falta la firma de IWL» con botón para firmarlo ahí mismo.
+· Cualquier paso detenido que pase a Atención.
+
+### 3. NDA firmado dentro de la plataforma, por las dos partes
+
+Hoy «NDA» es un estado que pone IWL a mano. Pasa a ser una firma:
+· En su primera entrada, después de cambiar la contraseña, la candidata ve el NDA (plantilla de IWL) y lo firma: nombre completo escrito, casilla de aceptación, fecha, hora y dirección IP guardadas. Hasta que no firme, no ve nada más.
+· IWL lo contrafirma desde el aviso. Firma una persona de dirección, con su nombre.
+· Al completarse, se genera el PDF del NDA con las dos firmas y su rastro, va al data room de la candidatura y la candidatura pasa a «NDA firmado».
+· Es firma electrónica simple. **Luciana valida que sirve para el NDA** antes de usarlo con fundadoras reales; queda dicho en la pantalla de configuración.
+
+### 4. Fallo en «Firmar acuerdo y crear compañía»
+
+Rodrigo escribió `siren.es` y el formulario lo rechazó con «Minúsculas, números y guiones. Es lo que irá en la dirección web», sin decir qué campo, y no pudo avanzar. Dos campos mezclados:
+· **Web de la compañía**: campo propio y opcional. Acepta `siren.es`, `www.siren.es` o con `https://`, y lo normaliza.
+· **Identificador interno** (el slug): se genera solo a partir del nombre. No se le pide a nadie; editable solo en «Opciones avanzadas», con el rótulo «Identificador en la plataforma, no es la web».
+· Todo error de formulario señala **el campo** con su mensaje debajo, no un aviso general.
+
+### 5. «Ver como»
+
+Pendiente de la entrada del 5 nov. Es lo que Rodrigo necesita para comprobar qué ve Agustina; súbelo de prioridad, justo detrás de este bloque.
+
+**Orden:** 4 (es un bloqueo) · 1 y 2 · 3 · «Ver como» · los cinco huecos de la guía · Siren con mentores.
+
+---
+
+## 2026-11-05 · Respuestas a los cinco huecos de la guía de carga (4883233)
+
+1. **Firmar una candidatura convierte a la candidata en fundadora y la asigna a su compañía**, en el mismo paso y sin crearle otra cuenta. Lo mismo para las cofundadoras que figuren en la candidatura con cuenta. Queda en el registro.
+2. **Un Anexo firmado no se edita: se le añade una adenda.** Botón «Nueva adenda» en el Anexo firmado: versión nueva numerada, que dice qué apartados cambia, con su fecha de firma y su evidencia; la anterior queda visible como histórico. Es lo que dice la sección 8 del Acuerdo.
+3. **Los tres, antes de cargar Siren.** Son pequeños y el piloto los va a necesitar el primer día:
+   · Objetivos de KPI con pantalla propia, editables por IWL y el mentor principal.
+   · Editar hitos siempre; borrar solo si no están cumplidos ni tienen evidencia, y queda en el registro.
+   · Empezar una hoja de ruta en blanco, sin plantilla, añadiendo tramos a mano.
+
+Y las dos entradas de arriba (Siren como piloto y «Ver como») siguen pendientes de leer.
+
+---
+
+## 2026-11-05 · Siren como proyecto piloto, y «Ver como»
+
+### Siren, de cero y con la fundadora
+
+Rodrigo usará **Siren** como piloto: después de `nube:vaciar`, se monta entero desde la plataforma, con **Agustina Gómez** como fundadora, para probar el flujo real de principio a fin.
+
+· **Correo de Agustina confirmado por Rodrigo: `gomezagustina225@gmail.com`.** Su cuenta se crea desde la plataforma como parte del piloto (candidatura y firma, o alta directa según la guía), no por script. Camila Aguado, pendiente de que Rodrigo diga si entra.
+
+· **Siren no se carga por semilla en la nube.** Se crea desde la plataforma, como se hará con cualquier compañía. Si `nube:vaciar` la borra, bien; si la guía de carga necesita algo que la plataforma no permite hacer desde pantalla, dilo en la bitácora: es justo lo que el piloto tiene que destapar.
+· **Mentores de Siren:** Rodrigo como **mentor principal** y Juan Mishima como **mentor técnico**. Rodrigo es `admin_iwl` y Juan `revisor_niage`; la asignación por compañía tiene que poder darles además su papel en Siren sin cambiar su rol global. Que aparezcan como mentores en la ficha, en el inicio del mentor y en los avisos. Si hoy un `admin_iwl` no puede ser mentor principal de una compañía, arréglalo.
+· La guía de carga que ya está pedida se escribe **con Siren como ejemplo**, paso a paso.
+
+### «Ver como», para que IWL vea lo que ve cada persona
+
+Nada de cuentas compartidas. Para dirección (`admin_iwl`), un selector **«Ver como…»** en la barra lateral:
+· Eliges una persona (por ejemplo, Agustina) y la plataforma se muestra exactamente como la ve ella: su aterrizaje, su menú, sus pestañas y sus datos, aplicando sus permisos reales en la base, no una imitación en pantalla.
+· **Solo lectura.** Ningún botón de guardar funciona mientras estás viendo como otra persona; la base lo rechaza, no solo la pantalla.
+· **Banda fija arriba**, en ámbar: «Estás viendo la plataforma como Agustina Gómez · Salir». Imposible olvidarlo.
+· **Queda en el registro de actividad**: quién vio como quién y cuándo. La persona puede verlo en su registro de accesos.
+· No se puede usar «Ver como» sobre otra cuenta de dirección.
+
+Entrega primero el diseño técnico en `docs/` (cómo se aplica de verdad la identidad de la otra persona en RLS y cómo se garantiza la solo lectura) y espera aprobación. Las cuentas de revisión siguen existiendo para la demo, pero el día a día con proyectos reales será con «Ver como».
+
+---
+
+## 2026-11-05 · Nube limpia: todo era prueba
+
+**Anula la entrada de reasignar.** Rodrigo confirma que todo lo que hay en la nube de antes del 5 de noviembre son pruebas, también las 34 candidaturas y lo demás de `luciana@iwl.es` y `rodrigo@nonage.es`. Las cuentas se borran con `--limpiar --confirmar`, sin reasignar.
+
+**Además, la nube empieza de cero en datos.** Las compañías reales se cargarán de nuevo, junto con sus fundadoras, desde la plataforma, para comprobar que el flujo funciona.
+
+Prepara `npm run nube:vaciar`, con simulación por defecto y `--confirmar` para ejecutar:
+· Borra todas las candidaturas del embudo y sus ficheros, en los tres estados (abiertas, firmadas y descartadas), **salvo una de muestra por estado**, marcada como demostración y fuera de todo recuento, igual que Marea. La de muestra en NDA es la que usa la cuenta `rev-candidata`.
+· Borra todas las compañías y sus ficheros, **salvo Marea Clínica** (`is_demo`), que sostiene las cuentas de revisión.
+· **No toca** la configuración del programa (fases, pilares, áreas, dimensiones, KPI, tarifas, recorridos) ni las cuentas.
+· Escribe constancia en `docs/constancia/` y una fila en el registro de actividad.
+· Se niega a ejecutarse contra la base local salvo con una opción explícita, y contra la nube si `rodrigo@niage.es` no ha cambiado su contraseña.
+
+Después, una guía corta en `docs/` para Rodrigo: cómo cargar una compañía real de cero desde la plataforma, con su fundadora, en el orden correcto (convocatoria o alta directa, ficha, equipo, Anexo, hoja de ruta, hitos, KPI).
+
+---
+
+## 2026-11-05 · Sobre `--limpiar` (820b4b1)
+
+Rodrigo ya entró en `ride.inceptionwlab.es` con `rodrigo@niage.es` y funciona.
+
+1. **Sí: `cuentas:nube` sin opciones solo crea las cuentas que no existen.** Reponer una contraseña, con `--reponer <correo>`. Hoy volver a lanzarlo le cambia la contraseña a Rodrigo y a quien ya la cambió.
+2. `docs/constancia/` fuera de git: de acuerdo.
+3. Compañías de prueba desde la plataforma, después de la simulación: de acuerdo.
+
+---
+
+## 2026-11-05 · Cuentas de la nube: solo quedan las nuevas
+
+Rodrigo ha listado las 13 cuentas de la nube. **Decisión de Rodrigo: solo quedan las nuevas; todas las demás se borran.** Eso incluye tres que tu `--listar` no marcaba: `qqqq@q.com`, `w@w.es` y `maria@pitulo.com` (alta el 2 oct; la última entró el 29 oct).
+
+**Estado final de la nube:**
+· **`rodrigo@niage.es` es la cuenta principal**: `admin_iwl`, con todos los permisos, y la que se usa para comprobar cada paso. Es la última que se toca y la única que el script de limpieza nunca puede borrar ni degradar.
+· Equipo: rodrigo@niage.es, luciana@niage.es, laura@niage.es, juan.mishima@niage.es, ingenieria@inceptionwlab.es.
+· Las cuentas de revisión `rodrigo+rev-…@niage.es`.
+· Nada más.
+
+**Qué preparar:**
+1. `npm run cuentas:nube -- --limpiar`: borra toda cuenta que no esté en esas dos listas. Por defecto en simulación, enseñando qué borraría; borra solo con `--confirmar`. **Se niega a ejecutarse si `rodrigo@niage.es` no ha entrado nunca**, para que Rodrigo no se quede fuera.
+2. Antes de borrar, guarda en `docs/` un extracto del registro de actividad de esas tres cuentas (qué rol tenían y qué hicieron), para que quede constancia.
+3. Las cuatro compañías basura (qqq, pirulo, ttttttt, w) se borran con «borrar con todo» en el mismo paso, o con el script si es más seguro.
+4. Que `--listar` enseñe a partir de ahora las 13 cuentas con alta y último acceso, no solo las que sobran.
+
+**Orden para Rodrigo**, en la bitácora con los comandos exactos: fusión en main · migración · push y despliegue · cuentas nuevas · Rodrigo entra con `rodrigo@niage.es` y cambia la contraseña · `--limpiar` en simulación · `--limpiar --confirmar`.
+
+---
+
 ## 2026-11-05 · Respuestas sobre la subida (pasos 1 a 3)
 
 Bien parado donde paraste. Respuestas:

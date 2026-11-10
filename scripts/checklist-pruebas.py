@@ -180,16 +180,10 @@ add(M, "/candidatura/<testigo>", "sin cuenta", "Corregir un dato estando ya avan
     "Está plegado bajo «Corregir nuestros datos». Existe, pero no es lo primero que ve.")
 
 # --- NDA y due diligence de la candidata
-M = "6. NDA y DD de candidata"
-add(M, "/embudo/<id>", "admin@iwl.test", "Al llegar al NDA se piden los documentos",
-    "Mover una preseleccionada al paso de NDA.",
-    "Aparece sola la lista de documentos que hay que pedirle para el due diligence.")
-add(M, "/embudo/<id>", "admin@iwl.test", "Si la candidatura retrocede, los deberes desaparecen",
-    "Con una en due diligence, devolverla a comité y mirar su enlace.",
-    "Ya no le pide documentos. Lo que entregó NO se borra: vuelve a salir si se la devuelve a diligencia.")
-add(M, "/embudo/<id>", "admin@iwl.test", "Pedir un documento concreto de más",
-    "Añadir una petición con su nombre y para cuándo.",
-    "Se añade a la lista y ella la ve en su pantalla.")
+M = "6. NDA y compañía en entrada"
+add(M, "/embudo/<id>", "admin@iwl.test", "Al enviar el NDA no se le pide nada a la candidatura",
+    "Enviar el NDA a una preseleccionada y mirar su ficha.",
+    "No aparece «Documentación del due diligence»: lo que se le pide está en el checklist de la compañía, que nace al contrafirmar.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Enviar el NDA desde Preseleccionada",
     "Con una candidatura en Preseleccionada, pulsar «Enviar el NDA».",
     "Pasa a «NDA enviado». Enseña la contraseña UNA SOLA VEZ y el correo ya escrito para ella, que se queda hasta pulsar «Hecho». Antes del comité, el botón no sale.")
@@ -212,14 +206,8 @@ add(M, "/candidatura/<testigo>", "sin cuenta", "El enlace privado deja de valer"
     "Después de darle cuenta, abrir el enlace privado de antes.",
     "404. Desde que tiene cuenta, se entra por la puerta.")
 add(M, "/entrar → /candidatura", "la candidata", "Entra con su cuenta y aterriza en lo suyo",
-    "Entrar con el correo y la contraseña que se enseñaron.",
-    "Cae en /candidatura, con su nombre y lo que le piden. NO en «no tienes compañía».")
-add(M, "/candidatura", "la candidata", "Sube un documento del due diligence",
-    "Elegir una petición y subir el fichero.",
-    "Queda entregado y ella lo ve. El fichero es privado: no hay URL pública.")
-add(M, "/embudo/<id>", "admin@iwl.test", "IWL abre lo que entregó",
-    "Abrir desde la ficha el documento que subió.",
-    "Se descarga o se abre con enlace firmado y caducable.")
+    "Entrar con el correo y la contraseña que se enseñaron, antes de firmar el NDA.",
+    "Cae en /candidatura y solo ve el NDA. NO en «no tienes compañía».")
 
 # --- Acuerdo y firma
 M = "7. Acuerdo y firma"

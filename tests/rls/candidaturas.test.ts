@@ -414,116 +414,32 @@ describe("qué ve la candidata", () => {
 
 describe("la documentación del due diligence", () => {
   /*
-   * El checklist se instancia solo al entrar en NDA, y sale del mismo
-   * catálogo que usan las compañías: si la información que hace falta para
-   * decidir es la misma, la lista tiene que ser la misma.
+   * Ya no se le pide nada a la candidatura: el due diligence es el
+   * checklist de la compañía, que nace al contrafirmar el NDA. Quién ve y
+   * quién escribe ese checklist se prueba en `compania-entrada.test.ts`,
+   * entrando como ella y como una fundadora ajena.
    */
   const CAUCE = "00000000-0000-0000-0005-000000000002";
 
   afterAll(async () => {
-    const servicio = clienteServicio();
-    await servicio.from("candidatura_peticiones").delete().eq("candidatura_id", CAUCE);
-    await servicio
-      .from("candidaturas")
-      .update({ estado: "en_revision", profile_id: null, token_anulado_at: null })
-      .eq("id", CAUCE);
+    await clienteServicio().from("candidaturas").update({ estado: "en_revision" }).eq("id", CAUCE);
   });
 
-  it("al pasar a NDA se le pide el checklist entero", async () => {
+  it("al pasar a NDA no se crea ninguna lista en la candidatura", async () => {
     const iwl = await entrarComo(USUARIOS.admin);
-    await iwl.from("candidaturas").update({ estado: "nda" }).eq("id", CAUCE);
-
-    const { data } = await iwl
-      .from("candidatura_peticiones")
-      .select("id, obligatoria")
-      .eq("candidatura_id", CAUCE);
-
-    // Las mismas 29 que un due diligence de compañía
-    expect(data?.length).toBe(29);
-    expect(data?.some((p) => p.obligatoria)).toBe(true);
-  });
-
-  it("y no se duplica si se vuelve a pasar por NDA", async () => {
-    const iwl = await entrarComo(USUARIOS.admin);
-    await iwl.from("candidaturas").update({ estado: "entrada" }).eq("id", CAUCE);
     await iwl.from("candidaturas").update({ estado: "nda" }).eq("id", CAUCE);
 
     const { data } = await iwl
       .from("candidatura_peticiones")
       .select("id")
       .eq("candidatura_id", CAUCE);
-    expect(data?.length).toBe(29);
-  });
-
-  it("la candidata ve lo que se le pide, y solo lo suyo", async () => {
-    const servicio = clienteServicio();
-    const { data: perfil } = await servicio
-      .from("profiles")
-      .select("id")
-      .eq("email", "fundadora@vega.test")
-      .single();
-
-    const iwl = await entrarComo(USUARIOS.admin);
-    await iwl.rpc("dar_acceso_candidatura", {
-      p_candidatura: CAUCE,
-      p_profile: perfil!.id,
-    });
-
-    const candidata = await entrarComo(USUARIOS.fundadoraVega);
-    const { data } = await candidata.rpc("mis_peticiones");
-    expect((data as unknown[])?.length).toBe(29);
-
-    // Y no ve las peticiones de ninguna otra candidatura
-    const { data: todas } = await candidata
-      .from("candidatura_peticiones")
-      .select("candidatura_id");
-    expect(
-      [...new Set((todas ?? []).map((p) => p.candidatura_id))],
-    ).toEqual([CAUCE]);
-
-    await servicio.from("profiles").update({ role: "fundadora" }).eq("id", perfil!.id);
-  });
-
-  it("una fundadora cualquiera no ve ningún expediente", async () => {
-    const fundadora = await entrarComo(USUARIOS.fundadoraMarea);
-    const { data } = await fundadora
-      .from("candidatura_peticiones")
-      .select("id");
     expect(data).toEqual([]);
   });
 
-  it("la candidata no puede pedirse cosas a sí misma", async () => {
-    /*
-     * Lo que hay que entregar lo decide quien evalúa. Dejar que la candidata
-     * escriba su propia lista haría que «qué falta» dejara de significar
-     * nada.
-     */
-    const servicio = clienteServicio();
-    const { data: perfil } = await servicio
-      .from("profiles")
-      .select("id")
-      .eq("email", "fundadora@vega.test")
-      .single();
-
+  it("y la función que la creaba ya no existe", async () => {
     const iwl = await entrarComo(USUARIOS.admin);
-    await iwl.rpc("dar_acceso_candidatura", {
-      p_candidatura: CAUCE,
-      p_profile: perfil!.id,
-    });
-
-    const candidata = await entrarComo(USUARIOS.fundadoraVega);
-    await candidata.from("candidatura_peticiones").insert({
-      candidatura_id: CAUCE,
-      titulo: "Me lo pido yo",
-    });
-
-    const { data } = await iwl
-      .from("candidatura_peticiones")
-      .select("id")
-      .eq("candidatura_id", CAUCE);
-    expect(data?.length).toBe(29);
-
-    await servicio.from("profiles").update({ role: "fundadora" }).eq("id", perfil!.id);
+    const { error } = await iwl.rpc("pedir_due_diligence", { p_candidatura: CAUCE });
+    expect(error).not.toBeNull();
   });
 });
 
@@ -546,15 +462,28 @@ describe("lo entregado en la selección llega a la compañía", () => {
     const servicio = clienteServicio();
     const iwl = await entrarComo(USUARIOS.admin);
 
-    // Se le pide el checklist y entrega un documento
-    await iwl.from("candidaturas").update({ estado: "nda" }).eq("id", CAUCE);
-
+    /*
+     * Una candidatura de antes, con su lista: hoy ya no se crea, pero las
+     * que la tienen la conservan, y su compañía tiene que seguir viendo lo
+     * que entregaron. La petición se pone a mano, como la dejó el sistema
+     * de entonces.
+     */
+    const { data: plantilla } = await servicio
+      .from("dd_item_templates")
+      .select("id, title")
+      .eq("code", "sl_escritura")
+      .single();
     const { data: peticion } = await servicio
       .from("candidatura_peticiones")
+      .insert({
+        candidatura_id: CAUCE,
+        item_template_id: plantilla!.id,
+        area: "Societario y legal",
+        titulo: plantilla!.title,
+        obligatoria: true,
+        orden: 1,
+      })
       .select("id, item_template_id")
-      .eq("candidatura_id", CAUCE)
-      .not("item_template_id", "is", null)
-      .limit(1)
       .single();
 
     const { data: doc } = await servicio

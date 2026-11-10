@@ -249,6 +249,51 @@ describe("la situación societaria", () => {
   });
 });
 
+describe("su due diligence, que es el checklist de la compañía", () => {
+  /*
+   * Lo que antes se probaba sobre la lista de la candidatura, ahora sobre
+   * el objeto que la sustituye: quién ve qué y quién decide qué se pide.
+   */
+  it("ella ve el checklist entero de su compañía, y solo el suyo", async () => {
+    const { data: todos } = await clienteServicio().from("dd_items").select("id").eq("company_id", companiaC);
+    const { data } = await ella.from("dd_items").select("company_id");
+    expect(data!.length).toBe(todos!.length);
+    expect([...new Set(data!.map((p) => p.company_id))]).toEqual([companiaC]);
+  });
+
+  it("una fundadora ajena no ve nada de él", async () => {
+    const fundadora = await entrarComo(USUARIOS.fundadoraMarea);
+    const { data } = await fundadora.from("dd_items").select("id").eq("company_id", companiaC);
+    expect(data).toEqual([]);
+  });
+
+  it("ella no se pide cosas a sí misma, ni se quita lo que se le pide", async () => {
+    const servicio = clienteServicio();
+    const { data: antes } = await servicio.from("dd_items").select("id, area_id").eq("company_id", companiaC);
+
+    const { error } = await ella
+      .from("dd_items")
+      .insert({ company_id: companiaC, area_id: antes![0].area_id, title: "Me lo pido yo" });
+    expect(error).not.toBeNull();
+
+    await ella.from("dd_items").delete().eq("company_id", companiaC);
+    const { data: despues } = await servicio.from("dd_items").select("id").eq("company_id", companiaC);
+    expect(despues!.length).toBe(antes!.length);
+  });
+
+  it("ni lo saca de «por construir»: eso es de quien valida", async () => {
+    const { data: uno } = await clienteServicio()
+      .from("dd_items")
+      .select("id")
+      .eq("company_id", companiaC)
+      .eq("status", "por_construir")
+      .limit(1)
+      .single();
+    const { error } = await ella.from("dd_items").update({ status: "pendiente" }).eq("id", uno!.id);
+    expect(error).not.toBeNull();
+  });
+});
+
 describe("la decisión de incorporación", () => {
   it("no la toma el equipo ni la lee una fundadora", async () => {
     const equipo = await entrarComo(USUARIOS.equipoIwl);

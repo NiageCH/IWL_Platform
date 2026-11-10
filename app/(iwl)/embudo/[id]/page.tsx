@@ -257,18 +257,20 @@ export default async function FichaCandidatura({
           </Bloque>
 
           {/*
-            El expediente del due diligence.
-            
-            Va antes del histórico porque mientras dura un due diligence, lo
-            que se mira al abrir una ficha es qué falta por entregar.
+            El expediente del due diligence de antes.
+
+            Desde el 10 nov ya no se pide nada a la candidatura: su due
+            diligence es el checklist de la compañía, que nace con el NDA.
+            Las que tenían lista la conservan, y solo a ellas se les enseña.
           */}
+          {peticiones.length ? (
           <Bloque>
             <TituloBloque
               accion={
                 <Metadato>
                   {avance
                     ? `${avance.cumplidas} de ${avance.total} obligatorios`
-                    : "Se pide al firmar el NDA"}
+                    : "De antes del NDA en la plataforma"}
                 </Metadato>
               }
             >
@@ -281,6 +283,7 @@ export default async function FichaCandidatura({
               avance={avance}
             />
           </Bloque>
+          ) : null}
 
           <Bloque>
             <TituloBloque accion={<Metadato>Lo más reciente arriba</Metadato>}>
