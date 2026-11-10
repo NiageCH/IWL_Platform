@@ -157,7 +157,9 @@ export function AvisosDireccion({
                       ? `${a.persona} ha comentado el NDA`
                       : a.tipo === "situacion_dicha"
                         ? `${a.persona} ha dicho la situación societaria. Falta confirmarla`
-                        : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
+                        : a.tipo === "anexo_comentario"
+                          ? `${a.persona} ha comentado la propuesta de Acuerdo`
+                          : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
                   {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
                 </span>
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
@@ -171,8 +173,15 @@ export function AvisosDireccion({
                   </Link>
                 ) : null}
                 {a.companiaSlug && !a.candidaturaId ? (
-                  <Link href={`/cartera/${a.companiaSlug}`} className="enlace text-xs">
-                    Confirmarla
+                  <Link
+                    href={
+                      a.tipo === "anexo_comentario"
+                        ? `/cartera/${a.companiaSlug}/programa`
+                        : `/cartera/${a.companiaSlug}`
+                    }
+                    className="enlace text-xs"
+                  >
+                    {a.tipo === "anexo_comentario" ? "Responder" : "Confirmarla"}
                   </Link>
                 ) : null}
                 {/* Firmar ahí mismo, sin ir a la ficha */}
@@ -214,5 +223,37 @@ export function AvisosDireccion({
         )}
       </Bloque>
     </div>
+  );
+}
+
+/**
+ * Los avisos que van a una persona concreta, no a dirección. Hoy, uno: al
+ * mentor principal, cuando su compañía pasa de Construcción a Aceleración.
+ * Se dan por vistos a mano.
+ */
+export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
+  if (!avisos.length) return null;
+  return (
+    <Bloque className="mb-8">
+      <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>Avisos para ti</TituloBloque>
+      <ul className="divide-y divide-filete">
+        {avisos.map((a) => (
+          <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+            <span className="min-w-0 flex-1 text-sm text-titular">
+              {a.tipo === "cambio_via"
+                ? `${a.donde ?? "Una compañía"} pasa de Construcción a Aceleración. Lo que estaba por construir pasa a por entregar`
+                : `Aviso sobre ${a.donde ?? "una compañía"}`}
+            </span>
+            <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
+            {a.companiaSlug ? (
+              <Link href={`/cartera/${a.companiaSlug}/programa`} className="enlace text-xs">
+                Ver el motivo
+              </Link>
+            ) : null}
+            <CerrarAviso id={a.id} />
+          </li>
+        ))}
+      </ul>
+    </Bloque>
   );
 }

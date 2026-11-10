@@ -11,6 +11,7 @@ import { fecha } from "@/lib/utils";
 interface CompaniaEnEntrada extends Partial<DatosSocietarios> {
   id: string;
   name: string;
+  slug: string;
   via: string | null;
   situacion_confirmada_at: string | null;
 }
@@ -40,7 +41,14 @@ function LineaSituacion({ compania }: { compania: CompaniaEnEntrada }) {
  * ella dependen sus puntos societarios, quién firma el Acuerdo y el hito
  * de constituir la sociedad. Dicha, el bloque dice el siguiente paso.
  */
-export function EntradaFundadora({ compania }: { compania: CompaniaEnEntrada }) {
+export function EntradaFundadora({
+  compania,
+  propuesta,
+}: {
+  compania: CompaniaEnEntrada;
+  /** El estado del Anexo que ella puede ver: propuesto, comentado o aceptado */
+  propuesta?: string | null;
+}) {
   const via = compania.via as Via | null;
 
   if (!compania.situacion_societaria) {
@@ -66,7 +74,19 @@ export function EntradaFundadora({ compania }: { compania: CompaniaEnEntrada }) 
         En entrada
       </TituloBloque>
       <div className="flex flex-col gap-3 px-5 py-4">
-        <p className="text-sm text-cuerpo">{siguientePasoEntrada(via)}</p>
+        {propuesta === "propuesto" || propuesta === "comentado" ? (
+          <p className="text-sm text-titular">
+            Inception Woman Lab te ha propuesto el Acuerdo.{" "}
+            <Link href="/proyecto/programa" className="enlace text-acento-texto">
+              Léelo en Programa
+            </Link>{" "}
+            para comentarlo y aceptarlo.
+          </p>
+        ) : propuesta === "aceptado" ? (
+          <p className="text-sm text-cuerpo">Has aceptado la propuesta de Acuerdo. Falta firmarla con IWL.</p>
+        ) : (
+          <p className="text-sm text-cuerpo">{siguientePasoEntrada(via)}</p>
+        )}
         <LineaSituacion compania={compania} />
       </div>
     </Bloque>
@@ -144,7 +164,12 @@ export function EntradaIwl({
               </div>
             ) : null}
             {decision.decision === "si" ? (
-              <p className="text-xs text-metadato">Siguiente: proponerle el Acuerdo.</p>
+              <p className="text-sm">
+                Siguiente: el Acuerdo.{" "}
+                <Link href={`/cartera/${compania.slug}/programa`} className="enlace text-acento-texto">
+                  Prepararlo y proponérselo en Programa
+                </Link>
+              </p>
             ) : null}
           </div>
         ) : esDireccion ? (

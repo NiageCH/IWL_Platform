@@ -25,9 +25,9 @@ import {
 import { bandaDe } from "@/lib/datos/cohorte";
 import { cn, euros, numero, porcentaje } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
-import { leerAltasEnCurso, leerAvisos } from "@/lib/datos/onboarding";
+import { leerAltasEnCurso, leerAvisos, leerAvisosParaMi } from "@/lib/datos/onboarding";
 import { leerRevisionesComite } from "@/lib/datos/comite";
-import { AvisosDireccion } from "@/components/vistas/alta";
+import { AvisosDireccion, AvisosParaMi } from "@/components/vistas/alta";
 import { describirSituacion } from "@/lib/societario";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
@@ -109,9 +109,13 @@ export default async function Cartera() {
   const [avisos, altas, revisiones] = esDireccion
     ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
     : [[], [], []];
-  const paraDireccion = esDireccion ? (
-    <AvisosDireccion avisos={avisos} altas={altas} revisiones={revisiones} />
-  ) : null;
+  const paraMi = await leerAvisosParaMi(persona.id);
+  const paraDireccion = (
+    <>
+      <AvisosParaMi avisos={paraMi} />
+      {esDireccion ? <AvisosDireccion avisos={avisos} altas={altas} revisiones={revisiones} /> : null}
+    </>
+  );
 
   if (companias.length === 0) {
     return (

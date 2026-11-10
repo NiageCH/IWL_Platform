@@ -9,6 +9,7 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { AbrirAnexo, EditarAnexo } from "@/components/formularios/programa";
+import { BloqueVia, ESTADOS_ANEXO, PropuestaAcuerdo } from "@/components/vistas/acuerdo";
 import { euros, fecha, numero } from "@/lib/utils";
 
 /**
@@ -100,6 +101,7 @@ export async function VistaPrograma({
             );
           })}
         </ol>
+        <BloqueVia compania={compania} esAdmin={resumen.permisos.esAdmin} />
       </Bloque>
 
       {anexo.data ? (
@@ -109,7 +111,7 @@ export async function VistaPrograma({
               <Metadato>
                 {anexo.data.status === "firmado"
                   ? `Firmado el ${fecha(anexo.data.signed_on)}`
-                  : "Borrador"}
+                  : (ESTADOS_ANEXO[anexo.data.status] ?? anexo.data.status)}
               </Metadato>
             }
           >
@@ -189,8 +191,16 @@ export async function VistaPrograma({
             deja de aceptar cambios en horas, dinero y equity.
           */}
           {esIwl && anexo.data.status === "borrador" ? (
-            <EditarAnexo slug={compania.slug} anexo={anexo.data} />
+            <EditarAnexo slug={compania.slug} anexo={anexo.data} firmaDirecta={compania.tramo !== "entrada"} />
           ) : null}
+
+          {/* El Anexo es también la propuesta de Acuerdo: proponerlo, comentarlo, aceptarlo y firmarlo */}
+          <PropuestaAcuerdo
+            anexo={anexo.data}
+            compania={compania}
+            esIwl={esIwl}
+            esFundadora={resumen.permisos.esFundadora}
+          />
 
           {(pilares.data ?? []).length > 0 ? (
             <div className="border-t border-filete px-4 py-3">
@@ -222,7 +232,9 @@ export async function VistaPrograma({
           <SinDatos>
             {esIwl
               ? "Todavía no hay Anexo. Ábrelo y queda en borrador: pones la duración, lo que IWL compromete y el equity, y lo firmas cuando esté acordado. Sin Anexo no se pueden imputar horas."
-              : "Todavía no hay Anexo firmado. Se firma al terminar el due diligence conjunto y es donde se acuerdan los pilares, la duración y los hitos."}
+              : compania.tramo === "entrada"
+                ? "Todavía no hay propuesta de Acuerdo. Cuando IWL decida tu incorporación, la verás aquí con sus cifras para comentarla y aceptarla."
+                : "Todavía no hay Anexo firmado. Se firma al terminar el due diligence conjunto y es donde se acuerdan los pilares, la duración y los hitos."}
           </SinDatos>
           {esIwl ? (
             <div className="px-4 pb-4">

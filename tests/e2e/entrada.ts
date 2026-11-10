@@ -415,3 +415,32 @@ export async function quitarFicheros(bucket: string, carpeta: string): Promise<v
     body: JSON.stringify({ prefixes: rutas }),
   });
 }
+
+/**
+ * Crea una cuenta con el correo confirmado, para preparar. Se borra con
+ * `borrarCuenta`: vive en `auth.users` y no se va con nada más.
+ */
+export async function crearCuenta(correo: string): Promise<string> {
+  const { url, clave } = supabase();
+  const respuesta = await fetch(`${url}/auth/v1/admin/users`, {
+    method: "POST",
+    headers: { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: correo, password: crypto.randomUUID(), email_confirm: true }),
+  });
+  const cuerpo = (await respuesta.json()) as { id?: string; msg?: string };
+  if (!cuerpo.id) throw new Error(`No se ha creado la cuenta ${correo}: ${cuerpo.msg ?? respuesta.status}`);
+  return cuerpo.id;
+}
+
+/** Llama a una función de la base con la clave de servicio, para preparar */
+export async function llamar(funcion: string, args: Record<string, unknown>): Promise<unknown> {
+  const { url, clave } = supabase();
+  const respuesta = await fetch(`${url}/rest/v1/rpc/${funcion}`, {
+    method: "POST",
+    headers: { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (!respuesta.ok) throw new Error(`${funcion}: ${await respuesta.text()}`);
+  const texto = await respuesta.text();
+  return texto ? JSON.parse(texto) : null;
+}

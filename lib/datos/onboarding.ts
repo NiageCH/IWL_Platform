@@ -276,7 +276,13 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 
 export interface Aviso {
   id: string;
-  tipo: "primer_acceso" | "nda_firmado" | "nda_comentario" | "situacion_dicha";
+  tipo:
+    | "primer_acceso"
+    | "nda_firmado"
+    | "nda_comentario"
+    | "situacion_dicha"
+    | "anexo_comentario"
+    | "cambio_via";
   created_at: string;
   persona: string;
   candidaturaId: string | null;
@@ -285,16 +291,24 @@ export interface Aviso {
   donde: string | null;
 }
 
-/** Los avisos sin cerrar. Solo los ve dirección: RLS devuelve vacío al resto */
-export const leerAvisos = cache(async (): Promise<Aviso[]> => {
+/**
+ * Los avisos sin cerrar.
+ *
+ * Los de dirección no van a nadie en concreto (`para` vacío); los demás,
+ * a una persona —el mentor principal, al cambiar la vía—. RLS ya da a cada
+ * uno solo lo suyo; el filtro separa las dos listas para quien ve ambas.
+ */
+async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   const supabase = await clienteServidor();
-  const { data } = await supabase
+  let consulta = supabase
     .from("avisos")
     .select(
       "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre), companies(name, slug)",
     )
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
+  consulta = soloMios ? consulta.eq("para", soloMios) : consulta.is("para", null);
+  const { data } = await consulta;
 
   return (data ?? []).map((a) => {
     const p = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
@@ -310,7 +324,13 @@ export const leerAvisos = cache(async (): Promise<Aviso[]> => {
       donde: c?.nombre ?? co?.name ?? null,
     };
   });
-});
+}
+
+/** Los de dirección. Solo los ve dirección: RLS devuelve vacío al resto */
+export const leerAvisos = cache(async (): Promise<Aviso[]> => avisosSinCerrar(null));
+
+/** Los que van a una persona concreta: la de la sesión */
+export const leerAvisosParaMi = cache(async (personaId: string): Promise<Aviso[]> => avisosSinCerrar(personaId));
 
 /**
  * El número de la barra lateral: avisos sin cerrar más altas detenidas.

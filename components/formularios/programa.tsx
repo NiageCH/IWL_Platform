@@ -253,8 +253,14 @@ export function AbrirAnexo({
 export function EditarAnexo({
   slug,
   anexo,
+  firmaDirecta = true,
 }: {
   slug: string;
+  /**
+   * Firmarlo desde el borrador. En entrada no: se propone, ella lo acepta
+   * y se firma con el Acuerdo. La base tampoco lo deja.
+   */
+  firmaDirecta?: boolean;
   anexo: {
     id: string;
     duration_months: number | null;
@@ -368,6 +374,7 @@ export function EditarAnexo({
         )}
       </Formulario>
 
+      {firmaDirecta ? (
       <div className="mt-5 border-t border-filete pt-4">
         {firmando ? (
           <Formulario accion={firmarAnexo}>
@@ -410,6 +417,7 @@ export function EditarAnexo({
           </button>
         )}
       </div>
+      ) : null}
     </div>
   );
 }

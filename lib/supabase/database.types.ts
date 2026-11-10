@@ -91,6 +91,91 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"anexo_comentarios": {
+                  Row: {
+                    "annex_id": string,"company_id": string,"created_at": string,"id": string,"profile_id": string | null,"respondido_at": string | null,"respondido_por": string | null,"respuesta": string | null,"texto": string
+                  }
+                  Insert: {
+                    "annex_id": string,"company_id": string,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"respondido_at"?: string | null,"respondido_por"?: string | null,"respuesta"?: string | null,"texto": string
+                  }
+                  Update: {
+                    "annex_id"?: string,"company_id"?: string,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"respondido_at"?: string | null,"respondido_por"?: string | null,"respuesta"?: string | null,"texto"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "anexo_comentarios_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "annexes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["annex_id"]
+    },{
+      foreignKeyName: "anexo_comentarios_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "anexo_comentarios_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "anexo_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_comentarios_respondido_por_fkey"
+      columns: ["respondido_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"annex_pillars": {
                   Row: {
                     "annex_id": string,"cadence": string | null,"company_id": string,"created_at": string,"id": string,"intensity": number,"pillar_id": string,"planned_hours": number | null
@@ -148,16 +233,34 @@ isOneToOne: false
                   ]
                 },"annexes": {
                   Row: {
-                    "committed_cash": number | null,"committed_hours": number | null,"committed_hours_value": number | null,"committed_seniors": number | null,"company_id": string,"created_at": string,"created_by": string | null,"duration_months": number | null,"ends_on": string | null,"equity_pct": number | null,"id": string,"notes": string | null,"other_commitments": string | null,"signed_on": string | null,"starts_on": string | null,"status": Database["public"]['Enums']["estado_anexo"],"updated_at": string,"version": number
+                    "aceptado_at": string | null,"aceptado_por": string | null,"committed_cash": number | null,"committed_hours": number | null,"committed_hours_value": number | null,"committed_seniors": number | null,"company_id": string,"created_at": string,"created_by": string | null,"duration_months": number | null,"ends_on": string | null,"equity_pct": number | null,"firmantes": NonNullable<Json>,"id": string,"notes": string | null,"other_commitments": string | null,"propuesto_at": string | null,"propuesto_por": string | null,"signed_on": string | null,"starts_on": string | null,"status": Database["public"]['Enums']["estado_anexo"],"updated_at": string,"version": number
                   }
                   Insert: {
-                    "committed_cash"?: number | null,"committed_hours"?: number | null,"committed_hours_value"?: number | null,"committed_seniors"?: number | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"duration_months"?: number | null,"ends_on"?: string | null,"equity_pct"?: number | null,"id"?: string,"notes"?: string | null,"other_commitments"?: string | null,"signed_on"?: string | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_anexo"],"updated_at"?: string,"version"?: number
+                    "aceptado_at"?: string | null,"aceptado_por"?: string | null,"committed_cash"?: number | null,"committed_hours"?: number | null,"committed_hours_value"?: number | null,"committed_seniors"?: number | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"duration_months"?: number | null,"ends_on"?: string | null,"equity_pct"?: number | null,"firmantes"?: NonNullable<Json>,"id"?: string,"notes"?: string | null,"other_commitments"?: string | null,"propuesto_at"?: string | null,"propuesto_por"?: string | null,"signed_on"?: string | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_anexo"],"updated_at"?: string,"version"?: number
                   }
                   Update: {
-                    "committed_cash"?: number | null,"committed_hours"?: number | null,"committed_hours_value"?: number | null,"committed_seniors"?: number | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"duration_months"?: number | null,"ends_on"?: string | null,"equity_pct"?: number | null,"id"?: string,"notes"?: string | null,"other_commitments"?: string | null,"signed_on"?: string | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_anexo"],"updated_at"?: string,"version"?: number
+                    "aceptado_at"?: string | null,"aceptado_por"?: string | null,"committed_cash"?: number | null,"committed_hours"?: number | null,"committed_hours_value"?: number | null,"committed_seniors"?: number | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"duration_months"?: number | null,"ends_on"?: string | null,"equity_pct"?: number | null,"firmantes"?: NonNullable<Json>,"id"?: string,"notes"?: string | null,"other_commitments"?: string | null,"propuesto_at"?: string | null,"propuesto_por"?: string | null,"signed_on"?: string | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_anexo"],"updated_at"?: string,"version"?: number
                   }
                   Relationships: [
                     {
+      foreignKeyName: "annexes_aceptado_por_fkey"
+      columns: ["aceptado_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "annexes_aceptado_por_fkey"
+      columns: ["aceptado_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "annexes_aceptado_por_fkey"
+      columns: ["aceptado_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "annexes_company_id_fkey"
       columns: ["company_id"]
 isOneToOne: false
@@ -199,17 +302,35 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "annexes_propuesto_por_fkey"
+      columns: ["propuesto_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "annexes_propuesto_por_fkey"
+      columns: ["propuesto_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "annexes_propuesto_por_fkey"
+      columns: ["propuesto_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"avisos": {
                   Row: {
-                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"profile_id": string | null,"tipo": string
+                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"para": string | null,"profile_id": string | null,"tipo": string
                   }
                   Insert: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"tipo": string
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"para"?: string | null,"profile_id"?: string | null,"tipo": string
                   }
                   Update: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"profile_id"?: string | null,"tipo"?: string
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"para"?: string | null,"profile_id"?: string | null,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -272,6 +393,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "tech_score_input"
       referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "avisos_para_fkey"
+      columns: ["para"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_para_fkey"
+      columns: ["para"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_para_fkey"
+      columns: ["para"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "avisos_profile_id_fkey"
       columns: ["profile_id"]
@@ -4498,7 +4637,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "anadir_enlace_con_token":
+            "aceptar_anexo":
+{ Args: { "p_anexo": string }; Returns: undefined
+                           },
+"anadir_enlace_con_token":
 { Args: { "p_titulo": string,"p_token": string,"p_url": string }; Returns: undefined
                            },
 "apuntar_documento_nda":
@@ -4542,6 +4684,9 @@ isOneToOne: false
 "firmar_acta":
 { Args: { "p_acta": string,"p_ip": string,"p_profile": string,"p_ua": string }; Returns: boolean
                            },
+"firmar_acuerdo":
+{ Args: { "p_company": string,"p_firmado_on"?: string,"p_phase_code"?: string,"p_roadmap_start"?: string,"p_roadmap_template"?: string,"p_stage": Database["public"]['Enums']["company_stage"],"p_tech_profile": Database["public"]['Enums']["company_tech_profile"] }; Returns: undefined
+                           },
 "firmar_candidatura":
 { Args: { "p_candidatura": string,"p_firmado_on"?: string,"p_phase_code"?: string,"p_roadmap_start"?: string,"p_roadmap_template"?: string,"p_slug": string,"p_stage": Database["public"]['Enums']["company_stage"],"p_tech_profile": Database["public"]['Enums']["company_tech_profile"] }; Returns: string
                            },
@@ -4564,8 +4709,8 @@ isOneToOne: false
               "area": string,"detalle": string,"entregados": number,"id": string,"obligatoria": boolean,"titulo": string
             }[]
                            },
-"pedir_due_diligence":
-{ Args: { "p_candidatura": string }; Returns: number
+"pasar_a_aceleracion":
+{ Args: { "p_company": string,"p_motivo": string }; Returns: undefined
                            },
 "persona_tiene_actividad":
 { Args: { "target_profile": string }; Returns: boolean
@@ -4601,7 +4746,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"prototipo"|"mvp"|"primeros_clientes"|"facturacion","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion","via_entrada": "aceleracion"|"construccion"
+            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"propuesto"|"comentado"|"aceptado"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"prototipo"|"mvp"|"primeros_clientes"|"facturacion","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion","via_entrada": "aceleracion"|"construccion"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -4721,7 +4866,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"],"via_entrada": ["aceleracion", "construccion"]
+            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "propuesto", "comentado", "aceptado", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"],"via_entrada": ["aceleracion", "construccion"]
           }
         }
 } as const

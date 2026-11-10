@@ -270,8 +270,8 @@ export async function abrirAnexo(formData: FormData): Promise<Resultado> {
     .limit(1)
     .maybeSingle();
 
-  if (ultima?.status === "borrador") {
-    return error("Ya hay un Anexo en borrador. Termina ese y fírmalo.");
+  if (ultima && ultima.status !== "firmado" && ultima.status !== "cerrado") {
+    return error("Ya hay un Anexo sin firmar. Termina ese antes de abrir otro.");
   }
 
   const { error: falloBase } = await supabase.from("annexes").insert({
@@ -369,7 +369,10 @@ export async function firmarAnexo(formData: FormData): Promise<Resultado> {
     .maybeSingle();
 
   if (!anexo) return error("Ese Anexo no existe o no está a tu alcance.");
-  if (anexo.status !== "borrador") return error("Ese Anexo ya está firmado.");
+  // Aceptado por ella o, en incubación, un borrador que IWL firma directamente
+  if (anexo.status !== "borrador" && anexo.status !== "aceptado") {
+    return error("Ese Anexo no está para firmar: ya está firmado o está propuesto y falta que ella lo acepte.");
+  }
 
   if (!anexo.duration_months || !anexo.committed_hours) {
     return error(
@@ -381,7 +384,7 @@ export async function firmarAnexo(formData: FormData): Promise<Resultado> {
     .from("annexes")
     .update({ status: "firmado", signed_on: datos.signed_on })
     .eq("id", datos.id)
-    .eq("status", "borrador")
+    .in("status", ["borrador", "aceptado"])
     .select("id");
 
   if (falloBase) return traducirError(falloBase);

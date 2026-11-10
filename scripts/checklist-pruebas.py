@@ -211,15 +211,30 @@ add(M, "/entrar → /candidatura", "la candidata", "Entra con su cuenta y aterri
 
 # --- Acuerdo y firma
 M = "7. Acuerdo y firma"
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Proponerle el Acuerdo (compañía en entrada)",
+    "Con la incorporación en «sí»: «Abrir el Anexo», rellenar duración, horas y equity, y «Proponerle el Acuerdo».",
+    "Sin decisión en «sí» la base no deja proponer. El campo de quién firma trae a la persona de contacto. Propuesto, ya no se edita y NO hay «Firmar el Anexo» suelto.")
+add(M, "/proyecto", "la fundadora", "Ver, comentar y aceptar la propuesta",
+    "Entrar: el resumen dice «te ha propuesto el Acuerdo». En Programa, comentar y después «Aceptar la propuesta».",
+    "Antes de proponerse no ve el borrador. El comentario llega a dirección como aviso con «Responder». Aceptada, dice «Falta firmarla».")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Volver a borrador para cambiarla",
+    "Con la propuesta aceptada, «Volver a borrador para cambiarlo».",
+    "Se puede editar otra vez; su aceptación se pierde y tendrá que aceptar la nueva.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Firmar el Acuerdo y el Anexo",
+    "Con la propuesta aceptada, «Firmar el Acuerdo y el Anexo»: etapa, perfil, fase, recorrido y fecha.",
+    "En Aceleración, sin lo obligatorio del due diligence validado, dice cuántos faltan y no firma. En Construcción firma sin nada validado. Firmado: la compañía entra en la cartera, con KPI y hoja de ruta, y la candidatura queda «Firmada».")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Pasar de Construcción a Aceleración",
+    "En «Vía de entrada», «Pasar a Aceleración», con el motivo.",
+    "Sin motivo no deja. Lo por construir pasa a por entregar, se ve «Pasó de Construcción a Aceleración el … : <motivo>», y a su mentor principal le sale el aviso en /cartera. Solo dirección; de Aceleración no se vuelve.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Fijar la etapa tras el due diligence",
     "En el bloque «El acuerdo», el campo «Etapa, tras el due diligence».",
     "Se guarda y AL RECARGAR sigue puesta: el desplegable ya no vuelve a donde estaba. Es la etapa que hereda la compañía al firmar.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Armar el acuerdo con el equity",
     "Escribir lo que aporta IWL y el equity que se pide. Guardar.",
     "Queda guardado y visible en el bloque de NDA, estado y equity.")
-add(M, "/embudo/<id>", "admin@iwl.test", "Firmar el acuerdo",
-    "Pulsar firmar con la fecha.",
-    "Pasa a firmada, SE CREA LA COMPAÑÍA, y aparece el enlace «Ver su ficha».")
+add(M, "/embudo/<id>", "admin@iwl.test", "Firmar el acuerdo de una candidatura de antes",
+    "Solo en una candidatura sin compañía (con el NDA de antes de la plataforma): pulsar firmar con la fecha.",
+    "Pasa a firmada, SE CREA LA COMPAÑÍA, y aparece el enlace «Ver su ficha». En una con compañía en entrada este formulario no sale.")
 add(M, "/cartera/<slug>", "admin@iwl.test", "La compañía nace con lo del embudo",
     "Abrir la ficha recién creada desde el enlace.",
     "Trae nombre, sector, descripción y etapa. No hay que volver a teclear nada.")
