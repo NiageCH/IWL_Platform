@@ -9,6 +9,44 @@ como es**.
 
 ---
 
+## 2026-11-10 · Flujo de entrada, 3 de 6: acta de comité · commit c6c58d1
+
+**Qué cambió**
+· **«Redactar el acta de comité»**, en la ficha de la candidatura, bloque «Comité».
+  · Fecha, resumen, decisión y quién forma el comité. Salen marcados los del comité por defecto, y se cambian en cada acta.
+  · **Preseleccionada** pide la vía. Sale propuesta por el estado de entrada (idea, prototipo y MVP → Construcción; clientes o facturación → Aceleración). Cambiarla pide el motivo.
+  · **Aplazada** pide la fecha de revisión. **Descartada** pide el motivo, si puede volver a presentarse y el mensaje para ella, ya redactado en la voz de IWL y editable.
+· **Cada miembro firma con su cuenta**, con su IP y su navegador, como el NDA.
+  · Con la primera firma, el acta y su comité quedan congelados. Lo impide la base, también con la clave de servicio. Un borrador sin firmas se puede descartar.
+  · **La última firma cierra el acta**: aplica la decisión (estado y vía en la candidatura), deja el evento en el historial y el PDF en el expediente, con el rastro de cada firma en su última página.
+  · Cerrada una descartada, «Enviarle el mensaje» abre el correo ya escrito.
+· **Aplazada avisa el día de revisión**, en los avisos de dirección y en el contador de la barra lateral. Se va sola cuando hay acta nueva.
+· **Comité por defecto**, en Programa.
+· El PDF del NDA y el del acta comparten `lib/pdf.ts`.
+· Borrar una candidatura entera se lleva sus actas, firmadas o no. Si no, `nube:vaciar` no podría vaciar.
+
+### Un fallo de la tanda anterior (commit 8a712b5)
+**Tras un `db:reset`, lo societario no se marcaba.** La migración de la situación societaria marca los puntos que requieren sociedad y crea «Pacto entre fundadoras» y «Titularidad de lo construido». Pero corre antes que la semilla, que es la que crea las áreas y los puntos, así que en local no hacía nada. Ahora lo hace también la semilla. **La nube no está afectada**: allí las áreas ya existían cuando corrió la migración. La prueba de RLS que lo cubre pasaba porque la base no se había reiniciado desde entonces.
+
+### Qué decidí yo
+· **Las actas son solo de IWL**: ni la candidata ni la fundadora las ven. Ella ve el efecto, el estado de su candidatura.
+· **Aplazada sin motivo obligatorio**: la fecha de revisión ya dice lo esencial. El motivo se puede escribir.
+· **El aviso de revisión mira solo la última acta** de cada candidatura. Un borrador nuevo sin firmar ya lo quita.
+· **El mensaje del descarte no se manda solo**: se abre en el correo de quien lo envía, como «Recordar», hasta que haya proveedor de correo.
+· **En el worktree he copiado `supabase/seed/local/` desde la carpeta principal** para poder probar con los datos completos. Está en `.gitignore` y no se versiona. Un enlace simbólico no valía: la regla, con su barra final, solo ignora un directorio de verdad.
+
+### Qué necesito que decidas
+1. **La prueba «el due diligence tiene un punto en cada uno de sus cinco estados» falla también en `main`** tras un reinicio. `seed/local/40_demostracion.sql` pone «en revisión» y «bloqueante» solo a Cuentas anuales y Vesting si están pendientes. Pero `03_actividad.sql` ya deja validado todo Marea menos tres puntos. ¿Arreglo la semilla local para que los ponga sin esa condición? Es un fichero tuyo, sin versionar.
+
+### Estado
+· 163 unitarias · 166 RLS, dos veces seguidas · **370 de interfaz en verde, 4 saltadas y 2 en rojo**: la del punto anterior, en escritorio y en Safari. La del acta pasa.
+· Migraciones nuevas: `20261109170000_comite` y `20261109171000_comite_cascada`.
+
+**Siguiente**
+Enviar el NDA desde Preseleccionada, y los comentarios de la candidata al NDA.
+
+---
+
 ## 2026-11-09 · Flujo de entrada, 2 de 6: reuniones · commit 968c8e3
 
 **Qué cambió**
