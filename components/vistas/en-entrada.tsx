@@ -41,9 +41,13 @@ export function EnEntrada({ filas, direccion }: { filas: FilaEntrada[]; direccio
                 {f.nombre}
               </Link>
               {f.via ? <span className="pastilla">{VIAS[f.via]}</span> : <span className="pastilla">Sin vía</span>}
-              <span className="cifra text-xs text-metadato">
-                {f.dias === 1 ? "1 día" : `${f.dias} días`} en entrada
-              </span>
+              {f.tope ? (
+                <Estado valor={f.tope} rotulo={`${f.dias} días sin Acuerdo`} />
+              ) : (
+                <span className="cifra text-xs text-metadato">
+                  {f.dias === 1 ? "1 día" : `${f.dias} días`} en entrada
+                </span>
+              )}
             </div>
 
             <p className="text-sm text-cuerpo">

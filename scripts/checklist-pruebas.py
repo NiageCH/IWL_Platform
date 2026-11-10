@@ -226,6 +226,18 @@ add(M, "/entrar → /candidatura", "la candidata", "Entra con su cuenta y aterri
 
 # --- Acuerdo y firma
 M = "7. Acuerdo y firma"
+add(M, "/admin/programa", "admin@iwl.test", "Tope de entrada y horquilla de equity",
+    "En «Entrada en Construcción», poner los días; en «Horquilla de equity por vía», desde y hasta para cada vía.",
+    "Se guardan. Un máximo menor que el mínimo no. Vacía, la horquilla no comprueba nada.")
+add(M, "/cartera", "admin@iwl.test", "Construcción que pasa el tope sin Acuerdo",
+    "Con una compañía de Construcción que lleve en entrada más días que el tope.",
+    "En «En entrada», «N días sin Acuerdo» en Atención (Vencido a la semana). En tus avisos, «… lleva N días en entrada sin Acuerdo», con «Decidir», y el contador de la barra lo cuenta.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Proponer fuera de la horquilla, y sin sociedad",
+    "Con la horquilla fijada, proponer un Anexo con el equity fuera. En una sin sociedad, mirar el formulario.",
+    "Enseña la horquilla y pide «Por qué se sale», que se ve en la propuesta y queda en el registro. Sin sociedad pide «Constituir la sociedad, prevista para», y el equity sale «Comprometido · se materializa al constituir». Al constituirse, «Materializado el …».")
+add(M, "/cartera/<slug>/aportacion", "admin@iwl.test", "Sin Acuerdo no se imputan horas",
+    "En una compañía en entrada, ir a Aportación.",
+    "No sale el registro de horas: dice que cuentan desde la firma. Después de firmar, una hora con fecha anterior a la firma tampoco se guarda.")
 add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Proponerle el Acuerdo (compañía en entrada)",
     "Con la incorporación en «sí»: «Abrir el Anexo», rellenar duración, horas y equity, y «Proponerle el Acuerdo».",
     "Sin decisión en «sí» la base no deja proponer, ni sin una fundadora con cuenta (sale «Dar acceso»). El campo de quién firma trae a la persona de contacto. Propuesto, ya no se edita y NO hay «Firmar el Anexo» suelto.")

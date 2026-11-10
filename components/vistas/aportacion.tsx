@@ -6,7 +6,7 @@ import { NuevaAportacion } from "@/components/formularios/ruta";
 import { EnlacesInforme } from "@/components/informe/enlace";
 import { RegistroRapidoHoras } from "@/components/formularios/programa";
 import type { ResumenCompania } from "@/lib/datos/compania";
-import { equityPendiente } from "@/lib/societario";
+import { estadoEquity } from "@/lib/entrada";
 import {
   Bloque,
   Cifra,
@@ -57,6 +57,12 @@ export async function VistaAportacion({
 
   // El catálogo para el registro rápido. Solo lo necesita quien imputa horas
   const supabase = await clienteServidor();
+
+  // Si el equity comprometido ya se materializó, y cuándo
+  const { data: anexoEquity } = compromiso?.annexId
+    ? await supabase.from("annexes").select("equity_materializado_on").eq("id", compromiso.annexId).maybeSingle()
+    : { data: null };
+  const equity = estadoEquity(compania.situacion_societaria, anexoEquity?.equity_materializado_on);
   const [materias, perfiles] = permisos.esIwl
     ? await Promise.all([
         supabase
@@ -103,7 +109,11 @@ export async function VistaAportacion({
             compromiso.equityPct !== null ? (
               <Metadato>
                 Equity acordado {numero(compromiso.equityPct, 0)} %
-                {equityPendiente(compania.situacion_societaria) ? " · pendiente de constitución" : ""}
+                {equity === "comprometido"
+                  ? " · comprometido, se materializa al constituir"
+                  : equity === "materializado"
+                    ? ` · materializado el ${fecha(anexoEquity?.equity_materializado_on)}`
+                    : ""}
               </Metadato>
             ) : undefined
           }
@@ -437,7 +447,15 @@ export async function VistaAportacion({
         <TituloBloque accion={<Metadato>{extracto.horas.length} líneas</Metadato>}>
           Detalle de horas
         </TituloBloque>
-        {permisos.esIwl ? (
+        {/*
+          Sin Acuerdo no se trabaja (REVISION, 10 nov): en entrada no se
+          imputan horas, y lo impide también la base.
+        */}
+        {permisos.esIwl && compania.tramo === "entrada" ? (
+          <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+            Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma.
+          </p>
+        ) : permisos.esIwl ? (
           <RegistroRapidoHoras
             slug={compania.slug}
             companyId={compania.id}

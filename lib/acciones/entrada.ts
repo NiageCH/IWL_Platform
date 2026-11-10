@@ -115,3 +115,80 @@ export async function decidirIncorporacion(formData: FormData): Promise<Resultad
   refrescar();
   return ok();
 }
+
+// -----------------------------------------------------------------------------
+// Ajustes de Programa: el tope de la entrada en Construcción y la horquilla
+// -----------------------------------------------------------------------------
+
+/** Solo dirección: la política de ajustes no deja escribir a nadie más */
+async function guardarAjuste(clave: string, valor: unknown, mensaje: string): Promise<Resultado> {
+  const supabase = await clienteServidor();
+  const { data, error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: valor as never })
+    .eq("key", clave)
+    .select("key");
+  if (falloBase) return traducirError(falloBase);
+  if (!data?.length) return error("Los ajustes de Programa los fija la dirección de IWL.");
+  revalidatePath("/admin/programa");
+  revalidatePath("/cartera", "layout");
+  return ok(mensaje);
+}
+
+export async function guardarTopeEntrada(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ dias: z.coerce.number().int("Días enteros.").min(1, "Al menos un día.").max(180, "Como mucho 180 días.") }),
+    formData,
+  );
+  if (fallo) return fallo;
+  return guardarAjuste(
+    "entrada_tope_construccion_dias",
+    datos.dias,
+    `Guardado. Una compañía de Construcción avisará a los ${datos.dias} días en entrada sin Acuerdo, y estará vencida a la semana.`,
+  );
+}
+
+const porcentaje = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v, ctx) => {
+    const t = (v ?? "").replace("%", "").replace(",", ".").trim();
+    if (!t) return null;
+    const n = Number(t);
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+      ctx.addIssue({ code: "custom", message: "Un porcentaje entre 0 y 100." });
+      return null;
+    }
+    return n;
+  });
+
+export async function guardarHorquilla(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z
+      .object({
+        aceleracion_min: porcentaje,
+        aceleracion_max: porcentaje,
+        construccion_min: porcentaje,
+        construccion_max: porcentaje,
+      })
+      .superRefine((d, ctx) => {
+        for (const via of ["aceleracion", "construccion"] as const) {
+          const min = d[`${via}_min`];
+          const max = d[`${via}_max`];
+          if (min !== null && max !== null && min > max) {
+            ctx.addIssue({ code: "custom", path: [`${via}_max`], message: "El máximo no puede ser menor que el mínimo." });
+          }
+        }
+      }),
+    formData,
+  );
+  if (fallo) return fallo;
+  return guardarAjuste(
+    "equity_horquilla",
+    {
+      aceleracion: { min: datos.aceleracion_min, max: datos.aceleracion_max },
+      construccion: { min: datos.construccion_min, max: datos.construccion_max },
+    },
+    "Guardada. Al proponer un Anexo se enseña como referencia, y salirse pide el motivo.",
+  );
+}

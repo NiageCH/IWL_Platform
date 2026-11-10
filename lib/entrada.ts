@@ -83,3 +83,58 @@ export function pasoEntrada(e: EstadoEntrada): { texto: string; quien: QuienMuev
   if (e.anexo === "aceptado") return { texto: "Firmar el Acuerdo", quien: "iwl" };
   return { texto: "Acuerdo firmado", quien: "iwl" };
 }
+
+/** La horquilla de equity de una vía: vacía, no se comprueba */
+export interface Horquilla {
+  min: number | null;
+  max: number | null;
+}
+
+/** Lee la horquilla de una vía del ajuste `equity_horquilla`, sin suponer nada */
+export function horquillaDe(ajuste: unknown, via: Via | null | undefined): Horquilla | null {
+  if (!via || !ajuste || typeof ajuste !== "object") return null;
+  const h = (ajuste as Record<string, { min?: unknown; max?: unknown } | undefined>)[via];
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  const min = num(h?.min);
+  const max = num(h?.max);
+  return min === null && max === null ? null : { min, max };
+}
+
+export function fueraDeHorquilla(equity: number | null, h: Horquilla | null): boolean {
+  if (equity === null || !h) return false;
+  return (h.min !== null && equity < h.min) || (h.max !== null && equity > h.max);
+}
+
+export function textoHorquilla(h: Horquilla): string {
+  if (h.min !== null && h.max !== null) return `entre el ${h.min} % y el ${h.max} %`;
+  if (h.min !== null) return `desde el ${h.min} %`;
+  return `hasta el ${h.max} %`;
+}
+
+/**
+ * Sin sociedad, el equity está comprometido y se materializa al
+ * constituirla. Con sociedad desde el principio, no hay nada que contar.
+ */
+export function estadoEquity(
+  situacion: string | null | undefined,
+  materializadoOn: string | null | undefined,
+): "comprometido" | "materializado" | null {
+  if (materializadoOn) return "materializado";
+  if (situacion === "sin_constituir" || situacion === "en_constitucion") return "comprometido";
+  return null;
+}
+
+/**
+ * El tope del tramo de entrada en Construcción: al llegar, atención; a la
+ * semana, vencido. En Aceleración no hay tope: el due diligence ya avisa.
+ */
+export function estadoTope(
+  via: Via | null | undefined,
+  dias: number,
+  tope: number,
+): "atencion" | "vencido" | null {
+  if (via !== "construccion" || tope <= 0) return null;
+  if (dias >= tope + 7) return "vencido";
+  if (dias >= tope) return "atencion";
+  return null;
+}

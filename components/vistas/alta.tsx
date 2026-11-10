@@ -114,16 +114,19 @@ export function AvisosDireccion({
   avisos,
   altas,
   revisiones = [],
+  paradas = [],
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
   /** Candidaturas aplazadas en comité cuya fecha de revisión ha llegado */
   revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
+  /** Compañías de Construcción que han pasado el tope del tramo de entrada sin Acuerdo */
+  paradas?: { slug: string; nombre: string; dias: number; tope: "atencion" | "vencido" }[];
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
       <Bloque>
-        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length} sin ver</Metadato>}>
+        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length + paradas.length} sin ver</Metadato>}>
           Avisos
         </TituloBloque>
         {revisiones.length ? (
@@ -141,7 +144,22 @@ export function AvisosDireccion({
             ))}
           </ul>
         ) : null}
-        {avisos.length === 0 && revisiones.length === 0 ? (
+        {paradas.length ? (
+          <ul className="divide-y divide-filete border-b border-filete">
+            {paradas.map((p) => (
+              <li key={p.slug} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+                <span className="min-w-0 flex-1 text-sm text-titular">
+                  {p.nombre} lleva {p.dias} días en entrada sin Acuerdo
+                </span>
+                <Estado valor={p.tope} rotulo={p.tope === "vencido" ? "Vencido" : "Atención"} />
+                <Link href={`/cartera/${p.slug}`} className="enlace text-xs">
+                  Decidir
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {avisos.length === 0 && revisiones.length === 0 && paradas.length === 0 ? (
           <SinDatos>
             Nada nuevo. Cuando alguien entre por primera vez, comente o firme
             el NDA, te lo dirá aquí.

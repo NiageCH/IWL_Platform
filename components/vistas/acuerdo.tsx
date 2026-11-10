@@ -13,6 +13,8 @@ import {
 import { Metadato } from "@/components/ui/primitivas";
 import type { Situacion } from "@/lib/societario";
 import { fecha } from "@/lib/utils";
+import { horquillaDe } from "@/lib/entrada";
+import type { Via } from "@/lib/comite";
 
 /** Cómo se llama cada estado del Anexo, para quien lo lee */
 export const ESTADOS_ANEXO: Record<string, string> = {
@@ -33,6 +35,8 @@ interface AnexoLeido {
   id: string;
   status: string;
   firmantes: unknown;
+  equity_pct: number | string | null;
+  equity_fuera_motivo?: string | null;
   propuesto_at: string | null;
   aceptado_at: string | null;
 }
@@ -73,7 +77,7 @@ export async function PropuestaAcuerdo({
   const aceptado = anexo.status === "aceptado";
 
   const borrador = esIwl && anexo.status === "borrador";
-  const [comentarios, candidatura, fundadoras, plantillas, fases] = await Promise.all([
+  const [comentarios, candidatura, fundadoras, plantillas, fases, horquillas, hito] = await Promise.all([
     supabase
       .from("anexo_comentarios")
       .select("id, texto, created_at, respuesta, respondido_at")
@@ -92,6 +96,14 @@ export async function PropuestaAcuerdo({
     esIwl && enEntrada && aceptado
       ? supabase.from("phases").select("code, name").order("order_index")
       : Promise.resolve({ data: [] as { code: string; name: string }[] }),
+    // La horquilla de su vía, como referencia al proponer
+    borrador
+      ? supabase.from("platform_settings").select("value").eq("key", "equity_horquilla").maybeSingle()
+      : Promise.resolve({ data: null }),
+    // Sin sociedad, la fecha prevista de constituirla: la pide proponer
+    borrador
+      ? supabase.from("milestones").select("due_date").eq("company_id", compania.id).eq("origin", "societario").maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const firmantes = (Array.isArray(anexo.firmantes) ? anexo.firmantes : []) as Firmante[];
@@ -104,6 +116,13 @@ export async function PropuestaAcuerdo({
           {aceptado
             ? `Propuesta de Acuerdo aceptada el ${fecha(anexo.aceptado_at)}. Falta firmarla.`
             : `Propuesta de Acuerdo del ${fecha(anexo.propuesto_at)}.${esFundadora ? " Léela, coméntala si algo no te encaja y acéptala cuando esté bien." : " Falta que ella la acepte."}`}
+        </p>
+      ) : null}
+
+      {anexo.equity_fuera_motivo && anexo.status !== "borrador" ? (
+        <p className="text-sm text-secundario">
+          <span className="text-metadato">El equity se sale de la horquilla de su vía: </span>
+          {anexo.equity_fuera_motivo}
         </p>
       ) : null}
 
@@ -173,6 +192,10 @@ export async function PropuestaAcuerdo({
             slug={compania.slug}
             situacion={(compania.situacion_societaria as Situacion | null) ?? null}
             fundadoras={candidatura.data?.contacto_nombre ?? ""}
+            horquilla={horquillaDe(horquillas.data?.value, compania.via as Via | null)}
+            via={compania.via}
+            equity={anexo.equity_pct === null ? null : Number(anexo.equity_pct)}
+            fechaHito={hito.data?.due_date ?? null}
           />
         </div>
       ) : null}

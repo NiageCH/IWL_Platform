@@ -90,8 +90,11 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     await page.getByText("Proponerle el Acuerdo", { exact: true }).first().click();
     const propuesta = page.locator("form", { has: page.getByRole("button", { name: "Proponerle el Acuerdo" }) });
     await expect(propuesta.getByLabel(/Firman a título personal/)).toHaveValue(PERSONA);
+    // Sin sociedad, el equity queda comprometido: proponer pide cuándo se constituye
+    await propuesta.getByLabel(/Constituir la sociedad, prevista para/).fill("2027-03-01");
     await propuesta.getByRole("button", { name: "Proponerle el Acuerdo" }).click();
     await expect(page.getByText(/Propuesta de Acuerdo del .*Falta que ella la acepte/)).toBeVisible();
+    await expect(page.getByText("Comprometido · se materializa al constituir")).toBeVisible();
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 

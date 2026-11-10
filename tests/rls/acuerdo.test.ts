@@ -120,6 +120,13 @@ beforeAll(async () => {
   acel = await nacerEnEntrada(candAcel);
   cons = await nacerEnEntrada(candCons);
 
+  /*
+   * Sin sociedad, proponer pide la fecha del hito «Constituir la sociedad»
+   * (el equity queda comprometido hasta entonces). Eso tiene su propia
+   * prueba, en `construccion.test.ts`; aquí se le pone para probar lo demás.
+   */
+  await servicio.from("milestones").update({ due_date: "2027-03-01" }).in("company_id", [acel, cons]).eq("origin", "societario");
+
   ella = createClient(URL, ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
   expect((await ella.auth.signInWithPassword({ email: CORREO, password: CLAVE })).error).toBeNull();
 });

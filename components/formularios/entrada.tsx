@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { confirmarSituacion, decidirIncorporacion, decirSituacion } from "@/lib/acciones/entrada";
+import {
+  confirmarSituacion,
+  decidirIncorporacion,
+  decirSituacion,
+  guardarHorquilla,
+  guardarTopeEntrada,
+} from "@/lib/acciones/entrada";
 import { BASES, baseSugerida, mensajeNoIncorporada, type BaseIncorporacion } from "@/lib/entrada";
 import type { Via } from "@/lib/comite";
 import { CamposSituacion } from "@/components/formularios/situacion";
-import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion } from "@/components/ui/formulario";
+import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 
 /** Lo primero que se le pregunta a la fundadora, una sola vez */
 export function DecirSituacion({ companyId }: { companyId: string }) {
@@ -109,5 +115,57 @@ export function DecidirIncorporacion({
         )}
       </Formulario>
     </Desplegable>
+  );
+}
+
+/** El tope del tramo de entrada en Construcción, en días */
+export function TopeEntrada({ dias }: { dias: number }) {
+  return (
+    <Formulario accion={guardarTopeEntrada} className="gap-3 px-4 py-4">
+      {(r) => (
+        <>
+          <Campo etiqueta="Días en entrada antes de avisar" error={r.ok ? undefined : r.campos?.dias}>
+            <Texto name="dias" inputMode="numeric" defaultValue={String(dias)} className="w-24" />
+          </Campo>
+          <div>
+            <Boton variante="secundario">Guardar el tope</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+type Horquillas = Record<"aceleracion" | "construccion", { min: number | null; max: number | null }>;
+
+/** La horquilla de equity de cada vía. Vacía, no se comprueba nada */
+export function HorquillaEquity({ horquillas }: { horquillas: Partial<Horquillas> }) {
+  const valor = (via: "aceleracion" | "construccion", lado: "min" | "max") => {
+    const v = horquillas[via]?.[lado];
+    return typeof v === "number" ? String(v) : "";
+  };
+  return (
+    <Formulario accion={guardarHorquilla} className="gap-4 px-4 py-4">
+      {(r) => (
+        <>
+          {(["aceleracion", "construccion"] as const).map((via) => (
+            <fieldset key={via} className="grid grid-cols-2 gap-3 sm:max-w-md">
+              <legend className="mb-1 text-sm font-medium text-titular">
+                {via === "aceleracion" ? "Aceleración" : "Construcción"}
+              </legend>
+              <Campo etiqueta="Desde (%)" error={r.ok ? undefined : r.campos?.[`${via}_min`]}>
+                <Texto name={`${via}_min`} inputMode="decimal" defaultValue={valor(via, "min")} />
+              </Campo>
+              <Campo etiqueta="Hasta (%)" error={r.ok ? undefined : r.campos?.[`${via}_max`]}>
+                <Texto name={`${via}_max`} inputMode="decimal" defaultValue={valor(via, "max")} />
+              </Campo>
+            </fieldset>
+          ))}
+          <div>
+            <Boton variante="secundario">Guardar la horquilla</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
   );
 }

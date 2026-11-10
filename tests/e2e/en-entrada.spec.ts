@@ -80,6 +80,11 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await expect(filaCons.getByText("Diagnóstico:")).toBeVisible();
     await expect(filaCons.getByText(/Due diligence:/)).toHaveCount(0);
 
+    // Sin Acuerdo no se trabaja: no hay dónde imputar horas, y se dice por qué
+    await page.goto(`/cartera/${cons.slug}/aportacion`);
+    await expect(page.getByText(/Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma/)).toBeVisible();
+    await page.goto("/cartera");
+
     // Confirmada la situación, en Construcción le toca a dirección decidir
     await actualizar("companies", { id: `eq.${cons.compania}` }, { situacion_confirmada_at: new Date().toISOString() });
     await page.reload();
@@ -88,11 +93,23 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     ).toBeVisible();
 
     /*
-     * Fuera de la cartera: ningún bloque lleva a ellas salvo «En entrada» y,
-     * para la que tiene cuenta, «Altas en curso», que sigue su primer acceso.
+     * El tope de Construcción: con 15 días en entrada, atención en la fila y
+     * en los avisos de dirección. La fecha se mueve por fuera; la compañía
+     * es de esta prueba y se borra al acabar.
+     */
+    const hace15 = new Date(Date.now() - 15 * 86_400_000).toISOString();
+    await actualizar("companies", { id: `eq.${cons.compania}` }, { created_at: hace15 });
+    await page.reload();
+    await expect(bloque.locator("li").filter({ hasText: CONS }).getByText("15 días sin Acuerdo")).toBeVisible();
+    await expect(page.getByText(`${CONS} lleva 15 días en entrada sin Acuerdo`)).toBeVisible();
+
+    /*
+     * Fuera de la cartera: ningún bloque lleva a ellas salvo «En entrada»,
+     * «Avisos» —la que ha pasado el tope— y, para la que tiene cuenta,
+     * «Altas en curso», que sigue su primer acceso.
      */
     const restoDeLaCartera = page.locator("main section", {
-      hasNot: page.getByRole("heading", { name: /^(En entrada|Altas en curso)$/ }),
+      hasNot: page.getByRole("heading", { name: /^(En entrada|Altas en curso|Avisos)$/ }),
     });
     for (const slug of [acel.slug, cons.slug]) {
       await expect(restoDeLaCartera.locator(`a[href="/cartera/${slug}"]`)).toHaveCount(0);

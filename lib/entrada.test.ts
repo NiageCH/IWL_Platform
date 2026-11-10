@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { baseSugerida, mensajeNoIncorporada, pasoEntrada, siguientePasoEntrada } from "./entrada";
+import {
+  baseSugerida,
+  estadoEquity,
+  estadoTope,
+  fueraDeHorquilla,
+  horquillaDe,
+  mensajeNoIncorporada,
+  pasoEntrada,
+  siguientePasoEntrada,
+  textoHorquilla,
+} from "./entrada";
 
 describe("la compañía en entrada", () => {
   it("la base sugerida sale de la vía; sin vía, estratégica", () => {
@@ -50,5 +60,31 @@ describe("el paso de una compañía en entrada", () => {
     expect(pasoEntrada({ ...si, anexo: "borrador" }).quien).toBe("iwl");
     expect(pasoEntrada({ ...si, anexo: "comentado" }).quien).toBe("ella");
     expect(pasoEntrada({ ...si, anexo: "aceptado" }).texto).toBe("Firmar el Acuerdo");
+  });
+});
+
+describe("Construcción: no se trabaja sin Acuerdo", () => {
+  it("la horquilla vacía no se comprueba; fuera de ella, sí", () => {
+    expect(horquillaDe({}, "construccion")).toBeNull();
+    const h = horquillaDe({ construccion: { min: 8, max: 12 } }, "construccion");
+    expect(h).toEqual({ min: 8, max: 12 });
+    expect(fueraDeHorquilla(10, h)).toBe(false);
+    expect(fueraDeHorquilla(5, h)).toBe(true);
+    expect(fueraDeHorquilla(5, null)).toBe(false);
+    expect(textoHorquilla(h!)).toBe("entre el 8 % y el 12 %");
+  });
+
+  it("sin sociedad el equity está comprometido; constituida, materializado", () => {
+    expect(estadoEquity("sin_constituir", null)).toBe("comprometido");
+    expect(estadoEquity("en_constitucion", null)).toBe("comprometido");
+    expect(estadoEquity("constituida", "2027-01-15")).toBe("materializado");
+    expect(estadoEquity("constituida", null)).toBeNull();
+  });
+
+  it("el tope: atención al llegar, vencido a la semana, y solo en Construcción", () => {
+    expect(estadoTope("construccion", 13, 14)).toBeNull();
+    expect(estadoTope("construccion", 14, 14)).toBe("atencion");
+    expect(estadoTope("construccion", 21, 14)).toBe("vencido");
+    expect(estadoTope("aceleracion", 40, 14)).toBeNull();
   });
 });

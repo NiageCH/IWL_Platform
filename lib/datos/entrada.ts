@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { pasoEntrada, type BaseIncorporacion, type DecisionIncorporacion } from "@/lib/entrada";
+import { estadoTope, pasoEntrada, type BaseIncorporacion, type DecisionIncorporacion } from "@/lib/entrada";
 import type { Via } from "@/lib/comite";
 import { firmarLogos } from "@/lib/datos/logos";
 
@@ -68,6 +68,8 @@ export interface FilaEntrada {
   candidaturaId: string | null;
   /** A quién recordar: la fundadora con cuenta, si la hay */
   fundadora: { id: string; nombre: string; correo: string | null } | null;
+  /** En Construcción, si ha pasado el tope del tramo de entrada */
+  tope: "atencion" | "vencido" | null;
 }
 
 /**
@@ -88,7 +90,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
   if (!companias?.length) return [];
 
   const ids = companias.map((c) => c.id);
-  const [puntos, decisiones, anexos, candidaturas, miembros] = await Promise.all([
+  const [puntos, decisiones, anexos, candidaturas, miembros, ajuste] = await Promise.all([
     supabase.from("dd_items").select("company_id, status").in("company_id", ids).eq("is_required", true),
     supabase.from("decisiones_incorporacion").select("company_id, decision").in("company_id", ids),
     supabase.from("annexes").select("company_id, status, version").in("company_id", ids).order("version", { ascending: false }),
@@ -98,7 +100,9 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
       .select("company_id, profile_id, profiles ( full_name, email )")
       .in("company_id", ids)
       .eq("member_role", "fundadora"),
+    supabase.from("platform_settings").select("value").eq("key", "entrada_tope_construccion_dias").maybeSingle(),
   ]);
+  const tope = typeof ajuste.data?.value === "number" ? ajuste.data.value : 14;
 
   const idsCandidatura = (candidaturas.data ?? []).map((c) => c.id);
   const { data: reuniones } = idsCandidatura.length
@@ -120,6 +124,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
     const m = (miembros.data ?? []).find((x) => x.company_id === c.id);
     const perfil = m?.profiles as unknown as { full_name: string | null; email: string | null } | null;
     const via = c.via as Via | null;
+    const dias = Math.max(0, Math.floor((hoy - new Date(c.created_at).getTime()) / 86_400_000));
 
     return {
       id: c.id,
@@ -127,7 +132,8 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
       slug: c.slug,
       logo: c.logo_path ? (logos.get(c.logo_path) ?? null) : null,
       via,
-      dias: Math.max(0, Math.floor((hoy - new Date(c.created_at).getTime()) / 86_400_000)),
+      dias,
+      tope: estadoTope(via, dias, tope),
       paso: pasoEntrada({
         via,
         situacionDicha: Boolean(c.situacion_societaria),
@@ -153,11 +159,12 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
 });
 
 /**
- * Las que esperan a dirección: decidir la incorporación. Confirmar la
- * situación ya tiene su aviso y no se cuenta dos veces; lo que espera a
- * ella, y lo por construir, no cuenta.
+ * Las que esperan a dirección: decidir la incorporación, o una de
+ * Construcción que ha pasado el tope sin Acuerdo. Cada compañía cuenta una
+ * vez. Confirmar la situación ya tiene su aviso y no se cuenta dos veces;
+ * lo que espera a ella, y lo por construir, no cuenta.
  */
 export const contarEntradaParaDireccion = cache(async (): Promise<number> => {
   const filas = await leerEnEntrada();
-  return filas.filter((f) => f.paso.quien === "direccion").length;
+  return filas.filter((f) => f.paso.quien === "direccion" || f.tope).length;
 });

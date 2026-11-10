@@ -123,7 +123,14 @@ export default async function Cartera() {
   const paraDireccion = (
     <>
       <AvisosParaMi avisos={paraMi} />
-      {esDireccion ? <AvisosDireccion avisos={avisos} altas={altas} revisiones={revisiones} /> : null}
+      {esDireccion ? (
+        <AvisosDireccion
+          avisos={avisos}
+          altas={altas}
+          revisiones={revisiones}
+          paradas={enEntrada.flatMap((f) => (f.tope ? [{ slug: f.slug, nombre: f.nombre, dias: f.dias, tope: f.tope }] : []))}
+        />
+      ) : null}
       <EnEntrada filas={enEntrada} direccion={direccionBase()} />
     </>
   );

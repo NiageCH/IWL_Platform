@@ -1,6 +1,7 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
+import { HorquillaEquity, TopeEntrada } from "@/components/formularios/entrada";
 import { problemaParaEnviar } from "@/lib/nda-texto";
 import { fecha } from "@/lib/utils";
 import { leerPlantillaVigente } from "@/lib/datos/nda";
@@ -173,6 +174,35 @@ export default async function AdminPrograma() {
         <div className="border-t border-filete">
           <LugarNda lugar={typeof ajuste("nda_lugar") === "string" ? (ajuste("nda_lugar") as string) : "Málaga"} />
         </div>
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>No se trabaja sin Acuerdo</Metadato>}>
+          Entrada en Construcción
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          En Construcción, el tramo de entrada es un diagnóstico corto para
+          decidir, no para construir. Al llegar a estos días sin Acuerdo, la
+          compañía sale en atención en «En entrada» y en tus avisos; a la
+          semana, vencida. En Aceleración no hay tope: el due diligence ya
+          tiene sus avisos.
+        </p>
+        <TopeEntrada dias={typeof ajuste("entrada_tope_construccion_dias") === "number" ? (ajuste("entrada_tope_construccion_dias") as number) : 14} />
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>La fija Luciana</Metadato>}>
+          Horquilla de equity por vía
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Entrar antes cuesta más equity: la horquilla de Construcción es más
+          alta que la de Aceleración. Al proponer un Anexo se enseña como
+          referencia, y salirse de ella pide el motivo, que queda en el
+          registro. Vacía, no se comprueba nada.
+        </p>
+        <HorquillaEquity
+          horquillas={(ajuste("equity_horquilla") ?? {}) as Record<string, { min: number | null; max: number | null }>}
+        />
       </Bloque>
 
       <Bloque>

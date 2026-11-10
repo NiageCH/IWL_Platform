@@ -45,7 +45,14 @@ const texto = z
 
 export async function proponerAnexo(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
-    z.object({ id: uuid, slug, firmantes: texto, representante: texto }),
+    z.object({
+      id: uuid,
+      slug,
+      firmantes: texto,
+      representante: texto,
+      equity_fuera_motivo: texto,
+      constitucion_prevista: texto,
+    }),
     formData,
   );
   if (fallo) return fallo;
@@ -55,7 +62,7 @@ export async function proponerAnexo(formData: FormData): Promise<Resultado> {
   const supabase = await clienteServidor();
   const { data: anexo } = await supabase
     .from("annexes")
-    .select("id, companies ( situacion_societaria )")
+    .select("id, company_id, companies ( situacion_societaria )")
     .eq("id", datos.id)
     .maybeSingle();
   if (!anexo) return error("Ese Anexo no existe o no está a tu alcance.");
@@ -73,13 +80,40 @@ export async function proponerAnexo(formData: FormData): Promise<Resultado> {
     return error("Falta quién firma el Acuerdo.", { firmantes: "Una persona por línea." });
   }
 
+  /*
+   * Sin sociedad, el equity se materializa al constituirla: el hito
+   * «Constituir la sociedad» necesita su fecha prevista, y la base lo exige
+   * para proponer. Se pone aquí, en el mismo paso, en vez de mandar a
+   * buscar el hito a otra pantalla.
+   */
+  if (situacion !== "constituida" && datos.constitucion_prevista) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datos.constitucion_prevista)) {
+      return error("La fecha se escribe como 2027-01-15.", { constitucion_prevista: "Fecha no válida." });
+    }
+    const { error: falloHito } = await supabase
+      .from("milestones")
+      .update({ due_date: datos.constitucion_prevista })
+      .eq("company_id", anexo.company_id)
+      .eq("origin", "societario")
+      .neq("status", "cumplido");
+    if (falloHito) return traducirError(falloHito);
+  }
+
   const { data, error: falloBase } = await supabase
     .from("annexes")
-    .update({ firmantes, status: "propuesto" })
+    .update({ firmantes, equity_fuera_motivo: datos.equity_fuera_motivo, status: "propuesto" })
     .eq("id", datos.id)
     .eq("status", "borrador")
     .select("id");
-  if (falloBase) return traducirError(falloBase);
+  if (falloBase) {
+    if (/horquilla/.test(falloBase.message)) {
+      return error(falloBase.message, { equity_fuera_motivo: "Escribe por qué se sale." });
+    }
+    if (/Constituir la sociedad/.test(falloBase.message)) {
+      return error(falloBase.message, { constitucion_prevista: "¿Para cuándo está prevista?" });
+    }
+    return traducirError(falloBase);
+  }
   if (!data?.length) return error("No se ha propuesto: el Anexo ya no está en borrador.");
 
   refrescar(datos.slug);

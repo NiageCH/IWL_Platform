@@ -15,19 +15,36 @@ import {
 import { CamposFirmantes } from "@/components/formularios/situacion";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 import type { Situacion } from "@/lib/societario";
+import { fueraDeHorquilla, textoHorquilla, type Horquilla } from "@/lib/entrada";
 
-/** Proponerle el Acuerdo: el Anexo en borrador, más quién firma */
+/**
+ * Proponerle el Acuerdo: el Anexo en borrador, más quién firma.
+ *
+ * Con la horquilla de su vía fijada, se enseña como referencia y, si el
+ * equity se sale, pide el motivo. Sin sociedad, pide la fecha prevista de
+ * «Constituir la sociedad»: el equity queda comprometido hasta entonces.
+ */
 export function ProponerAnexo({
   id,
   slug,
   situacion,
   fundadoras,
+  horquilla,
+  via,
+  equity,
+  fechaHito,
 }: {
   id: string;
   slug: string;
   situacion: Situacion | null;
   fundadoras: string;
+  horquilla: Horquilla | null;
+  via: string | null;
+  equity: number | null;
+  fechaHito: string | null;
 }) {
+  const sinSociedad = situacion === "sin_constituir" || situacion === "en_constitucion";
+  const fuera = fueraDeHorquilla(equity, horquilla);
   return (
     <Desplegable titulo="Proponerle el Acuerdo">
       <Formulario accion={proponerAnexo} className="gap-4">
@@ -39,6 +56,37 @@ export function ProponerAnexo({
               Lo verá en Mi compañía, con estas cifras, para comentarlo y aceptarlo. Mientras
               esté propuesto no se edita: para cambiarlo, se devuelve a borrador.
             </p>
+            {horquilla ? (
+              <p className="text-sm text-cuerpo">
+                La horquilla de equity de {via === "aceleracion" ? "Aceleración" : "Construcción"} es{" "}
+                {textoHorquilla(horquilla)}.{" "}
+                {equity === null
+                  ? "Este Anexo no tiene equity todavía."
+                  : fuera
+                    ? `Este propone el ${equity} %: se sale, y hay que decir por qué.`
+                    : `Este propone el ${equity} %.`}
+              </p>
+            ) : null}
+            {fuera ? (
+              <Campo
+                etiqueta="Por qué se sale de la horquilla"
+                ayuda="Queda en el registro con la propuesta"
+                obligatorio
+                error={r.ok ? undefined : r.campos?.equity_fuera_motivo}
+              >
+                <AreaTexto name="equity_fuera_motivo" rows={2} required />
+              </Campo>
+            ) : null}
+            {sinSociedad ? (
+              <Campo
+                etiqueta="Constituir la sociedad, prevista para"
+                ayuda="Sin sociedad, el equity queda comprometido y se materializa al constituirla. Es el primer hito del Anexo"
+                obligatorio
+                error={r.ok ? undefined : r.campos?.constitucion_prevista}
+              >
+                <Texto type="date" name="constitucion_prevista" defaultValue={fechaHito ?? ""} required className="w-48" />
+              </Campo>
+            ) : null}
             {situacion ? (
               <CamposFirmantes situacion={situacion} fundadoras={fundadoras} errores={r.ok ? undefined : r.campos} />
             ) : (
