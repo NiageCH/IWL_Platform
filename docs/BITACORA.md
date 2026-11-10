@@ -9,6 +9,47 @@ como es**.
 
 ---
 
+## 2026-11-10 · La fecha de efecto, fuera del texto firmado · commit 23f5acf
+
+Tu respuesta a la pregunta del NDA personalizado: la alternativa, sin dos tiempos.
+
+**Qué cambió**
+· **`{{fecha_efecto}}` deja de ser un marcador.** Una plantilla que lo lleve no se guarda. Lo dicen el formulario y la base: «La fecha de efecto no va en el texto: las dos partes firman el mismo texto, y la fecha es la de la última firma del registro de firmas. Quita {{fecha_efecto}} y dilo con palabras.» Ya no sale en la lista de marcadores.
+· **Ella e IWL firman exactamente el mismo texto, con un solo hash.** La contrafirma ya no guarda un texto final: se quitan las columnas `texto_final` y `texto_final_hash` y el parámetro de la contrafirma.
+· **El PDF lleva ese texto**, y en la última página, el registro de firmas:
+  · «Hash SHA-256 del texto firmado por las dos partes»;
+  · «Fecha de efecto, la de la última firma», con su fecha y hora en Madrid;
+  · las dos firmas, como antes.
+· La plantilla de prueba local dice ahora la fecha con palabras, como lo hará la de Luciana. La redacción de la de verdad es suya.
+
+### Qué decidí yo
+· **La «Fecha de efecto» va explícita en el registro de firmas**, calculada como la más tardía de las dos firmas, para que no haya que deducirla comparando horas.
+· **Las columnas del texto final se borran**, no se dejan vacías. En producción no hay ningún NDA firmado: la plantilla todavía tenía corchetes, así que no se ha podido enviar ninguno y no se pierde nada.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 182 unitarias · 211 RLS, dos veces seguidas, tras reiniciar desde cero · **370 de interfaz en verde y 4 saltadas** (los informes en PDF).
+· Migración nueva: `20261110190000_nda_un_solo_texto`.
+
+### Para desplegar
+`main` está en `405cb70`; entra solo esta migración. Aparta antes tu `docs/REVISION.md` sin guardar.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push
+git push
+npx vercel --prod
+```
+
+Si la plantilla de producción ya lleva `{{fecha_efecto}}`, Programa lo dirá («No se puede enviar todavía»), y la versión nueva sin él sí se guardará.
+
+**Siguiente**
+REVISION no tiene nada más pendiente.
+
+---
+
 ## 2026-11-10 · Construcción: no se trabaja sin Acuerdo, y entrar antes cuesta más equity · commit 34648eb
 
 Los cuatro puntos de tu entrada «Construcción: no se trabaja sin Acuerdo». Las cifras de equity no las he puesto: la horquilla está vacía hasta que la fije Luciana.
