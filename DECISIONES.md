@@ -1643,9 +1643,14 @@ sido cambiarle los números a ciento setenta pruebas para que una persona
 pueda mirar una pantalla.
 
 Tiene un coste que conviene saber: **la demostración completa no existe en
-una máquina recién clonada**. Por eso `tests/e2e/demostracion-completa.spec.ts`
-se salta donde no esté, en vez de fallar por no tener datos que el
-repositorio no trae.
+una máquina recién clonada**. Hubo una prueba,
+`demostracion-completa.spec.ts`, que comprobaba que la demostración seguía
+recorriendo cada estado y se saltaba donde no estuviera. Se retiró el 10 nov
+2026: **ninguna prueba versionada depende de un fichero sin versionar**
+(Rodrigo). Lo que comprobaba solo existía en ese fichero, y una prueba que
+pasa o se salta según la máquina no dice nada de la plataforma. Que cada
+estado se pinte bien lo cubren `lib/estados.test.ts` y las pruebas de cada
+pantalla.
 
 Y tiene una consecuencia que costó cuatro arreglos: una suite que deja la
 base distinta de como la encontró se come la demostración. Aparecieron

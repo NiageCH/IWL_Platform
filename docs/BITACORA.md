@@ -9,6 +9,41 @@ como es**.
 
 ---
 
+## 2026-11-10 · Sin documentos de candidatura, y las suites sin depender de lo no versionado · commit 81f9492
+
+Las dos respuestas de REVISION del 10 nov.
+
+**Qué cambió**
+· **Enviar el NDA ya no crea la lista de documentos de la candidatura.** Su due diligence es el checklist de la compañía, que nace al contrafirmar. Se han quitado el disparador y las dos `pedir_due_diligence`: no queda ninguna función muerta.
+  · Las candidaturas de antes conservan sus peticiones y sus documentos, sin tocarlos. La ficha les enseña «Documentación del due diligence»; a las demás, ya no.
+  · La función que ajusta lo societario de esas listas sigue, porque hay candidaturas que la tienen. Solo cambia su comentario, que hablaba de una función que ya no existe.
+· **Las pruebas de acceso pasan al checklist de la compañía**, entrando como ella y como una fundadora ajena:
+  · ella lo ve entero, y solo el suyo;
+  · una fundadora ajena no ve nada;
+  · ella no se pide cosas a sí misma ni se quita lo que se le pide;
+  · tampoco lo saca de «por construir».
+  · En la candidatura se prueba que pasar a NDA no crea nada y que la función ya no existe.
+  · La prueba de que lo entregado siendo candidatura llega a la compañía se queda, porque sigue valiendo para las de antes. La petición se pone a mano, como la dejó el sistema de entonces.
+· **Semilla de demostración:** «Cuentas anuales» y «Vesting» se ponen en revisión y bloqueante sin mirar su estado anterior. Cambiado en tu fichero, en la carpeta principal, y en la copia del worktree.
+· **Retirada `demostracion-completa.spec.ts`.** Todo lo que comprobaba vivía en `seed/local/40_demostracion.sql`. Que cada estado se pinte bien ya lo cubren `lib/estados.test.ts` y las pruebas de cada pantalla. Anotado en `DECISIONES.md`, donde se citaba.
+· **`db:reset` crea también las cuentas de revisión.** Sin eso, sus pruebas se saltaban en una máquina nueva, y tras cada reinicio había que acordarse de crearlas a mano: me pasó a mí dos veces.
+
+### Qué decidí yo
+· **La retiro, no la reescribo.** Reescribirla con datos propios era probar otra cosa: que una compañía con un punto en cada estado los enseña. Eso no es lo que decía su nombre, y ya está cubierto.
+· **Las 4 saltadas que quedan son a propósito**: los informes en PDF solo se imprimen en Chromium y no desde el móvil. No dependen de la máquina.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 167 unitarias · 183 RLS, dos veces seguidas, tras reiniciar desde cero con el `db:reset` nuevo · **364 de interfaz en verde y 4 saltadas, sin fallos**.
+· Migración nueva: `20261110130000_sin_peticiones_de_candidatura`.
+
+**Siguiente**
+La segunda mitad del paso 5.
+
+---
+
 ## 2026-11-10 · Flujo de entrada, 5 de 6 (primera mitad): la compañía en entrada y la decisión de incorporación · commit 1570b74
 
 El punto 5 va en dos commits. Este es la compañía en entrada, la situación y la decisión. El siguiente, el Anexo como propuesta de Acuerdo y la firma del Acuerdo desde la compañía.
