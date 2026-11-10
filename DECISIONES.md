@@ -1747,3 +1747,15 @@ La nube se vacía de pruebas (`npm run nube:vaciar`) y del embudo se quedan tres
   4. Los ficheros, al final: si la base se negara, siguen donde estaban.
 - **El script borra directamente y no por `borrar_compania_con_todo`.** Esa función exige una sesión de dirección y con la clave de servicio no la hay. Los ficheros se quitan por carpeta (`<id>/` en `logos`, `data-room` y `candidaturas`), no por las rutas que guarda la base, que dejaban huérfanos.
 - **Quien creó una línea base no se puede borrar.** Quitarle el autor es un `update`, y `guard_linea_base` rechaza todos. No se ha relajado el guardián: `cuentas:nube -- --limpiar` lo avisa y se salta la cuenta. Vaciar antes de limpiar lo evita, porque la línea base se va con su compañía.
+
+## 2026-11-10 · El NDA con formato: marcas en la plantilla, un solo intérprete
+
+El NDA salía en PDF como texto plano. Ahora la plantilla lleva marcas —una lista cerrada, como los marcadores— y un solo intérprete, `lib/nda-formato.ts`, las convierte en piezas que pintan el PDF (`lib/nda-pdf.ts`) y la pantalla en la que ella lee antes de firmar (`components/vistas/texto-nda.tsx`).
+
+- **Marcas propias y no Markdown entero.** Lo que no está en la lista se pinta como texto. Un documento firmado no puede depender de cómo interprete un enlace o una tabla una librería que cambia de versión.
+- **El hash no cambia de base.** Se calcula sobre el texto completado con sus marcas. El formato es cómo se pinta lo firmado, no parte de otro texto.
+- **Ninguna marca usa corchetes**, porque un corchete es un hueco sin rellenar y bloquea el envío.
+- **Una marca mal puesta no deja guardar, y eso lo comprueba el servidor de la aplicación, no la base.** Los marcadores sí los comprueba la base. Repetir en SQL un intérprete de formato serían dos implementaciones de lo mismo, y el intérprete no falla nunca: una marca rota se pinta como texto.
+- **Las fuentes van incrustadas desde `lib/fuentes/`** (Montserrat y Roboto Mono, licencia OFL). Se leen del disco, así que `next.config.ts` las incluye en el despliegue con `outputFileTracingIncludes`. Sin eso, en Vercel el PDF falla al contrafirmar y en local no se ve.
+- **`lineasFirma` y `FirmaNda` viven en `lib/pdf.ts`.** El acta de comité las usa, y `lib/comite` llega a componentes de cliente. Si las importara de `lib/nda-pdf`, que lee del disco, el navegador recibiría un `fs`.
+- **`npm run nda:muestra`** genera el PDF de una plantilla en sus dos variantes, con datos inventados. Sirve para mirar una plantilla antes de pegarla en Programa.

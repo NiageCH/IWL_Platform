@@ -17,6 +17,8 @@
  * Si se añade uno aquí, se añade allí.
  */
 
+import { erroresFormato } from "@/lib/nda-formato";
+
 export const MARCADORES = {
   startup: "Nombre de la startup, el de la candidatura",
   contraparte_nombre: "Nombre de la persona de contacto, el de la candidatura",
@@ -43,8 +45,8 @@ export type CampoDeElla = (typeof CAMPOS_DE_ELLA)[number];
 const ETIQUETA = /\{\{\s*([#/]?)([^{}]*?)\s*\}\}/g;
 
 /**
- * Lo que no vale de una plantilla: marcadores desconocidos y bloques sin
- * cerrar. Vacío si se puede guardar.
+ * Lo que no vale de una plantilla: marcadores desconocidos, bloques sin
+ * cerrar y marcas de formato mal formadas. Vacío si se puede guardar.
  */
 export function erroresPlantilla(texto: string): string[] {
   const errores: string[] = [];
@@ -69,6 +71,8 @@ export function erroresPlantilla(texto: string): string[] {
     }
   }
   for (const b of abiertos) errores.push(`Falta cerrar «{{#${b}}}» con «{{/${b}}}»`);
+  // Y las marcas de formato: un «:::» sin cerrar, dos títulos…
+  errores.push(...erroresFormato(texto));
   return [...new Set(errores)];
 }
 

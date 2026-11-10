@@ -60,9 +60,41 @@ describe("el PDF", () => {
     expect(pdf.getPageCount()).toBeGreaterThan(2);
   });
 
-  it("lo que Helvetica no sabe dibujar no lo rompe", async () => {
-    const bytes = await generarPdfNda({ ...DATOS, texto: "Firmado con 👍 y «comillas» y ñ" });
+  it("lo que la fuente no sabe dibujar no lo rompe", async () => {
+    const bytes = await generarPdfNda({ ...DATOS, texto: "Firmado con 👍 y «comillas» y ñ, y 中文" });
     expect(bytes.length).toBeGreaterThan(0);
+  });
+
+  it("con todas las marcas, y las fuentes de IWL incrustadas", async () => {
+    const texto = [
+      "# Acuerdo de prueba",
+      "### REUNIDOS",
+      "I. Que quieren hablar.",
+      "## 01 Información confidencial",
+      "Se entiende por **Información Confidencial** toda la que se comparta.",
+      "a) No usarla para otra cosa.",
+      "::: firma\nPOR\n**Inception Woman Lab, S.L.**\n:::",
+      "::: firma\nPOR\n**Ana Prueba**\n:::",
+    ].join("\n\n");
+    const pdf = await PDFDocument.load(await generarPdfNda({ ...DATOS, texto }));
+    expect(pdf.getPageCount()).toBe(2);
+    expect(pdf.getTitle()).toBe("Acuerdo de prueba · Siren");
+    // Las cuatro fuentes, y ninguna de las estándar de PDF
+    const fuentes = pdf.context
+      .enumerateIndirectObjects()
+      .map(([, o]) => o.toString())
+      .filter((o) => o.includes("/Type /Font") && o.includes("/BaseFont"))
+      .map((o) => o.match(/\/BaseFont \/(\S+)/)![1].replace(/^[A-Z]{6}\+/, "").replace(/-\d+$/, ""));
+    expect(new Set(fuentes)).toEqual(
+      new Set(["Montserrat-Regular", "Montserrat-SemiBold", "Montserrat-Bold", "RobotoMono-Regular"]),
+    );
+  });
+
+  it("muchos bloques de firma pasan de página sin partir ninguno", async () => {
+    const firma = "::: firma\nPOR\n**Parte**\nNombre: Alguien\nCargo: Algo\n:::";
+    const texto = ["Texto. ".repeat(600), ...Array(12).fill(firma)].join("\n\n");
+    const pdf = await PDFDocument.load(await generarPdfNda({ ...DATOS, texto }));
+    expect(pdf.getPageCount()).toBeGreaterThan(2);
   });
 });
 

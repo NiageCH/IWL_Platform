@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BLOQUES, MARCADORES } from "@/lib/nda-texto";
+import { MARCAS } from "@/lib/nda-formato";
 import {
   contrafirmarNda,
   guardarLugarNda,
@@ -146,7 +147,7 @@ export function LugarNda({ lugar }: { lugar: string }) {
 export function MarcadoresNda() {
   return (
     <details className="text-sm">
-      <summary className="accion cursor-pointer text-xs text-secundario">Marcadores que se pueden usar</summary>
+      <summary className="accion cursor-pointer text-xs text-secundario">Marcadores y marcas de formato</summary>
       <div className="mt-3 flex flex-col gap-3">
         <p className="text-xs text-metadato">
           Se escriben entre llaves dobles. Uno que no esté en esta lista no deja guardar la plantilla, y un
@@ -162,6 +163,18 @@ export function MarcadoresNda() {
           {Object.entries(BLOQUES).map(([b, que]) => (
             <div key={b} className="contents">
               <dt className="cifra text-titular">{`{{#${b}}}…{{/${b}}}`}</dt>
+              <dd className="text-secundario">{que}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-xs text-metadato">
+          Y el formato, con estas marcas. Una mal puesta —un «:::» sin cerrar, dos títulos— no deja guardar
+          la plantilla, y se dice cuál. Ninguna usa corchetes: un corchete sigue siendo un hueco.
+        </p>
+        <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[auto_1fr]">
+          {MARCAS.map(({ marca, que }) => (
+            <div key={marca} className="contents">
+              <dt className="cifra whitespace-nowrap text-titular">{marca}</dt>
               <dd className="text-secundario">{que}</dd>
             </div>
           ))}

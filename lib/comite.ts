@@ -1,5 +1,4 @@
-import { documentoFirmado, hora } from "@/lib/pdf";
-import { lineasFirma, type FirmaNda } from "@/lib/nda-pdf";
+import { documentoFirmado, hora, lineasFirma, type FirmaNda } from "@/lib/pdf";
 
 /**
  * El acta de comité: la vía que se propone, el mensaje de un descarte y el

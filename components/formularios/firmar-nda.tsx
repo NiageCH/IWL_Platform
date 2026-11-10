@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { firmarNda } from "@/lib/acciones/nda";
 import { Boton, Campo, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
+import { TextoNda } from "@/components/vistas/texto-nda";
 import {
   camposQuePide,
   completarNda,
@@ -22,8 +23,8 @@ const CAMPOS: Record<CampoDeElla, { etiqueta: string; ayuda?: string; autoComple
  * La candidata rellena lo que falta del NDA, lo lee ya completado y lo firma.
  *
  * El texto de abajo se completa mientras escribe, con el mismo código que
- * usa el servidor al firmar: lo que ve es lo que firma, y su hash es el de
- * ese texto. Mientras quede un hueco, se dice cuál y no se puede firmar.
+ * usa el servidor al firmar, y se pinta con el mismo intérprete de marcas
+ * que el PDF: lo que ve es lo que firma, y su hash es el de ese texto. Mientras quede un hueco, se dice cuál y no se puede firmar.
  *
  * Firma electrónica simple: su nombre escrito, la casilla de aceptación, y
  * lo que guarda la plataforma —fecha, hora, IP y navegador—. Se le dice,
@@ -114,11 +115,11 @@ export function FirmarNdaCandidata({
               El texto que firmas, con tus datos{faltan.length ? ". Los huecos se rellenan al escribir arriba" : ""}:
             </p>
             <div
-              className="max-h-[28rem] overflow-y-auto whitespace-pre-wrap rounded-lg border border-filete bg-hundido px-5 py-4 text-sm leading-relaxed text-cuerpo"
+              className="max-h-[28rem] overflow-y-auto rounded-lg border border-filete bg-hundido py-5 pr-5 pl-2"
               tabIndex={0}
               aria-label={`Texto del NDA, versión ${version}`}
             >
-              {completado}
+              <TextoNda texto={completado} />
             </div>
           </div>
 

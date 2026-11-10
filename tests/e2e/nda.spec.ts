@@ -61,6 +61,13 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
 
     await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible();
     await expect(page.getByText("TEXTO DE PRUEBA. NO ES UN NDA.")).toBeVisible();
+    // Con su formato, el mismo que el PDF: título, cláusulas con su número, negrita, firmas
+    const nda = page.getByLabel(/^Texto del NDA, versión/);
+    await expect(nda.getByRole("heading", { name: "Acuerdo de confidencialidad de prueba", level: 3 })).toBeVisible();
+    await expect(nda.getByRole("heading", { name: /^01\s*Objeto de la prueba$/ })).toBeVisible();
+    await expect(nda.locator("strong", { hasText: "no tomar este texto por un acuerdo de verdad" })).toBeVisible();
+    await expect(nda.getByText("::: firma")).toHaveCount(0);
+    await expect(nda.getByText("Cargo: En nombre propio")).toBeVisible();
     await expect(page.getByText("Documentación del due diligence")).toHaveCount(0);
     // Y debajo, su candidatura entera: el NDA protege lo que viene, no lo que ya mandó
     await expect(page.getByRole("heading", { name: NOMBRE, level: 1 })).toBeVisible();

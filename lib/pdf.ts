@@ -24,6 +24,29 @@ export function hora(iso: string, zona: "Europe/Madrid" | "UTC" = MADRID): strin
   }).format(new Date(iso));
 }
 
+export interface FirmaNda {
+  nombre: string;
+  correo: string | null;
+  /** ISO */
+  cuando: string;
+  ip: string | null;
+  navegador: string | null;
+}
+
+/** Las líneas de una firma en el rastro: lo mismo para el NDA y para el acta */
+export function lineasFirma(rotulo: string, f: FirmaNda): string[] {
+  return [
+    rotulo,
+    `  Nombre: ${f.nombre}`,
+    `  Correo: ${f.correo ?? "—"}`,
+    `  Fecha y hora (Madrid): ${hora(f.cuando, "Europe/Madrid")}`,
+    `  Fecha y hora (UTC): ${hora(f.cuando, "UTC")}`,
+    `  IP: ${f.ip ?? "—"}`,
+    `  Navegador: ${f.navegador ?? "—"}`,
+    "",
+  ];
+}
+
 /**
  * Helvetica solo sabe dibujar el juego latino (WinAnsi): tildes, eñes,
  * comillas angulares, sí; un emoji o un ideograma, no, y pdf-lib lanza.
