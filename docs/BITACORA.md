@@ -9,6 +9,39 @@ como es**.
 
 ---
 
+## 2026-11-10 · Ningún Anexo sin su aceptación, y ella con cuenta antes del Acuerdo · commit a50dfbf
+
+Las dos respuestas de REVISION del 10 nov, «Paso 5 cerrado».
+
+**Qué cambió**
+· **Proponer exige una fundadora con cuenta en la compañía**, en entrada y en incubación. Lo comprueba la base.
+  · En pantalla, en lugar de «Proponerle el Acuerdo», sale el motivo y **«Dar acceso»**.
+  · Si la compañía viene del embudo, «Dar acceso» crea la cuenta con el correo de contacto, la hace fundadora de la compañía y enseña la contraseña una sola vez, con «Hecho». La cambia al entrar.
+  · Si no viene del embudo, dice que se dé de alta en Administración → Personas.
+  · No hay aceptaciones registradas por IWL.
+· **Ningún Anexo se firma sin su aceptación**, tampoco al renovar en incubación.
+  · Desaparece «Firmar el Anexo» del borrador. Sale solo con el Anexo aceptado: en incubación, «Firmar el Anexo»; en entrada, «Firmar el Acuerdo y el Anexo».
+  · En la base: firmado solo desde aceptado, también con la clave de servicio. Con sesión, un Anexo nace siempre en borrador.
+  · Proponer pide quién firma en los dos tramos, no solo en entrada.
+· **`db:reset` ya no se queda a medias.** Justo tras reiniciar, PostgREST tarda en recargar el esquema y las instantáneas fallaban de vez en cuando. Ahora reintentan medio segundo, hasta diez segundos.
+
+### Qué decidí yo
+· **«Dar acceso» reutiliza una cuenta que ya exista con ese correo**, sin tocar su contraseña, y lo dice. Solo convierte en fundadora una cuenta de candidata o fundadora; una de IWL, de mentor o de revisor la rechaza.
+· **Tu semilla local `30_agrolabx.sql` registraba un Anexo ya firmado con sesión declarada**, y la base ahora lo rechaza. Ese insert va ahora sin sesión, y la sesión se vuelve a declarar justo después. Cambiado en la carpeta principal y en la copia del worktree.
+· **La prueba de interfaz del Anexo ya no firma un borrador.** Lo propone, ella lo acepta y se firma. La del Acuerdo da acceso con el botón y entra con la contraseña que enseña.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 167 unitarias · 199 RLS, dos veces seguidas, tras reiniciar desde cero · **366 de interfaz en verde y 4 saltadas** (los informes en PDF).
+· Migración nueva: `20261110150000_anexo_siempre_aceptado`.
+
+**Siguiente**
+«En entrada», al lado de la cartera.
+
+---
+
 ## 2026-11-10 · Flujo de entrada, 5 de 6 (segunda mitad): el Anexo como propuesta, la firma del Acuerdo y el cambio de vía · commit 37ea32a
 
 **Qué cambió**
