@@ -9,6 +9,52 @@ como es**.
 
 ---
 
+## 2026-11-10 · Flujo de entrada, 5 de 6 (primera mitad): la compañía en entrada y la decisión de incorporación · commit 1570b74
+
+El punto 5 va en dos commits. Este es la compañía en entrada, la situación y la decisión. El siguiente, el Anexo como propuesta de Acuerdo y la firma del Acuerdo desde la compañía.
+
+**Qué cambió**
+· **Con las dos firmas del NDA nace la compañía, en «entrada».** Pasa igual si el NDA se firmó en la plataforma o se registró firmado fuera.
+  · Lleva la vía del acta. Una candidatura sin vía toma la de su estado: con clientes o facturación, Aceleración; si no, Construcción.
+  · Etapa y perfil técnico vacíos. El identificador sale del nombre, sin tildes, con el primer número libre.
+  · Va en la misma transacción que la firma: si falla al crearla, la firma tampoco queda.
+  · La candidatura pasa a «En entrada», y el historial dice «Compañía creada, en entrada».
+· **Ella pasa a fundadora, con la misma cuenta**, y al entrar cae en Mi compañía.
+· **Mi compañía abre con «¿Desde dónde partís?»** si nadie ha dicho la situación societaria.
+  · La dice ella una vez. Después solo la cambia IWL, y tampoco puede confirmarla ni tocar el tramo o el archivo: lo impide la base.
+  · Dirección recibe el aviso «… ha dicho la situación societaria», con «Confirmarla».
+  · IWL la confirma desde la compañía y el aviso se cierra. Hasta entonces se ve «Por confirmar».
+· **En Construcción, el checklist y el business plan nacen «por construir»**, y también lo societario que aparece después al decir la situación. Sin sociedad, lo que la requiere pasa a «No aplica» también desde «por construir».
+· **«Decidir la incorporación»**, en la compañía en entrada. Solo dirección y una sola vez.
+  · Lleva la base, sugerida por la vía (due diligence en Aceleración, estratégica en Construcción), y el motivo.
+  · «No» pide el mensaje para ella, ya redactado en la voz de IWL y editable. Archiva la compañía como «No incorporada: <motivo>», descarta la candidatura desde «entrada» y deja «Enviarle el mensaje».
+  · Una decisión no se cambia ni se borra, tampoco con la clave de servicio. Se va con su compañía.
+· **La ficha de la candidatura dice «Ya es compañía, en entrada»**, con enlace a la compañía.
+
+### Qué decidí yo
+· **Firmar el Acuerdo desde la candidatura queda solo para las que no tienen compañía**: las que no pasaron el NDA por la plataforma. Las demás lo firmarán desde la compañía, en la segunda mitad.
+· **La compañía se inserta directamente, no por `crear_compania`.** Esa pide sesión de IWL, y la contrafirma llega con la clave de servicio, que es la que registra la IP. La autorización ya la hizo la firma de dirección.
+· **«Por construir» al nacer va en un disparador al insertar**, no en quien crea la compañía. Así nacen igual los puntos societarios que aparecen después. Solo al insertar: IWL puede seguir pasando algo a «por entregar» a mano.
+· **La situación dicha en la candidatura pasa a la compañía**, y entonces a ella no se le pregunta. IWL la confirma igual.
+· **El «no» descarta también la candidatura**, con su motivo. Así sale del embudo y no se queda en «En entrada» para siempre.
+· **La decisión solo la ve IWL.** Ella ve el efecto: la compañía archivada y el mensaje que se le envía.
+· **Solo pasa a fundadora la candidata.** La candidatura no guarda las cofundadoras con cuenta, así que no hay a quién más pasar.
+· **El mensaje de la base cuando una fundadora intenta cambiar la situación** dice ahora «una vez dicha, la fija el equipo de IWL. Si ha cambiado, díselo y la cambian ellos».
+
+### Qué necesito que decidas
+1. **Los documentos que se le piden en la candidatura se siguen generando al enviar el NDA.** Para las nuevas sobran: su due diligence es ya el checklist de la compañía. ¿Dejo de generarlos? Las de antes conservan lo que tienen.
+2. Sigue abierta la de la entrada anterior: la semilla local de demostración.
+
+### Estado
+· 167 unitarias · 182 RLS, dos veces seguidas, tras reiniciar la base desde cero · **374 de interfaz en verde, 4 saltadas y 2 en rojo**: la de la demostración, en escritorio y en Safari, la misma de antes.
+· Migración nueva: `20261110120000_compania_en_entrada`.
+· La prueba de interfaz del NDA va ahora hasta el final: ella firma, IWL contrafirma, ella entra en Mi compañía y dice su situación, dirección la confirma y decide que no.
+
+**Siguiente**
+El Anexo como propuesta de Acuerdo, que ella ve, comenta y acepta en Mi compañía. Firmar el Acuerdo desde la compañía, con la puerta del due diligence en Aceleración, y los KPI y la hoja de ruta al firmar. El cambio de Construcción a Aceleración, con motivo y aviso al mentor principal.
+
+---
+
 ## 2026-11-10 · Flujo de entrada, 4 de 6: enviar y comentar el NDA · commit 85bcbf0
 
 **Qué cambió**
