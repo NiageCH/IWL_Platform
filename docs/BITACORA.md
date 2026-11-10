@@ -9,6 +9,130 @@ como es**.
 
 ---
 
+## 2026-11-11 · Para desplegar los puntos 1 a 4
+
+`main` está en `e862964`. Entran tres commits de código (`43b709c`, `4f9cc3e` y `927a887`), esta bitácora y dos migraciones: `20261111100000_nombre_y_apellidos` y `20261111110000_acta_hash`. Aparta antes tu `docs/REVISION.md` sin guardar en `main`.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push
+git push
+npx vercel --prod
+```
+
+**Después del despliegue, en este orden:**
+1. **Tú y Luciana: Mi cuenta → «Tus datos».** Escribe el nombre en «Nombre» y los apellidos en «Apellidos». Hasta entonces nadie puede contrafirmar un NDA, y la pantalla lo dice con el enlace. Si en «Nombre» está ya el nombre completo, quita de ahí los apellidos: si no, saldrían dos veces en la contrafirma.
+2. **Pega otra vez la plantilla del NDA.** Abre `IWL_NDA_PlantillaPlataforma_ES_v3_20261110.md` como texto (en un editor, no en una vista previa) y pégala en Administración → Programa. La vista previa de debajo tiene que enseñar el título y las cláusulas antes de guardar. Quedará como versión 5. La 4 se queda como está, y Programa avisa de que no lleva marcas.
+3. Las actas ya cerradas conservan su PDF. Si quieres el nuevo diseño en alguna, pulsa «Regenerar el PDF» en su ficha.
+
+---
+
+## 2026-11-11 · Textos desfasados del bloque del NDA · sin commit nuevo
+
+**Qué cambió**
+Nada en este encargo: ya estaba hecho en `f929491` y está en `main`. La ficha dice «Lo verá nada más entrar, en la versión N, encima de su candidatura. Puede comentarlo antes de firmar.», y con su firma pendiente de IWL la ayuda de comentar dice «Si algo no te encaja, dínoslo. Lo vemos antes de que firme IWL.». Lo comprueba `nda-comentarios.spec.ts`.
+
+### Qué decidí yo
+· Si en producción todavía ves el texto viejo, es que ese despliegue no ha llegado a Vercel: con el de arriba llega.
+
+### Qué necesito que decidas
+1. Si te referías a otro texto del bloque del NDA que no sea uno de estos dos, dime cuál.
+
+### Estado
+· Sin cambios.
+
+### Siguiente
+El correo de la plataforma.
+
+---
+
+## 2026-11-11 · PDF del NDA ajustado, y el acta de comité con la plantilla de documento IWL · commit 927a887
+
+**Qué cambió**
+· **Una sola plantilla de documento**, `DocumentoIwl` en `lib/pdf.ts`, para el NDA, el acta y los que vengan:
+  · en la primera página, la marca («INCEPTION WOMAN LAB», Montserrat 600 a 9 pt con tracking) y debajo, en mono 7 pt gris, «INCEPTION WOMAN LAB, S.L. · NIF B27646559 · Ancha del Carmen 32, 29002 Málaga»; esos datos están solo en `lib/iwl.ts`;
+  · en las demás, la cabecera;
+  · en todas, el pie con filete magenta, «CONFIDENCIAL» y folio.
+· **NDA: sin huecos al final de página.** Las cláusulas se parten entre páginas. Ningún párrafo deja una línea sola al pie ni arriba, y cada título va con las dos primeras líneas de lo que le sigue. El bloque de firmas sigue sin partirse.
+· **El acta de comité**, con el mismo diseño:
+  · título «Acta del comité de selección» y, debajo, startup, persona de contacto, cohorte y fecha;
+  · ficha en dos columnas: fecha, cohorte, miembros y decisión;
+  · el resumen tal como se escribió;
+  · la decisión destacada con un filete magenta a la izquierda: la vía y el motivo del cambio, la fecha de revisión, o el motivo y si puede volver. El mensaje para ella no va;
+  · una línea por miembro, con la fecha de su firma;
+  · el registro de firmas aparte, con el hash del contenido firmado.
+· **El hash del acta** se guarda al cerrarla (`comite_actas.contenido_hash`) y la base no deja cambiarlo.
+· **«Regenerar el PDF»**, solo para dirección, en las actas cerradas. Hace uno nuevo con el diseño de ahora, deja el de antes en el expediente y comprueba que el hash coincide. El PDF dice que es regenerado y de dónde sale el hash.
+· **`npm run acta:muestra`** genera las tres variantes.
+
+### Qué decidí yo
+· **Marca en texto**, porque no hay símbolo W en el repositorio.
+· **Lo firmado de un acta** son los campos que se congelan desde la primera firma y los miembros por su id: si alguien cambia de nombre, el hash no cambia.
+· **Las actas cerradas antes de esta versión** no tenían hash. Se calcula y se guarda la primera vez que se regeneran, y el PDF lo explica. No se ha podido alterar nada, porque el acta no se edita desde la primera firma.
+· **El registro va en filas de etiqueta y valor**, como la ficha. Con tres firmantes, en bloques apilados, se iba a una tercera página.
+· **`lib/pdf.ts` es solo de servidor.** Lo que llega al navegador pasó a `lib/firmas.ts`.
+
+### Qué necesito que decidas
+1. Mira en `docs/constancia/` las tres actas (`IWL_Acta_Muestra_Preseleccionada/Aplazada/Descartada.pdf`) y las dos del NDA real (`IWL_NDA_Muestra_PlantillaReal_v3_*`), revisadas página a página.
+
+### Estado
+· 202 unitarias · 216 RLS, dos veces seguidas · **374 de interfaz en verde y 4 saltadas**.
+· Migración `20261111110000_acta_hash`.
+
+### Siguiente
+El correo de la plataforma.
+
+---
+
+## 2026-11-11 · Nombre y apellidos de la firmante · commit 4f9cc3e
+
+**Qué cambió**
+· **Presentarse y el alta** piden «Nombre» y «Apellidos», los dos obligatorios (`candidaturas.contacto_apellidos`). Las que ya existen se quedan con lo suyo y los apellidos vacíos.
+· **«Tus datos para el NDA»** empieza por «Nombre y apellidos, como en tu documento», rellenado con los de la candidatura. Ella lo confirma o lo corrige. Ese valor entra en `{{contraparte_nombre}}` y en la firma, y la base exige nombre y al menos un apellido.
+· **Si lo corrige**, la candidatura se actualiza y queda en el historial («Nombre corregido al firmar el NDA», con lo que constaba y lo que firmó).
+· **Mi cuenta** tiene «Tus datos» (`profiles.last_name`). Por IWL no se contrafirma con un perfil sin apellidos: la base lo impide, y en el aviso y en la ficha sale «Para firmar por IWL faltan tus apellidos» con el enlace.
+· Las cuentas que se crean desde una candidatura nacen con sus apellidos.
+
+### Qué decidí yo
+· **Cómo se parte lo que corrige.** Si empieza por el nombre que había, ese sigue siendo el nombre y el resto son los apellidos, así que un nombre compuesto no se rompe. Si no, la primera palabra es el nombre.
+· **Al corregir la ficha de una candidatura antigua, los apellidos no son obligatorios.** Exigirlos para cambiar otro dato obligaba a inventarlos. La ficha marca «(sin apellidos)».
+· **`full_name` sigue siendo el nombre en el resto de la plataforma.** Donde hoy sale tu nombre completo seguirá saliendo así; si pasas los apellidos a su campo, esas pantallas enseñarán solo el nombre.
+· `handle_new_user` se recreó desde su última definición, la que no lee el rol de los metadatos. La primera vez lo hice desde la original, y tres pruebas de registro lo cazaron.
+
+### Qué necesito que decidas
+1. ¿Quieres que las pantallas que enseñan a una persona (equipo, avisos, firmas) pongan también los apellidos cuando los tenga?
+
+### Estado
+· 198 unitarias · 215 RLS, dos veces seguidas · 374 de interfaz en verde y 4 saltadas.
+· Migración `20261111100000_nombre_y_apellidos`.
+
+### Siguiente
+El PDF del acta.
+
+---
+
+## 2026-11-11 · Una plantilla sin marcas no se guarda, y vista previa al pegar · commit 43b709c
+
+**Qué cambió**
+· **Si la plantilla no empieza por `# ` o no tiene ningún `## `, no se guarda**, con tu texto: «La plantilla no lleva las marcas de formato (# título, ## cláusulas). Cópiala desde el fichero .md abierto como texto, no desde una vista previa.» Vale para la genérica y para la propia de una candidata.
+· **Debajo del campo, la vista previa con formato** de lo que se está pegando, antes de guardar. Se puede ver como persona física o como sociedad, con lo que impediría guardarla.
+· **Programa avisa si la versión vigente no lleva marcas**, como la 4 de producción.
+· `\r\n` vale igual que `\n` en el intérprete de marcas. Ya lo hacía; ahora hay una prueba que lo comprueba.
+
+### Qué decidí yo
+· **Una plantilla sin marcas no se guarda, pero sí se puede enviar.** No lo meto en «lo que impide enviar», porque bloquearía los NDA con la versión 4 hasta que pegues la 5.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· 198 unitarias · 211 RLS · 374 de interfaz en verde y 4 saltadas.
+
+### Siguiente
+Nombre y apellidos.
+
+---
+
 ## 2026-11-10 · El NDA con formato: plantilla con marcas y PDF con el diseño de IWL · commit d980f65
 
 **Qué cambió**
