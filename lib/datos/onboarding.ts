@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { contarEntradaParaDireccion } from "@/lib/datos/entrada";
 import { leerRevisionesComite } from "@/lib/datos/comite";
 import {
   UMBRALES_POR_DEFECTO,
@@ -337,10 +338,11 @@ export const leerAvisosParaMi = cache(async (personaId: string): Promise<Aviso[]
  * Lo que pide que dirección haga algo, y nada más.
  */
 export const contarPendientesDireccion = cache(async (): Promise<number> => {
-  const [avisos, altas, revisiones] = await Promise.all([
+  const [avisos, altas, revisiones, entrada] = await Promise.all([
     leerAvisos(),
     leerAltasEnCurso(),
     leerRevisionesComite(),
+    contarEntradaParaDireccion(),
   ]);
-  return avisos.length + altas.filter((a) => a.detenido).length + revisiones.length;
+  return avisos.length + altas.filter((a) => a.detenido).length + revisiones.length + entrada;
 });

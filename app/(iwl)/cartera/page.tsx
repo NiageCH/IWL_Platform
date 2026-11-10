@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ChipCompania } from "@/components/chip-compania";
 import { redirect } from "next/navigation";
-import { personaActual } from "@/lib/supabase/servidor";
+import { esIwl, personaActual } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
 import { leerCartera } from "@/lib/datos/cartera";
 import {
@@ -29,6 +29,9 @@ import { leerAltasEnCurso, leerAvisos, leerAvisosParaMi } from "@/lib/datos/onbo
 import { leerRevisionesComite } from "@/lib/datos/comite";
 import { AvisosDireccion, AvisosParaMi } from "@/components/vistas/alta";
 import { describirSituacion } from "@/lib/societario";
+import { leerEnEntrada } from "@/lib/datos/entrada";
+import { EnEntrada } from "@/components/vistas/en-entrada";
+import { direccionBase } from "@/lib/direccion";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
@@ -109,11 +112,19 @@ export default async function Cartera() {
   const [avisos, altas, revisiones] = esDireccion
     ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
     : [[], [], []];
-  const paraMi = await leerAvisosParaMi(persona.id);
+  const [paraMi, enEntrada] = await Promise.all([
+    leerAvisosParaMi(persona.id),
+    esIwl(persona.role) ? leerEnEntrada() : Promise.resolve([]),
+  ]);
+  /*
+   * Lo de arriba del todo: lo que espera a alguien, y las compañías en
+   * entrada, que no cuentan en la cartera y solo se ven aquí.
+   */
   const paraDireccion = (
     <>
       <AvisosParaMi avisos={paraMi} />
       {esDireccion ? <AvisosDireccion avisos={avisos} altas={altas} revisiones={revisiones} /> : null}
+      <EnEntrada filas={enEntrada} direccion={direccionBase()} />
     </>
   );
 

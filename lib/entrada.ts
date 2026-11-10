@@ -41,3 +41,45 @@ export function mensajeNoIncorporada(contacto: string, startup: string): string 
     `Un saludo,\nEquipo de Inception Woman Lab`
   );
 }
+
+/** Lo que hace falta saber de una compañía en entrada para decir su paso */
+export interface EstadoEntrada {
+  via: Via | null;
+  situacionDicha: boolean;
+  situacionConfirmada: boolean;
+  /** Puntos obligatorios del due diligence: validados (o que no aplican) y total */
+  obligatoriosHechos: number;
+  obligatorios: number;
+  decision: DecisionIncorporacion | null;
+  /** El estado del último Anexo, si hay */
+  anexo: string | null;
+}
+
+export type QuienMueve = "ella" | "iwl" | "direccion";
+
+/**
+ * El paso en que está una compañía en entrada, y a quién le toca moverlo.
+ *
+ * En el orden del recorrido: situación, due diligence (solo Aceleración),
+ * decisión, propuesta, aceptación y firma. La lista «En entrada» enseña
+ * esto en cada fila, y el contador de dirección cuenta las que esperan a
+ * dirección.
+ */
+export function pasoEntrada(e: EstadoEntrada): { texto: string; quien: QuienMueve } {
+  if (!e.situacionDicha) return { texto: "Falta que diga su situación societaria", quien: "ella" };
+  if (!e.situacionConfirmada) return { texto: "Confirmar su situación societaria", quien: "iwl" };
+
+  if (!e.decision) {
+    if (e.via === "aceleracion" && e.obligatoriosHechos < e.obligatorios) {
+      return { texto: `Due diligence: ${e.obligatoriosHechos} de ${e.obligatorios} obligatorios`, quien: "ella" };
+    }
+    return { texto: "Decidir la incorporación", quien: "direccion" };
+  }
+
+  if (!e.anexo || e.anexo === "borrador") return { texto: "Proponerle el Acuerdo", quien: "iwl" };
+  if (e.anexo === "propuesto" || e.anexo === "comentado") {
+    return { texto: "Esperando que acepte la propuesta de Acuerdo", quien: "ella" };
+  }
+  if (e.anexo === "aceptado") return { texto: "Firmar el Acuerdo", quien: "iwl" };
+  return { texto: "Acuerdo firmado", quien: "iwl" };
+}

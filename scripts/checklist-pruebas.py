@@ -202,6 +202,9 @@ add(M, "/proyecto", "la candidata", "Entra en Mi compañía y dice su situación
 add(M, "/cartera/<slug>", "admin@iwl.test", "Confirmar la situación y decidir la incorporación",
     "Desde el aviso «… ha dicho la situación societaria», «Confirmarla». Después «Decidir la incorporación».",
     "La situación pasa a «Confirmada». Con «No», pide el mensaje para ella, ya escrito; la compañía queda «No incorporada», archivada, y la candidatura descartada. Una decisión no se cambia. Solo dirección ve el formulario.")
+add(M, "/cartera", "admin@iwl.test", "«En entrada», al lado de la cartera",
+    "Con alguna compañía con el NDA firmado y sin Acuerdo, abrir la cartera.",
+    "Sale arriba el bloque «En entrada»: cada compañía con su vía, sus días y su paso, y a quién le toca. En Aceleración, «Due diligence: x de y», «Validar» y «Recordar»; en Construcción, el diagnóstico (Reunión, Ficha, Situación). NO salen en la lista de la cartera ni en sus cifras. Las que esperan a dirección suben el contador de la barra lateral.")
 add(M, "/candidatura/<testigo>", "sin cuenta", "El enlace privado deja de valer",
     "Después de darle cuenta, abrir el enlace privado de antes.",
     "404. Desde que tiene cuenta, se entra por la puerta.")
