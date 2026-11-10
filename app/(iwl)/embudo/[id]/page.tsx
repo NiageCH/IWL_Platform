@@ -170,6 +170,21 @@ export default async function FichaCandidatura({
         </Bloque>
       ) : null}
 
+      {estado !== "firmada" && c.company_slug ? (
+        <Bloque className="mb-6">
+          <TituloBloque accion={<Metadato>Desde el NDA firmado</Metadato>}>
+            Ya es compañía, en entrada
+          </TituloBloque>
+          <div className="px-5 py-4 text-sm text-cuerpo">
+            La situación societaria, la decisión de incorporación y el Acuerdo se llevan desde su
+            ficha.{" "}
+            <Link href={`/cartera/${c.company_slug}`} className="enlace text-acento-texto">
+              Ver la compañía
+            </Link>
+          </div>
+        </Bloque>
+      ) : null}
+
       {estado === "firmada" && c.company_slug ? (
         <Bloque className="mb-6">
           <TituloBloque accion={<Metadato>Ya es compañía</Metadato>}>
@@ -467,7 +482,7 @@ export default async function FichaCandidatura({
             pide del due diligence depende de que haya sociedad. Firmada,
             la situación es de la compañía y se cambia en su ficha.
           */}
-          {estado !== "firmada" ? (
+          {estado !== "firmada" && !c.company_slug ? (
             <Bloque>
               <TituloBloque accion={<Metadato>Desde dónde parte</Metadato>}>
                 Situación societaria
@@ -485,7 +500,8 @@ export default async function FichaCandidatura({
             </Bloque>
           ) : null}
 
-          {estado !== "firmada" && estado !== "descartada" ? (
+          {/* Firmar desde aquí queda para las que llegaron sin el NDA en la plataforma */}
+          {estado !== "firmada" && estado !== "descartada" && !c.company_slug ? (
             <Bloque>
               <FirmarAcuerdo
                 id={c.id!}

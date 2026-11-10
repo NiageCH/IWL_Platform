@@ -90,6 +90,9 @@ beforeAll(async () => {
 afterAll(async () => {
   // Con versiones propias y una firma que las nombra, el borrado en cascada tiene que poder
   const servicio = clienteServicio();
+  // Con las dos firmas nació su compañía, en entrada: se va con ella
+  const { data: c } = await servicio.from("candidaturas").select("company_id").eq("id", candidaturaId).single();
+  if (c?.company_id) expect((await servicio.from("companies").delete().eq("id", c.company_id)).error).toBeNull();
   const { error } = await servicio.from("candidaturas").delete().eq("id", candidaturaId);
   expect(error).toBeNull();
   const { data } = await servicio.from("nda_plantillas").select("id").eq("candidatura_id", candidaturaId);

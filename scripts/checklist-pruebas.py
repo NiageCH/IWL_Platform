@@ -199,6 +199,15 @@ add(M, "/candidatura", "la candidata", "Comentar el NDA",
 add(M, "/embudo/<id>", "admin@iwl.test", "Responder y cambiar el NDA solo para ella",
     "Responder el comentario. Después, «Cambiar el texto solo para ella», tocar algo y guardar.",
     "Ella ve la respuesta. Si ya había firmado, su firma se anula, el historial lo dice y vuelve a ver el NDA para firmar, en la versión nueva.")
+add(M, "/cartera (avisos)", "admin@iwl.test", "Al contrafirmar, nace la compañía en entrada",
+    "Con el NDA firmado por ella, pulsar «Firmar por IWL» en el aviso.",
+    "La candidatura pasa a «En entrada» y su ficha dice «Ya es compañía, en entrada», con enlace. NO sale en la cartera. En Construcción, su checklist y su business plan están «Por hacer», sin fechas.")
+add(M, "/proyecto", "la candidata", "Entra en Mi compañía y dice su situación",
+    "Entrar con su cuenta de siempre.",
+    "Cae en /proyecto, no en /candidatura. Lo primero es «¿Desde dónde partís?». Al guardarla sale «En entrada» con la situación «Por confirmar», y no se la deja cambiar otra vez.")
+add(M, "/cartera/<slug>", "admin@iwl.test", "Confirmar la situación y decidir la incorporación",
+    "Desde el aviso «… ha dicho la situación societaria», «Confirmarla». Después «Decidir la incorporación».",
+    "La situación pasa a «Confirmada». Con «No», pide el mensaje para ella, ya escrito; la compañía queda «No incorporada», archivada, y la candidatura descartada. Una decisión no se cambia. Solo dirección ve el formulario.")
 add(M, "/candidatura/<testigo>", "sin cuenta", "El enlace privado deja de valer",
     "Después de darle cuenta, abrir el enlace privado de antes.",
     "404. Desde que tiene cuenta, se entra por la puerta.")

@@ -276,10 +276,12 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 
 export interface Aviso {
   id: string;
-  tipo: "primer_acceso" | "nda_firmado" | "nda_comentario";
+  tipo: "primer_acceso" | "nda_firmado" | "nda_comentario" | "situacion_dicha";
   created_at: string;
   persona: string;
   candidaturaId: string | null;
+  /** El identificador de la compañía, para los avisos que son de una compañía */
+  companiaSlug: string | null;
   donde: string | null;
 }
 
@@ -288,20 +290,24 @@ export const leerAvisos = cache(async (): Promise<Aviso[]> => {
   const supabase = await clienteServidor();
   const { data } = await supabase
     .from("avisos")
-    .select("id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre)")
+    .select(
+      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre), companies(name, slug)",
+    )
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
 
   return (data ?? []).map((a) => {
     const p = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
     const c = a.candidaturas as unknown as { nombre: string } | null;
+    const co = a.companies as unknown as { name: string; slug: string } | null;
     return {
       id: a.id,
       tipo: a.tipo as Aviso["tipo"],
       created_at: a.created_at,
       persona: p?.full_name ?? p?.email ?? "Alguien",
       candidaturaId: a.candidatura_id,
-      donde: c?.nombre ?? null,
+      companiaSlug: co?.slug ?? null,
+      donde: c?.nombre ?? co?.name ?? null,
     };
   });
 });

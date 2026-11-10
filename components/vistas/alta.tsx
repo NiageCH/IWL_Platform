@@ -155,7 +155,9 @@ export function AvisosDireccion({
                     ? `${a.persona} ha entrado por primera vez`
                     : a.tipo === "nda_comentario"
                       ? `${a.persona} ha comentado el NDA`
-                      : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
+                      : a.tipo === "situacion_dicha"
+                        ? `${a.persona} ha dicho la situación societaria. Falta confirmarla`
+                        : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
                   {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
                 </span>
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
@@ -166,6 +168,11 @@ export function AvisosDireccion({
                       : a.tipo === "nda_comentario"
                         ? "Responder"
                         : "Ver su alta"}
+                  </Link>
+                ) : null}
+                {a.companiaSlug && !a.candidaturaId ? (
+                  <Link href={`/cartera/${a.companiaSlug}`} className="enlace text-xs">
+                    Confirmarla
                   </Link>
                 ) : null}
                 {/* Firmar ahí mismo, sin ir a la ficha */}

@@ -100,7 +100,7 @@ export default async function MiCandidatura() {
           <div className="tarjeta mb-6 flex flex-col gap-4 p-5 text-sm text-secundario">
             <p role="status">
               Has firmado el NDA. Falta la firma de Inception Woman Lab; en
-              cuanto firme, aquí mismo verás qué documentación te pedimos.
+              cuanto firme, al entrar irás a tu compañía en la plataforma.
             </p>
             <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
             <ComentarNda />

@@ -14,8 +14,10 @@ import {
  *
  * Con una candidatura recién creada: se le da cuenta, entra y no ve más
  * que el NDA; lo firma, dirección lo contrafirma desde el aviso, y queda
- * el rastro en la base y el PDF en su data room. La plantilla es la de
- * prueba de la semilla local, que dice que no es un NDA.
+ * el rastro en la base y el PDF en su data room. Con las dos firmas nace
+ * su compañía en entrada: ella entra en Mi compañía y dice su situación,
+ * dirección la confirma y decide que no se incorpora. La plantilla es la
+ * de prueba de la semilla local, que dice que no es un NDA.
  */
 
 const COHORTE = "00000000-0000-0000-0003-000000000001";
@@ -31,7 +33,8 @@ async function entrarComoElla(page: import("@playwright/test").Page, clave: stri
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 }
 
-test("la candidata firma el NDA, IWL lo contrafirma, y queda el PDF con su rastro", async ({ page }) => {
+test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en entrada", async ({ page }) => {
+  let companiaId: string | null = null;
   const candidatura = await insertar<{ id: string }>("candidaturas", {
     cohort_id: COHORTE,
     nombre: NOMBRE,
@@ -96,21 +99,53 @@ test("la candidata firma el NDA, IWL lo contrafirma, y queda el PDF con su rastr
     expect(firma.contrafirmado_ua).toBeTruthy();
     expect(firma.documento_id).toBeTruthy();
 
-    const [c] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${candidatura.id}` }, "estado");
-    expect(c.estado).toBe("nda");
+    // Con las dos firmas nace la compañía, en entrada
+    const [c] = await consultar<{ estado: string; company_id: string | null }>(
+      "candidaturas",
+      { id: `eq.${candidatura.id}` },
+      "estado,company_id",
+    );
+    expect(c.estado).toBe("entrada");
+    expect(c.company_id).toBeTruthy();
+    companiaId = c.company_id;
 
-    // La ficha lo dice, con el PDF a mano
+    // La ficha lo dice, con el PDF a mano y el camino a la compañía
     await page.goto(`/embudo/${candidatura.id}`);
     await expect(page.getByRole("button", { name: "Abrir el NDA firmado" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ya es compañía, en entrada" })).toBeVisible();
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 
-    // Y ella: ya puede empezar
+    // Ella: la misma cuenta, ahora en su compañía, y lo primero es la situación
     await entrarComoElla(page, "la-de-la-firma-2026");
-    await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
-    await expect(page.getByText(/IWL ha firmado el NDA\. Ya puedes empezar el due diligence/)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Abrir el NDA firmado" })).toBeVisible();
+    await expect(page).toHaveURL(/\/proyecto/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "¿Desde dónde partís?" })).toBeVisible();
+    await page.getByLabel("Situación societaria").selectOption("sin_constituir");
+    await page.getByRole("button", { name: "Guardar la situación" }).click();
+    await expect(page.getByRole("heading", { name: "En entrada" })).toBeVisible();
+    await expect(page.getByText("Por confirmar", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Salir" }).first().click();
+    await page.waitForURL(/\/entrar/);
+
+    // Dirección: el aviso lleva a confirmarla, y decide que no se incorpora
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    const dicha = page.locator("li").filter({ hasText: `${PERSONA} ha dicho la situación societaria` });
+    await expect(dicha).toBeVisible();
+    await dicha.getByRole("link", { name: "Confirmarla" }).click();
+    await expect(page.getByRole("heading", { name: "En entrada" })).toBeVisible();
+    await page.getByRole("button", { name: "Confirmar la situación" }).click();
+    await expect(page.getByText("Confirmada", { exact: true })).toBeVisible();
+
+    await page.getByText("Decidir la incorporación").click();
+    const decidir = page.locator("form", { has: page.getByRole("button", { name: "Guardar la decisión" }) });
+    await decidir.getByLabel("Decisión").selectOption("no");
+    await decidir.getByRole("textbox", { name: /^Motivo/ }).fill("El proyecto ha cambiado de foco y ya no encaja en la cohorte.");
+    await expect(decidir.getByLabel("Mensaje para ella")).toHaveValue(/^Hola, Firmante:/);
+    await decidir.getByRole("button", { name: "Guardar la decisión" }).click();
+    await expect(page.getByRole("heading", { name: "No incorporada" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Enviarle el mensaje" })).toBeVisible();
   } finally {
+    if (companiaId) await borrar("companies", { id: companiaId });
     await quitarFicheros("candidaturas", candidatura.id);
     await borrar("candidaturas", { id: candidatura.id });
     await borrarCuenta(CORREO);
