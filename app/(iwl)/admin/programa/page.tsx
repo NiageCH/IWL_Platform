@@ -3,6 +3,7 @@ import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
 import { HorquillaEquity, TopeEntrada } from "@/components/formularios/entrada";
 import { problemaParaEnviar } from "@/lib/nda-texto";
+import { faltanMarcas } from "@/lib/nda-formato";
 import { fecha } from "@/lib/utils";
 import { leerPlantillaVigente } from "@/lib/datos/nda";
 import { ComiteDefecto } from "@/components/formularios/comite";
@@ -162,6 +163,13 @@ export default async function AdminPrograma() {
             ) : (
               <p className="text-cuerpo">Lista para enviar: no le queda ningún hueco sin marcador.</p>
             )
+          ) : null}
+          {plantillaNda && faltanMarcas(plantillaNda.texto) ? (
+            <p className="text-cuerpo" role="status">
+              <strong className="text-titular">La versión vigente no lleva marcas de formato.</strong>{" "}
+              Su PDF sale en un bloque corrido, sin títulos ni párrafos. Pega el .md abierto como
+              texto y guárdalo como versión nueva; la vista previa de abajo enseña cómo saldrá.
+            </p>
           ) : null}
           {plantillaNda ? (
             <p className="cifra text-xs text-metadato">

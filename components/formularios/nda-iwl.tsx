@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { BLOQUES, MARCADORES } from "@/lib/nda-texto";
-import { MARCAS } from "@/lib/nda-formato";
+import { BLOQUES, MARCADORES, completarNda, erroresPlantilla } from "@/lib/nda-texto";
+import { MARCAS, faltanMarcas } from "@/lib/nda-formato";
+import { TextoNda } from "@/components/vistas/texto-nda";
 import {
   contrafirmarNda,
   guardarLugarNda,
@@ -104,18 +105,68 @@ export function RegistrarNdaExterno({ candidaturaId }: { candidaturaId: string }
  * La plantilla del NDA. Guardar crea una versión nueva; la anterior queda
  * como estaba, y las firmas hechas siguen apuntando a la suya.
  */
+/**
+ * Cómo saldrá lo que se está pegando, antes de guardarlo: con su formato y
+ * con lo que impediría guardarlo. Los marcadores se quedan a la vista, sin
+ * rellenar; los bloques condicionales, según se mire como persona física o
+ * como sociedad.
+ */
+export function VistaPreviaPlantilla({ texto }: { texto: string }) {
+  const [sociedad, setSociedad] = useState(false);
+  if (!texto.trim()) return null;
+  const problemas = [faltanMarcas(texto), ...erroresPlantilla(texto)].filter((p): p is string => !!p);
+  const completado = completarNda(texto, { startup: "", contraparte_nombre: "", lugar: "", es_sociedad: sociedad });
+  return (
+    <section aria-label="Vista previa de la plantilla" className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-titular">Vista previa, antes de guardar</h3>
+        <div className="flex gap-2 text-xs" role="group" aria-label="Ver como">
+          {(
+            [
+              [false, "Persona física"],
+              [true, "Sociedad"],
+            ] as const
+          ).map(([valor, rotulo]) => (
+            <button
+              key={rotulo}
+              type="button"
+              aria-pressed={sociedad === valor}
+              onClick={() => setSociedad(valor)}
+              className={`pestana ${sociedad === valor ? "pestana-activa" : ""}`}
+            >
+              {rotulo}
+            </button>
+          ))}
+        </div>
+      </div>
+      {problemas.length ? (
+        <ul className="flex flex-col gap-1 text-sm text-mal" role="status">
+          {problemas.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="max-h-[32rem] overflow-y-auto rounded-lg border border-filete bg-hundido py-5 pr-5 pl-2">
+        <TextoNda texto={completado} />
+      </div>
+    </section>
+  );
+}
+
 export function PlantillaNda({ vigente }: { vigente: string }) {
+  const [texto, setTexto] = useState(vigente);
   return (
     <Formulario accion={guardarPlantillaNda} className="px-4 py-4">
       {(r) => (
         <>
           <Campo
             etiqueta="Texto del NDA"
-            ayuda="Pega el texto validado. Guardarlo crea una versión nueva: las firmas hechas no cambian."
+            ayuda="Pega el .md abierto como texto, con sus marcas. Guardarlo crea una versión nueva: las firmas hechas no cambian."
             error={r.ok ? undefined : r.campos?.texto}
           >
-            <AreaTexto name="texto" rows={14} defaultValue={vigente} />
+            <AreaTexto name="texto" rows={14} defaultValue={vigente} onChange={(e) => setTexto(e.currentTarget.value)} />
           </Campo>
+          <VistaPreviaPlantilla texto={texto} />
           <div>
             <Boton>Guardar como versión nueva</Boton>
           </div>

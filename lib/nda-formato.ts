@@ -205,3 +205,17 @@ export function erroresFormato(texto: string): string[] {
   if (abierta) errores.push("Falta cerrar un «::: firma» con «:::»");
   return [...new Set(errores)];
 }
+
+/**
+ * Si la plantilla no lleva marcas, no es una plantilla con formato: es el
+ * texto copiado de una vista que ya lo pintaba. La versión 4 se guardó así
+ * —sin un «#» ni una línea en blanco— y el PDF salió en un bloque corrido
+ * sin que nada lo dijera (REVISION, 10 nov). Se mira al guardar.
+ */
+export function faltanMarcas(texto: string): string | null {
+  const lineas = texto.replace(/\r\n?/g, "\n").trim().split("\n");
+  const empieza = /^#\s/.test(lineas[0] ?? "");
+  const clausulas = lineas.some((l) => /^##\s/.test(l.trim()));
+  if (empieza && clausulas) return null;
+  return "La plantilla no lleva las marcas de formato (# título, ## cláusulas). Cópiala desde el fichero .md abierto como texto, no desde una vista previa.";
+}

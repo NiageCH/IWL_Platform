@@ -7,6 +7,7 @@ import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { generarPdfNda } from "@/lib/nda-pdf";
+import { faltanMarcas } from "@/lib/nda-formato";
 import {
   CAMPOS_DE_ELLA,
   completarNda,
@@ -54,6 +55,9 @@ const esquemaPlantilla = z.object({
     .min(200, "Eso es demasiado corto para un NDA. Pega el texto entero de la plantilla validada.")
     // Un marcador desconocido no deja guardar: la base lo comprueba también
     .superRefine((texto, ctx) => {
+      // Sin marcas, el PDF sale en un bloque corrido: se dice antes de guardar
+      const sinMarcas = faltanMarcas(texto);
+      if (sinMarcas) return ctx.addIssue({ code: "custom", message: sinMarcas });
       const errores = erroresPlantilla(texto);
       if (errores.length) ctx.addIssue({ code: "custom", message: `${errores.join(". ")}.` });
     }),

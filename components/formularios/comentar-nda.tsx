@@ -1,7 +1,9 @@
 "use client";
 
 import { comentarNda, guardarNdaPropio, responderComentarioNda } from "@/lib/acciones/nda";
+import { useState } from "react";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario } from "@/components/ui/formulario";
+import { VistaPreviaPlantilla } from "@/components/formularios/nda-iwl";
 
 /**
  * Comentar el NDA, del lado de la candidata. El formulario se queda
@@ -67,6 +69,7 @@ export function NdaPropio({
   texto: string;
   firmadoPorElla: boolean;
 }) {
+  const [actual, setActual] = useState(texto);
   return (
     <Desplegable titulo="Cambiar el texto solo para ella">
       <Formulario accion={guardarNdaPropio} className="gap-3 px-4 pb-4">
@@ -81,8 +84,15 @@ export function NdaPropio({
                 : ""}
             </p>
             <Campo etiqueta="Texto del NDA" obligatorio error={r.ok ? undefined : r.campos?.texto}>
-              <AreaTexto name="texto" rows={14} defaultValue={texto} required />
+              <AreaTexto
+                name="texto"
+                rows={14}
+                defaultValue={texto}
+                required
+                onChange={(e) => setActual(e.currentTarget.value)}
+              />
             </Campo>
+            <VistaPreviaPlantilla texto={actual} />
             <div>
               <Boton variante="secundario">Guardar la versión para ella</Boton>
             </div>

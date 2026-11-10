@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { erroresFormato, interpretarNda, tituloDe, tramos } from "./nda-formato";
+import { erroresFormato, faltanMarcas, interpretarNda, tituloDe, tramos } from "./nda-formato";
 import { completarNda, erroresPlantilla, problemaParaEnviar } from "./nda-texto";
 
 const PLANTILLA = [
@@ -151,5 +151,21 @@ describe("una marca mal puesta no deja guardar la plantilla", () => {
 
   it("y lo dice al guardar, junto a los marcadores", () => {
     expect(erroresPlantilla("# Uno\n\n# Dos")).toEqual(["Hay más de un título «# …»: el documento lleva uno solo, al principio"]);
+  });
+});
+
+describe("una plantilla sin marcas no se guarda como si las tuviera", () => {
+  it("copiada de una vista que ya la pintaba, sin «#» ni «##», no", () => {
+    const pintada = "IWL_NDA_PlantillaPlataforma_ES_v3_20261110 Acuerdo mutuo de confidencialidad En Málaga, a…\nREUNIDOS\nDe una parte…";
+    expect(faltanMarcas(pintada)).toMatch(/no lleva las marcas de formato \(# título, ## cláusulas\)/);
+    expect(faltanMarcas("# Título\n\nSin cláusulas")).not.toBeNull();
+  });
+
+  it("con título y cláusulas, sí; y con saltos de Windows igual que sin ellos", () => {
+    expect(faltanMarcas(PLANTILLA)).toBeNull();
+    const windows = PLANTILLA.replace(/\n/g, "\r\n");
+    expect(faltanMarcas(windows)).toBeNull();
+    expect(erroresFormato(windows)).toEqual([]);
+    expect(interpretarNda(completarNda(windows, PERSONA))).toEqual(interpretarNda(completarNda(PLANTILLA, PERSONA)));
   });
 });
