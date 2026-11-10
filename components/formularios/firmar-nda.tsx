@@ -4,7 +4,6 @@ import { useState } from "react";
 import { firmarNda } from "@/lib/acciones/nda";
 import { Boton, Campo, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 import {
-  FECHA_EFECTO_PENDIENTE,
   camposQuePide,
   completarNda,
   huecos,
@@ -55,7 +54,6 @@ export function FirmarNdaCandidata({
     startup: base.startup,
     contraparte_nombre: base.contraparte_nombre,
     lugar: base.lugar,
-    fecha_efecto: FECHA_EFECTO_PENDIENTE,
     es_sociedad: esSociedad,
     ...valores,
   });
@@ -145,8 +143,8 @@ export function FirmarNdaCandidata({
             Al firmar quedan registrados tu nombre, tus datos de arriba, la fecha
             y la hora, tu dirección IP y tu navegador, junto con la versión del
             texto ({version}) y su huella. Cuando firme también Inception Woman
-            Lab, tendrás el PDF con las dos firmas en tu documentación, con la
-            fecha de efecto ya escrita.
+            Lab, que firma este mismo texto, tendrás el PDF con las dos firmas
+            en tu documentación.
           </p>
           {faltan.length ? (
             <p className="text-sm text-cuerpo" role="status">

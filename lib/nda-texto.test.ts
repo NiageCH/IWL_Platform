@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  FECHA_EFECTO_PENDIENTE,
   camposQuePide,
   completarNda,
   erroresPlantilla,
@@ -12,19 +11,22 @@ const PLANTILLA = [
   "Acuerdo entre Inception Woman Lab y {{contraparte_nombre}}, de {{startup}}.",
   "{{#si_persona}}Con documento {{documento}} y domicilio en {{domicilio}}.{{/si_persona}}",
   "{{#si_sociedad}}En nombre de {{denominacion}}, NIF {{nif}}, como {{cargo}}, con domicilio en {{domicilio}}.{{/si_sociedad}}",
-  "En {{lugar}}, con efecto desde {{fecha_efecto}}.",
+  "En {{lugar}}, con efecto desde la fecha de la última firma del registro.",
 ].join("\n");
 
 const BASE = {
   startup: "Siren",
   contraparte_nombre: "Ana Prueba",
   lugar: "Málaga",
-  fecha_efecto: FECHA_EFECTO_PENDIENTE,
 };
 
 describe("la plantilla", () => {
   it("con los marcadores conocidos y los bloques cerrados se guarda", () => {
     expect(erroresPlantilla(PLANTILLA)).toEqual([]);
+  });
+
+  it("la fecha de efecto no es un marcador: no se guarda, y dice por qué", () => {
+    expect(erroresPlantilla("Con efecto desde {{fecha_efecto}}.")[0]).toMatch(/La fecha de efecto no va en el texto/);
   });
 
   it("un marcador desconocido, un bloque desconocido o sin cerrar, no", () => {
@@ -45,7 +47,7 @@ describe("el texto completado", () => {
     expect(t).toMatch(/Acuerdo entre Inception Woman Lab y Ana Prueba, de Siren\./);
     expect(t).toMatch(/Con documento 12345678Z y domicilio en Calle Larios 1, Málaga\./);
     expect(t).not.toMatch(/En nombre de/);
-    expect(t).toMatch(/En Málaga, con efecto desde la fecha de la última firma\./);
+    expect(t).toMatch(/En Málaga, con efecto desde la fecha de la última firma del registro\./);
     expect(huecos(t)).toEqual([]);
   });
 

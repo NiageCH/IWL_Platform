@@ -13,7 +13,8 @@ import { USUARIOS, clienteServicio, entrarComo } from "./clientes";
  *     «NDA enviado», y ella vería «en preparación»;
  *   · sin huecos se envía, y se firma el texto completado: con un hueco
  *     dentro no, y el hash es el del texto que llega;
- *   · al contrafirmar se guarda el texto final con su hash.
+ *   · IWL contrafirma el mismo texto, con el mismo hash; la fecha de
+ *     efecto no es un marcador.
  */
 
 const COHORTE = "00000000-0000-0000-0003-000000000001";
@@ -67,6 +68,11 @@ afterAll(async () => {
 });
 
 describe("la plantilla", () => {
+  it("la fecha de efecto no es un marcador: no deja guardarla, y dice por qué", async () => {
+    const { error } = await versionPropia(`Con efecto desde {{fecha_efecto}}.${RELLENO}`);
+    expect(error?.message).toMatch(/La fecha de efecto no va en el texto/);
+  });
+
   it("un marcador desconocido no deja guardarla", async () => {
     const { error } = await versionPropia(`Hola {{nombre_fundadora}}.${RELLENO}`);
     expect(error?.message).toMatch(/nombre_fundadora/);
@@ -126,25 +132,22 @@ describe("la firma", () => {
     expect(data).toEqual({ texto_hash: sha(texto), texto_firmado: texto, datos: { documento: "12345678Z", es_sociedad: false } });
   });
 
-  it("al contrafirmar, el texto final y su hash; con un hueco, no", async () => {
-    const admin = await perfil(USUARIOS.admin);
-    const contrafirmar = (texto: string) =>
-      clienteServicio().rpc("contrafirmar_nda", {
-        p_candidatura: candidaturaId,
-        p_profile: admin,
-        p_ip: "1.2.3.4",
-        p_ua: "prueba",
-        p_texto_final: texto,
-      });
-    expect((await contrafirmar("Con efecto desde {{fecha_efecto}}.")).error?.message).toMatch(/fecha_efecto/);
+  it("IWL contrafirma el mismo texto, con el mismo hash: no hay un segundo texto", async () => {
+    const { error } = await clienteServicio().rpc("contrafirmar_nda", {
+      p_candidatura: candidaturaId,
+      p_profile: await perfil(USUARIOS.admin),
+      p_ip: "1.2.3.4",
+      p_ua: "prueba",
+    });
+    expect(error).toBeNull();
 
-    const final = `Entre IWL y Candidata de Prueba, con documento 12345678Z. Con efecto desde el 10 de noviembre de 2026.${RELLENO}`;
-    expect((await contrafirmar(final)).error).toBeNull();
     const { data } = await clienteServicio()
       .from("nda_firmas")
-      .select("texto_final, texto_final_hash")
+      .select("*")
       .eq("candidatura_id", candidaturaId)
       .single();
-    expect(data).toEqual({ texto_final: final, texto_final_hash: sha(final) });
+    expect(data!.texto_hash).toBe(sha(data!.texto_firmado));
+    expect(data!.contrafirmado_at).not.toBeNull();
+    expect(Object.keys(data!)).not.toContain("texto_final");
   });
 });

@@ -28,13 +28,8 @@ export interface DatosNda {
   candidaturaId: string;
   texto: string;
   version: string | number;
-  /** El hash del texto que firmó ella */
+  /** El hash del texto que firmaron las dos partes: el mismo */
   hash: string;
-  /**
-   * El del texto final, con la fecha de efecto ya escrita, que es el que
-   * va en el PDF. Sin él, el PDF lleva el mismo texto que firmó ella.
-   */
-  hashFinal?: string | null;
   ella: FirmaNda;
   iwl: FirmaNda;
   /** ISO, cuándo se genera el documento */
@@ -55,18 +50,19 @@ export function lineasFirma(rotulo: string, f: FirmaNda): string[] {
   ];
 }
 
+/** La última de las dos firmas, que da la fecha de efecto */
+function ultimaFirma(d: DatosNda): string {
+  return new Date(d.ella.cuando) > new Date(d.iwl.cuando) ? d.ella.cuando : d.iwl.cuando;
+}
+
 /** Las líneas del rastro, tal como salen en la última página */
 export function lineasRastro(d: DatosNda): string[] {
   return [
     `Candidatura: ${d.candidatura} (${d.candidaturaId})`,
     `Plantilla del NDA: versión ${d.version}`,
-    `Hash SHA-256 del texto firmado por la candidata: ${d.hash}`,
-    ...(d.hashFinal
-      ? [
-          `Hash SHA-256 de este texto, con la fecha de efecto: ${d.hashFinal}`,
-          "  Es el mismo texto: solo cambia «la fecha de la última firma» por la fecha.",
-        ]
-      : []),
+    `Hash SHA-256 del texto firmado por las dos partes: ${d.hash}`,
+    // La fecha de efecto es la de la última firma: aquí, no en el texto
+    `Fecha de efecto, la de la última firma: ${hora(ultimaFirma(d), "Europe/Madrid")} (Madrid)`,
     "",
     ...lineasFirma("Firma de la candidata", d.ella),
     ...lineasFirma("Contrafirma de Inception Woman Lab", d.iwl),

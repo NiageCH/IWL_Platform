@@ -77,7 +77,7 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await expect(
       page.getByText(`Entre Inception Woman Lab y ${PERSONA}, de ${NOMBRE}, con documento 12345678Z y domicilio en Calle Larios 1, 29005 Málaga.`),
     ).toBeVisible();
-    await expect(page.getByText(/En Málaga, con efecto desde la fecha de la última firma\./)).toBeVisible();
+    await expect(page.getByText(/En Málaga, con efecto desde la fecha de la última de las firmas del registro de firmas\./)).toBeVisible();
 
     // Sin la casilla no firma
     await page.getByLabel("Tu nombre completo").fill(PERSONA);
@@ -105,7 +105,6 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
       texto_hash: string;
       texto_version: string;
       texto_firmado: string;
-      texto_final: string;
       contrafirmante_nombre: string;
       contrafirmado_ua: string | null;
       documento_id: string | null;
@@ -113,9 +112,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     expect(firma.firmante_nombre).toBe(PERSONA);
     expect(firma.texto_hash).toMatch(/^[0-9a-f]{64}$/);
     expect(firma.texto_version).toBe("1");
-    // Lo firmado es su texto completado, y el final lleva la fecha de efecto
+    // Lo firmado es su texto completado, el mismo para las dos partes
     expect(firma.texto_firmado).toMatch(/con documento 12345678Z/);
-    expect(firma.texto_final).toMatch(/con efecto desde \d{1,2} de \w+ de \d{4}\./);
     expect(firma.firmado_ua).toBeTruthy();
     expect(firma.contrafirmado_ua).toBeTruthy();
     expect(firma.documento_id).toBeTruthy();

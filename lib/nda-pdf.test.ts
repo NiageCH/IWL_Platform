@@ -30,7 +30,7 @@ describe("el rastro del NDA", () => {
 
   it("dice qué texto se firmó: versión y hash", () => {
     expect(rastro).toContain("versión 2");
-    expect(rastro).toContain(`Hash SHA-256 del texto firmado por la candidata: ${"a".repeat(64)}`);
+    expect(rastro).toContain(`Hash SHA-256 del texto firmado por las dos partes: ${"a".repeat(64)}`);
   });
 
   it("cada firma con su hora de Madrid y su UTC, sin duda de zona", () => {
@@ -66,10 +66,11 @@ describe("el PDF", () => {
   });
 });
 
-describe("con el texto final", () => {
-  it("lleva los dos hashes: el que firmó ella y el del texto con la fecha", () => {
-    const rastro = lineasRastro({ ...DATOS, hashFinal: "b".repeat(64) }).join("\n");
-    expect(rastro).toContain(`firmado por la candidata: ${"a".repeat(64)}`);
-    expect(rastro).toContain(`con la fecha de efecto: ${"b".repeat(64)}`);
+describe("la fecha de efecto", () => {
+  it("es la de la última firma, y va en el registro, no en el texto", () => {
+    const rastro = lineasRastro(DATOS).join("\n");
+    const ultima = new Date(DATOS.ella.cuando) > new Date(DATOS.iwl.cuando) ? DATOS.ella.cuando : DATOS.iwl.cuando;
+    expect(rastro).toMatch(/Fecha de efecto, la de la última firma: /);
+    expect(rastro).toContain(new Date(ultima).getUTCFullYear().toString());
   });
 });

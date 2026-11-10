@@ -27,6 +27,6 @@ select 0,
   '{{#si_persona}}, con documento {{documento}} y domicilio en {{domicilio}}{{/si_persona}}' ||
   '{{#si_sociedad}}, en nombre de {{denominacion}}, NIF {{nif}}, como {{cargo}}, con domicilio en {{domicilio}}{{/si_sociedad}}.' ||
   chr(10) || chr(10) ||
-  'En {{lugar}}, con efecto desde {{fecha_efecto}}.',
+  'En {{lugar}}, con efecto desde la fecha de la última de las firmas del registro de firmas.',
   ''
 where not exists (select 1 from nda_plantillas);

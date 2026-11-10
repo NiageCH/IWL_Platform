@@ -9,7 +9,6 @@ import { error, ok, traducirError, validar, type Resultado } from "@/lib/accione
 import { generarPdfNda } from "@/lib/nda-pdf";
 import {
   CAMPOS_DE_ELLA,
-  FECHA_EFECTO_PENDIENTE,
   completarNda,
   erroresPlantilla,
   huecos,
@@ -172,7 +171,6 @@ export async function firmarNda(formData: FormData): Promise<Resultado> {
     startup: c.nombre,
     contraparte_nombre: c.contacto_nombre ?? "",
     lugar,
-    fecha_efecto: FECHA_EFECTO_PENDIENTE,
     es_sociedad: esSociedad,
     ...deElla,
   };
@@ -332,35 +330,15 @@ export async function contrafirmarNda(formData: FormData): Promise<Resultado> {
   const servicio = clienteServicio();
 
   /*
-   * El texto final: el que firmó ella, con la fecha de efecto ya escrita,
-   * que es la de esta firma, la última. Un NDA firmado antes de que hubiera
-   * datos no tiene de dónde sacarlo, y se contrafirma como estaba.
+   * IWL firma exactamente el mismo texto que ella, con el mismo hash. La
+   * fecha de efecto es la de esta firma, la última, y va en el registro de
+   * firmas del PDF, no en el texto (REVISION, 10 nov).
    */
-  const { data: firmada } = await servicio
-    .from("nda_firmas")
-    .select("datos, nda_plantillas(texto)")
-    .eq("candidatura_id", datos.candidatura_id)
-    .maybeSingle();
-  const plantilla = firmada?.nda_plantillas as unknown as { texto: string } | null;
-  const textoFinal =
-    firmada?.datos && plantilla
-      ? completarNda(plantilla.texto, {
-          ...(firmada.datos as unknown as DatosTextoNda),
-          fecha_efecto: new Intl.DateTimeFormat("es-ES", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            timeZone: "Europe/Madrid",
-          }).format(new Date()),
-        })
-      : null;
-
   const { error: falloFirma } = await servicio.rpc("contrafirmar_nda", {
     p_candidatura: datos.candidatura_id,
     p_profile: persona!.id,
     p_ip: ip ?? "",
     p_ua: ua ?? "",
-    p_texto_final: textoFinal ?? undefined,
   });
   if (falloFirma) return traducirError(falloFirma);
 
@@ -388,11 +366,10 @@ async function guardarPdf(candidaturaId: string, autor: string): Promise<string 
   const bytes = await generarPdfNda({
     candidatura: candidatura.nombre,
     candidaturaId,
-    // El texto con sus datos y la fecha; los de antes de los marcadores, la plantilla
-    texto: firma.texto_final ?? firma.texto_firmado ?? plantilla.texto,
+    // El texto con sus datos; los de antes de los marcadores, la plantilla
+    texto: firma.texto_firmado ?? plantilla.texto,
     version: plantilla.version,
     hash: firma.texto_hash ?? "",
-    hashFinal: firma.texto_final_hash,
     ella: {
       nombre: firma.firmante_nombre ?? "",
       correo: firma.firmante_correo,

@@ -3111,13 +3111,13 @@ isOneToOne: false
                   ]
                 },"nda_firmas": {
                   Row: {
-                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"datos": Json | null,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"plantilla_id": string | null,"texto_final": string | null,"texto_final_hash": string | null,"texto_firmado": string | null,"texto_hash": string | null,"texto_version": string | null
+                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"datos": Json | null,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"plantilla_id": string | null,"texto_firmado": string | null,"texto_hash": string | null,"texto_version": string | null
                   }
                   Insert: {
-                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_final"?: string | null,"texto_final_hash"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
+                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Update: {
-                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_final"?: string | null,"texto_final_hash"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
+                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Relationships: [
                     {
@@ -4665,7 +4665,7 @@ isOneToOne: false
 { Args: { "target_company": string }; Returns: Json
                            },
 "contrafirmar_nda":
-{ Args: { "p_candidatura": string,"p_ip": string,"p_profile": string,"p_texto_final"?: string,"p_ua": string }; Returns: undefined
+{ Args: { "p_candidatura": string,"p_ip": string,"p_profile": string,"p_ua": string }; Returns: undefined
                            },
 "convocatoria_abierta":
 { Args: Record<PropertyKey, never>; Returns: {

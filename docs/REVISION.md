@@ -4,6 +4,16 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · Fecha de efecto: fuera del texto firmado
+
+Bien el NDA personalizado. A la pregunta: **la alternativa, sin dos tiempos.** Quita `{{fecha_efecto}}` de la lista de marcadores. Ella e IWL firman exactamente el mismo texto, con un solo hash, y la fecha vive en el registro de firmas de la última página. Dos textos con dos hashes, aunque solo cambie la fecha, es justo lo que una parte puede discutir después.
+
+La plantilla lo dirá con una frase del tipo «la fecha de la última de las firmas que constan en el registro de firmas de este documento (la "Fecha de Efecto")». Esa redacción la pone Luciana, no tú. Si una plantilla guardada lleva `{{fecha_efecto}}`, que no deje guardarla, con el motivo.
+
+Después, lo de «Construcción: no se trabaja sin Acuerdo».
+
+---
+
 ## 2026-11-10 · El NDA se personaliza: marcadores y datos de la firmante
 
 Rodrigo ha cargado en producción la plantilla del NDA (`IWL_NDA_PlantillaGenerica_ES_v2_20261110`). La plataforma la usa tal cual: no rellena nada. El texto tiene huecos que dependen de cada candidata (quién es la Contraparte, persona física o sociedad, su documento, su domicilio, la fecha de efecto), así que hoy se firmaría con los corchetes dentro. **No se envía ningún NDA hasta que esto esté.**

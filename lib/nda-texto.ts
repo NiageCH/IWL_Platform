@@ -4,7 +4,12 @@
  * La plantilla la escribe Luciana con huecos marcados así: `{{startup}}`.
  * Al firmar, cada candidata firma su texto ya completado, con sus datos, y
  * el hash, la versión y el PDF se calculan sobre ese texto, no sobre la
- * plantilla. Lo mismo corre en el navegador —para que vea lo que va a
+ * plantilla. IWL contrafirma exactamente el mismo texto, con el mismo hash.
+ *
+ * La fecha de efecto no es un marcador: es la de la última firma, y vive en
+ * el registro de firmas del PDF. Rellenarla al contrafirmar daba dos textos
+ * con dos hashes, que es justo lo que una parte puede discutir (REVISION,
+ * 10 nov). Lo mismo corre en el navegador —para que vea lo que va a
  * firmar mientras rellena— y en el servidor, que es quien lo guarda.
  *
  * La lista de marcadores es cerrada: uno desconocido no deja guardar la
@@ -15,7 +20,6 @@
 export const MARCADORES = {
   startup: "Nombre de la startup, el de la candidatura",
   contraparte_nombre: "Nombre de la persona de contacto, el de la candidatura",
-  fecha_efecto: "Fecha de efecto: la de la última firma",
   lugar: "Lugar de firma; se fija en Programa (Málaga por defecto)",
   documento: "Su DNI, NIE o pasaporte; lo escribe ella",
   domicilio: "Su domicilio, o el de la sociedad; lo escribe ella",
@@ -36,9 +40,6 @@ export const BLOQUES = {
 export const CAMPOS_DE_ELLA = ["documento", "domicilio", "denominacion", "nif", "cargo"] as const;
 export type CampoDeElla = (typeof CAMPOS_DE_ELLA)[number];
 
-/** Mientras falte una firma, la fecha de efecto se dice así, sin fecha */
-export const FECHA_EFECTO_PENDIENTE = "la fecha de la última firma";
-
 const ETIQUETA = /\{\{\s*([#/]?)([^{}]*?)\s*\}\}/g;
 
 /**
@@ -58,6 +59,11 @@ export function erroresPlantilla(texto: string): string[] {
       } else if (abiertos.pop() !== nombre) {
         errores.push(`«{{/${nombre}}}» cierra un bloque que no estaba abierto`);
       }
+    } else if (nombre === "fecha_efecto") {
+      // Las dos partes firman el mismo texto: la fecha va en el registro de firmas
+      errores.push(
+        "La fecha de efecto no va en el texto: las dos partes firman el mismo texto, y la fecha es la de la última firma del registro de firmas. Quita «{{fecha_efecto}}» y dilo con palabras",
+      );
     } else if (!(nombre in MARCADORES)) {
       errores.push(`«{{${nombre}}}» no es un marcador que la plataforma conozca`);
     }
@@ -70,8 +76,6 @@ export interface DatosTextoNda {
   startup: string;
   contraparte_nombre: string;
   lugar: string;
-  /** La fecha ya escrita, o `FECHA_EFECTO_PENDIENTE` si falta una firma */
-  fecha_efecto: string;
   es_sociedad: boolean;
   documento?: string;
   domicilio?: string;
@@ -119,7 +123,6 @@ export function camposQuePide(plantilla: string, esSociedad: boolean): CampoDeEl
     startup: "x",
     contraparte_nombre: "x",
     lugar: "x",
-    fecha_efecto: "x",
     es_sociedad: esSociedad,
   });
   return CAMPOS_DE_ELLA.filter((c) => new RegExp(`\\{\\{\\s*${c}\\s*\\}\\}`).test(efectiva));
