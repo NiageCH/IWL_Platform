@@ -88,7 +88,7 @@ describe("la plantilla", () => {
     expect(paso?.message).toMatch(/\[CIUDAD\]/);
 
     const { data: estado } = await admin.rpc("estado_nda", { p_candidatura: candidaturaId });
-    expect(estado).toBe("sin_plantilla");
+    expect(estado).toBe("plantilla_con_huecos");
   });
 });
 

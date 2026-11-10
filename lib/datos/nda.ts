@@ -8,7 +8,13 @@ import { clienteServidor } from "@/lib/supabase/servidor";
  * candidata no puede depender de una cuenta hecha en la pantalla.
  */
 
-export type EstadoNda = "no_aplica" | "sin_plantilla" | "por_firmar" | "esperando_iwl" | "firmado";
+export type EstadoNda =
+  | "no_aplica"
+  | "sin_plantilla"
+  | "plantilla_con_huecos"
+  | "por_firmar"
+  | "esperando_iwl"
+  | "firmado";
 
 export interface PlantillaNda {
   id: string;

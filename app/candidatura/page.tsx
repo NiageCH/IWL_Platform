@@ -57,7 +57,7 @@ export default async function MiCandidatura() {
    * comparta IWL. Sin texto de NDA todavía, la tarjeta lo dice y no deja
    * firmar nada provisional (REVISION, 10 nov).
    */
-  if (nda.estado === "sin_plantilla" || nda.estado === "por_firmar") {
+  if (nda.estado === "sin_plantilla" || nda.estado === "plantilla_con_huecos" || nda.estado === "por_firmar") {
     return (
       <Marco tema="oscuro">
         <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">

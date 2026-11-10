@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Estado } from "@/components/ui/estado";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 import { AbrirNda } from "@/components/formularios/abrir-nda";
@@ -14,6 +15,7 @@ import { fecha } from "@/lib/utils";
 const ESTADO: Record<EstadoNda, { visual: EstadoVisual; rotulo: string }> = {
   no_aplica: { visual: "no_aplica", rotulo: "No aplica" },
   sin_plantilla: { visual: "pendiente", rotulo: "Falta la plantilla" },
+  plantilla_con_huecos: { visual: "atencion", rotulo: "Plantilla con huecos" },
   por_firmar: { visual: "pendiente", rotulo: "Por firmar" },
   esperando_iwl: { visual: "curso", rotulo: "Falta IWL" },
   firmado: { visual: "hecho", rotulo: "Firmado" },
@@ -74,6 +76,8 @@ export function BloqueNda({
   candidaturaId: string;
   nda: {
     estado: EstadoNda;
+    /** Por qué no se puede enviar, con el mismo texto que Programa */
+    problema: string | null;
     plantilla: { version: number; texto: string; candidatura_id: string | null } | null;
     comentarios: ComentarioNda[];
     firma: {
@@ -89,7 +93,7 @@ export function BloqueNda({
   };
   esDireccion: boolean;
 }) {
-  const { estado, firma, plantilla, comentarios } = nda;
+  const { estado, firma, plantilla, comentarios, problema } = nda;
   const abierto = estado === "por_firmar" || estado === "esperando_iwl";
   const e = ESTADO[estado];
 
@@ -102,6 +106,15 @@ export function BloqueNda({
             Todavía no hay texto del NDA. Cárgalo en Administración → Programa
             → «Plantilla del NDA»; mientras tanto, ella ve que está en
             preparación y no puede firmar nada.
+          </p>
+        ) : null}
+        {estado === "plantilla_con_huecos" ? (
+          <p>
+            {problema} Mientras tanto, ella ve que está en preparación y no
+            puede firmar nada.{" "}
+            <Link href="/admin/programa" className="enlace text-acento-texto">
+              Ir a la plantilla, en Administración → Programa
+            </Link>
           </p>
         ) : null}
         {estado === "por_firmar" ? (
