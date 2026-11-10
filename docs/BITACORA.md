@@ -9,6 +9,52 @@ como es**.
 
 ---
 
+## 2026-11-11 · La reunión se acuerda en la plataforma · commit 46c2f3d
+
+**Qué cambió**
+· **IWL propone** dos o tres franjas en hora de Madrid, con su duración, quién va de IWL (se marca de la lista de personas), el formato —videollamada con enlace, o en persona con dirección— y una nota opcional.
+· **Ella lo ve arriba en su página**, en el enlace privado mientras no tenga cuenta y en «Tu candidatura» si ya la tiene, como siguiente paso: «Te proponemos reunirnos», con las franjas.
+  · **«Elegir esta»** la deja confirmada.
+  · **«Ninguna me va»** le deja proponer dos o tres fechas suyas, con una nota.
+· **IWL recibe el aviso** («… ha elegido fecha» o «… propone otras fechas»), que lleva a la ficha. Ahí acepta una de sus fechas o propone otras; el ida y vuelta se repite hasta que una queda confirmada. Cada paso queda en el historial.
+· **Confirmada**, los dos lados ven fecha, hora de Madrid, formato y enlace o dirección. Ella tiene **«Añadir a mi calendario»**, que descarga un `.ics`. IWL puede **cambiarla** (vuelve a propuesta, con motivo y aviso a ella) o **cancelarla**, con motivo.
+· **Los estados van con `<Estado>`**: Propuesta (por hacer), Contrapropuesta (atención: te toca), Confirmada (en curso), Celebrada (hecho), Cancelada (no aplica) y Caducada (vencido).
+· **Una franja pasada no se elige.** Si pasan todas sin elegir, la ficha la marca «Caducada» y el cron diario deja un aviso a IWL para proponer otras, una sola vez.
+· **A ella le llega un correo** al proponer, confirmar, cambiar y cancelar, con el enlace por el que entra. Sin proveedor quedan «sin enviar» en «Correos».
+· **«Anotar la reunión»** sigue igual, colgando de la confirmada.
+· Fuera el «Proponer y abrir el correo».
+
+### Qué decidí yo
+· **Sin línea para copiar a WhatsApp.** El correo ya existe, y tu entrada del correo dice que la sustituye.
+· **Proponer, aceptar y cancelar no devuelven mensaje.** El acuse es la reunión cambiada en la lista, y si el correo salió lo dice «Correos» en la misma ficha. Con mensaje, el formulario desaparecía con su propio éxito y se llevaba el acuse, que es lo que prohíbe CLAUDE.md.
+· **Cuando ella propone, la duración es la de IWL.** No se le pregunta: la reunión dura lo que IWL ha previsto.
+· **«Caducada» se calcula al leer**, no es un estado guardado. El aviso lo deja el cron, que ya corre a diario para el resumen.
+· **Las reuniones de antes** quedan como «Celebrada» si estaban anotadas, y como «Propuesta» si no.
+
+### Qué necesito que decidas
+1. ¿Cambiar una reunión confirmada debe pedir el motivo siempre? Ahora es opcional y, si se escribe, va en el correo.
+
+### Estado
+· 213 unitarias · 227 RLS, dos veces seguidas · **380 de interfaz en verde y 4 saltadas**.
+· Migración `20261111130000_reunion_acordada`.
+
+### Para desplegar todo lo de hoy
+`main` está en `e862964`. Entran los puntos 1 a 4 (los pasos de después están en la entrada «Para desplegar los puntos 1 a 4»), el correo y la reunión. Cinco migraciones: `20261111100000_nombre_y_apellidos`, `20261111110000_acta_hash`, `20261111120000_correos`, `20261111130000_reunion_acordada` y, si no se desplegó antes, `20261110200000_nda_plantilla_con_huecos`. Aparta antes tu `docs/REVISION.md` sin guardar en `main`.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push
+git push
+npx vercel --prod
+```
+
+Sin `RESEND_API_KEY` todo funciona igual, pero los correos quedan «sin enviar» y Administración lo avisa. Cuando pongas las variables de la entrada del correo, haz otro `npx vercel --prod` y reintenta desde cada ficha los que hayan quedado.
+
+### Siguiente
+Lo que digas de lo de hoy.
+
+---
+
 ## 2026-11-11 · El correo de la plataforma · commit dd3161d
 
 **Qué cambió**
