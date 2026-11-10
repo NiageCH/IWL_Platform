@@ -9,6 +9,70 @@ como es**.
 
 ---
 
+## 2026-11-11 · El correo de la plataforma · commit dd3161d
+
+**Qué cambió**
+· **`lib/correo/`**: una sola entrada, `notificar(destinatario, evento, datos)`, y un adaptador por proveedor. El de Resend usa su API HTTP. En local y en las pruebas se entrega a Mailpit (http://127.0.0.1:54324), y las pruebas leen ahí lo que habría llegado. Cambiar de proveedor es escribir otro adaptador en `lib/correo/proveedores.ts`.
+· **Plantillas en código**, en español, con versión en texto plano y un botón. Remitente `Inception Woman Lab <plataforma@inceptionwlab.es>` y respuesta a `iwl@inceptionwlab.es`; los dos se pueden cambiar por variable de entorno.
+· **Lo que sale ya:**
+  · el enlace privado, al presentarse;
+  · el NDA enviado, con un enlace para entrar y elegir su contraseña. La temporal ya no va por correo: se enseña a IWL una vez, para dársela por otro canal si hace falta;
+  · la respuesta a su comentario, del NDA o del Acuerdo;
+  · el Acuerdo propuesto, a cada fundadora;
+  · el mensaje de descarte, del acta o de «no se incorpora»: con un botón, una sola vez;
+  · el recordatorio («Enviar el correo»);
+  · a IWL, un **resumen diario** de los avisos abiertos, a quien tenga alguno. Cada cual lo deja en «Cada mañana» o «Nunca» en Mi cuenta.
+· **El registro**: cada envío deja una fila en `correos`, con evento, destinatario, cuándo, id del proveedor y estado. La ficha de la candidatura y la de la compañía tienen un bloque «Correos». Si el proveedor falla, la acción no falla: el correo queda «Sin enviar», con el motivo y «Reintentar».
+· **Sin proveedor configurado**, Administración lo dice arriba y los correos quedan «sin enviar», no desaparecen.
+· Fuera todos los «Abrir el correo».
+
+### Qué decidí yo
+· **No se guarda el correo ya escrito, sino el evento y sus datos**, y se vuelve a escribir en cada intento. El enlace para elegir contraseña deja entrar en su cuenta: si se guardara, cualquiera de IWL podría usarlo. Se genera al enviar y no queda en ninguna tabla.
+· **La reunión no la he tocado aquí.** Sus cuatro correos están escritos y salen con la reunión en la plataforma, que es lo siguiente. Hasta entonces, «Proponer reunión» sigue abriendo el programa de correo.
+· **El resumen diario sale a las 7:00 UTC**, las 8:00 o las 9:00 en Madrid según la época del año. Vercel Hobby permite un cron al día.
+· **«Darle cuenta para el due diligence»** (cuando el NDA se firmó fuera) no manda correo: no está en tu lista. Deja el acceso escrito para mandarlo por otro canal.
+
+### Qué necesito que decidas
+1. ¿El correo de «Darle cuenta para el due diligence» lo quieres también, con el mismo enlace para elegir contraseña?
+
+### Estado
+· 209 unitarias · 220 RLS, dos veces seguidas · **378 de interfaz en verde y 4 saltadas**.
+· Migración `20261111120000_correos`.
+
+### Lo que tienes que hacer tú (fuera del código)
+Está también en `DESPLIEGUE.md`, «El correo».
+
+**Registros DNS en GoDaddy** (Resend da los valores exactos al añadir `inceptionwlab.es` con región UE, eu-west-1):
+
+| Tipo | Nombre | Valor |
+|---|---|---|
+| MX | `send` | `feedback-smtp.eu-west-1.amazonses.com`, prioridad 10 |
+| TXT (SPF) | `send` | `v=spf1 include:amazonses.com ~all` |
+| TXT (DKIM) | `resend._domainkey` | la clave pública que da Resend, entera |
+| TXT (DMARC) | `_dmarc` | `v=DMARC1; p=none; rua=mailto:iwl@inceptionwlab.es` (si ya hay uno, se deja ese) |
+
+El MX y el SPF van en el subdominio `send`, así que no tocan el correo que ya recibe `inceptionwlab.es`.
+
+**Variables en Vercel** (producción):
+
+| Variable | Valor |
+|---|---|
+| `RESEND_API_KEY` | la clave de Resend, con permiso de envío |
+| `CRON_SECRET` | una cadena aleatoria larga (`openssl rand -hex 32`) |
+| `CORREO_REMITENTE` | opcional; por defecto `Inception Woman Lab <plataforma@inceptionwlab.es>` |
+| `CORREO_RESPUESTA` | opcional; por defecto `iwl@inceptionwlab.es` |
+
+Después, otro `npx vercel --prod`: las variables no se aplican a un despliegue ya hecho.
+
+**Supabase Auth con el mismo proveedor** (Authentication → Emails → SMTP Settings): host `smtp.resend.com`, puerto `465`, usuario `resend`, contraseña la misma clave, remitente `plataforma@inceptionwlab.es`, nombre `Inception Woman Lab`. Y en Authentication → URL Configuration, `https://ride.inceptionwlab.es/auth/confirmar` entre las direcciones de redirección: es a donde lleva el enlace del correo del NDA.
+
+**Para comprobarlo**: desaparece el aviso de Administración, y al enviar un NDA de prueba su ficha dice «Enviado» en «Correos».
+
+### Siguiente
+La reunión acordada dentro de la plataforma.
+
+---
+
 ## 2026-11-11 · Para desplegar los puntos 1 a 4
 
 `main` está en `e862964`. Entran tres commits de código (`43b709c`, `4f9cc3e` y `927a887`), esta bitácora y dos migraciones: `20261111100000_nombre_y_apellidos` y `20261111110000_acta_hash`. Aparta antes tu `docs/REVISION.md` sin guardar en `main`.
