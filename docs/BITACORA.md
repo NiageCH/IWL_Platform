@@ -9,6 +9,107 @@ como es**.
 
 ---
 
+## 2026-11-10 · El NDA con formato: plantilla con marcas y PDF con el diseño de IWL · commit d980f65
+
+**Qué cambió**
+· **Marcas en la plantilla**, en una lista cerrada que se explica en Programa, en «Marcadores y marcas de formato»:
+  · `# Título`, `### SECCIÓN` y `## 01 TÍTULO`;
+  · `I.` y `a)` al principio de un párrafo;
+  · `**negrita**`;
+  · `::: firma … :::`;
+  · los párrafos se separan con una línea en blanco.
+· **Una marca mal puesta no deja guardar la plantilla**, y se dice cuál: un `:::` sin cerrar, dos títulos o uno que no va al principio, una cláusula sin número, `####`, una negrita sin cerrar, un bloque que no es de firma o una tabla. Ninguna marca usa corchetes.
+· **Un solo intérprete**, `lib/nda-formato.ts`. Pinta el PDF y la pantalla en la que ella lee antes de firmar, así que lo que ve y lo que firma coinciden. El hash sigue siendo el del texto completado, con sus marcas.
+· **El PDF**, según lo esencial que pasaste:
+  · A4, con márgenes 20/20/28/20;
+  · Montserrat 400, 600 y 700 y Roboto Mono, incrustadas;
+  · el título a 26 pt con el filete magenta debajo;
+  · el cuerpo a 11/16,5, alineado a la izquierda;
+  · rótulos en caja alta con +0,05 em;
+  · cada cláusula con su filete magenta fino y el número en mono gris colgado en el margen;
+  · cabecera desde la segunda página, y pie con filete, «INCEPTION WOMAN LAB, S.L. · CONFIDENCIAL» y folio «N DE M»;
+  · firmas en dos columnas con un filete zinc-200, sin partirse entre páginas;
+  · el registro de firmas en su página, con el mismo diseño.
+· **La plantilla de pruebas local**, pasada a marcas, las usa todas.
+· **`npm run nda:muestra`** genera el PDF de una plantilla en sus dos variantes, con datos inventados.
+
+### Qué decidí yo
+· **El «filete magenta de 3 mm» bajo el título** es una barra de 3 mm de alto y 24 mm de ancho. A lo ancho de toda la caja pesaba demasiado. Lo dejo como pregunta abajo.
+· **Lo que no especificaba el documento de formato** (el tamaño de los rótulos, los espacios entre bloques, cuánto cuelga el número) lo he ajustado mirando el resultado, no copiando de `IWL_Formato_Documentos`, porque no tengo acceso a él.
+· **Dentro de un párrafo, las líneas se juntan.** Como en Markdown, lo que separa párrafos es la línea en blanco. En las firmas, en cambio, cada línea es una línea.
+· **Un párrafo que se queda vacío desaparece.** Pasa cuando es un bloque condicional que no toca, como el de sociedad cuando firma una persona física. Así no deja un hueco en el PDF.
+· **El formato lo valida la aplicación, no la base.** Los marcadores los sigue comprobando la base. El intérprete nunca falla: una marca rota se pinta como texto. Está en `DECISIONES.md`.
+· **Lo que la fuente no sabe dibujar** (un emoji, un ideograma) sale como «?» y no como un cuadro vacío.
+· **He leído la plantilla real de Drive** (`v3_20261110`) solo para probarla. No está en el repositorio. Pasa la validación sin errores y se envía. Sus dos PDF de muestra están junto a los de prueba.
+· **Las fuentes van a todas las rutas del despliegue** con `outputFileTracingIncludes`, porque se leen del disco. Son 1,5 MB.
+
+### Qué necesito que decidas
+1. El filete bajo el título: ¿una barra corta, como ahora (24 × 3 mm), o a lo ancho de la caja de texto?
+2. Mira los cuatro PDF de `docs/constancia/`: los dos de prueba y los dos de la plantilla real. Si algo del diseño no coincide con `IWL_Formato_Documentos`, dime qué medida cambiar.
+
+### Estado
+· 196 unitarias · 211 RLS, dos veces seguidas, tras reiniciar desde cero · **372 de interfaz en verde y 4 saltadas** (los informes en PDF).
+· Sin migración en este encargo. La de esta tanda es `20261110200000_nda_plantilla_con_huecos`, de la entrada de abajo.
+· Dependencia nueva: `@pdf-lib/fontkit` 1.1.1.
+
+### Para desplegar
+`main` está en `405cb70`. Entran las migraciones `20261110190000_nda_un_solo_texto` (la de antes, si no se desplegó) y `20261110200000_nda_plantilla_con_huecos`. Aparta antes tu `docs/REVISION.md` sin guardar.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push
+git push
+npx vercel --prod
+```
+
+Después, pega en Administración → Programa la plantilla `IWL_NDA_PlantillaPlataforma_ES_v3_20261110.md`, que quedará como versión 4. Si con el primer NDA contrafirmado en la nube «Abrir el NDA» no da el PDF, sale «Volver a generar el PDF»; avísame y miro el registro de Vercel, porque sería que las fuentes no han llegado.
+
+### Siguiente
+Lo que digas del filete y del diseño.
+
+---
+
+## 2026-11-10 · «Sin plantilla» y «plantilla con huecos» son dos estados · commit 159374b
+
+**Qué cambió**
+· `estado_nda` devuelve `plantilla_con_huecos` cuando hay plantilla pero no se puede enviar (corchetes o marcadores desconocidos), y `sin_plantilla` solo cuando no hay ninguna.
+· Con huecos, la ficha lleva la pastilla «Plantilla con huecos», dice el problema con el mismo texto que Programa («La plantilla tiene huecos sin marcador: …») y enlaza a la plantilla.
+· A ella le sigue saliendo «Tu NDA está en preparación» en los dos casos.
+
+### Qué decidí yo
+· La pastilla va en «Atención» y no en «Por hacer»: hay algo que arreglar, no solo algo que falta.
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· Migración `20261110200000_nda_plantilla_con_huecos`. Prueba de interfaz nueva con una plantilla con `[CIUDAD]`. Suites, en la entrada de arriba.
+
+### Siguiente
+El formato del NDA, arriba.
+
+---
+
+## 2026-11-10 · Textos del NDA al día · commit f929491
+
+**Qué cambió**
+· Con el NDA por firmar, la ficha dice: «Lo verá nada más entrar, en la versión N, encima de su candidatura. Puede comentarlo antes de firmar.»
+· Con su firma puesta y la de IWL pendiente, la ayuda de «Comentar el NDA» dice: «Si algo no te encaja, dínoslo. Lo vemos antes de que firme IWL.»
+
+### Qué decidí yo
+· Cuando la versión es solo suya, la ficha lo sigue diciendo («…versión N, que es solo suya, encima de su candidatura…»).
+
+### Qué necesito que decidas
+Nada.
+
+### Estado
+· Las dos frases se comprueban en `nda-comentarios.spec.ts`. Suites, en la entrada de arriba.
+
+### Siguiente
+Lo de «sin plantilla», arriba.
+
+---
+
 ## 2026-11-10 · La fecha de efecto, fuera del texto firmado · commit 23f5acf
 
 Tu respuesta a la pregunta del NDA personalizado: la alternativa, sin dos tiempos.
