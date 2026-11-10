@@ -30,7 +30,7 @@ describe("el rastro del NDA", () => {
 
   it("dice qué texto se firmó: versión y hash", () => {
     expect(rastro).toContain("versión 2");
-    expect(rastro).toContain(`Hash SHA-256 del texto firmado: ${"a".repeat(64)}`);
+    expect(rastro).toContain(`Hash SHA-256 del texto firmado por la candidata: ${"a".repeat(64)}`);
   });
 
   it("cada firma con su hora de Madrid y su UTC, sin duda de zona", () => {
@@ -63,5 +63,13 @@ describe("el PDF", () => {
   it("lo que Helvetica no sabe dibujar no lo rompe", async () => {
     const bytes = await generarPdfNda({ ...DATOS, texto: "Firmado con 👍 y «comillas» y ñ" });
     expect(bytes.length).toBeGreaterThan(0);
+  });
+});
+
+describe("con el texto final", () => {
+  it("lleva los dos hashes: el que firmó ella y el del texto con la fecha", () => {
+    const rastro = lineasRastro({ ...DATOS, hashFinal: "b".repeat(64) }).join("\n");
+    expect(rastro).toContain(`firmado por la candidata: ${"a".repeat(64)}`);
+    expect(rastro).toContain(`con la fecha de efecto: ${"b".repeat(64)}`);
   });
 });

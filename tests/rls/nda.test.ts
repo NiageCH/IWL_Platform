@@ -21,6 +21,8 @@ describe("firmar no se hace con la sesión", () => {
         p_profile: "00000000-0000-0000-0002-000000000001",
         p_nombre: "Alguien",
         p_plantilla: "00000000-0000-0000-0000-000000000000",
+        p_texto: "Texto del NDA ya completado, sin huecos.",
+        p_datos: {},
         p_ip: "1.2.3.4",
         p_ua: "inventado",
       });

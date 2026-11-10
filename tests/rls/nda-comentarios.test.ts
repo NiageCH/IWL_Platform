@@ -39,6 +39,8 @@ const firmar = (plantilla: string) =>
     p_profile: candidataId,
     p_nombre: "Candidata de Prueba",
     p_plantilla: plantilla,
+    p_texto: "Texto del NDA ya completado, sin huecos.",
+    p_datos: {},
     p_ip: "1.2.3.4",
     p_ua: "prueba",
   });

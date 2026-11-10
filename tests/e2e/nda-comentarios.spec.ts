@@ -56,6 +56,9 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     await page.getByRole("button", { name: "Enviar el comentario" }).click();
     await expect(page.getByText("Sin responder todavía")).toBeVisible();
 
+    await page.getByLabel("Firmas").selectOption("persona");
+    await page.getByLabel("Tu DNI, NIE o pasaporte").fill("12345678Z");
+    await page.getByLabel("Domicilio").fill("Calle Larios 1, 29005 Málaga");
     await page.getByLabel("Tu nombre completo").fill(PERSONA);
     await page.getByLabel("He leído el NDA y lo acepto.").check();
     await page.getByRole("button", { name: "Firmar el NDA" }).click();

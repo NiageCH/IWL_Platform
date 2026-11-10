@@ -65,6 +65,20 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     // Y debajo, su candidatura entera: el NDA protege lo que viene, no lo que ya mandó
     await expect(page.getByRole("heading", { name: NOMBRE, level: 1 })).toBeVisible();
 
+    /*
+     * Sus datos para el NDA, y el texto se completa mientras escribe: lo que
+     * ve es lo que firma. Mientras falte algo, no se puede firmar.
+     */
+    await expect(page.getByRole("button", { name: "Firmar el NDA" })).toBeDisabled();
+    await page.getByLabel("Firmas").selectOption("persona");
+    await expect(page.getByText(`Entre Inception Woman Lab y ${PERSONA}, de ${NOMBRE}, con documento {{documento}}`)).toBeVisible();
+    await page.getByLabel("Tu DNI, NIE o pasaporte").fill("12345678Z");
+    await page.getByLabel("Domicilio").fill("Calle Larios 1, 29005 Málaga");
+    await expect(
+      page.getByText(`Entre Inception Woman Lab y ${PERSONA}, de ${NOMBRE}, con documento 12345678Z y domicilio en Calle Larios 1, 29005 Málaga.`),
+    ).toBeVisible();
+    await expect(page.getByText(/En Málaga, con efecto desde la fecha de la última firma\./)).toBeVisible();
+
     // Sin la casilla no firma
     await page.getByLabel("Tu nombre completo").fill(PERSONA);
     await page.getByRole("button", { name: "Firmar el NDA" }).click();
@@ -90,6 +104,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
       firmado_ua: string | null;
       texto_hash: string;
       texto_version: string;
+      texto_firmado: string;
+      texto_final: string;
       contrafirmante_nombre: string;
       contrafirmado_ua: string | null;
       documento_id: string | null;
@@ -97,6 +113,9 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     expect(firma.firmante_nombre).toBe(PERSONA);
     expect(firma.texto_hash).toMatch(/^[0-9a-f]{64}$/);
     expect(firma.texto_version).toBe("1");
+    // Lo firmado es su texto completado, y el final lleva la fecha de efecto
+    expect(firma.texto_firmado).toMatch(/con documento 12345678Z/);
+    expect(firma.texto_final).toMatch(/con efecto desde \d{1,2} de \w+ de \d{4}\./);
     expect(firma.firmado_ua).toBeTruthy();
     expect(firma.contrafirmado_ua).toBeTruthy();
     expect(firma.documento_id).toBeTruthy();

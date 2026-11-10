@@ -69,7 +69,7 @@ export default async function MiCandidatura() {
             <h2 className="titular-marca mb-2 text-2xl text-titular">
               {nda.estado === "por_firmar" ? "Firma el NDA" : "Tu NDA está en preparación"}
             </h2>
-            {nda.estado === "por_firmar" && nda.plantilla ? (
+            {nda.estado === "por_firmar" && nda.plantilla && nda.base ? (
               <>
                 <p className="mb-5 text-sm text-secundario">
                   Antes de compartir información confidencial, en las dos direcciones, firmamos
@@ -80,6 +80,7 @@ export default async function MiCandidatura() {
                   plantillaId={nda.plantilla.id}
                   version={nda.plantilla.version}
                   texto={nda.plantilla.texto}
+                  base={nda.base}
                 />
                 <div className="mt-8 flex flex-col gap-4 border-t border-filete pt-6">
                   <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />

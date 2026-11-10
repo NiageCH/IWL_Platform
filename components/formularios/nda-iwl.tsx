@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { BLOQUES, MARCADORES } from "@/lib/nda-texto";
 import {
   contrafirmarNda,
+  guardarLugarNda,
   guardarPlantillaNda,
   regenerarPdfNda,
   registrarNdaExterno,
@@ -119,5 +121,52 @@ export function PlantillaNda({ vigente }: { vigente: string }) {
         </>
       )}
     </Formulario>
+  );
+}
+
+/** El lugar de firma del NDA: lo que pone `{{lugar}}` */
+export function LugarNda({ lugar }: { lugar: string }) {
+  return (
+    <Formulario accion={guardarLugarNda} className="gap-3 px-4 py-4">
+      {(r) => (
+        <>
+          <Campo etiqueta="Lugar de firma" ayuda="Lo que pone el marcador {{lugar}}" error={r.ok ? undefined : r.campos?.lugar}>
+            <Texto name="lugar" defaultValue={lugar} className="max-w-xs" />
+          </Campo>
+          <div>
+            <Boton variante="secundario">Guardar el lugar</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/** Los marcadores que valen, con qué pone cada uno: lista cerrada */
+export function MarcadoresNda() {
+  return (
+    <details className="text-sm">
+      <summary className="accion cursor-pointer text-xs text-secundario">Marcadores que se pueden usar</summary>
+      <div className="mt-3 flex flex-col gap-3">
+        <p className="text-xs text-metadato">
+          Se escriben entre llaves dobles. Uno que no esté en esta lista no deja guardar la plantilla, y un
+          hueco entre corchetes no deja enviarla.
+        </p>
+        <dl className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-[auto_1fr]">
+          {Object.entries(MARCADORES).map(([m, que]) => (
+            <div key={m} className="contents">
+              <dt className="cifra text-titular">{`{{${m}}}`}</dt>
+              <dd className="text-secundario">{que}</dd>
+            </div>
+          ))}
+          {Object.entries(BLOQUES).map(([b, que]) => (
+            <div key={b} className="contents">
+              <dt className="cifra text-titular">{`{{#${b}}}…{{/${b}}}`}</dt>
+              <dd className="text-secundario">{que}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </details>
   );
 }

@@ -106,6 +106,8 @@ describe("al contrafirmar el NDA", () => {
           p_profile: candidataId,
           p_nombre: "Fundadora de Prueba",
           p_plantilla: plantilla,
+          p_texto: "Texto del NDA ya completado, sin huecos.",
+          p_datos: {},
           p_ip: "1.2.3.4",
           p_ua: "prueba",
         })

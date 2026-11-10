@@ -5,6 +5,8 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
+import { leerPlantillaDe } from "@/lib/datos/nda";
+import { problemaParaEnviar } from "@/lib/nda-texto";
 import {
   FORMA_IDENTIFICADOR,
   identificadorDe,
@@ -653,10 +655,12 @@ export async function darAccesoCandidata(
    * lo impide igualmente (`dar_acceso_candidatura`).
    */
   if (candidatura.estado === "preseleccionada" || candidatura.estado === "nda") {
-    const { data: estadoNda } = await supabase.rpc("estado_nda", { p_candidatura: id });
-    if (estadoNda === "sin_plantilla") {
-      return error("Falta cargar la plantilla del NDA. Cárgala en Administración → Programa y vuelve: sin ella no tendría nada que firmar.");
-    }
+    // Sin plantilla, o con huecos que nadie va a rellenar: no tendría nada que firmar
+    const plantilla = await leerPlantillaDe(id);
+    const problema = plantilla
+      ? problemaParaEnviar(plantilla.texto)
+      : "Falta cargar la plantilla del NDA. Cárgala en Administración → Programa y vuelve.";
+    if (problema) return error(problema);
   }
 
   const servicio = clienteServicio();

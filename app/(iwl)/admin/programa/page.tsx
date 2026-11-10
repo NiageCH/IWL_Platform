@@ -1,6 +1,7 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
-import { PlantillaNda } from "@/components/formularios/nda-iwl";
+import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
+import { problemaParaEnviar } from "@/lib/nda-texto";
 import { fecha } from "@/lib/utils";
 import { leerPlantillaVigente } from "@/lib/datos/nda";
 import { ComiteDefecto } from "@/components/formularios/comite";
@@ -142,15 +143,36 @@ export default async function AdminPrograma() {
             <strong className="text-titular">Firma electrónica simple.</strong>{" "}
             Luciana valida que sirve para el NDA antes de usarlo con fundadoras
             reales. La plataforma no redacta el texto: pega aquí el validado
-            (en Drive, «IWL_NDA_PlantillaGenerica_ES_v2_20260922»).
+            (en Drive, «IWL_NDA_PlantillaGenerica_ES_v2_20261110»).
           </p>
+          <p>
+            <strong className="text-titular">Cada candidata firma su texto completado.</strong>{" "}
+            Los huecos que dependen de ella van con marcadores —su nombre, su
+            documento, si firma como persona o como sociedad—, y antes de firmar
+            rellena lo suyo y lo ve ya escrito. Lo firmado es ese texto.
+          </p>
+          {plantillaNda ? (
+            problemaParaEnviar(plantillaNda.texto) ? (
+              <p className="text-cuerpo" role="status">
+                <strong className="text-titular">No se puede enviar todavía.</strong>{" "}
+                {problemaParaEnviar(plantillaNda.texto)} Mientras tanto, «Enviar el NDA» está
+                bloqueado y quien ya tenga cuenta ve que su NDA está en preparación.
+              </p>
+            ) : (
+              <p className="text-cuerpo">Lista para enviar: no le queda ningún hueco sin marcador.</p>
+            )
+          ) : null}
           {plantillaNda ? (
             <p className="cifra text-xs text-metadato">
               Hash SHA-256 de la versión vigente: {plantillaNda.hash}
             </p>
           ) : null}
+          <MarcadoresNda />
         </div>
         <PlantillaNda vigente={plantillaNda?.texto ?? ""} />
+        <div className="border-t border-filete">
+          <LugarNda lugar={typeof ajuste("nda_lugar") === "string" ? (ajuste("nda_lugar") as string) : "Málaga"} />
+        </div>
       </Bloque>
 
       <Bloque>

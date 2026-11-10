@@ -184,6 +184,18 @@ M = "6. NDA y compañía en entrada"
 add(M, "/embudo/<id>", "admin@iwl.test", "Al enviar el NDA no se le pide nada a la candidatura",
     "Enviar el NDA a una preseleccionada y mirar su ficha.",
     "No aparece «Documentación del due diligence»: lo que se le pide está en el checklist de la compañía, que nace al contrafirmar.")
+add(M, "/admin/programa", "admin@iwl.test", "La plantilla del NDA con marcadores",
+    "Abrir «Marcadores que se pueden usar». Guardar una versión con un marcador inventado, como {{nombre_fundadora}}.",
+    "No la guarda y dice cuál. Si la vigente tiene huecos entre corchetes, el bloque dice «No se puede enviar todavía» y cuál es el primero.")
+add(M, "/embudo/<id>", "admin@iwl.test", "Sin plantilla lista, no se envía el NDA",
+    "Con la plantilla vacía o con corchetes, abrir una preseleccionada.",
+    "«Enviar el NDA» sale desactivado, con el motivo y el enlace a la plantilla. No crea cuenta ni anula el enlace.")
+add(M, "/candidatura", "la candidata", "Sus datos para el NDA y el texto completado",
+    "Con el NDA por firmar: elegir cómo firma (si no se sabe su situación) y rellenar documento y domicilio.",
+    "El texto de abajo se completa mientras escribe. Mientras falte algo, «Firmar el NDA» está desactivado. Debajo de la tarjeta, su candidatura entera.")
+add(M, "/embudo/<id>", "admin@iwl.test", "El PDF lleva su texto completado y la fecha de efecto",
+    "Contrafirmar y abrir el PDF del NDA.",
+    "El texto lleva sus datos y la fecha de la contrafirma como fecha de efecto. La última página, los dos hashes: el del texto que firmó ella y el del texto con la fecha.")
 add(M, "/embudo/<id>", "admin@iwl.test", "Enviar el NDA desde Preseleccionada",
     "Con una candidatura en Preseleccionada, pulsar «Enviar el NDA».",
     "Pasa a «NDA enviado». Enseña la contraseña UNA SOLA VEZ y el correo ya escrito para ella, que se queda hasta pulsar «Hecho». Antes del comité, el botón no sale.")

@@ -7,6 +7,14 @@ import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { generarPdfNda } from "@/lib/nda-pdf";
+import {
+  CAMPOS_DE_ELLA,
+  FECHA_EFECTO_PENDIENTE,
+  completarNda,
+  erroresPlantilla,
+  huecos,
+  type DatosTextoNda,
+} from "@/lib/nda-texto";
 
 /**
  * El NDA: la plantilla, la firma de la candidata, la contrafirma de IWL y
@@ -44,7 +52,12 @@ const esquemaPlantilla = z.object({
   texto: z
     .string()
     .trim()
-    .min(200, "Eso es demasiado corto para un NDA. Pega el texto entero de la plantilla validada."),
+    .min(200, "Eso es demasiado corto para un NDA. Pega el texto entero de la plantilla validada.")
+    // Un marcador desconocido no deja guardar: la base lo comprueba también
+    .superRefine((texto, ctx) => {
+      const errores = erroresPlantilla(texto);
+      if (errores.length) ctx.addIssue({ code: "custom", message: `${errores.join(". ")}.` });
+    }),
 });
 
 /**
@@ -86,12 +99,47 @@ export async function guardarPlantillaNda(formData: FormData): Promise<Resultado
 // La firma de la candidata
 // -----------------------------------------------------------------------------
 
+const opcional = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v) => (v ?? "").trim());
+
 const esquemaFirma = z.object({
   plantilla_id: z.string().uuid(),
   nombre: z.string().trim().min(3, "Escribe tu nombre completo, como en tu DNI o pasaporte."),
   acepto: z.literal("si", { message: "Marca la casilla para firmar." }),
+  /** Solo si su situación societaria no se ha dicho: firma como persona o en nombre de una sociedad */
+  como: z.union([z.enum(["persona", "sociedad"]), z.literal(""), z.null()]).optional(),
+  documento: opcional,
+  domicilio: opcional,
+  denominacion: opcional,
+  nif: opcional,
+  cargo: opcional,
 });
 
+/** El lugar de firma, de Programa */
+async function lugarDelNda(): Promise<string> {
+  const { data } = await clienteServicio()
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "nda_lugar")
+    .maybeSingle();
+  return typeof data?.value === "string" && data.value.trim() ? data.value.trim() : "Málaga";
+}
+
+const ROTULOS: Record<string, string> = {
+  documento: "tu documento",
+  domicilio: "el domicilio",
+  denominacion: "la denominación de la sociedad",
+  nif: "el NIF de la sociedad",
+  cargo: "tu cargo",
+};
+
+/**
+ * Ella firma su texto, completado con sus datos. Se completa aquí, con el
+ * mismo código que le enseñó la vista previa, y la base calcula el hash
+ * sobre lo que recibe y comprueba que no le queda ningún hueco.
+ */
 export async function firmarNda(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaFirma, formData);
   if (fallo) return fallo;
@@ -104,12 +152,51 @@ export async function firmarNda(formData: FormData): Promise<Resultado> {
   const { data: candidaturaId } = await supabase.rpc("mi_candidatura_id");
   if (!candidaturaId) return error("No encontramos tu candidatura. Escríbenos.");
 
+  const servicio = clienteServicio();
+  const [{ data: plantilla }, { data: c }, lugar] = await Promise.all([
+    servicio.from("nda_plantillas").select("texto").eq("id", datos.plantilla_id).maybeSingle(),
+    servicio.from("candidaturas").select("nombre, contacto_nombre, situacion_societaria").eq("id", candidaturaId).single(),
+    lugarDelNda(),
+  ]);
+  if (!plantilla || !c) return error("El NDA ha cambiado mientras lo leías. Vuelve a cargar la página.");
+
+  const esSociedad = c.situacion_societaria
+    ? c.situacion_societaria === "constituida"
+    : datos.como === "sociedad";
+  if (!c.situacion_societaria && !datos.como) {
+    return error("Dinos si firmas como persona física o en nombre de una sociedad.", { como: "Elige una." });
+  }
+
+  const deElla = Object.fromEntries(CAMPOS_DE_ELLA.map((k) => [k, datos[k]]));
+  const completos: DatosTextoNda = {
+    startup: c.nombre,
+    contraparte_nombre: c.contacto_nombre ?? "",
+    lugar,
+    fecha_efecto: FECHA_EFECTO_PENDIENTE,
+    es_sociedad: esSociedad,
+    ...deElla,
+  };
+  const texto = completarNda(plantilla.texto, completos);
+
+  const faltan = huecos(texto);
+  if (faltan.length) {
+    const campos: Record<string, string> = {};
+    for (const h of faltan) {
+      const nombre = h.replace(/[{}\s]/g, "");
+      if (nombre in ROTULOS) campos[nombre] = "Falta este dato.";
+    }
+    const que = faltan.map((h) => ROTULOS[h.replace(/[{}\s]/g, "")] ?? h).join(", ");
+    return error(`Al NDA le falta: ${que}. Rellénalo y vuelve a firmar.`, campos);
+  }
+
   const { ip, ua } = await origen();
-  const { error: falloFirma } = await clienteServicio().rpc("firmar_nda", {
+  const { error: falloFirma } = await servicio.rpc("firmar_nda", {
     p_candidatura: candidaturaId,
     p_profile: persona.id,
     p_nombre: datos.nombre,
     p_plantilla: datos.plantilla_id,
+    p_texto: texto,
+    p_datos: { ...completos, es_sociedad: esSociedad },
     p_ip: ip ?? "",
     p_ua: ua ?? "",
   });
@@ -243,11 +330,37 @@ export async function contrafirmarNda(formData: FormData): Promise<Resultado> {
 
   const { ip, ua } = await origen();
   const servicio = clienteServicio();
+
+  /*
+   * El texto final: el que firmó ella, con la fecha de efecto ya escrita,
+   * que es la de esta firma, la última. Un NDA firmado antes de que hubiera
+   * datos no tiene de dónde sacarlo, y se contrafirma como estaba.
+   */
+  const { data: firmada } = await servicio
+    .from("nda_firmas")
+    .select("datos, nda_plantillas(texto)")
+    .eq("candidatura_id", datos.candidatura_id)
+    .maybeSingle();
+  const plantilla = firmada?.nda_plantillas as unknown as { texto: string } | null;
+  const textoFinal =
+    firmada?.datos && plantilla
+      ? completarNda(plantilla.texto, {
+          ...(firmada.datos as unknown as DatosTextoNda),
+          fecha_efecto: new Intl.DateTimeFormat("es-ES", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            timeZone: "Europe/Madrid",
+          }).format(new Date()),
+        })
+      : null;
+
   const { error: falloFirma } = await servicio.rpc("contrafirmar_nda", {
     p_candidatura: datos.candidatura_id,
     p_profile: persona!.id,
     p_ip: ip ?? "",
     p_ua: ua ?? "",
+    p_texto_final: textoFinal ?? undefined,
   });
   if (falloFirma) return traducirError(falloFirma);
 
@@ -275,9 +388,11 @@ async function guardarPdf(candidaturaId: string, autor: string): Promise<string 
   const bytes = await generarPdfNda({
     candidatura: candidatura.nombre,
     candidaturaId,
-    texto: plantilla.texto,
+    // El texto con sus datos y la fecha; los de antes de los marcadores, la plantilla
+    texto: firma.texto_final ?? firma.texto_firmado ?? plantilla.texto,
     version: plantilla.version,
     hash: firma.texto_hash ?? "",
+    hashFinal: firma.texto_final_hash,
     ella: {
       nombre: firma.firmante_nombre ?? "",
       correo: firma.firmante_correo,
@@ -440,4 +555,24 @@ export async function abrirNda(formData: FormData): Promise<Resultado & { url?: 
   const { data, error: falloFirma } = await supabase.storage.from("candidaturas").createSignedUrl(ruta, 300);
   if (falloFirma || !data) return error("No se ha podido abrir el NDA.");
   return { ok: true, url: data.signedUrl };
+}
+
+/** El lugar de firma, el marcador {{lugar}}. Solo dirección, por la política de ajustes */
+export async function guardarLugarNda(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ lugar: z.string().trim().min(2, "¿Dónde se firma? Por ejemplo, Málaga.") }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { data, error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: datos.lugar })
+    .eq("key", "nda_lugar")
+    .select("key");
+  if (falloBase) return traducirError(falloBase);
+  if (!data?.length) return error("El lugar del NDA lo fija la dirección de IWL.");
+  revalidatePath("/admin/programa");
+  return ok(`Guardado. Los NDA que se firmen desde ahora dirán «${datos.lugar}».`);
 }

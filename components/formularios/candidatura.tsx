@@ -631,7 +631,7 @@ export function AccesoCandidata({
   correo,
   base,
   estado,
-  sinPlantilla = false,
+  problemaNda = null,
 }: {
   id: string;
   token: string | null;
@@ -642,11 +642,11 @@ export function AccesoCandidata({
   /** En qué paso está: el NDA se envía desde Preseleccionada */
   estado: string;
   /**
-   * No hay texto de NDA que enseñarle. Darle cuenta así la dejaba sin su
-   * enlace y sin nada que firmar; pasó en producción. La base lo impide
-   * también.
+   * Por qué no se le puede enviar el NDA: sin plantilla, o con huecos que
+   * nadie va a rellenar. Darle cuenta así la dejaba sin su enlace y sin
+   * nada que firmar; pasó en producción. La base lo impide también.
    */
-  sinPlantilla?: boolean;
+  problemaNda?: string | null;
 }) {
   const [copiado, setCopiado] = useState(false);
   const [hecho, setHecho] = useState(false);
@@ -736,14 +736,14 @@ export function AccesoCandidata({
             );
           }
           const enviar = estado === "preseleccionada";
-          if ((enviar || estado === "nda") && sinPlantilla) {
+          if ((enviar || estado === "nda") && problemaNda) {
             return (
               <>
                 <p className="text-sm text-cuerpo">
-                  Falta cargar la plantilla del NDA. Sin ella no tendría nada que firmar, y
+                  {problemaNda} Hasta entonces no se le envía: no tendría nada que firmar, y
                   darle la cuenta anula su enlace privado.{" "}
                   <Link href="/admin/programa" className="enlace text-acento-texto">
-                    Cargarla en Administración → Programa
+                    Ir a la plantilla, en Administración → Programa
                   </Link>
                 </p>
                 <div>

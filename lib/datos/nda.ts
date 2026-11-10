@@ -1,3 +1,4 @@
+import { problemaParaEnviar } from "@/lib/nda-texto";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -35,7 +36,7 @@ export async function leerPlantillaVigente(): Promise<PlantillaNda | null> {
 }
 
 /** La que le toca a una candidatura: la propia si la tiene, si no la genérica. Lo decide la base */
-async function leerPlantillaDe(candidaturaId: string): Promise<PlantillaNda | null> {
+export async function leerPlantillaDe(candidaturaId: string): Promise<PlantillaNda | null> {
   const supabase = await clienteServidor();
   const { data: id } = await supabase.rpc("plantilla_nda_de", { p_candidatura: candidaturaId });
   if (!id) return null;
@@ -71,9 +72,16 @@ export async function leerComentariosNda(candidaturaId: string): Promise<Comenta
   }));
 }
 
+export interface BaseNda {
+  startup: string;
+  contraparte_nombre: string;
+  situacion_societaria: string | null;
+  lugar: string;
+}
+
 export async function leerNda(candidaturaId: string) {
   const supabase = await clienteServidor();
-  const [{ data: estado }, plantilla, { data: firma }, comentarios] = await Promise.all([
+  const [{ data: estado }, plantilla, { data: firma }, comentarios, { data: base }] = await Promise.all([
     supabase.rpc("estado_nda", { p_candidatura: candidaturaId }),
     leerPlantillaDe(candidaturaId),
     supabase
@@ -84,6 +92,8 @@ export async function leerNda(candidaturaId: string) {
       .eq("candidatura_id", candidaturaId)
       .maybeSingle(),
     leerComentariosNda(candidaturaId),
+    // Lo que completa el texto sin que lo rellene ella, para la vista previa
+    supabase.rpc("datos_nda", { p_candidatura: candidaturaId }).maybeSingle(),
   ]);
 
   return {
@@ -91,5 +101,8 @@ export async function leerNda(candidaturaId: string) {
     plantilla,
     firma,
     comentarios,
+    base: (base as BaseNda | null) ?? null,
+    /** Por qué no se puede enviar: sin plantilla, o con huecos. Nulo si se puede */
+    problema: plantilla ? problemaParaEnviar(plantilla.texto) : "Falta cargar la plantilla del NDA.",
   };
 }

@@ -448,7 +448,7 @@ export default async function FichaCandidatura({
               correo={c.contacto_email ?? ""}
               base={base}
               estado={estado}
-              sinPlantilla={nda.estado === "sin_plantilla"}
+              problemaNda={nda.firma ? null : nda.problema}
             />
           </Bloque>
 

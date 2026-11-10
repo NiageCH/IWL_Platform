@@ -4,6 +4,26 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · El NDA se personaliza: marcadores y datos de la firmante
+
+Rodrigo ha cargado en producción la plantilla del NDA (`IWL_NDA_PlantillaGenerica_ES_v2_20261110`). La plataforma la usa tal cual: no rellena nada. El texto tiene huecos que dependen de cada candidata (quién es la Contraparte, persona física o sociedad, su documento, su domicilio, la fecha de efecto), así que hoy se firmaría con los corchetes dentro. **No se envía ningún NDA hasta que esto esté.**
+
+**Qué hace falta:**
+1. **Marcadores en la plantilla**, con la sintaxis `{{nombre}}`. Lista cerrada, documentada en la pantalla de la plantilla:
+   · de la candidatura: `{{startup}}`, `{{contraparte_nombre}}`;
+   · de la firma: `{{fecha_efecto}}` (la de la última firma), `{{lugar}}` (Málaga por defecto, en Programa);
+   · de lo que rellena ella: `{{documento}}`, `{{domicilio}}`, y si es sociedad `{{denominacion}}`, `{{nif}}`, `{{cargo}}`.
+   Un marcador desconocido no deja guardar la plantilla.
+2. **Persona física o sociedad.** Dos bloques condicionales, `{{#si_sociedad}}…{{/si_sociedad}}` y `{{#si_persona}}…{{/si_persona}}`. Sale de la situación societaria: «constituida» es sociedad; las otras dos, persona física.
+3. **«Tus datos para el NDA»**, antes de firmar: ella rellena lo que falta. Ve el texto ya completado antes de firmar.
+4. **Lo firmado es el texto completado.** El hash, la versión y el PDF se calculan sobre el texto con sus datos, no sobre la plantilla. Guarda también los datos que rellenó.
+5. **Sin corchetes.** Si en el texto completado queda un `[` … `]` o un `{{`, no se puede enviar ni firmar, y la pantalla dice qué hueco falta. Así una plantilla a medio hacer no llega nunca a una candidata.
+6. **«Enviar el NDA» sigue bloqueado** mientras la plantilla vigente no pase esa comprobación (amplía el punto 1 de la entrada anterior).
+
+El texto legal no lo toques: los marcadores los pone Luciana en la plantilla. Va antes de lo de equity, junto con el arreglo de la entrada anterior.
+
+---
+
 ## 2026-11-10 · Producción: la candidata con NDA pendiente no ve nada más
 
 Rodrigo ha probado en producción. La candidata entra y solo ve «Tu NDA está en preparación», sin nada más. Dos fallos, por este orden de urgencia:
