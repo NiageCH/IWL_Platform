@@ -444,3 +444,29 @@ export async function llamar(funcion: string, args: Record<string, unknown>): Pr
   const texto = await respuesta.text();
   return texto ? JSON.parse(texto) : null;
 }
+
+/**
+ * Los correos que ha recibido alguien en el buzón local (Mailpit), con su
+ * texto. La plataforma entrega ahí en local y en las pruebas: nada sale a
+ * internet. Espera un poco a que lleguen.
+ */
+export async function correosRecibidos(
+  para: string,
+  { esperar = 1 }: { esperar?: number } = {},
+): Promise<{ asunto: string; texto: string }[]> {
+  const base = process.env.MAILPIT_URL || "http://127.0.0.1:54324";
+  for (let intento = 0; intento < 20; intento++) {
+    const r = await fetch(`${base}/api/v1/search?query=${encodeURIComponent(`to:"${para}"`)}`);
+    const { messages } = (await r.json()) as { messages: { ID: string; Subject: string }[] };
+    if (messages.length >= esperar) {
+      return Promise.all(
+        messages.map(async (m) => {
+          const d = (await (await fetch(`${base}/api/v1/message/${m.ID}`)).json()) as { Text: string };
+          return { asunto: m.Subject, texto: d.Text };
+        }),
+      );
+    }
+    await new Promise((listo) => setTimeout(listo, 250));
+  }
+  return [];
+}

@@ -8,6 +8,8 @@ import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { generarPdfNda } from "@/lib/nda-pdf";
 import { faltanMarcas } from "@/lib/nda-formato";
+import { notificar } from "@/lib/correo";
+import { direccionBase } from "@/lib/direccion";
 import {
   CAMPOS_DE_ELLA,
   completarNda,
@@ -262,9 +264,21 @@ export async function responderComentarioNda(formData: FormData): Promise<Result
     .update({ respuesta: datos.respuesta })
     .eq("id", datos.id)
     .is("respuesta", null)
-    .select("id");
+    .select("profile_id, profiles!nda_comentarios_profile_id_fkey ( email, full_name )");
   if (falloBase) return traducirError(falloBase);
   if (!data?.length) return error("Ese comentario ya está respondido, o tu cuenta no puede responderlo.");
+
+  // A ella, la respuesta por correo. Si no sale, queda en la ficha para reintentar
+  const ella = data[0].profiles as unknown as { email: string | null; full_name: string | null } | null;
+  if (ella?.email) {
+    const persona = await personaActual();
+    await notificar(
+      { correo: ella.email, nombre: ella.full_name, profileId: data[0].profile_id },
+      "respuesta_comentario",
+      { nombre: ella.full_name, sobre: "el NDA", respuesta: datos.respuesta, enlace: `${direccionBase()}/candidatura` },
+      { candidaturaId: datos.candidatura_id, autor: persona?.id },
+    );
+  }
 
   refrescar(datos.candidatura_id);
   // El acuse es la respuesta, que sale ya en su sitio

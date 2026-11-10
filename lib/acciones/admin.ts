@@ -1624,6 +1624,21 @@ const esquemaMisDatos = z.object({
   last_name: textoObligatorio(1, "Faltan tus apellidos."),
 });
 
+/** Si recibe el resumen diario de avisos. Cada cual el suyo */
+export async function guardarResumenAvisos(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ resumen_avisos: z.enum(["diario", "nunca"]) }), formData);
+  if (fallo) return fallo;
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.from("profiles").update(datos).eq("id", persona.id);
+  if (falloBase) return traducirError(falloBase);
+
+  revalidatePath("/perfil");
+  return ok(datos.resumen_avisos === "diario" ? "Te llegará cada mañana, si tienes avisos." : "No te llegará más.");
+}
+
 export async function guardarMisDatos(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaMisDatos, formData);
   if (fallo) return fallo;

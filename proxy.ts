@@ -93,6 +93,8 @@ export async function proxy(request: NextRequest) {
      * la barra, esta regla abriría las dos.
      */
     ruta.startsWith("/candidatura/") ||
+    // El cron de Vercel: lo protege su secreto, no una sesión
+    ruta.startsWith("/api/cron/") ||
     ruta === "/";
 
   if (!user && !esRutaPublica) {

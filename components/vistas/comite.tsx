@@ -1,6 +1,7 @@
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Estado } from "@/components/ui/estado";
 import { AbrirDocumento } from "@/components/formularios/expediente";
+import { EnviarMensajeDescarte } from "@/components/formularios/correo";
 import { RegenerarPdfActa, BorrarActa, FirmarActa, RedactarActa } from "@/components/formularios/comite";
 import type { Acta } from "@/lib/datos/comite";
 import { DECISIONES, VIAS, type Via } from "@/lib/comite";
@@ -76,12 +77,7 @@ export function BloqueComite({
                   {a.documento ? <AbrirDocumento documento={a.documento} /> : null}
                   {a.cerradaAt && esDireccion ? <RegenerarPdfActa actaId={a.id} candidaturaId={candidaturaId} /> : null}
                   {a.cerradaAt && a.decision === "descartada" && a.mensaje && correo ? (
-                    <a
-                      href={`mailto:${correo}?subject=${encodeURIComponent(`${startup} · Inception Woman Lab`)}&body=${encodeURIComponent(a.mensaje)}`}
-                      className="accion text-xs"
-                    >
-                      Enviarle el mensaje
-                    </a>
+                    <EnviarMensajeDescarte origen="acta" id={a.id} />
                   ) : null}
                 </div>
               </li>

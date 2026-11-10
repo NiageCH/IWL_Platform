@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { personaActual } from "@/lib/supabase/servidor";
 import { Marco } from "@/components/marco";
 import { BarraSuperior } from "@/components/barra-superior";
-import { CambiarContrasena, MisDatos } from "@/components/formularios/perfil";
+import { CambiarContrasena, MisDatos, ResumenAvisos } from "@/components/formularios/perfil";
+import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 
 export const metadata = { title: "Mi cuenta · Plataforma IWL" };
@@ -20,6 +20,11 @@ export const metadata = { title: "Mi cuenta · Plataforma IWL" };
 export default async function Perfil() {
   const persona = await personaActual();
   if (!persona) redirect("/entrar?siguiente=/perfil");
+  const { data: preferencias } = await (await clienteServidor())
+    .from("profiles")
+    .select("resumen_avisos")
+    .eq("id", persona.id)
+    .single();
 
   return (
     <Marco tema="claro">
@@ -46,6 +51,19 @@ export default async function Perfil() {
             <MisDatos nombre={persona.full_name ?? ""} apellidos={persona.last_name ?? ""} />
           </div>
         </Bloque>
+
+        {esIwl(persona.role) ? (
+          <Bloque className="mb-6">
+            <TituloBloque>Resumen de avisos por correo</TituloBloque>
+            <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+              Un correo al día con los avisos que tengas abiertos —quién ha
+              firmado, comentado o entrado—, en vez de uno por aviso.
+            </p>
+            <div className="px-4 py-4">
+              <ResumenAvisos actual={(preferencias?.resumen_avisos as "diario" | "nunca") ?? "diario"} />
+            </div>
+          </Bloque>
+        ) : null}
 
         <Bloque>
           <TituloBloque accion={<Metadato>{persona.email}</Metadato>}>

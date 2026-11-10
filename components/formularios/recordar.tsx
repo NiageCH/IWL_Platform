@@ -8,10 +8,9 @@ import { textoRecordatorio, type ClavePaso } from "@/lib/onboarding";
 /**
  * Recordarle a alguien el paso en que se ha quedado.
  *
- * Sin proveedor de correo, no se envía nada desde aquí: se abre un correo
- * ya redactado en el programa de quien lo pulsa, y queda el mismo texto a
- * mano para mandarlo por WhatsApp. Lo que sí hace la plataforma es apuntar
- * que se recordó, por qué canal y cuándo.
+ * Por correo lo envía la plataforma; el mismo texto queda a mano para
+ * mandarlo por WhatsApp. En los dos casos se apunta que se recordó, por qué
+ * canal y cuándo.
  */
 export function Recordar({
   personaId,
@@ -30,8 +29,9 @@ export function Recordar({
 }) {
   const [abierto, setAbierto] = useState(false);
   const [apuntado, setApuntado] = useState<string | null>(null);
+  const [fallo, setFallo] = useState<string | null>(null);
   const [, empezar] = useTransition();
-  const { asunto, cuerpo } = textoRecordatorio(paso, nombre, direccion);
+  const { cuerpo } = textoRecordatorio(paso, nombre, direccion);
 
   function apuntar(canal: "correo" | "whatsapp") {
     const datos = new FormData();
@@ -42,6 +42,7 @@ export function Recordar({
     empezar(async () => {
       const r = await registrarRecordatorio(datos);
       setApuntado(r.ok ? canal : null);
+      setFallo(r.ok ? null : r.error);
     });
   }
 
@@ -61,9 +62,8 @@ export function Recordar({
   return (
     <div className="mt-2 w-full rounded-lg border border-filete bg-elevado p-3 text-sm">
       <p className="mb-2 text-xs text-secundario">
-        Todavía no hay envío de correo: se abre uno ya escrito en tu programa
-        de correo, o copias el texto para WhatsApp. Queda apuntado que se lo
-        recordaste.
+        Se lo envía la plataforma por correo, o copias el texto para
+        WhatsApp. Queda apuntado que se lo recordaste.
       </p>
       <textarea
         readOnly
@@ -74,13 +74,9 @@ export function Recordar({
       />
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {correo ? (
-          <a
-            href={`mailto:${correo}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`}
-            onClick={() => apuntar("correo")}
-            className="accion text-xs"
-          >
-            Abrir el correo
-          </a>
+          <button type="button" onClick={() => apuntar("correo")} className="accion text-xs">
+            Enviar el correo
+          </button>
         ) : null}
         <button
           type="button"
@@ -97,7 +93,12 @@ export function Recordar({
         </button>
         {apuntado ? (
           <span className="text-xs text-secundario" role="status">
-            Apuntado: recordatorio por {apuntado === "correo" ? "correo" : "WhatsApp"}.
+            {apuntado === "correo" ? "Correo enviado, y apuntado." : "Apuntado: recordatorio por WhatsApp."}
+          </span>
+        ) : null}
+        {fallo ? (
+          <span className="text-xs text-mal" role="status">
+            {fallo}
           </span>
         ) : null}
       </div>

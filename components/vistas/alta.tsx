@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { textoAviso } from "@/lib/avisos";
 import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
@@ -172,15 +173,7 @@ export function AvisosDireccion({
             {avisos.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
                 <span className="min-w-0 flex-1 text-sm text-titular">
-                  {a.tipo === "primer_acceso"
-                    ? `${a.persona} ha entrado por primera vez`
-                    : a.tipo === "nda_comentario"
-                      ? `${a.persona} ha comentado el NDA`
-                      : a.tipo === "situacion_dicha"
-                        ? `${a.persona} ha dicho la situación societaria. Falta confirmarla`
-                        : a.tipo === "anexo_comentario"
-                          ? `${a.persona} ha comentado la propuesta de Acuerdo`
-                          : `${a.persona} ha firmado el NDA. Falta la firma de IWL`}
+                  {textoAviso(a.tipo, a.persona)}
                   {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
                 </span>
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
@@ -261,9 +254,7 @@ export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
         {avisos.map((a) => (
           <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
             <span className="min-w-0 flex-1 text-sm text-titular">
-              {a.tipo === "cambio_via"
-                ? `${a.donde ?? "Una compañía"} pasa de Construcción a Aceleración. Lo que estaba por construir pasa a por entregar`
-                : `Aviso sobre ${a.donde ?? "una compañía"}`}
+              {textoAviso(a.tipo, a.persona, a.donde)}
             </span>
             <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
             {a.companiaSlug ? (

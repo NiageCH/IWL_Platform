@@ -5,6 +5,7 @@ import {
   borrar,
   borrarCuenta,
   consultar,
+  correosRecibidos,
   entrarComo,
   insertar,
 } from "./entrada";
@@ -159,12 +160,29 @@ test("al enviar el NDA, el enlace deja de valer y pasa a «NDA enviado»", async
   await expect(page.getByText(/NDA enviado a/)).toBeVisible();
   await expect(page.getByText(/no se vuelve a enseñar/)).toBeVisible();
 
-  // Y el correo ya escrito, con su acceso, hasta que se pulse «Hecho»
-  const correo = page.getByLabel("Correo para ella, con su acceso");
-  await expect(correo).toHaveValue(new RegExp(`Correo: ${c.correo.replace(/\./g, "\\.")}`));
-  await expect(page.getByRole("link", { name: "Abrir el correo" })).toHaveAttribute("href", /^mailto:/);
+  /*
+   * Le llega un correo de la plataforma con un enlace para elegir su
+   * contraseña; la temporal no va en él. Esa queda aquí, para dársela por
+   * otro canal, hasta que se pulse «Hecho».
+   */
+  await expect(page.getByText(/Le ha llegado un correo con un enlace para entrar y elegir su contraseña/)).toBeVisible();
+  const clave = (await page.getByText(/NDA enviado a/).innerText()).match(/contraseña es ([^\s]+)/)![1];
+  const [recibido] = await correosRecibidos(c.correo);
+  expect(recibido.asunto).toMatch(/Tu acuerdo de confidencialidad, listo para firmar/);
+  expect(recibido.texto).toMatch(/Entrar y elegir mi contraseña: http/);
+  expect(recibido.texto).not.toContain(clave);
+  await expect(page.getByRole("link", { name: "Abrir el correo" })).toHaveCount(0);
+
+  const acceso = page.getByLabel("Su acceso, para mandárselo por otro canal");
+  await expect(acceso).toHaveValue(new RegExp(`Correo: ${c.correo.replace(/\./g, "\\.")}`));
   await page.getByRole("button", { name: "Hecho" }).click();
-  await expect(correo).toHaveCount(0);
+  await expect(acceso).toHaveCount(0);
+
+  // Y en su ficha, el correo enviado
+  await page.reload();
+  const correos = page.locator("section").filter({ has: page.getByRole("heading", { name: "Correos", exact: true }) });
+  await expect(correos.getByText("NDA enviado")).toBeVisible();
+  await expect(correos.getByText("Enviado", { exact: true })).toBeVisible();
 
   const [despues] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${c.id}` }, "estado");
   expect(despues.estado).toBe("nda");
@@ -254,6 +272,12 @@ test("quien se presenta por el formulario recibe su enlace", async ({
   await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
 
   await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
+
+  // Le llega por correo, con su enlace privado
+  const [recibido] = await correosRecibidos(correo);
+  expect(recibido.asunto).toBe("Hemos recibido tu candidatura · Startup Que Se Presenta");
+  expect(recibido.texto).toMatch(/^Hola, Quien:/);
+  expect(recibido.texto).toMatch(/Ver mi candidatura: http\S+\/candidatura\/\S+/);
 
   // Y con su enlace a la vista, para guardarlo
   await expect(page.getByText(/Guarda esta dirección/)).toBeVisible();

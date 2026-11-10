@@ -321,12 +321,66 @@ por usuario.
 
 Esto es una prueba. Antes de que entre gente de fuera de IWL:
 
-- **Un proveedor de correo.** Sin él no funcionan los enlaces de recuperación
-  ni las alertas del paso 14. Resend tiene plan gratuito y se configura en
-  Authentication → Emails.
+- **Un proveedor de correo.** El código ya está (`lib/correo`, Resend por
+  defecto). Falta la cuenta y el dominio: ver «El correo» más abajo.
 - ~~Un dominio propio.~~ **Hecho**: `ride.inceptionwlab.es`, activo en Vercel
   desde el 5 de noviembre. El de `vercel.app` redirige a él desde el proxy.
 - **Copias de seguridad.** El plan gratuito de Supabase no las hace. El Pro
   guarda siete días.
 - ~~Que cada persona cambie su contraseña.~~ Hecho: la plataforma lo pide en
   la primera entrada.
+
+## El correo
+
+La plataforma envía sus correos por `notificar` (`lib/correo`), con Resend por
+su API. Sin clave, cada correo queda «sin enviar» en la ficha y Administración
+lo avisa; cuando la haya, se reintentan desde ahí.
+
+**1. Resend.** Crea la cuenta y añade el dominio `inceptionwlab.es` con la
+región **UE (eu-west-1)**. Resend da los valores exactos de cada registro; son
+de esta forma:
+
+| Tipo | Nombre (en GoDaddy) | Valor |
+|---|---|---|
+| MX | `send` | `feedback-smtp.eu-west-1.amazonses.com`, prioridad 10 |
+| TXT (SPF) | `send` | `v=spf1 include:amazonses.com ~all` |
+| TXT (DKIM) | `resend._domainkey` | la clave pública que da Resend, entera |
+| TXT (DMARC) | `_dmarc` | `v=DMARC1; p=none; rua=mailto:iwl@inceptionwlab.es` |
+
+El MX y el SPF van en el subdominio `send`, no en la raíz: no tocan el correo
+que ya recibe `inceptionwlab.es`. Si ya hay un `_dmarc`, se deja el que hay.
+Cuando Resend marque el dominio como verificado, crea una clave de API con
+permiso de envío.
+
+**2. Vercel** (Settings → Environment Variables, en producción):
+
+| Variable | Valor |
+|---|---|
+| `RESEND_API_KEY` | la clave de Resend |
+| `CRON_SECRET` | una cadena aleatoria larga (`openssl rand -hex 32`) |
+| `CORREO_REMITENTE` | opcional; por defecto `Inception Woman Lab <plataforma@inceptionwlab.es>` |
+| `CORREO_RESPUESTA` | opcional; por defecto `iwl@inceptionwlab.es` |
+
+`CRON_SECRET` protege `/api/cron/resumen-avisos`, que Vercel llama cada día a
+las 7:00 UTC (`vercel.json`) para el resumen de avisos. Después de añadir las
+variables, otro `npx vercel --prod`: no se aplican a un despliegue ya hecho.
+
+**3. Supabase Auth con el mismo proveedor** (Authentication → Emails → SMTP
+Settings), para los correos de contraseña que manda Supabase:
+
+| Campo | Valor |
+|---|---|
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | la misma clave de Resend |
+| Sender email | `plataforma@inceptionwlab.es` |
+| Sender name | `Inception Woman Lab` |
+
+Y en Authentication → URL Configuration, que `https://ride.inceptionwlab.es/auth/confirmar`
+esté entre las direcciones de redirección: es a donde lleva el enlace del
+correo del NDA para elegir la contraseña.
+
+**Para comprobarlo**: en Administración desaparece el aviso «No hay proveedor
+de correo configurado», y al enviar un NDA de prueba la ficha dice «Enviado»
+en su bloque «Correos».

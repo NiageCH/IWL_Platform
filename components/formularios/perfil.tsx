@@ -1,6 +1,6 @@
 "use client";
 
-import { cambiarMiContrasena, estrenarContrasena, guardarMisDatos } from "@/lib/acciones/admin";
+import { cambiarMiContrasena, estrenarContrasena, guardarMisDatos, guardarResumenAvisos } from "@/lib/acciones/admin";
 import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
 
 /**
@@ -76,7 +76,33 @@ export function MisDatos({ nombre, apellidos }: { nombre: string; apellidos: str
             </Campo>
           </div>
           <div>
-            <Boton variante="secundario">Guardar</Boton>
+            <Boton variante="secundario">Guardar mis datos</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/** El resumen diario de avisos por correo: diario o nunca */
+export function ResumenAvisos({ actual }: { actual: "diario" | "nunca" }) {
+  return (
+    <Formulario accion={guardarResumenAvisos} className="gap-3">
+      {() => (
+        <>
+          <fieldset className="flex flex-col gap-2 text-sm text-titular">
+            <legend className="sr-only">Resumen de avisos por correo</legend>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="resumen_avisos" value="diario" defaultChecked={actual === "diario"} />
+              Cada mañana, si tengo alguno abierto
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="resumen_avisos" value="nunca" defaultChecked={actual === "nunca"} />
+              Nunca
+            </label>
+          </fieldset>
+          <div>
+            <Boton variante="secundario">Guardar la preferencia</Boton>
           </div>
         </>
       )}

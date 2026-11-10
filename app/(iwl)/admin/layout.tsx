@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { personaActual } from "@/lib/supabase/servidor";
 import { NavSecciones, type Seccion } from "@/components/nav-secciones";
 import { Metadato } from "@/components/ui/primitivas";
+import { Estado } from "@/components/ui/estado";
+import { hayProveedor } from "@/lib/correo";
 
 /**
  * Administración.
@@ -37,6 +39,19 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
           instantáneas ya tomadas: el histórico está congelado.
         </p>
       </div>
+
+      {/* Sin proveedor, los correos se apuntan pero no salen: que se vea antes de echarlos de menos */}
+      {!hayProveedor() ? (
+        <div className="tarjeta mb-6 flex flex-wrap items-start gap-3 p-4 text-sm" role="status">
+          <Estado valor="atencion" rotulo="Correo" />
+          <p className="min-w-0 flex-1 text-cuerpo">
+            <strong className="text-titular">No hay proveedor de correo configurado.</strong> La
+            plataforma apunta cada correo, pero se queda «sin enviar». Falta la clave
+            <code className="cifra"> RESEND_API_KEY </code>en Vercel; cuando esté, cada uno se
+            reintenta desde su ficha.
+          </p>
+        </div>
+      ) : null}
 
       <NavSecciones secciones={secciones} />
 

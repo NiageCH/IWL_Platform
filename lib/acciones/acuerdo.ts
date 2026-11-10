@@ -7,6 +7,22 @@ import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servic
 import { generarClave } from "@/lib/claves";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { leerFirmantes, type Situacion } from "@/lib/societario";
+import { notificar } from "@/lib/correo";
+import { direccionBase } from "@/lib/direccion";
+
+/** Las fundadoras de una compañía, con su correo: a quien se avisa del Acuerdo */
+async function fundadorasDe(companyId: string) {
+  const { data } = await clienteServicio()
+    .from("company_members")
+    .select("profile_id, profiles ( email, full_name ), companies ( name )")
+    .eq("company_id", companyId)
+    .eq("member_role", "fundadora");
+  return (data ?? []).flatMap((m) => {
+    const p = m.profiles as unknown as { email: string | null; full_name: string | null } | null;
+    const c = m.companies as unknown as { name: string } | null;
+    return p?.email ? [{ profileId: m.profile_id, correo: p.email, nombre: p.full_name, compania: c?.name ?? "" }] : [];
+  });
+}
 
 /**
  * El Anexo como propuesta de Acuerdo, y firmar el Acuerdo desde la
@@ -116,6 +132,17 @@ export async function proponerAnexo(formData: FormData): Promise<Resultado> {
   }
   if (!data?.length) return error("No se ha propuesto: el Anexo ya no está en borrador.");
 
+  // A cada fundadora, su aviso por correo. Si no sale, queda para reintentar
+  const { persona } = await soloIwl();
+  for (const f of await fundadorasDe(anexo.company_id)) {
+    await notificar(
+      { correo: f.correo, nombre: f.nombre, profileId: f.profileId },
+      "acuerdo_propuesto",
+      { nombre: f.nombre, startup: f.compania, enlace: `${direccionBase()}/proyecto` },
+      { companyId: anexo.company_id, autor: persona?.id },
+    );
+  }
+
   refrescar(datos.slug);
   return ok();
 }
@@ -176,9 +203,27 @@ export async function responderComentarioAnexo(formData: FormData): Promise<Resu
     .from("anexo_comentarios")
     .update({ respuesta: datos.respuesta })
     .eq("id", datos.id)
-    .select("id");
+    .select("company_id, profile_id, companies ( name ), profiles!anexo_comentarios_profile_id_fkey ( email, full_name )");
   if (falloBase) return traducirError(falloBase);
   if (!data?.length) return error("No se ha guardado la respuesta.");
+
+  // A quien comentó, la respuesta por correo
+  const c = data[0];
+  const ella = c.profiles as unknown as { email: string | null; full_name: string | null } | null;
+  if (ella?.email) {
+    const { persona } = await soloIwl();
+    await notificar(
+      { correo: ella.email, nombre: ella.full_name, profileId: c.profile_id },
+      "respuesta_comentario",
+      {
+        nombre: ella.full_name,
+        sobre: `el Acuerdo de ${(c.companies as unknown as { name: string } | null)?.name ?? "tu compañía"}`,
+        respuesta: datos.respuesta,
+        enlace: `${direccionBase()}/proyecto`,
+      },
+      { companyId: c.company_id, autor: persona?.id },
+    );
+  }
 
   refrescar(datos.slug);
   return ok();

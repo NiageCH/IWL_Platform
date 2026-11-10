@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { clienteServicio } from "@/lib/supabase/servicio";
+import { notificar } from "@/lib/correo";
+import { direccionBase } from "@/lib/direccion";
+import { textoRecordatorio, type ClavePaso } from "@/lib/onboarding";
 
 /**
  * Las acciones del alta: cerrar un aviso, dejar constancia de un
@@ -50,9 +54,10 @@ const esquemaRecordatorio = z.object({
 });
 
 /**
- * Un recordatorio sale fuera de la plataforma —un correo, un WhatsApp— y
- * aquí solo se apunta que se mandó. Así quien mira la ficha sabe que ya se
- * le recordó, y cuándo, antes de mandar otro.
+ * Recordarle un paso. Por correo lo envía la plataforma (`notificar`); por
+ * WhatsApp lo manda quien lo pulsa, y aquí solo se apunta. Las dos cosas
+ * quedan en el historial, para que quien mira la ficha sepa que ya se le
+ * recordó, y cuándo, antes de mandar otro.
  */
 export async function registrarRecordatorio(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaRecordatorio, formData);
@@ -63,16 +68,38 @@ export async function registrarRecordatorio(formData: FormData): Promise<Resulta
     return error("Recordar un paso es del equipo de IWL.");
   }
 
+  let estado: "enviado" | "sin_enviar" | null = null;
+  if (datos.canal === "correo") {
+    const { data: ella } = await clienteServicio()
+      .from("profiles")
+      .select("email, full_name")
+      .eq("id", datos.persona_id)
+      .maybeSingle();
+    if (!ella?.email) return error("No tiene correo al que mandárselo.");
+    const base = direccionBase();
+    const { asunto, cuerpo } = textoRecordatorio(datos.paso as ClavePaso, ella.full_name ?? "", base);
+    const r = await notificar(
+      { correo: ella.email, nombre: ella.full_name, profileId: datos.persona_id },
+      "recordatorio",
+      { asunto, cuerpo: cuerpo.replace(/\n\nEquipo de Inception Woman Lab$/, ""), enlace: base },
+      { candidaturaId: datos.candidatura_id || null, autor: persona.id },
+    );
+    estado = r.estado;
+  }
+
   const supabase = await clienteServidor();
   const { error: falloBase } = await supabase.from("activity_log").insert({
     actor_id: persona.id,
     entity: datos.candidatura_id ? "candidaturas" : "profiles",
     entity_id: datos.candidatura_id || datos.persona_id,
     action: "recordatorio",
-    detail: { paso: datos.paso, canal: datos.canal, persona_id: datos.persona_id },
+    detail: { paso: datos.paso, canal: datos.canal, persona_id: datos.persona_id, ...(estado ? { correo: estado } : {}) },
   });
 
   if (falloBase) return traducirError(falloBase);
+  if (estado === "sin_enviar") {
+    return error("El correo no ha salido: queda «sin enviar» para reintentarlo. Si corre prisa, mándaselo por WhatsApp.");
+  }
   return ok();
 }
 

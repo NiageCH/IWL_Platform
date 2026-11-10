@@ -10,6 +10,8 @@ import {
   validar,
   type Resultado,
 } from "./resultado";
+import { notificar } from "@/lib/correo";
+import { direccionBase } from "@/lib/direccion";
 
 /**
  * El alta desde el formulario público.
@@ -153,6 +155,16 @@ export async function presentarse(
   const { data: testigo } = await supabase
     .rpc("testigo_de_candidatura", { p_id: nueva as string })
     .single<string>();
+
+  // Y por correo, para que no dependa de que guarde la pestaña
+  if (testigo) {
+    await notificar(
+      { correo: datos.contacto_email, nombre: `${datos.contacto_nombre} ${datos.contacto_apellidos}` },
+      "enlace_candidatura",
+      { nombre: datos.contacto_nombre, startup: datos.nombre, enlace: `${direccionBase()}/candidatura/${testigo}` },
+      { candidaturaId: nueva as string },
+    );
+  }
 
   /*
    * Sin mensaje: aquí el acuse es la pantalla entera.

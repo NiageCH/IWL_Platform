@@ -4,6 +4,7 @@ import {
   actualizar,
   borrar,
   borrarCuenta,
+  correosRecibidos,
   consultar,
   entrarComo,
   insertar,
@@ -112,7 +113,7 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await aviso.getByRole("link", { name: "Añádelos en Mi cuenta" }).click();
     await expect(page).toHaveURL(/\/perfil$/);
     await page.getByLabel("Apellidos").fill("de Prueba");
-    await page.getByRole("button", { name: "Guardar", exact: true }).click();
+    await page.getByRole("button", { name: "Guardar mis datos" }).click();
     await expect(page.getByText("Guardado.")).toBeVisible();
     await page.goto("/cartera");
     await aviso.getByRole("button", { name: "Firmar por IWL" }).click();
@@ -185,7 +186,14 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await expect(decidir.getByLabel("Mensaje para ella")).toHaveValue(/^Hola, Firmante:/);
     await decidir.getByRole("button", { name: "Guardar la decisión" }).click();
     await expect(page.getByRole("heading", { name: "No incorporada" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Enviarle el mensaje" })).toBeVisible();
+    // El mensaje lo envía la plataforma, una sola vez
+    await page.getByRole("button", { name: "Enviarle el mensaje" }).click();
+    await expect(page.getByText(`Enviado a ${CORREO}.`)).toBeVisible();
+    const recibidos = await correosRecibidos(CORREO, { esperar: 2 });
+    const descarte = recibidos.find((c) => c.asunto === `${NOMBRE} · Inception Woman Lab`);
+    expect(descarte?.texto).toMatch(/^Hola, Firmante:/);
+    await page.getByRole("button", { name: "Enviarle el mensaje" }).click();
+    await expect(page.getByText(/Ya se le envió el /)).toBeVisible();
   } finally {
     await actualizar("profiles", { email: `eq.${USUARIOS.admin}` }, { last_name: "de Prueba" });
     if (companiaId) await borrar("companies", { id: companiaId });

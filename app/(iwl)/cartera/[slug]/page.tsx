@@ -8,6 +8,8 @@ import { BloqueAlta } from "@/components/vistas/alta";
 import { direccionBase } from "@/lib/direccion";
 import { EntradaIwl } from "@/components/vistas/entrada";
 import { leerEntrada } from "@/lib/datos/entrada";
+import { leerCorreos } from "@/lib/datos/correos";
+import { BloqueCorreos } from "@/components/vistas/correos";
 
 export default async function ResumenCompania({ params }: PageProps<"/cartera/[slug]">) {
   const { slug } = await params;
@@ -19,6 +21,8 @@ export default async function ResumenCompania({ params }: PageProps<"/cartera/[s
   const altas = esIwl(persona?.role) ? await leerAltaCompania(resumen.compania.id) : null;
   const enEntrada = resumen.compania.tramo === "entrada" && esIwl(persona?.role);
   const entrada = enEntrada ? await leerEntrada(resumen.compania.id) : null;
+  // Los correos de la compañía —el Acuerdo propuesto, las respuestas—, para IWL
+  const correos = esIwl(persona?.role) ? await leerCorreos({ companyId: resumen.compania.id }) : null;
 
   return (
     <>
@@ -42,6 +46,11 @@ export default async function ResumenCompania({ params }: PageProps<"/cartera/[s
         {altas ? (
           <div className="mt-8">
             <BloqueAlta altas={altas} direccion={direccionBase()} />
+          </div>
+        ) : null}
+        {correos?.length ? (
+          <div className="mt-8">
+            <BloqueCorreos correos={correos} />
           </div>
         ) : null}
       </main>

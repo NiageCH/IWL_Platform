@@ -571,9 +571,9 @@ export function FirmarAcuerdo({
 }
 
 /**
- * El correo con su acceso, ya escrito: sin proveedor de correo, se abre en
- * el programa de quien lo envía, o se copia para WhatsApp. Lleva la
- * contraseña, así que se queda puesto hasta que alguien pulse «Hecho».
+ * El acceso, para dárselo por otro canal: el correo de la plataforma lleva
+ * un enlace para que elija su contraseña, nunca la contraseña. Esto la
+ * lleva, así que se queda puesto hasta que alguien pulse «Hecho».
  */
 function MensajeEnvioNda({
   nombre,
@@ -589,23 +589,17 @@ function MensajeEnvioNda({
   alTerminar: () => void;
 }) {
   const [copiado, setCopiado] = useState(false);
-  const { asunto, cuerpo } = textoEnvioNda(nombre, correo, clave, base);
+  const { cuerpo } = textoEnvioNda(nombre, correo, clave, base);
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-filete bg-elevado p-3">
       <textarea
         readOnly
         value={cuerpo}
         rows={9}
-        aria-label="Correo para ella, con su acceso"
+        aria-label="Su acceso, para mandárselo por otro canal"
         className="w-full rounded-md border border-filete bg-papel px-3 py-2 text-xs text-titular"
       />
       <div className="flex flex-wrap items-center gap-2">
-        <a
-          href={`mailto:${correo}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`}
-          className="accion text-xs"
-        >
-          Abrir el correo
-        </a>
         <button
           type="button"
           onClick={() => {
@@ -767,8 +761,8 @@ export function AccesoCandidata({
                 {enviar ? "Enviar el NDA le crea la cuenta" : "Se le crea la cuenta"} con{" "}
                 <strong>{correo}</strong>, enseña una contraseña{" "}
                 <strong>una sola vez</strong> y anula el enlace privado
-                {enviar ? ", y la candidatura pasa a «NDA enviado»" : ""}. Te
-                deja el correo ya escrito para mandárselo. Al entrar cambiará
+                {enviar ? ", y la candidatura pasa a «NDA enviado»" : ""}.
+                {enviar ? " Le llega un correo con un enlace para entrar y elegir su contraseña; la temporal queda para dársela por otro canal si hace falta." : " Te deja su acceso escrito para mandárselo."} Al entrar cambiará
                 la contraseña, y lo primero que verá es el NDA, para
                 comentarlo o firmarlo.
               </p>

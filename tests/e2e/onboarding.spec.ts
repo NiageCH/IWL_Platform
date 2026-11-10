@@ -5,6 +5,7 @@ import {
   borrar,
   borrarCuenta,
   consultar,
+  correosRecibidos,
   entrarComo,
   insertar,
 } from "./entrada";
@@ -95,12 +96,18 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     await page.getByRole("button", { name: "Copiar para WhatsApp" }).click();
     await expect(page.getByText("Apuntado: recordatorio por WhatsApp.")).toBeVisible();
 
+    // Por correo lo envía la plataforma
+    await page.getByRole("button", { name: "Enviar el correo" }).click();
+    await expect(page.getByText("Correo enviado, y apuntado.")).toBeVisible();
+    const recordatorio = (await correosRecibidos(CORREO)).find((c) => /tienes el NDA esperando tu firma/.test(c.texto));
+    expect(recordatorio?.texto).toMatch(/^Hola, Agustina: tienes el NDA esperando tu firma/);
+
     const apuntes = await consultar<{ id: number }>(
       "activity_log",
       { action: "eq.recordatorio", entity_id: `eq.${candidatura.id}` },
       "id",
     );
-    expect(apuntes.length).toBe(1);
+    expect(apuntes.length).toBe(2);
   } finally {
     await borrar("activity_log", { entity_id: candidatura.id });
     await borrar("candidaturas", { id: candidatura.id });

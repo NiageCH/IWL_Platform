@@ -7,6 +7,7 @@ import { BASES, siguientePasoEntrada } from "@/lib/entrada";
 import { describirSituacion, type DatosSocietarios } from "@/lib/societario";
 import type { DecisionLeida } from "@/lib/datos/entrada";
 import { fecha } from "@/lib/utils";
+import { EnviarMensajeDescarte } from "@/components/formularios/correo";
 
 interface CompaniaEnEntrada extends Partial<DatosSocietarios> {
   id: string;
@@ -155,12 +156,7 @@ export function EntradaIwl({
             <p className="whitespace-pre-wrap text-secundario">{decision.motivo}</p>
             {decision.decision === "no" && decision.mensaje && candidatura?.correo ? (
               <div>
-                <a
-                  href={`mailto:${candidatura.correo}?subject=${encodeURIComponent(`${compania.name} · Inception Woman Lab`)}&body=${encodeURIComponent(decision.mensaje)}`}
-                  className="accion text-sm"
-                >
-                  Enviarle el mensaje
-                </a>
+                <EnviarMensajeDescarte origen="incorporacion" id={compania.id} />
               </div>
             ) : null}
             {decision.decision === "si" ? (

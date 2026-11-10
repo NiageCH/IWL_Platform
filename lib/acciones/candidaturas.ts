@@ -5,6 +5,7 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
+import { notificar } from "@/lib/correo";
 import { leerPlantillaDe } from "@/lib/datos/nda";
 import { problemaParaEnviar } from "@/lib/nda-texto";
 import {
@@ -638,7 +639,7 @@ export async function configurarConvocatoria(
 export async function darAccesoCandidata(
   formData: FormData,
 ): Promise<Resultado> {
-  const { fallo } = await soloIwl();
+  const { fallo, persona } = await soloIwl();
   if (fallo) return fallo;
 
   const id = String(formData.get("id") ?? "");
@@ -726,11 +727,31 @@ export async function darAccesoCandidata(
     }
   }
 
+  /*
+   * El correo, con un enlace para entrar y elegir su contraseña: la
+   * temporal no va por correo. Si no sale, la acción no falla —ya tiene
+   * cuenta y el NDA está enviado—: se dice, queda «sin enviar» en la
+   * ficha, y la contraseña se le da por otro canal.
+   */
+  const correo = enviado
+    ? await notificar(
+        { correo: candidatura.contacto_email!, nombre: candidatura.contacto_nombre, profileId },
+        "nda_enviado",
+        { nombre: candidatura.contacto_nombre, startup: candidatura.nombre },
+        { candidaturaId: id, autor: persona?.id },
+      )
+    : null;
+  const aviso = !correo
+    ? ""
+    : correo.estado === "enviado"
+      ? " Le ha llegado un correo con un enlace para entrar y elegir su contraseña."
+      : " El correo no ha salido; queda «sin enviar» en esta ficha para reintentarlo.";
+
   refrescar(id);
   return {
     ok: true,
     mensaje: enviado
-      ? `NDA enviado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`
+      ? `NDA enviado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`
       : `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
     datos: {
       correo: candidatura.contacto_email!,
