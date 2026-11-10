@@ -4678,6 +4678,9 @@ isOneToOne: false
 "dar_acceso_candidatura":
 { Args: { "p_candidatura": string,"p_profile": string }; Returns: undefined
                            },
+"dar_acceso_fundadora":
+{ Args: { "p_company": string,"p_profile": string }; Returns: undefined
+                           },
 "estado_nda":
 { Args: { "p_candidatura": string }; Returns: string
                            },

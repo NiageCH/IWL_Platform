@@ -28,6 +28,7 @@ const CORREO = `rls.acuerdo.${SELLO}@ejemplo.test`;
 let candAcel = "";
 let candCons = "";
 let candidataId = "";
+let segundaId = "";
 let acel = "";
 let cons = "";
 let anexoAcel = "";
@@ -131,6 +132,7 @@ afterAll(async () => {
     expect((await servicio.from("companies").delete().eq("id", id)).error).toBeNull();
   }
   if (candidataId) await servicio.auth.admin.deleteUser(candidataId);
+  if (segundaId) await servicio.auth.admin.deleteUser(segundaId);
 });
 
 describe("proponer el Anexo", () => {
@@ -268,11 +270,40 @@ describe("firmar el Acuerdo", () => {
     expect(c).toEqual({ estado: "firmada", equity_pct: 3, acuerdo_firmantes: [{ nombre: "Fundadora de Prueba", calidad: "personal" }] });
   });
 
-  it("en Construcción, se firma sin nada validado", async () => {
+  it("sin una fundadora con cuenta no se propone; «Dar acceso» la hace fundadora, y solo lo da IWL", async () => {
     anexoCons = await abrirAnexo(cons);
-    expect((await proponer(anexoCons, [{ nombre: "Otra de Prueba", calidad: "personal" }])).error).toBeNull();
-    // Sin cuenta en la plataforma: la aceptación se registra sin sesión
-    expect((await clienteServicio().from("annexes").update({ status: "aceptado" }).eq("id", anexoCons)).error).toBeNull();
+    const firmantes = [{ nombre: "Otra de Prueba", calidad: "personal" }];
+    const { error: sinCuenta } = await proponer(anexoCons, firmantes);
+    expect(sinCuenta?.message).toMatch(/tiene que tener cuenta/);
+
+    const servicio = clienteServicio();
+    const correo = `rls.acuerdo.cons.${SELLO}@ejemplo.test`;
+    const { data: u } = await servicio.auth.admin.createUser({ email: correo, password: CLAVE, email_confirm: true });
+    segundaId = u!.user!.id;
+
+    const ajena = await entrarComo(USUARIOS.fundadoraMarea);
+    expect((await ajena.rpc("dar_acceso_fundadora", { p_company: cons, p_profile: segundaId })).error).not.toBeNull();
+
+    const equipo = await entrarComo(USUARIOS.equipoIwl);
+    expect((await equipo.rpc("dar_acceso_fundadora", { p_company: cons, p_profile: segundaId })).error).toBeNull();
+    const { data: miembro } = await servicio
+      .from("company_members")
+      .select("member_role")
+      .eq("company_id", cons)
+      .eq("profile_id", segundaId);
+    expect(miembro).toEqual([{ member_role: "fundadora" }]);
+    const { data: c } = await servicio.from("candidaturas").select("profile_id").eq("id", candCons).single();
+    expect(c!.profile_id).toBe(segundaId);
+
+    expect((await proponer(anexoCons, firmantes)).error).toBeNull();
+  });
+
+  it("en Construcción, se firma sin nada validado, cuando ella lo acepta con su cuenta", async () => {
+    const segunda = createClient(URL, ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+    expect(
+      (await segunda.auth.signInWithPassword({ email: `rls.acuerdo.cons.${SELLO}@ejemplo.test`, password: CLAVE })).error,
+    ).toBeNull();
+    expect((await segunda.rpc("aceptar_anexo", { p_anexo: anexoCons })).error).toBeNull();
 
     const { data: validados } = await clienteServicio().from("dd_items").select("id").eq("company_id", cons).eq("status", "validado");
     expect(validados).toEqual([]);
@@ -280,6 +311,28 @@ describe("firmar el Acuerdo", () => {
     expect((await firmar(cons)).error).toBeNull();
     const { data } = await clienteServicio().from("companies").select("tramo").eq("id", cons).single();
     expect(data!.tramo).toBe("incubacion");
+  });
+});
+
+describe("ningún Anexo se firma sin su aceptación", () => {
+  it("ni de borrador a firmado, ni con la clave de servicio, ni en incubación", async () => {
+    const servicio = clienteServicio();
+    const { data: nuevo } = await servicio
+      .from("annexes")
+      .insert({ company_id: acel, version: 2, duration_months: 12, committed_hours: 60 })
+      .select("id")
+      .single();
+    const { error } = await servicio.from("annexes").update({ status: "firmado", signed_on: "2026-11-10" }).eq("id", nuevo!.id);
+    expect(error?.message).toMatch(/cuando ella lo ha aceptado/);
+    await servicio.from("annexes").delete().eq("id", nuevo!.id);
+  });
+
+  it("ni insertándolo ya firmado con sesión", async () => {
+    const admin = await entrarComo(USUARIOS.admin);
+    const { error } = await admin
+      .from("annexes")
+      .insert({ company_id: acel, version: 2, status: "firmado", signed_on: "2026-11-10", committed_hours: 10 });
+    expect(error?.message).toMatch(/nace en borrador/);
   });
 });
 

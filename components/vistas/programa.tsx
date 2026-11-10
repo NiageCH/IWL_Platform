@@ -191,7 +191,7 @@ export async function VistaPrograma({
             deja de aceptar cambios en horas, dinero y equity.
           */}
           {esIwl && anexo.data.status === "borrador" ? (
-            <EditarAnexo slug={compania.slug} anexo={anexo.data} firmaDirecta={compania.tramo !== "entrada"} />
+            <EditarAnexo slug={compania.slug} anexo={anexo.data} />
           ) : null}
 
           {/* El Anexo es también la propuesta de Acuerdo: proponerlo, comentarlo, aceptarlo y firmarlo */}
@@ -231,7 +231,7 @@ export async function VistaPrograma({
           <TituloBloque>Anexo de Programa</TituloBloque>
           <SinDatos>
             {esIwl
-              ? "Todavía no hay Anexo. Ábrelo y queda en borrador: pones la duración, lo que IWL compromete y el equity, y lo firmas cuando esté acordado. Sin Anexo no se pueden imputar horas."
+              ? "Todavía no hay Anexo. Ábrelo y queda en borrador: pones la duración, lo que IWL compromete y el equity; después se lo propones, ella lo acepta en la plataforma y se firma. Sin Anexo no se pueden imputar horas."
               : compania.tramo === "entrada"
                 ? "Todavía no hay propuesta de Acuerdo. Cuando IWL decida tu incorporación, la verás aquí con sus cifras para comentarla y aceptarla."
                 : "Todavía no hay Anexo firmado. Se firma al terminar el due diligence conjunto y es donde se acuerdan los pilares, la duración y los hitos."}

@@ -4,6 +4,19 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · Paso 5 cerrado. Dos respuestas y el orden
+
+Bien el paso 5 (81f9492 y 37ea32a), y bien retirar la prueba que vivía de un fichero local. Respuestas:
+
+1. **La fundadora tiene cuenta siempre antes del Acuerdo. No hay «Registrar la aceptación».** El NDA firmado fuera se admite porque es anterior a la relación; el Acuerdo ya no lo es: desde la firma ella trabaja en la plataforma, así que la cuenta hace falta igual. «Proponer el Acuerdo» queda bloqueado mientras no tenga cuenta, con el motivo a la vista y el botón «Dar acceso» al lado. Un solo camino, sin aceptaciones registradas por IWL en su nombre.
+2. **Sí, propuesta y aceptación obligatorias también al renovar el Anexo en incubación.** Un Anexo nuevo cambia equity, horas o hitos que le afectan; IWL no lo firma sin que ella lo haya aceptado. Mismo recorrido que en entrada: borrador → propuesto → comentado → aceptado → firmado. Quita la firma directa del borrador.
+
+**El orden que propones vale**: primero el paso 6 («En entrada» junto a la cartera), después la guía de carga con Siren como ejemplo.
+
+**Al terminar la guía, paramos para desplegar.** La rama ya lleva muchas migraciones sin estar en producción. Antes de empezar nada nuevo, deja en la bitácora la lista exacta de pasos para Rodrigo (merge, npm install, db push, push, despliegue), qué migraciones entran y qué comprobar en producción después.
+
+---
+
 ## 2026-11-10 · Paso 5, primera mitad: aprobado. Dos respuestas
 
 Bien la primera mitad del paso 5 (1570b74). Respuestas:

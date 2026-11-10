@@ -2,6 +2,8 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 import {
   AceptarAnexo,
   ComentarAnexo,
+  DarAccesoFundadora,
+  FirmarAnexoAceptado,
   FirmarAcuerdoCompania,
   PasarAAceleracion,
   ProponerAnexo,
@@ -47,10 +49,12 @@ interface Compania {
  * El Anexo como propuesta de Acuerdo: lo que va debajo de sus cifras según
  * el estado y quién mira.
  *
- * · IWL, en borrador y en entrada: proponérselo, con quién firma.
+ * · IWL, en borrador: proponérselo, con quién firma. Si ella no tiene
+ *   cuenta, el motivo y «Dar acceso» en su lugar.
  * · Propuesto o comentado: ella comenta y acepta; IWL responde y, si hay
  *   que cambiar algo, lo devuelve a borrador.
- * · Aceptado, en entrada: IWL firma el Acuerdo, que la pasa a incubación.
+ * · Aceptado: en entrada, IWL firma el Acuerdo, que la pasa a incubación;
+ *   en incubación, firma el Anexo renovado.
  */
 export async function PropuestaAcuerdo({
   anexo,
@@ -68,15 +72,20 @@ export async function PropuestaAcuerdo({
   const propuesto = anexo.status === "propuesto" || anexo.status === "comentado";
   const aceptado = anexo.status === "aceptado";
 
-  const [comentarios, candidatura, plantillas, fases] = await Promise.all([
+  const borrador = esIwl && anexo.status === "borrador";
+  const [comentarios, candidatura, fundadoras, plantillas, fases] = await Promise.all([
     supabase
       .from("anexo_comentarios")
       .select("id, texto, created_at, respuesta, respondido_at")
       .eq("annex_id", anexo.id)
       .order("created_at"),
-    esIwl && enEntrada && anexo.status === "borrador"
+    borrador
       ? supabase.from("candidaturas").select("contacto_nombre").eq("company_id", compania.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    // Sin una fundadora con cuenta no se propone: lo dice la base, y aquí se ofrece el remedio
+    borrador
+      ? supabase.from("company_members").select("id").eq("company_id", compania.id).eq("member_role", "fundadora")
+      : Promise.resolve({ data: [] as { id: string }[] }),
     esIwl && enEntrada && aceptado
       ? supabase.from("roadmap_templates").select("id, name").order("name")
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -144,7 +153,20 @@ export async function PropuestaAcuerdo({
         </>
       ) : null}
 
-      {esIwl && enEntrada && anexo.status === "borrador" ? (
+      {/*
+        Montado siempre que hay borrador, no solo «sin cuenta»: darle la
+        cuenta vuelve falsa esa condición, y el formulario se llevaría la
+        contraseña antes de que nadie la copiara.
+      */}
+      {borrador ? (
+        <DarAccesoFundadora
+          companyId={compania.id}
+          slug={compania.slug}
+          tieneCuenta={Boolean((fundadoras.data ?? []).length)}
+        />
+      ) : null}
+
+      {borrador && (fundadoras.data ?? []).length ? (
         <div className="-mx-4 -mb-4">
           <ProponerAnexo
             id={anexo.id}
@@ -156,6 +178,8 @@ export async function PropuestaAcuerdo({
       ) : null}
 
       {esIwl && (propuesto || aceptado) ? <VolverABorrador id={anexo.id} slug={compania.slug} aceptado={aceptado} /> : null}
+
+      {esIwl && !enEntrada && aceptado ? <FirmarAnexoAceptado id={anexo.id} slug={compania.slug} /> : null}
 
       {esIwl && enEntrada && aceptado ? (
         <div className="-mx-4 -mb-4">

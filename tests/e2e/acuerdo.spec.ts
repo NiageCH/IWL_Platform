@@ -1,11 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
   USUARIOS,
-  actualizar,
   borrar,
   borrarCuenta,
   consultar,
-  crearCuenta,
   entrarComo,
   insertar,
   llamar,
@@ -21,7 +19,8 @@ import {
  * Aceleración con su motivo.
  *
  * La compañía se prepara por fuera, con el NDA registrado como firmado
- * fuera: lo que se prueba aquí empieza después.
+ * fuera: lo que se prueba aquí empieza después. Por eso ella no tiene
+ * cuenta, y lo primero es dársela.
  */
 
 const COHORTE = "00000000-0000-0000-0003-000000000001";
@@ -55,9 +54,6 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     companiaId = c.company_id;
     const [co] = await consultar<{ slug: string }>("companies", { id: `eq.${companiaId}` }, "slug");
 
-    const ella = await crearCuenta(CORREO);
-    await actualizar("profiles", { id: `eq.${ella}` }, { full_name: PERSONA });
-    await insertar("company_members", { company_id: companiaId, profile_id: ella, member_role: "fundadora" });
     await insertar("decisiones_incorporacion", {
       company_id: companiaId,
       decision: "si",
@@ -78,6 +74,19 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     // En entrada no se firma desde el borrador
     await expect(page.getByRole("button", { name: "Firmar el Anexo" })).toHaveCount(0);
 
+    /*
+     * El NDA se firmó fuera, así que ella no tiene cuenta y no se le puede
+     * proponer: se dice por qué, y «Dar acceso» está al lado. La contraseña
+     * sale una sola vez y se cierra a mano.
+     */
+    await expect(page.getByText(/ella tiene que tener cuenta/)).toBeVisible();
+    await page.getByRole("button", { name: "Dar acceso" }).click();
+    const acceso = page.getByText(/Cuenta creada para .* Su contraseña es/);
+    await expect(acceso).toBeVisible();
+    const temporal = (await acceso.innerText()).match(/contraseña es ([^\s]+)/)![1];
+    await page.getByRole("button", { name: "Hecho" }).click();
+    await expect(acceso).toHaveCount(0);
+
     await page.getByText("Proponerle el Acuerdo", { exact: true }).first().click();
     const propuesta = page.locator("form", { has: page.getByRole("button", { name: "Proponerle el Acuerdo" }) });
     await expect(propuesta.getByLabel(/Firman a título personal/)).toHaveValue(PERSONA);
@@ -86,8 +95,18 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 
-    // Ella: el aviso en su resumen, la propuesta en Programa; comenta y acepta
-    await entrarComo(page, CORREO, "/proyecto");
+    // Ella entra con la contraseña que se le dio, la cambia y cae en su compañía
+    await page.goto("/entrar");
+    await page.locator('input[type="email"]').fill(CORREO);
+    await page.locator('input[type="password"]').fill(temporal);
+    await page.getByRole("button", { name: "Entrar", exact: true }).click();
+    await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
+    await page.getByLabel("Nueva contraseña").fill("la-del-acuerdo-2026");
+    await page.getByLabel("Otra vez").fill("la-del-acuerdo-2026");
+    await page.getByRole("button", { name: "Guardar y entrar" }).click();
+    await expect(page).toHaveURL(/\/proyecto/, { timeout: 15_000 });
+
+    // El aviso en su resumen, la propuesta en Programa; comenta y acepta
     await expect(page.getByText("Inception Woman Lab te ha propuesto el Acuerdo.")).toBeVisible();
     await page.getByRole("link", { name: "Léelo en Programa" }).click();
     await expect(page.getByText("120 h")).toBeVisible();

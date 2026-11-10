@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
+import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
+import { generarClave } from "@/lib/claves";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { leerFirmantes, type Situacion } from "@/lib/societario";
 
@@ -220,4 +222,79 @@ export async function pasarAAceleracion(formData: FormData): Promise<Resultado> 
 
   refrescar(datos.slug);
   return ok();
+}
+
+/**
+ * Darle cuenta de fundadora a quien entró con el NDA firmado fuera: sin
+ * cuenta no puede leer ni aceptar la propuesta, y no hay otro camino.
+ *
+ * La cuenta se crea con la clave de servicio, que es lo único que puede
+ * escribir en `auth.users`; por eso la autorización se comprueba aquí a
+ * mano antes. Hacerla fundadora de la compañía lo decide la base
+ * (`dar_acceso_fundadora`), con la sesión de quien pulsa.
+ *
+ * La contraseña sale en el mensaje una sola vez: el panel se cierra con
+ * «Hecho».
+ */
+export async function darAccesoFundadora(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ company_id: uuid, slug }), formData);
+  if (fallo) return fallo;
+  const { fallo: sinPermiso } = await soloIwl();
+  if (sinPermiso) return sinPermiso;
+
+  const supabase = await clienteServidor();
+  const { data: candidatura } = await supabase
+    .from("candidaturas")
+    .select("contacto_email, contacto_nombre")
+    .eq("company_id", datos.company_id)
+    .maybeSingle();
+  if (!candidatura?.contacto_email) {
+    return error(
+      "Esta compañía no viene del embudo, así que no hay persona de contacto. Dale de alta a la fundadora en Administración → Personas, con el papel «Equipo fundador».",
+    );
+  }
+
+  const servicio = clienteServicio();
+  const clave = generarClave();
+  const { data: creada, error: falloAlta } = await servicio.auth.admin.createUser({
+    email: candidatura.contacto_email,
+    email_confirm: true,
+    password: clave,
+    user_metadata: { full_name: candidatura.contacto_nombre },
+  });
+
+  let profileId = creada?.user?.id;
+  let nueva = true;
+  if (falloAlta) {
+    if (!/already|registered|exists/i.test(falloAlta.message)) {
+      return error(`No se ha podido crear la cuenta: ${falloAlta.message}`);
+    }
+    // Ya tenía cuenta: se reutiliza, sin tocar su contraseña
+    const { data: existente } = await servicio
+      .from("profiles")
+      .select("id")
+      .eq("email", candidatura.contacto_email)
+      .maybeSingle();
+    if (!existente) return error("Esa cuenta existe pero no se recupera.");
+    profileId = existente.id;
+    nueva = false;
+  } else if (profileId) {
+    const { error: falloMarca } = await marcarContrasenaTemporal(servicio, profileId);
+    if (falloMarca) return error(`No se ha podido preparar la cuenta: ${falloMarca.message}`);
+  }
+
+  const { error: falloAcceso } = await supabase.rpc("dar_acceso_fundadora", {
+    p_company: datos.company_id,
+    p_profile: profileId!,
+  });
+  if (falloAcceso) return traducirError(falloAcceso);
+
+  refrescar(datos.slug);
+  return nueva
+    ? {
+        ok: true,
+        mensaje: `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. Al entrar la cambiará.`,
+        datos: { correo: candidatura.contacto_email, nombre: candidatura.contacto_nombre ?? "", clave },
+      }
+    : { ok: true, mensaje: `${candidatura.contacto_email} ya tenía cuenta: entra con la suya, que no se ha tocado.` };
 }

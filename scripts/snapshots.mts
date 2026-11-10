@@ -294,9 +294,20 @@ function runwayA(companyId: string, fecha: string): number | null {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function tabla(nombre: string, columnas: string): Promise<any[]> {
-  const { data, error } = await db.from(nombre).select(columnas);
-  if (error) throw new Error(`Leyendo ${nombre}: ${error.message}`);
-  return data ?? [];
+  /*
+   * Justo después de `supabase db reset`, PostgREST todavía está recargando
+   * el esquema y contesta «Could not query the database for the schema
+   * cache». Pasaba una de cada pocas veces y dejaba `db:reset` a medias.
+   * Se espera un poco y se reintenta; cualquier otro error, a la primera.
+   */
+  for (let intento = 1; ; intento++) {
+    const { data, error } = await db.from(nombre).select(columnas);
+    if (!error) return data ?? [];
+    if (!/schema cache/i.test(error.message) || intento >= 20) {
+      throw new Error(`Leyendo ${nombre}: ${error.message}`);
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
 }
 
 function entorno() {

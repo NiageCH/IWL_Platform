@@ -213,7 +213,7 @@ add(M, "/entrar → /candidatura", "la candidata", "Entra con su cuenta y aterri
 M = "7. Acuerdo y firma"
 add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Proponerle el Acuerdo (compañía en entrada)",
     "Con la incorporación en «sí»: «Abrir el Anexo», rellenar duración, horas y equity, y «Proponerle el Acuerdo».",
-    "Sin decisión en «sí» la base no deja proponer. El campo de quién firma trae a la persona de contacto. Propuesto, ya no se edita y NO hay «Firmar el Anexo» suelto.")
+    "Sin decisión en «sí» la base no deja proponer, ni sin una fundadora con cuenta (sale «Dar acceso»). El campo de quién firma trae a la persona de contacto. Propuesto, ya no se edita y NO hay «Firmar el Anexo» suelto.")
 add(M, "/proyecto", "la fundadora", "Ver, comentar y aceptar la propuesta",
     "Entrar: el resumen dice «te ha propuesto el Acuerdo». En Programa, comentar y después «Aceptar la propuesta».",
     "Antes de proponerse no ve el borrador. El comentario llega a dirección como aviso con «Responder». Aceptada, dice «Falta firmarla».")
@@ -340,11 +340,14 @@ add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Abrir el Anexo donde no ha
 add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Rellenar el Anexo",
     "Poner duración, horas comprometidas y equity. Probar a escribir «7,5 %» en el equity.",
     "Se guarda, y el porcentaje con coma y signo se admite.")
-add(M, "/cartera/<slug>/programa", "admin@iwl.test", "No se firma un Anexo vacío",
-    "Abrir otro Anexo y pulsar firmar sin rellenar nada.",
-    "No deja: pide al menos la duración y las horas. Lo firmado ya no se edita.")
-add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Firmar el Anexo",
-    "Con la duración y las horas puestas, firmar.",
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Un borrador no se firma",
+    "Con el Anexo en borrador, buscar cómo firmarlo.",
+    "No hay botón: se propone, ella lo acepta y se firma. Sin duración y horas tampoco deja proponerlo.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Sin cuenta de fundadora, no se propone",
+    "En una compañía sin fundadora con cuenta, con el Anexo en borrador.",
+    "Dice por qué y ofrece «Dar acceso». Si viene del embudo, crea su cuenta, enseña la contraseña UNA vez y se cierra con «Hecho»; si no, dice que se dé de alta en Personas.")
+add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Firmar el Anexo aceptado (renovación en incubación)",
+    "Proponerlo, que ella lo acepte en Mi compañía y volver: «Firmar el Anexo» con la fecha.",
     "Pasa a «Firmado el …» y el formulario de edición desaparece. A partir de ahí se abre otra versión, no se edita.")
 add(M, "/cartera/<slug>/programa", "admin@iwl.test", "Los hitos ya acordados del Anexo",
     "Mirar el bloque de hitos del Anexo y cambiar el estado de uno.",

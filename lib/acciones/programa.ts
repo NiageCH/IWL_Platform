@@ -369,9 +369,9 @@ export async function firmarAnexo(formData: FormData): Promise<Resultado> {
     .maybeSingle();
 
   if (!anexo) return error("Ese Anexo no existe o no está a tu alcance.");
-  // Aceptado por ella o, en incubación, un borrador que IWL firma directamente
-  if (anexo.status !== "borrador" && anexo.status !== "aceptado") {
-    return error("Ese Anexo no está para firmar: ya está firmado o está propuesto y falta que ella lo acepte.");
+  // Solo aceptado por ella: un Anexo no se firma sin su aceptación (REVISION, 10 nov)
+  if (anexo.status !== "aceptado") {
+    return error("Ese Anexo no está para firmar: se firma cuando ella ha aceptado la propuesta.");
   }
 
   if (!anexo.duration_months || !anexo.committed_hours) {
@@ -384,7 +384,7 @@ export async function firmarAnexo(formData: FormData): Promise<Resultado> {
     .from("annexes")
     .update({ status: "firmado", signed_on: datos.signed_on })
     .eq("id", datos.id)
-    .in("status", ["borrador", "aceptado"])
+    .eq("status", "aceptado")
     .select("id");
 
   if (falloBase) return traducirError(falloBase);

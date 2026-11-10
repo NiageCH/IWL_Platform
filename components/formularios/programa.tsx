@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   abrirAnexo,
   cambiarEstadoHito,
-  firmarAnexo,
   guardarAnexo,
   registrarHoras,
 } from "@/lib/acciones/programa";
@@ -253,14 +252,8 @@ export function AbrirAnexo({
 export function EditarAnexo({
   slug,
   anexo,
-  firmaDirecta = true,
 }: {
   slug: string;
-  /**
-   * Firmarlo desde el borrador. En entrada no: se propone, ella lo acepta
-   * y se firma con el Acuerdo. La base tampoco lo deja.
-   */
-  firmaDirecta?: boolean;
   anexo: {
     id: string;
     duration_months: number | null;
@@ -274,9 +267,6 @@ export function EditarAnexo({
     other_commitments: string | null;
   };
 }) {
-  const [firmando, setFirmando] = useState(false);
-  const hoy = new Date().toISOString().slice(0, 10);
-
   return (
     <div className="border-t border-filete px-4 py-4">
       <Formulario accion={guardarAnexo}>
@@ -374,50 +364,10 @@ export function EditarAnexo({
         )}
       </Formulario>
 
-      {firmaDirecta ? (
-      <div className="mt-5 border-t border-filete pt-4">
-        {firmando ? (
-          <Formulario accion={firmarAnexo}>
-            {() => (
-              <>
-                <input type="hidden" name="slug" value={slug} />
-                <input type="hidden" name="id" value={anexo.id} />
-                <Campo
-                  etiqueta="Fecha de la firma"
-                  ayuda="Al firmar, las horas, el dinero y el equity quedan congelados. Para cambiarlos habrá que abrir otra versión"
-                >
-                  <Texto
-                    name="signed_on"
-                    type="date"
-                    required
-                    defaultValue={hoy}
-                    className="w-48"
-                  />
-                </Campo>
-                <div className="flex gap-2">
-                  <Boton>Firmar</Boton>
-                  <button
-                    type="button"
-                    onClick={() => setFirmando(false)}
-                    className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </>
-            )}
-          </Formulario>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setFirmando(true)}
-            className="accion text-xs"
-          >
-            Firmar el Anexo
-          </button>
-        )}
-      </div>
-      ) : null}
+      {/*
+        Sin «Firmar el Anexo» aquí: un borrador no se firma. Se propone, ella
+        lo acepta y se firma desde la propuesta (REVISION, 10 nov).
+      */}
     </div>
   );
 }

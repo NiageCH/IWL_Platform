@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import { firmarAnexo } from "@/lib/acciones/programa";
 import {
   aceptarAnexo,
   comentarAnexo,
+  darAccesoFundadora,
   firmarAcuerdo,
   pasarAAceleracion,
   proponerAnexo,
@@ -232,5 +235,88 @@ export function PasarAAceleracion({ companyId, slug }: { companyId: string; slug
         )}
       </Formulario>
     </Desplegable>
+  );
+}
+
+/**
+ * Proponer está bloqueado mientras ella no tenga cuenta: es donde lee y
+ * acepta. Al lado, el botón para dársela.
+ *
+ * El formulario se monta siempre y lo que cambia es su contenido: el
+ * mensaje lleva la contraseña, que se enseña una sola vez, y darle la
+ * cuenta hace falsa la condición «sin cuenta». Se cierra con «Hecho».
+ */
+export function DarAccesoFundadora({
+  companyId,
+  slug,
+  tieneCuenta,
+}: {
+  companyId: string;
+  slug: string;
+  /** Con cuenta no enseña nada, pero sigue montado: es donde vive la contraseña recién dada */
+  tieneCuenta: boolean;
+}) {
+  const [hecho, setHecho] = useState(false);
+  return (
+    <Formulario accion={darAccesoFundadora} className="gap-3">
+      {(r) => {
+        if (r.ok && r.datos?.clave) {
+          return hecho ? null : (
+            <div className="flex flex-col gap-3 rounded-lg border border-filete px-4 py-3">
+              <p className="text-sm text-titular" role="status">
+                Cuenta creada para {r.datos.correo}. Su contraseña es{" "}
+                <strong className="cifra">{r.datos.clave}</strong> — cópiala ahora y pásasela: no se
+                vuelve a enseñar. Al entrar la cambiará y verá su compañía.
+              </p>
+              <div>
+                <button type="button" className="accion text-xs" onClick={() => setHecho(true)}>
+                  Hecho
+                </button>
+              </div>
+            </div>
+          );
+        }
+        if (tieneCuenta) return null;
+        return (
+          <>
+            <input type="hidden" name="company_id" value={companyId} />
+            <input type="hidden" name="slug" value={slug} />
+            <p className="text-sm text-cuerpo">
+              Para proponerle el Acuerdo, ella tiene que tener cuenta: es donde lo lee, lo
+              comenta y lo acepta. Ahora no la tiene, porque el NDA se firmó fuera de la
+              plataforma.
+            </p>
+            <div>
+              <Boton variante="secundario">Dar acceso</Boton>
+            </div>
+          </>
+        );
+      }}
+    </Formulario>
+  );
+}
+
+/** Firmar un Anexo que ella ya aceptó, en una compañía que está en incubación */
+export function FirmarAnexoAceptado({ id, slug }: { id: string; slug: string }) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  return (
+    <Formulario accion={firmarAnexo} className="gap-3">
+      {(r) => (
+        <>
+          <input type="hidden" name="slug" value={slug} />
+          <input type="hidden" name="id" value={id} />
+          <Campo
+            etiqueta="Fecha de la firma"
+            ayuda="Al firmar, las horas, el dinero y el equity quedan congelados"
+            error={r.ok ? undefined : r.campos?.signed_on}
+          >
+            <Texto name="signed_on" type="date" required defaultValue={hoy} className="w-48" />
+          </Campo>
+          <div>
+            <Boton>Firmar el Anexo</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
   );
 }
