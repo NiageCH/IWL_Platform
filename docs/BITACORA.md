@@ -9,6 +9,51 @@ como es**.
 
 ---
 
+## 2026-11-10 · Flujo de entrada, 5 de 6 (segunda mitad): el Anexo como propuesta, la firma del Acuerdo y el cambio de vía · commit 37ea32a
+
+**Qué cambió**
+· **El Anexo es la propuesta de Acuerdo.** Avanza borrador → propuesto → comentado → aceptado → firmado, en «Programa y Anexo».
+  · **Proponerlo**: IWL, con el Anexo en borrador. Lleva «quién firma», que sale de la situación societaria y trae a la persona de contacto. En entrada, la base exige la incorporación en «sí», la duración, las horas y los firmantes.
+  · **Ella no ve el borrador.** Propuesto, el resumen de Mi compañía le dice «te ha propuesto el Acuerdo», con enlace a Programa.
+  · **Lo comenta** como el NDA: dirección recibe «… ha comentado la propuesta de Acuerdo», con «Responder». Responder cierra el aviso.
+  · **Lo acepta ella**, con su cuenta. IWL no puede aceptarlo por ella, ni una fundadora de otra compañía.
+  · **Lo propuesto no se edita**, ni con la clave de servicio. Para cambiar algo, «Volver a borrador para cambiarlo»; su aceptación se pierde y vuelve a proponerse.
+  · Proponerlo pasa la candidatura a «Acuerdo propuesto».
+· **«Firmar el Acuerdo y el Anexo»**, en la compañía en entrada, con el Anexo aceptado: etapa, perfil técnico, fase, recorrido, arranque y fecha.
+  · La compañía pasa a **incubación** y entra en la cartera. Se crean sus KPI y, si se elige recorrido, su hoja de ruta enlazada al Anexo.
+  · La candidatura queda «Firmada», con el equity y los firmantes del Anexo.
+  · **La puerta, en la base:** en Aceleración, lo obligatorio del due diligence validado (si no, dice cuántos faltan). En Construcción, nada. En las dos, la incorporación en «sí» y el Anexo aceptado.
+  · En entrada desaparece «Firmar el Anexo» suelto: el Anexo se firma con el Acuerdo.
+· **«Pasar a Aceleración»**, en «Vía de entrada», bajo la fase del programa. Solo dirección, con motivo.
+  · Lo por construir pasa a por entregar.
+  · El motivo queda en el registro y se ve ahí mismo: «Pasó de Construcción a Aceleración el …: <motivo>».
+  · **El mentor principal recibe un aviso** en su cartera, «Avisos para ti», con «Entendido».
+  · La base ya no deja cambiar la vía con un `update` directo: solo por esa función, que es la que pide el motivo.
+· **Los avisos pueden ir a una persona** (`avisos.para`). Sin destinatario, son de dirección, como hasta ahora.
+
+### Qué decidí yo
+· **«Volver a borrador» en vez de versiones nuevas.** La respuesta del 9 nov dice «un solo documento que avanza». Rehacer una versión por cada cambio llenaba el historial de Anexos que nunca se firmaron. Lo que cambió queda en el registro: proponer, aceptar y volver a borrador dejan cada uno su fila.
+· **En incubación, IWL puede seguir firmando un borrador directamente**, como hasta ahora, para renovar un Anexo. La propuesta y la aceptación son obligatorias solo en entrada. Si lo quieres en las dos, es una línea en la base.
+· **Una compañía en entrada no puede crear un Anexo ya aceptado.** Era un atajo para saltarse la aceptación. En incubación sí se puede registrar uno firmado: tu semilla local lo hace.
+· **Si la fundadora no tiene cuenta** —un NDA registrado como firmado fuera—, la aceptación solo se puede registrar sin sesión. No he puesto botón para que IWL registre una aceptación hecha fuera de la plataforma. ¿Hace falta? Ver la pregunta 1.
+· **Los firmantes van en el Anexo** (`annexes.firmantes`), porque es lo que ella acepta. Al firmar se copian a la candidatura, donde estaban antes.
+· **El aviso al mentor principal se ve en su cartera.** Es donde aterriza un mentor. No había ningún sitio donde un mentor viera avisos.
+· **Lo que se ha probado y no se ve en las pruebas:** una prueba de interfaz mía leía la base antes de que la firma llegara. El rótulo «Firmado el» del campo de fecha satisfacía la espera, y el `finally` borraba la compañía mientras la firma iba de camino. Ahora espera a la fecha de la firma en la pastilla y a que el formulario desaparezca.
+
+### Qué necesito que decidas
+1. **Una fundadora sin cuenta** (NDA firmado fuera) no puede aceptar la propuesta en la plataforma. ¿Pongo «Registrar la aceptación» para IWL, con el documento o el enlace como prueba, igual que el NDA de fuera? ¿O se le da cuenta siempre antes del Acuerdo?
+2. **La propuesta y la aceptación, ¿también al renovar el Anexo** de una compañía que ya está en incubación?
+
+### Estado
+· 167 unitarias · 196 RLS, dos veces seguidas, tras reiniciar desde cero · **366 de interfaz en verde y 4 saltadas** (los informes en PDF, solo en Chromium de escritorio).
+· Migraciones nuevas: `20261110140000_enums_anexo_propuesto` y `20261110141000_anexo_propuesta_y_acuerdo`.
+· 13 pruebas de acceso nuevas (`tests/rls/acuerdo.test.ts`) y una de interfaz de punta a punta (`tests/e2e/acuerdo.spec.ts`).
+
+**Siguiente**
+«En entrada» al lado de la cartera, y después la guía de carga rehecha. La guía tiene que decir dónde se encuentra una compañía en entrada, así que hago antes «En entrada», que es corto.
+
+---
+
 ## 2026-11-10 · Sin documentos de candidatura, y las suites sin depender de lo no versionado · commit 81f9492
 
 Las dos respuestas de REVISION del 10 nov.
