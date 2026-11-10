@@ -1,6 +1,6 @@
 "use client";
 
-import { cambiarMiContrasena, estrenarContrasena } from "@/lib/acciones/admin";
+import { cambiarMiContrasena, estrenarContrasena, guardarMisDatos } from "@/lib/acciones/admin";
 import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
 
 /**
@@ -51,6 +51,32 @@ export function CambiarContrasena({ primera = false }: { primera?: boolean }) {
 
           <div>
             <Boton>{primera ? "Guardar y entrar" : "Cambiar contraseña"}</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/**
+ * Nombre y apellidos. El formulario se queda montado: el acuse es su
+ * mensaje, y el nombre de arriba cambia con la página.
+ */
+export function MisDatos({ nombre, apellidos }: { nombre: string; apellidos: string }) {
+  return (
+    <Formulario accion={guardarMisDatos} className="gap-4">
+      {(r) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Campo etiqueta="Nombre" obligatorio error={!r.ok ? r.campos?.full_name : undefined}>
+              <Texto name="full_name" defaultValue={nombre} autoComplete="given-name" required />
+            </Campo>
+            <Campo etiqueta="Apellidos" obligatorio error={!r.ok ? r.campos?.last_name : undefined}>
+              <Texto name="last_name" defaultValue={apellidos} autoComplete="family-name" required />
+            </Campo>
+          </div>
+          <div>
+            <Boton variante="secundario">Guardar</Boton>
           </div>
         </>
       )}

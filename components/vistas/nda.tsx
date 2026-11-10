@@ -72,6 +72,7 @@ export function BloqueNda({
   candidaturaId,
   nda,
   esDireccion,
+  sinApellidos = false,
 }: {
   candidaturaId: string;
   nda: {
@@ -92,6 +93,8 @@ export function BloqueNda({
     } | null;
   };
   esDireccion: boolean;
+  /** Quien mira no tiene apellidos en su perfil: no puede firmar por IWL */
+  sinApellidos?: boolean;
 }) {
   const { estado, firma, plantilla, comentarios, problema } = nda;
   const abierto = estado === "por_firmar" || estado === "esperando_iwl";
@@ -139,7 +142,7 @@ export function BloqueNda({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-3">
-          {estado === "esperando_iwl" && esDireccion ? <ContrafirmarNda candidaturaId={candidaturaId} /> : null}
+          {estado === "esperando_iwl" && esDireccion ? <ContrafirmarNda candidaturaId={candidaturaId} sinApellidos={sinApellidos} /> : null}
           {estado === "firmado" && (firma?.documento_id || firma?.evidencia_url) ? (
             <AbrirNda candidaturaId={candidaturaId} />
           ) : null}

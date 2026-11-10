@@ -279,7 +279,7 @@ export async function darAccesoFundadora(formData: FormData): Promise<Resultado>
   const supabase = await clienteServidor();
   const { data: candidatura } = await supabase
     .from("candidaturas")
-    .select("contacto_email, contacto_nombre")
+    .select("contacto_email, contacto_nombre, contacto_apellidos")
     .eq("company_id", datos.company_id)
     .maybeSingle();
   if (!candidatura?.contacto_email) {
@@ -294,7 +294,7 @@ export async function darAccesoFundadora(formData: FormData): Promise<Resultado>
     email: candidatura.contacto_email,
     email_confirm: true,
     password: clave,
-    user_metadata: { full_name: candidatura.contacto_nombre },
+    user_metadata: { full_name: candidatura.contacto_nombre, last_name: candidatura.contacto_apellidos },
   });
 
   let profileId = creada?.user?.id;

@@ -48,12 +48,14 @@ export function FirmarNdaCandidata({
     sabida ? (sabida === "constituida" ? "sociedad" : "persona") : "",
   );
   const [valores, setValores] = useState<Partial<Record<CampoDeElla, string>>>({});
+  // Su nombre completo, de entrada el de la candidatura: lo confirma o lo corrige
+  const [nombre, setNombre] = useState(base.contraparte_nombre);
   const esSociedad = como === "sociedad";
 
   const pide = como ? camposQuePide(texto, esSociedad) : [];
   const completado = completarNda(texto, {
     startup: base.startup,
-    contraparte_nombre: base.contraparte_nombre,
+    contraparte_nombre: nombre.trim(),
     lugar: base.lugar,
     es_sociedad: esSociedad,
     ...valores,
@@ -68,6 +70,20 @@ export function FirmarNdaCandidata({
 
           <fieldset className="flex flex-col gap-4">
             <legend className="mb-2 text-sm font-semibold text-titular">Tus datos para el NDA</legend>
+            <Campo
+              etiqueta="Nombre y apellidos, como en tu documento"
+              ayuda="Es el que aparece en el texto y en la firma. Si no está bien, corrígelo."
+              obligatorio
+              error={r.ok ? undefined : r.campos?.nombre}
+            >
+              <Texto
+                name="nombre"
+                autoComplete="name"
+                required
+                value={nombre}
+                onChange={(e) => setNombre(e.currentTarget.value)}
+              />
+            </Campo>
             {!sabida ? (
               <Campo
                 etiqueta="Firmas"
@@ -123,14 +139,6 @@ export function FirmarNdaCandidata({
             </div>
           </div>
 
-          <Campo
-            etiqueta="Tu nombre completo"
-            ayuda="Como en tu DNI o pasaporte"
-            error={r.ok ? undefined : r.campos?.nombre}
-            obligatorio
-          >
-            <Texto name="nombre" autoComplete="name" required />
-          </Campo>
           <label className="flex items-start gap-3 text-sm text-titular">
             <input type="checkbox" name="acepto" value="si" required className="mt-1 size-4" />
             <span>
@@ -151,9 +159,13 @@ export function FirmarNdaCandidata({
             <p className="text-sm text-cuerpo" role="status">
               Para firmar falta rellenar lo de arriba.
             </p>
+          ) : !/\S+\s+\S+/.test(nombre.trim()) ? (
+            <p className="text-sm text-cuerpo" role="status">
+              Para firmar, escribe tu nombre y tus apellidos, como en tu documento.
+            </p>
           ) : null}
           <div>
-            <Boton disabled={!como || faltan.length > 0}>Firmar el NDA</Boton>
+            <Boton disabled={!como || faltan.length > 0 || !/\S+\s+\S+/.test(nombre.trim())}>Firmar el NDA</Boton>
           </div>
         </>
       )}

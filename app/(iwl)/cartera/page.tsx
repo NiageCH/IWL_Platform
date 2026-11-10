@@ -125,6 +125,7 @@ export default async function Cartera() {
       <AvisosParaMi avisos={paraMi} />
       {esDireccion ? (
         <AvisosDireccion
+          sinApellidos={!persona.last_name?.trim()}
           avisos={avisos}
           altas={altas}
           revisiones={revisiones}

@@ -48,7 +48,8 @@ beforeAll(async () => {
     .insert({
       cohort_id: COHORTE,
       nombre: `RLS NDA Pers ${SELLO}`,
-      contacto_nombre: "Candidata de Prueba",
+      // Solo el nombre, como llegaban: los apellidos los pone ella al firmar
+      contacto_nombre: "Candidata",
       contacto_email: CORREO,
       estado: "preseleccionada",
     })
@@ -115,6 +116,20 @@ describe("la firma", () => {
       p_ua: "prueba",
     });
 
+  it("sin apellidos no se firma: un documento legal lleva el nombre completo", async () => {
+    const { error } = await clienteServicio().rpc("firmar_nda", {
+      p_candidatura: candidaturaId,
+      p_profile: candidataId,
+      p_nombre: "Candidata",
+      p_plantilla: plantilla,
+      p_texto: `Entre IWL y Candidata, con documento 12345678Z.${RELLENO}`,
+      p_datos: {},
+      p_ip: "1.2.3.4",
+      p_ua: "prueba",
+    });
+    expect(error?.message).toMatch(/nombre y tus apellidos/);
+  });
+
   it("con un hueco en el texto no se firma, sea marcador o corchetes", async () => {
     expect((await firmar("Entre IWL y Candidata de Prueba, con documento {{documento}}.")).error?.message).toMatch(/\{\{documento\}\}/);
     expect((await firmar("Entre IWL y Candidata de Prueba, con documento [DNI].")).error?.message).toMatch(/\[DNI\]/);
@@ -130,6 +145,37 @@ describe("la firma", () => {
       .eq("candidatura_id", candidaturaId)
       .single();
     expect(data).toEqual({ texto_hash: sha(texto), texto_firmado: texto, datos: { documento: "12345678Z", es_sociedad: false } });
+  });
+
+  it("firmó con apellidos que la candidatura no tenía: se corrige, y queda en el historial", async () => {
+    const servicio = clienteServicio();
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("contacto_nombre, contacto_apellidos")
+      .eq("id", candidaturaId)
+      .single();
+    expect(c).toEqual({ contacto_nombre: "Candidata", contacto_apellidos: "de Prueba" });
+    const { data: eventos } = await servicio
+      .from("candidatura_eventos")
+      .select("titulo, detalle")
+      .eq("candidatura_id", candidaturaId)
+      .eq("titulo", "Nombre corregido al firmar el NDA");
+    expect(eventos).toEqual([
+      { titulo: "Nombre corregido al firmar el NDA", detalle: "Constaba «Candidata». Firmó como «Candidata de Prueba», como en su documento." },
+    ]);
+  });
+
+  it("por IWL no se firma con un perfil sin apellidos", async () => {
+    const servicio = clienteServicio();
+    const admin = await perfil(USUARIOS.admin);
+    const { data: antes } = await servicio.from("profiles").select("last_name").eq("id", admin).single();
+    try {
+      await servicio.from("profiles").update({ last_name: null }).eq("id", admin);
+      const { error } = await servicio.rpc("contrafirmar_nda", { p_candidatura: candidaturaId, p_profile: admin, p_ip: "1.2.3.4", p_ua: "prueba" });
+      expect(error?.message).toMatch(/necesita tu nombre y tus apellidos/);
+    } finally {
+      await servicio.from("profiles").update({ last_name: antes!.last_name }).eq("id", admin);
+    }
   });
 
   it("IWL contrafirma el mismo texto, con el mismo hash: no hay un segundo texto", async () => {

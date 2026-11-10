@@ -35,6 +35,7 @@ export function ok(mensaje?: string): Resultado {
 const ETIQUETAS: Record<string, string> = {
   one_liner: "en una frase, qué hacéis",
   contacto_nombre: "tu nombre",
+  contacto_apellidos: "tus apellidos",
   contacto_email: "tu correo",
   contacto_cargo: "tu cargo",
   contacto_telefono: "teléfono",

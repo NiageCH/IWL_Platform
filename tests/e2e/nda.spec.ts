@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   USUARIOS,
+  actualizar,
   borrar,
   borrarCuenta,
   consultar,
@@ -77,6 +78,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
      * ve es lo que firma. Mientras falte algo, no se puede firmar.
      */
     await expect(page.getByRole("button", { name: "Firmar el NDA" })).toBeDisabled();
+    // Su nombre completo, de entrada el de la candidatura: lo confirma o lo corrige
+    await expect(page.getByLabel("Nombre y apellidos, como en tu documento")).toHaveValue(PERSONA);
     await page.getByLabel("Firmas").selectOption("persona");
     await expect(page.getByText(`Entre Inception Woman Lab y ${PERSONA}, de ${NOMBRE}, con documento {{documento}}`)).toBeVisible();
     await page.getByLabel("Tu DNI, NIE o pasaporte").fill("12345678Z");
@@ -87,7 +90,7 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await expect(page.getByText(/En Málaga, con efecto desde la fecha de la última de las firmas del registro de firmas\./)).toBeVisible();
 
     // Sin la casilla no firma
-    await page.getByLabel("Tu nombre completo").fill(PERSONA);
+    await page.getByLabel("Nombre y apellidos, como en tu documento").fill(PERSONA);
     await page.getByRole("button", { name: "Firmar el NDA" }).click();
     await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible();
 
@@ -97,10 +100,21 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 
-    // Dirección: el aviso, y firma ahí mismo
+    /*
+     * Dirección: el aviso, y firma ahí mismo. Sin apellidos en su perfil no
+     * puede —se firma con el nombre completo—: se le dice dónde ponerlos.
+     */
+    await actualizar("profiles", { email: `eq.${USUARIOS.admin}` }, { last_name: null });
     await entrarComo(page, USUARIOS.admin, "/cartera");
     const aviso = page.locator("li").filter({ hasText: `${PERSONA} ha firmado el NDA` });
     await expect(aviso).toBeVisible();
+    await expect(aviso.getByRole("button", { name: "Firmar por IWL" })).toHaveCount(0);
+    await aviso.getByRole("link", { name: "Añádelos en Mi cuenta" }).click();
+    await expect(page).toHaveURL(/\/perfil$/);
+    await page.getByLabel("Apellidos").fill("de Prueba");
+    await page.getByRole("button", { name: "Guardar", exact: true }).click();
+    await expect(page.getByText("Guardado.")).toBeVisible();
+    await page.goto("/cartera");
     await aviso.getByRole("button", { name: "Firmar por IWL" }).click();
     await expect(aviso).toHaveCount(0, { timeout: 15_000 });
 
@@ -121,6 +135,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     expect(firma.texto_version).toBe("1");
     // Lo firmado es su texto completado, el mismo para las dos partes
     expect(firma.texto_firmado).toMatch(/con documento 12345678Z/);
+    // Por IWL, con nombre y apellidos
+    expect(firma.contrafirmante_nombre).toBe("Dirección IWL de Prueba");
     expect(firma.firmado_ua).toBeTruthy();
     expect(firma.contrafirmado_ua).toBeTruthy();
     expect(firma.documento_id).toBeTruthy();
@@ -171,6 +187,7 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await expect(page.getByRole("heading", { name: "No incorporada" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Enviarle el mensaje" })).toBeVisible();
   } finally {
+    await actualizar("profiles", { email: `eq.${USUARIOS.admin}` }, { last_name: "de Prueba" });
     if (companiaId) await borrar("companies", { id: companiaId });
     await quitarFicheros("candidaturas", candidatura.id);
     await borrar("candidaturas", { id: candidatura.id });

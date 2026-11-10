@@ -87,10 +87,16 @@ export function NuevaCandidatura({
                 <Texto name="website" placeholder="https://" />
               </Campo>
               <Campo
-                etiqueta="Persona de contacto"
+                etiqueta="Persona de contacto: nombre"
                 error={r.ok ? undefined : r.campos?.contacto_nombre}
               >
                 <Texto name="contacto_nombre" required />
+              </Campo>
+              <Campo
+                etiqueta="Sus apellidos"
+                error={r.ok ? undefined : r.campos?.contacto_apellidos}
+              >
+                <Texto name="contacto_apellidos" required />
               </Campo>
               <Campo
                 etiqueta="Su correo"
@@ -801,6 +807,7 @@ export function EditarCandidatura({
     website: string | null;
     pais: string | null;
     contacto_nombre: string | null;
+    contacto_apellidos: string | null;
     contacto_email: string | null;
     contacto_telefono: string | null;
     contacto_cargo: string | null;
@@ -869,7 +876,7 @@ export function EditarCandidatura({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo
-                etiqueta="Persona de contacto"
+                etiqueta="Persona de contacto: nombre"
                 obligatorio
                 error={r.ok ? undefined : r.campos?.contacto_nombre}
               >
@@ -877,6 +884,15 @@ export function EditarCandidatura({
                   name="contacto_nombre"
                   required
                   defaultValue={candidatura.contacto_nombre ?? ""}
+                />
+              </Campo>
+              <Campo
+                etiqueta="Sus apellidos"
+                error={r.ok ? undefined : r.campos?.contacto_apellidos}
+              >
+                <Texto
+                  name="contacto_apellidos"
+                  defaultValue={candidatura.contacto_apellidos ?? ""}
                 />
               </Campo>
               <Campo

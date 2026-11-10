@@ -28,6 +28,7 @@ import {
 const esquema = z.object({
   nombre: z.string().trim().min(1, "¿Cómo se llama tu startup?").max(120),
   contacto_nombre: z.string().trim().min(1, "¿Cómo te llamas?").max(120),
+  contacto_apellidos: z.string().trim().min(1, "Faltan tus apellidos.").max(160),
   contacto_email: z.string().trim().email("Ese correo no parece un correo."),
   sector: z.string().trim().max(120).optional(),
   one_liner: z.string().trim().max(400).optional(),
@@ -109,6 +110,7 @@ export async function presentarse(
   const { data: nueva, error: fallo } = await supabase.rpc("presentar_candidatura", {
     p_nombre: datos.nombre,
     p_contacto_nombre: datos.contacto_nombre,
+    p_contacto_apellidos: datos.contacto_apellidos,
     p_contacto_email: datos.contacto_email,
     p_sector: datos.sector || undefined,
     p_one_liner: datos.one_liner || undefined,

@@ -52,7 +52,7 @@ export async function personaActual() {
 
   const { data: perfil } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, organization_id, is_active")
+    .select("id, email, full_name, last_name, role, organization_id, is_active")
     .eq("id", user.id)
     .single();
 

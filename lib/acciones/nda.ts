@@ -109,7 +109,12 @@ const opcional = z
 
 const esquemaFirma = z.object({
   plantilla_id: z.string().uuid(),
-  nombre: z.string().trim().min(3, "Escribe tu nombre completo, como en tu DNI o pasaporte."),
+  // El nombre completo, que entra en el texto como Contraparte y firma
+  nombre: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\s+/g, " "))
+    .refine((v) => /\S+\s+\S+/.test(v), "Escribe tu nombre y tus apellidos, como en tu documento de identidad."),
   acepto: z.literal("si", { message: "Marca la casilla para firmar." }),
   /** Solo si su situación societaria no se ha dicho: firma como persona o en nombre de una sociedad */
   como: z.union([z.enum(["persona", "sociedad"]), z.literal(""), z.null()]).optional(),
@@ -158,7 +163,7 @@ export async function firmarNda(formData: FormData): Promise<Resultado> {
   const servicio = clienteServicio();
   const [{ data: plantilla }, { data: c }, lugar] = await Promise.all([
     servicio.from("nda_plantillas").select("texto").eq("id", datos.plantilla_id).maybeSingle(),
-    servicio.from("candidaturas").select("nombre, contacto_nombre, situacion_societaria").eq("id", candidaturaId).single(),
+    servicio.from("candidaturas").select("nombre, situacion_societaria").eq("id", candidaturaId).single(),
     lugarDelNda(),
   ]);
   if (!plantilla || !c) return error("El NDA ha cambiado mientras lo leías. Vuelve a cargar la página.");
@@ -173,7 +178,8 @@ export async function firmarNda(formData: FormData): Promise<Resultado> {
   const deElla = Object.fromEntries(CAMPOS_DE_ELLA.map((k) => [k, datos[k]]));
   const completos: DatosTextoNda = {
     startup: c.nombre,
-    contraparte_nombre: c.contacto_nombre ?? "",
+    // El que ella confirma o corrige, no el de la candidatura: es el que firma
+    contraparte_nombre: datos.nombre,
     lugar,
     es_sociedad: esSociedad,
     ...deElla,

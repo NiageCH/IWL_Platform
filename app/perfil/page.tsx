@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { personaActual } from "@/lib/supabase/servidor";
 import { Marco } from "@/components/marco";
 import { BarraSuperior } from "@/components/barra-superior";
-import { CambiarContrasena } from "@/components/formularios/perfil";
+import { CambiarContrasena, MisDatos } from "@/components/formularios/perfil";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 
 export const metadata = { title: "Mi cuenta · Plataforma IWL" };
@@ -10,8 +10,8 @@ export const metadata = { title: "Mi cuenta · Plataforma IWL" };
 /**
  * La cuenta de quien mira.
  *
- * Existe para una cosa: cambiar la contraseña que puso la dirección al dar
- * de alta. Mientras nadie la cambie, la dirección la conoce, y eso vale para
+ * Nombre y apellidos —con ellos se firma por IWL— y la contraseña que
+ * puso la dirección al dar de alta. Mientras nadie la cambie, la dirección la conoce, y eso vale para
  * empezar pero no para quedarse.
  *
  * El tema lo decide quién entra, igual que en el resto: consola oscura para
@@ -30,9 +30,22 @@ export default async function Perfil() {
           <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
           <h1 className="titular-marca text-xl text-titular">Mi cuenta</h1>
           <p className="mt-2 text-sm text-secundario">
-            {persona.full_name ?? persona.email}
+            {[persona.full_name, persona.last_name].filter(Boolean).join(" ") || persona.email}
           </p>
         </div>
+
+        <Bloque className="mb-6">
+          <TituloBloque>Tus datos</TituloBloque>
+          <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+            Como en tu documento de identidad.
+            {persona.role === "admin_iwl"
+              ? " Con ellos firmas por Inception Woman Lab: sin apellidos no se puede contrafirmar un NDA."
+              : ""}
+          </p>
+          <div className="px-4 py-4">
+            <MisDatos nombre={persona.full_name ?? ""} apellidos={persona.last_name ?? ""} />
+          </div>
+        </Bloque>
 
         <Bloque>
           <TituloBloque accion={<Metadato>{persona.email}</Metadato>}>

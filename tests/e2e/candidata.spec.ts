@@ -239,6 +239,7 @@ test("quien se presenta por el formulario recibe su enlace", async ({
   await page.goto("/presentarse");
   await page.locator('input[name="nombre"]').fill("Startup Que Se Presenta");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await page.locator('input[name="contacto_email"]').fill(correo);
   /*
    * Se rellena la descripción y el punto en que están, que es lo que hace
@@ -305,6 +306,7 @@ test("a quien da de alta IWL se le pide que se presente, no se le dan las gracia
   });
   await alta.locator('input[name="nombre"]').fill("Invitada A Dedo");
   await alta.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await alta.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await alta.locator('input[name="contacto_email"]').fill(correo);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
   await expect(page.getByText(/entra en el embudo/)).toBeVisible();
@@ -363,6 +365,7 @@ test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
   await page.locator('textarea[name="one_liner"]').fill("Sensores agrícolas.");
   await page.locator('select[name="estado_declarado"]').selectOption("mvp");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await page.locator('input[name="contacto_email"]').fill(correo);
   await page.locator('input[name="liderazgo_femenino_pct"]').fill("50 %");
   await page.locator('input[name="equipo_personas"]').fill("6");
@@ -387,6 +390,7 @@ test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
   // Obligatorio desde que se quitó «prefiero no decirlo»
   await page.locator('select[name="estado_declarado"]').selectOption("mvp");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
+  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await page
     .locator('input[name="contacto_email"]')
     .fill(`e2e.mal.${Date.now()}@ejemplo.test`);

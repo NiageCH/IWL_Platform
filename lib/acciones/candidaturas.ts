@@ -99,6 +99,8 @@ const esquemaCandidatura = z.object({
   website: textoOpcional,
   pais: textoOpcional,
   contacto_nombre: textoObligatorio(1, "¿Con quién se habla?"),
+  // Con el nombre, el nombre completo que entra en el NDA
+  contacto_apellidos: textoObligatorio(1, "Faltan sus apellidos: van en el NDA."),
   contacto_email: z.string().trim().email("Ese correo no parece un correo."),
   contacto_telefono: textoOpcional,
   contacto_cargo: textoOpcional,
@@ -129,9 +131,14 @@ export async function crearCandidatura(formData: FormData): Promise<Resultado> {
   return ok(`${datos.nombre} entra en el embudo.`);
 }
 
+/*
+ * Al corregir, los apellidos no son obligatorios: las candidaturas de antes
+ * de que existieran los tienen vacíos, y corregir otro dato no puede exigir
+ * inventárselos. Se ponen al firmar el NDA, que es donde hacen falta.
+ */
 const esquemaEdicion = esquemaCandidatura
   .omit({ cohort_id: true })
-  .extend({ id: uuid });
+  .extend({ id: uuid, contacto_apellidos: textoOpcional });
 
 export async function editarCandidatura(
   formData: FormData,
@@ -641,7 +648,7 @@ export async function darAccesoCandidata(
 
   const { data: candidatura } = await supabase
     .from("candidaturas")
-    .select("nombre, contacto_email, contacto_nombre, profile_id, estado")
+    .select("nombre, contacto_email, contacto_nombre, contacto_apellidos, profile_id, estado")
     .eq("id", id)
     .maybeSingle();
 
@@ -671,7 +678,7 @@ export async function darAccesoCandidata(
       email: candidatura.contacto_email!,
       email_confirm: true,
       password: clave,
-      user_metadata: { full_name: candidatura.contacto_nombre },
+      user_metadata: { full_name: candidatura.contacto_nombre, last_name: candidatura.contacto_apellidos },
     },
   );
 

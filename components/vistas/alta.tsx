@@ -115,6 +115,7 @@ export function AvisosDireccion({
   altas,
   revisiones = [],
   paradas = [],
+  sinApellidos = false,
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
@@ -122,6 +123,8 @@ export function AvisosDireccion({
   revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
   /** Compañías de Construcción que han pasado el tope del tramo de entrada sin Acuerdo */
   paradas?: { slug: string; nombre: string; dias: number; tope: "atencion" | "vencido" }[];
+  /** Quien mira no tiene apellidos en su perfil: no puede firmar por IWL */
+  sinApellidos?: boolean;
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
@@ -204,7 +207,7 @@ export function AvisosDireccion({
                 ) : null}
                 {/* Firmar ahí mismo, sin ir a la ficha */}
                 {a.tipo === "nda_firmado" && a.candidaturaId ? (
-                  <ContrafirmarNda candidaturaId={a.candidaturaId} />
+                  <ContrafirmarNda candidaturaId={a.candidaturaId} sinApellidos={sinApellidos} />
                 ) : null}
                 {a.tipo === "primer_acceso" ? <CerrarAviso id={a.id} /> : null}
               </li>

@@ -82,6 +82,9 @@ where u.email like '%.test'
     where i.user_id = u.id and i.provider = 'email'
   );
 
+-- Dirección firma por IWL, y se firma con nombre y apellidos
+update profiles set last_name = 'de Prueba' where email = 'admin@iwl.test';
+
 -- Las personas de IWL y de Niage pertenecen a su organización
 update profiles set organization_id = '00000000-0000-0000-0001-000000000001'
 where email in ('admin@iwl.test', 'programa@iwl.test', 'mentor@iwl.test');

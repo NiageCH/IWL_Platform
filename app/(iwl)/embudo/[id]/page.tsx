@@ -341,7 +341,8 @@ export default async function FichaCandidatura({
               <div className="flex justify-between gap-3">
                 <dt className="text-metadato">Nombre</dt>
                 <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
-                  {c.contacto_nombre}
+                  {[c.contacto_nombre, c.contacto_apellidos].filter(Boolean).join(" ")}
+                  {c.contacto_apellidos ? null : <span className="text-metadato"> (sin apellidos)</span>}
                   {c.contacto_cargo ? ` · ${c.contacto_cargo}` : ""}
                 </dd>
               </div>
@@ -412,6 +413,7 @@ export default async function FichaCandidatura({
                     website: c.website,
                     pais: c.pais,
                     contacto_nombre: c.contacto_nombre,
+                    contacto_apellidos: c.contacto_apellidos,
                     contacto_email: c.contacto_email,
                     contacto_telefono: c.contacto_telefono,
                     contacto_cargo: c.contacto_cargo,
@@ -463,6 +465,7 @@ export default async function FichaCandidatura({
             candidaturaId={c.id!}
             nda={nda}
             esDireccion={persona.role === "admin_iwl"}
+            sinApellidos={!persona.last_name?.trim()}
           />
 
           <Bloque>

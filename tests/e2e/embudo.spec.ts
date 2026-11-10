@@ -64,6 +64,7 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
   });
   await alta.locator('input[name="nombre"]').fill(STARTUP);
   await alta.locator('input[name="contacto_nombre"]').fill("Fundadora Prueba");
+  await alta.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await alta.locator('input[name="contacto_email"]').fill(CORREO);
   await alta.getByRole("button", { name: "Dar de alta" }).click();
 

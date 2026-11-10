@@ -1613,3 +1613,27 @@ export async function borrarCompaniaConTodo(
 
   return ok(`${datos.slug} borrada con todo su histórico.`);
 }
+
+/**
+ * Los datos propios: nombre y apellidos. Los cambia cada cual con su sesión
+ * (`profiles_update_self`). Para firmar por IWL hacen falta los dos: con
+ * ellos se escribe la contrafirma.
+ */
+const esquemaMisDatos = z.object({
+  full_name: textoObligatorio(1, "¿Cómo te llamas?"),
+  last_name: textoObligatorio(1, "Faltan tus apellidos."),
+});
+
+export async function guardarMisDatos(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(esquemaMisDatos, formData);
+  if (fallo) return fallo;
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.from("profiles").update(datos).eq("id", persona.id);
+  if (falloBase) return traducirError(falloBase);
+
+  revalidatePath("/", "layout");
+  return ok("Guardado.");
+}

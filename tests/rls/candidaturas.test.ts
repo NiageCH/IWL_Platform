@@ -81,11 +81,22 @@ describe("el formulario público", () => {
     const { data, error } = await anonimo.rpc("presentar_candidatura", {
       p_nombre: "Candidata Anónima",
       p_contacto_nombre: "Quien Sea",
+      p_contacto_apellidos: "De Prueba",
       p_contacto_email: CORREO_PRUEBA,
     });
 
     expect(error).toBeNull();
     expect(data).toBeTruthy();
+  });
+
+  it("sin apellidos no se presenta: van en el NDA", async () => {
+    const { error } = await clienteAnonimo().rpc("presentar_candidatura", {
+      p_nombre: "Candidata Sin Apellidos",
+      p_contacto_nombre: "Quien Sea",
+      p_contacto_apellidos: "  ",
+      p_contacto_email: CORREO_PRUEBA,
+    });
+    expect(error?.message).toMatch(/Hacen falta tu nombre y tus apellidos/);
   });
 
   it("y la que crea nace en el primer paso, no donde quiera", async () => {
@@ -122,6 +133,7 @@ describe("el formulario público", () => {
     const { error } = await anonimo.rpc("presentar_candidatura", {
       p_nombre: "Candidata Anónima Otra Vez",
       p_contacto_nombre: "Quien Sea",
+      p_contacto_apellidos: "De Prueba",
       p_contacto_email: CORREO_PRUEBA,
     });
     expect(error).not.toBeNull();
@@ -137,6 +149,7 @@ describe("el formulario público", () => {
     const { error } = await anonimo.rpc("presentar_candidatura", {
       p_nombre: "Fuera de plazo",
       p_contacto_nombre: "Quien Sea",
+      p_contacto_apellidos: "De Prueba",
       p_contacto_email: `tarde.${Date.now()}@ejemplo.test`,
     });
 

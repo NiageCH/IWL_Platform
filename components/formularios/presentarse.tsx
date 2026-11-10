@@ -197,7 +197,14 @@ export function FormularioPresentarse() {
               obligatorio
               error={r.ok ? undefined : r.campos?.contacto_nombre}
             >
-              <Texto name="contacto_nombre" required autoComplete="name" />
+              <Texto name="contacto_nombre" required autoComplete="given-name" />
+            </Campo>
+            <Campo
+              etiqueta="Tus apellidos"
+              obligatorio
+              error={r.ok ? undefined : r.campos?.contacto_apellidos}
+            >
+              <Texto name="contacto_apellidos" required autoComplete="family-name" />
             </Campo>
             <Campo
               etiqueta="Tu cargo"

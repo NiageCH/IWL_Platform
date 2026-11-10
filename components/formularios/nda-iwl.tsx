@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { BLOQUES, MARCADORES, completarNda, erroresPlantilla } from "@/lib/nda-texto";
 import { MARCAS, faltanMarcas } from "@/lib/nda-formato";
@@ -18,7 +19,24 @@ import { AreaTexto, Boton, Campo, Desplegable, Formulario, Texto } from "@/compo
  * pantalla cambiada —el aviso desaparece y el NDA pasa a firmado—. Si el
  * PDF no se genera, sí devuelve mensaje y el formulario se queda.
  */
-export function ContrafirmarNda({ candidaturaId }: { candidaturaId: string }) {
+export function ContrafirmarNda({
+  candidaturaId,
+  sinApellidos = false,
+}: {
+  candidaturaId: string;
+  /** Se firma con nombre y apellidos: sin ellos, la base no deja, y se dice antes */
+  sinApellidos?: boolean;
+}) {
+  if (sinApellidos) {
+    return (
+      <span className="text-xs text-cuerpo">
+        Para firmar por IWL faltan tus apellidos.{" "}
+        <Link href="/perfil" className="enlace text-acento-texto">
+          Añádelos en Mi cuenta
+        </Link>
+      </span>
+    );
+  }
   return (
     <Formulario accion={contrafirmarNda}>
       {() => (
