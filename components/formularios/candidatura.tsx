@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { Pencil } from "lucide-react";
 import {
@@ -629,6 +631,7 @@ export function AccesoCandidata({
   correo,
   base,
   estado,
+  sinPlantilla = false,
 }: {
   id: string;
   token: string | null;
@@ -638,6 +641,12 @@ export function AccesoCandidata({
   base: string;
   /** En qué paso está: el NDA se envía desde Preseleccionada */
   estado: string;
+  /**
+   * No hay texto de NDA que enseñarle. Darle cuenta así la dejaba sin su
+   * enlace y sin nada que firmar; pasó en producción. La base lo impide
+   * también.
+   */
+  sinPlantilla?: boolean;
 }) {
   const [copiado, setCopiado] = useState(false);
   const [hecho, setHecho] = useState(false);
@@ -727,6 +736,24 @@ export function AccesoCandidata({
             );
           }
           const enviar = estado === "preseleccionada";
+          if ((enviar || estado === "nda") && sinPlantilla) {
+            return (
+              <>
+                <p className="text-sm text-cuerpo">
+                  Falta cargar la plantilla del NDA. Sin ella no tendría nada que firmar, y
+                  darle la cuenta anula su enlace privado.{" "}
+                  <Link href="/admin/programa" className="enlace text-acento-texto">
+                    Cargarla en Administración → Programa
+                  </Link>
+                </p>
+                <div>
+                  <Boton variante="secundario" disabled>
+                    {enviar ? "Enviar el NDA" : "Darle cuenta para el due diligence"}
+                  </Boton>
+                </div>
+              </>
+            );
+          }
           return (
             <>
               <input type="hidden" name="id" value={id} />

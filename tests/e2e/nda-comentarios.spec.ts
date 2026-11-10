@@ -50,7 +50,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     await page.getByLabel("Nueva contraseña").fill(CLAVE);
     await page.getByLabel("Otra vez").fill(CLAVE);
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
-    await expect(page.getByRole("heading", { name: "Antes de seguir, el NDA" })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible({ timeout: 15_000 });
 
     await page.getByLabel("Comentar el NDA").fill("La cláusula de no competencia, ¿a cuánto tiempo obliga?");
     await page.getByRole("button", { name: "Enviar el comentario" }).click();
@@ -85,7 +85,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
 
     // Ella: la respuesta, y el NDA nuevo para firmar
     await entrarComoElla(page, CLAVE);
-    await expect(page.getByRole("heading", { name: "Antes de seguir, el NDA" })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.")).toBeVisible();
     await expect(page.getByText(/La obligación de no competencia dura doce meses\./)).toBeVisible();
   } finally {

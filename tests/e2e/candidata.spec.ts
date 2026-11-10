@@ -210,12 +210,12 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
 
   /*
-   * Aterriza en su candidatura, y lo primero que ve es el NDA: hasta
-   * firmarlo no ve nada más. La firma tiene su propia prueba (nda.spec.ts).
+   * Aterriza en su candidatura, y lo primero que ve es el NDA, como
+   * siguiente paso. La firma tiene su propia prueba (nda.spec.ts).
    */
   await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
   await expect(
-    page.getByRole("heading", { name: "Antes de seguir, el NDA" }),
+    page.getByRole("heading", { name: "Firma el NDA" }),
   ).toBeVisible();
 });
 

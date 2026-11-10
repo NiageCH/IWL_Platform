@@ -59,14 +59,16 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
     await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
 
-    await expect(page.getByRole("heading", { name: "Antes de seguir, el NDA" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible();
     await expect(page.getByText("TEXTO DE PRUEBA. NO ES UN NDA.")).toBeVisible();
     await expect(page.getByText("Documentación del due diligence")).toHaveCount(0);
+    // Y debajo, su candidatura entera: el NDA protege lo que viene, no lo que ya mandó
+    await expect(page.getByRole("heading", { name: NOMBRE, level: 1 })).toBeVisible();
 
     // Sin la casilla no firma
     await page.getByLabel("Tu nombre completo").fill(PERSONA);
     await page.getByRole("button", { name: "Firmar el NDA" }).click();
-    await expect(page.getByRole("heading", { name: "Antes de seguir, el NDA" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible();
 
     await page.getByLabel("He leído el NDA y lo acepto.").check();
     await page.getByRole("button", { name: "Firmar el NDA" }).click();

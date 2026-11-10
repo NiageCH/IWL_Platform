@@ -646,6 +646,19 @@ export async function darAccesoCandidata(
   if (!candidatura) return error("Esa candidatura ya no está.");
   if (candidatura.profile_id) return error("Esa candidata ya tiene acceso.");
 
+  /*
+   * Sin texto de NDA no se le da cuenta: lo primero que vería es «tu NDA
+   * está en preparación», con el enlace ya anulado. Pasó en producción. Se
+   * mira antes de crear la cuenta, que es lo que no tiene vuelta; la base
+   * lo impide igualmente (`dar_acceso_candidatura`).
+   */
+  if (candidatura.estado === "preseleccionada" || candidatura.estado === "nda") {
+    const { data: estadoNda } = await supabase.rpc("estado_nda", { p_candidatura: id });
+    if (estadoNda === "sin_plantilla") {
+      return error("Falta cargar la plantilla del NDA. Cárgala en Administración → Programa y vuelve: sin ella no tendría nada que firmar.");
+    }
+  }
+
   const servicio = clienteServicio();
   const clave = generarClave();
 
@@ -685,7 +698,11 @@ export async function darAccesoCandidata(
     p_profile: profileId!,
   });
 
-  if (falloAcceso) return traducirError(falloAcceso);
+  if (falloAcceso) {
+    // La cuenta recién creada no se queda huérfana: sin acceso no sirve para nada
+    if (!falloAlta && profileId) await servicio.auth.admin.deleteUser(profileId);
+    return traducirError(falloAcceso);
+  }
 
   // El cambio de paso deja su evento en el historial por sí solo
   const enviado = candidatura.estado === "preseleccionada";

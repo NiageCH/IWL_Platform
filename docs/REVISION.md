@@ -4,6 +4,23 @@ Respuestas y encargos para Claude Code. La entrada más reciente arriba. Se trab
 
 ---
 
+## 2026-11-10 · Producción: la candidata con NDA pendiente no ve nada más
+
+Rodrigo ha probado en producción. La candidata entra y solo ve «Tu NDA está en preparación», sin nada más. Dos fallos, por este orden de urgencia:
+
+1. **«Enviar el NDA» no puede funcionar sin plantilla.** En la nube no hay texto de NDA y el botón ha creado la cuenta y anulado el enlace igualmente: la candidata se queda sin su expediente y sin nada que firmar. Sin plantilla vigente (genérica o propia de ella), el botón sale desactivado con el motivo, «Falta cargar la plantilla del NDA», y un enlace a Administración → Programa. Que lo impida también la base, no solo la pantalla.
+2. **La puerta del NDA tapa demasiado.** Corrige lo que pusimos en el flujo («solo ve el NDA»). El NDA protege lo confidencial que se comparte desde ahí; su propia candidatura no lo es. Con el NDA pendiente (`sin_plantilla` o `por_firmar`), `app/candidatura/page.tsx` enseña:
+   · arriba, una tarjeta de **siguiente paso**: «Firma el NDA» con el texto, los comentarios y la firma, o «Tu NDA está en preparación» si aún no hay texto;
+   · debajo, **su candidatura entera** (`CandidaturaPublica`): estado, lo que envió y lo que aportó, igual que veía por el enlace.
+   Detrás del NDA queda solo lo nuevo y confidencial: la sala de datos y lo que comparta IWL.
+3. **Textos de esa pantalla:**
+   · fuera «no tienes que hacer nada más hasta entonces». Mejor: «Te avisaremos cuando esté listo para firmar. Mientras, aquí tienes tu candidatura.»;
+   · fuera las rayas de «Para compartir contigo información confidencial —y tú con nosotras—», según la voz de IWL: coma o frase nueva.
+
+Va antes de lo de «Construcción: no se trabaja sin Acuerdo». Es un fallo en producción.
+
+---
+
 ## 2026-11-10 · Construcción: no se trabaja sin Acuerdo, y más equity
 
 **Decisión de Rodrigo.** En Construcción IWL aporta valor desde el primer día (business plan, estrategia comercial, producto). Por eso:

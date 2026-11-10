@@ -47,6 +47,16 @@ export default async function MiCandidatura() {
     0,
   );
 
+  /*
+   * Con el NDA pendiente, el NDA va arriba como siguiente paso y debajo
+   * está su candidatura entera, como la veía por el enlace.
+   *
+   * Se dijo «solo ve el NDA» y tapaba demasiado: el NDA protege lo
+   * confidencial que se comparte a partir de él, y su propia candidatura
+   * no lo es. Detrás del NDA queda solo lo nuevo: la sala de datos y lo que
+   * comparta IWL. Sin texto de NDA todavía, la tarjeta lo dice y no deja
+   * firmar nada provisional (REVISION, 10 nov).
+   */
   if (nda.estado === "sin_plantilla" || nda.estado === "por_firmar") {
     return (
       <Marco tema="oscuro">
@@ -54,16 +64,17 @@ export default async function MiCandidatura() {
           <div className="mb-8 flex justify-end">
             <BotonSalir />
           </div>
-          <div className="tarjeta p-6">
-            <h1 className="titular-marca mb-2 text-2xl text-titular">
-              {nda.estado === "por_firmar" ? "Antes de seguir, el NDA" : "Tu NDA está en preparación"}
-            </h1>
+          <div className="tarjeta mb-6 p-6">
+            <p className="mb-1 text-xs text-metadato">Siguiente paso</p>
+            <h2 className="titular-marca mb-2 text-2xl text-titular">
+              {nda.estado === "por_firmar" ? "Firma el NDA" : "Tu NDA está en preparación"}
+            </h2>
             {nda.estado === "por_firmar" && nda.plantilla ? (
               <>
                 <p className="mb-5 text-sm text-secundario">
-                  Para compartir contigo información confidencial —y tú con
-                  nosotras— firmamos primero un acuerdo de confidencialidad.
-                  Léelo y fírmalo aquí; después firmará Inception Woman Lab.
+                  Antes de compartir información confidencial, en las dos direcciones, firmamos
+                  un acuerdo de confidencialidad. Léelo y fírmalo aquí. Después firmará
+                  Inception Woman Lab.
                 </p>
                 <FirmarNdaCandidata
                   plantillaId={nda.plantilla.id}
@@ -77,13 +88,14 @@ export default async function MiCandidatura() {
               </>
             ) : (
               <p className="text-sm text-secundario">
-                Estamos preparando el acuerdo de confidencialidad que firmaremos
-                antes de compartir información. En cuanto esté listo lo verás
-                aquí mismo para firmarlo; no tienes que hacer nada más hasta
-                entonces.
+                Estamos preparando el acuerdo de confidencialidad que firmaremos antes de
+                compartir información. Te avisaremos cuando esté listo para firmar. Mientras,
+                aquí tienes tu candidatura.
               </p>
             )}
           </div>
+
+          <CandidaturaPublica vista={vista} />
         </main>
       </Marco>
     );
