@@ -9,6 +9,72 @@ como es**.
 
 ---
 
+## 2026-11-10 · Construcción: no se trabaja sin Acuerdo, y entrar antes cuesta más equity · commit 34648eb
+
+Los cuatro puntos de tu entrada «Construcción: no se trabaja sin Acuerdo». Las cifras de equity no las he puesto: la horquilla está vacía hasta que la fije Luciana.
+
+**Qué cambió**
+1. **Tope del tramo de entrada en Construcción**, en Programa → «Entrada en Construcción», 14 días por defecto, contados desde que nace la compañía.
+   · Al llegar: Atención en «En entrada» («N días sin Acuerdo») y aviso a dirección, «… lleva N días en entrada sin Acuerdo», con «Decidir». A la semana, Vencido.
+   · El contador de la barra la cuenta, una vez por compañía.
+   · En Aceleración no hay tope.
+2. **Horquilla de equity por vía**, en Programa → «Horquilla de equity por vía»: desde y hasta para cada vía. Vacía no comprueba nada.
+   · Al proponer el Anexo se enseña como referencia.
+   · Si el equity se sale, pide «Por qué se sale de la horquilla». El motivo se ve en la propuesta, queda en el registro y, propuesto, no se cambia sin volver a borrador.
+   · Lo comprueba la base.
+3. **Equity sin sociedad**: con la situación «sin constituir» o «en constitución», el Anexo enseña el equity como **«Comprometido · se materializa al constituir»**, también en Aportación.
+   · Proponer pide «Constituir la sociedad, prevista para», que es la fecha del hito, y ese hito queda como hito del Anexo. La base no deja proponer sin ella.
+   · Cuando IWL pone la sociedad como constituida, el equity pasa a **«Materializado el …»**, con la fecha, y queda en el registro.
+4. **Horas solo desde la firma.**
+   · En una compañía en entrada no se imputan horas: en Aportación sale «Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma.»
+   · En una que firmó el Acuerdo por el embudo, tampoco con fecha anterior a la firma.
+   · Lo impide la base, también con la clave de servicio.
+   · Las compañías de antes, sin candidatura firmada, no cambian.
+
+### Qué decidí yo
+· **El tope se calcula al leer**, como el aviso de revisión del comité. No hace falta un proceso que corra cada noche, y cambiar los días en Programa vale al instante para todas.
+· **El tope cuenta desde que nace la compañía**, es decir, desde la contrafirma del NDA, no desde la decisión de incorporación.
+· **«Horas entregadas» no cambia de cálculo.** Como la base no deja imputar horas antes de la firma, ya cuentan desde ella.
+· **La fecha de «Constituir la sociedad» se pide al proponer**, en el mismo formulario. Hoy no hay pantalla para editar la fecha de un hito, y mandar a buscarlo a otro sitio era un callejón sin salida.
+· **«Materializado» se marca cuando la situación pasa a constituida**, la ponga quien la ponga de IWL. Si quieres que sea al cumplir el hito, es lo mismo: cumplir el hito ya la pasa a constituida.
+
+### Cómo lo he probado
+· 3 unitarias: horquilla, equity comprometido o materializado, y el tope.
+· 5 de RLS (`construccion.test.ts`):
+  · horas en entrada, ni con la clave de servicio;
+  · horquilla: sin motivo no se propone, el motivo va al registro y no se cambia;
+  · sin fecha del hito no se propone, y el hito queda en el Anexo;
+  · al constituirse, el equity se materializa con la fecha;
+  · ninguna hora anterior a la firma.
+· De interfaz:
+  · en «En entrada», 15 días sin Acuerdo salen en la fila y en los avisos, y Aportación dice por qué no hay horas;
+  · la del Acuerdo pide la fecha de constitución y enseña «Comprometido»;
+  · una nueva guarda el tope, la horquilla (rechaza un máximo menor que el mínimo) y el lugar del NDA, y los deja como estaban.
+
+### Qué necesito que decidas
+Nada. La horquilla la rellena Luciana en Programa cuando tenga las cifras.
+
+### Estado
+· 181 unitarias · 210 RLS, dos veces seguidas, tras reiniciar desde cero · **370 de interfaz en verde y 4 saltadas** (los informes en PDF).
+· Migración nueva: `20261110180000_construccion_sin_acuerdo`.
+
+### Para desplegar
+`main` sigue en `878d956`, así que van juntas las tres migraciones pendientes: `20261110160000` (sin texto no se envía), `20261110170000` (NDA personalizado) y `20261110180000` (esto). Como siempre, aparta antes tu `docs/REVISION.md` sin guardar.
+
+```bash
+git merge --ff-only worktree-limpiar-cuentas-nube
+npx supabase db push
+git push
+npx vercel --prod
+```
+
+Después: Programa enseña el tope en 14 días y la horquilla vacía. Lo de la plantilla del NDA, como en la entrada anterior.
+
+**Siguiente**
+No hay nada más pendiente en REVISION. Lo abierto es la pregunta de la entrada anterior, sobre la fecha de efecto del NDA.
+
+---
+
 ## 2026-11-10 · El NDA personalizado: marcadores, datos de la firmante y texto completado · commit fc469f1
 
 Tu entrada «El NDA se personaliza». No he tocado el texto legal: los marcadores los pone Luciana en la plantilla.
