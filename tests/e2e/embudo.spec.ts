@@ -121,9 +121,10 @@ test("una candidatura recorre el embudo y acaba siendo compañía", async ({
    * propio acuse. El acuse de verdad es la pantalla, que ahora dice que
    * firmó y enlaza con su ficha.
    */
+  // Firmar crea la compañía con todo lo suyo; en Safari pasa a veces de 5 s
   await expect(
     page.getByRole("heading", { name: "Firmada", exact: true }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   await expect(
     page.getByRole("link", { name: /Ver su ficha en la cartera/ }),
   ).toBeVisible();

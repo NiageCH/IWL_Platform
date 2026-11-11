@@ -243,7 +243,8 @@ describe("comentarlo y aceptarlo", () => {
     const { data } = await clienteServicio().from("annexes").select("aceptado_at").eq("id", anexoAcel).single();
     expect(data!.aceptado_at).toBeNull();
 
-    // Y otra vez: propuesto y aceptado
+    // Se cambia una cifra, y otra vez: propuesto y aceptado
+    expect((await admin.from("annexes").update({ committed_hours: 140 }).eq("id", anexoAcel)).error).toBeNull();
     expect((await proponer(anexoAcel)).error).toBeNull();
     expect((await ella.rpc("aceptar_anexo", { p_anexo: anexoAcel })).error).toBeNull();
   });
@@ -275,6 +276,38 @@ describe("firmar el Acuerdo", () => {
     expect(kpis!.length).toBeGreaterThan(0);
     const { data: c } = await servicio.from("candidaturas").select("estado, equity_pct, acuerdo_firmantes").eq("id", candAcel).single();
     expect(c).toEqual({ estado: "firmada", equity_pct: 3, acuerdo_firmantes: [{ nombre: "Fundadora de Prueba", calidad: "personal" }] });
+  });
+
+  it("cada propuesta y la firma dejan su copia, que ella lee y nadie toca", async () => {
+    const { data: suyas } = await ella
+      .from("anexo_versiones")
+      .select("id, momento, contenido, autor_nombre")
+      .eq("annex_id", anexoAcel)
+      .order("created_at");
+    type Copia = { id: string; momento: string; contenido: { committed_hours: number; signed_on: string | null }; autor_nombre: string | null };
+    const copias = (suyas ?? []) as Copia[];
+    expect(copias.map((v) => v.momento)).toEqual(["propuesto", "propuesto", "firmado"]);
+    // La primera propuesta guarda las cifras de entonces, no las de ahora
+    expect(copias.map((v) => Number(v.contenido.committed_hours))).toEqual([120, 140, 140]);
+    expect(copias[2].contenido.signed_on).toBe("2026-11-10");
+    // Quien propuso queda con su nombre
+    expect(copias[0].autor_nombre).toBeTruthy();
+
+    // Una fundadora ajena no las ve
+    const ajena = await entrarComo(USUARIOS.fundadoraMarea);
+    expect((await ajena.from("anexo_versiones").select("id").eq("annex_id", anexoAcel)).data).toEqual([]);
+
+    // Nadie con sesión las escribe, y ni la clave de servicio las cambia o las borra
+    const admin = await entrarComo(USUARIOS.admin);
+    const inventada = await admin
+      .from("anexo_versiones")
+      .insert({ annex_id: anexoAcel, company_id: acel, momento: "firmado", contenido: {} });
+    expect(inventada.error).not.toBeNull();
+    const servicio = clienteServicio();
+    const cambiar = await servicio.from("anexo_versiones").update({ contenido: {} }).eq("id", copias[0].id);
+    expect(cambiar.error?.message).toMatch(/copia: no se edita/);
+    const quitar = await servicio.from("anexo_versiones").delete().eq("id", copias[0].id);
+    expect(quitar.error?.message).toMatch(/se va con su Anexo/);
   });
 
   it("sin una fundadora con cuenta no se propone; «Dar acceso» la hace fundadora, y solo lo da IWL", async () => {

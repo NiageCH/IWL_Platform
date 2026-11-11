@@ -118,7 +118,7 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     // El aviso en su resumen, la propuesta en Programa; comenta y acepta
     await expect(page.getByText("Inception Woman Lab te ha propuesto el Acuerdo.")).toBeVisible();
     await page.getByRole("link", { name: "Léelo en Programa" }).click();
-    await expect(page.getByText("120 h")).toBeVisible();
+    await expect(page.getByText("120 h", { exact: true })).toBeVisible();
     await expect(page.getByText(`${PERSONA} · a título personal`)).toBeVisible();
     await page.getByLabel("Comentar la propuesta").fill("¿Las 120 horas incluyen la mentoría?");
     await page.getByRole("button", { name: "Enviar el comentario" }).click();

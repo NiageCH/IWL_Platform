@@ -35,7 +35,7 @@ export async function VistaPrograma({
   const { compania } = resumen;
   const esIwl = resumen.permisos.esIwl;
 
-  const [anexo, hitos, fases, pilares, ajusteTarifa] = await Promise.all([
+  const [anexo, hitos, fases, pilares, ajusteTarifa, versiones] = await Promise.all([
     supabase
       .from("annexes")
       .select("*")
@@ -54,6 +54,11 @@ export async function VistaPrograma({
       .select("intensity, cadence, is_active, pillars ( name, description, order_index )")
       .eq("company_id", companyId),
     supabase.from("platform_settings").select("value").eq("key", "anexo_tarifa_hora").maybeSingle(),
+    supabase
+      .from("anexo_versiones")
+      .select("id, momento, contenido, autor_nombre, created_at")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: false }),
   ]);
 
   const listaHitos = hitos.data ?? [];
@@ -205,6 +210,8 @@ export async function VistaPrograma({
             esFundadora={resumen.permisos.esFundadora}
           />
 
+          <HistorialAnexo versiones={versiones.data ?? []} />
+
           {(pilares.data ?? []).length > 0 ? (
             <div className="border-t border-filete px-4 py-3">
               <Metadato>Pilares activos</Metadato>
@@ -300,6 +307,85 @@ function Dato({
       <span className="cifra text-lg leading-none text-titular">{valor}</span>
       {nota ? <span className="text-xs text-secundario">{nota}</span> : null}
     </div>
+  );
+}
+
+/** En una copia de lo acordado no se redondea: 7,5 % no es 8 % */
+const porcentaje = (x: number) => numero(x, Number.isInteger(x) ? 0 : Number.isInteger(x * 10) ? 1 : 2);
+
+type ContenidoVersion = {
+  version?: number;
+  equity_pct?: number | null;
+  committed_hours?: number | null;
+  committed_hours_value?: number | null;
+  committed_hours_value_motivo?: string | null;
+  committed_cash?: number | null;
+  duration_months?: number | null;
+  starts_on?: string | null;
+  ends_on?: string | null;
+  other_commitments?: string | null;
+  firmantes?: { nombre?: string }[] | null;
+  signed_on?: string | null;
+};
+
+/**
+ * Las copias que hace la base al proponer y al firmar (REVISION, 11 nov).
+ * Solo se leen: si ella comentó unas cifras y después cambiaron, aquí se
+ * ve qué decía cada propuesta.
+ */
+function HistorialAnexo({
+  versiones,
+}: {
+  versiones: { id: string; momento: string; contenido: unknown; autor_nombre: string | null; created_at: string }[];
+}) {
+  if (versiones.length === 0) return null;
+  return (
+    <details className="border-t border-filete px-4 py-3">
+      <summary className="accion cursor-pointer text-xs">
+        Historial de versiones · {versiones.length}
+      </summary>
+      <ol className="mt-3 flex flex-col gap-3">
+        {versiones.map((v) => {
+          const c = (v.contenido ?? {}) as ContenidoVersion;
+          const firmantes = (Array.isArray(c.firmantes) ? c.firmantes : []).map((f) => f.nombre).filter(Boolean);
+          return (
+            <li key={v.id} className="flex flex-col gap-1 text-xs">
+              <p className="flex flex-wrap gap-x-3">
+                <span className="text-titular">
+                  {v.momento === "firmado" ? "Firmado" : "Propuesto"}
+                  {c.version ? ` · versión ${c.version}` : ""}
+                </span>
+                <span className="cifra text-metadato">
+                  {fecha(v.momento === "firmado" && c.signed_on ? c.signed_on : v.created_at)}
+                </span>
+                {v.autor_nombre ? <span className="text-secundario">{v.autor_nombre}</span> : null}
+              </p>
+              <p className="text-secundario">
+                {[
+                  c.equity_pct === null || c.equity_pct === undefined
+                    ? "Sin equity"
+                    : `Equity ${porcentaje(Number(c.equity_pct))} %`,
+                  c.committed_hours
+                    ? `${numero(Number(c.committed_hours), 0)} h${
+                        c.committed_hours_value ? ` valoradas en ${euros(Number(c.committed_hours_value))}` : ""
+                      }`
+                    : "Sin horas",
+                  Number(c.committed_cash ?? 0) > 0 ? `Financiación ${euros(Number(c.committed_cash))}` : "Sin financiación",
+                  c.duration_months
+                    ? `${c.duration_months} meses${c.starts_on ? `, ${fecha(c.starts_on)} — ${fecha(c.ends_on)}` : ""}`
+                    : "Duración sin fijar",
+                ].join(" · ")}
+              </p>
+              {c.committed_hours_value_motivo ? (
+                <p className="text-secundario">Otro valor que el calculado: {c.committed_hours_value_motivo}</p>
+              ) : null}
+              {c.other_commitments ? <p className="text-secundario">{c.other_commitments}</p> : null}
+              {firmantes.length ? <p className="text-secundario">Firman: {firmantes.join(", ")}</p> : null}
+            </li>
+          );
+        })}
+      </ol>
+    </details>
   );
 }
 

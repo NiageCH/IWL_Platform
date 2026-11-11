@@ -121,6 +121,12 @@ test("el Anexo se abre, se rellena, se propone, ella lo acepta y se firma", asyn
   await page.reload();
   await expect(page.getByText(/^Firmado el \d/)).toBeVisible();
   await expect(page.locator('input[name="duration_months"]')).toHaveCount(0);
+
+  // Lo propuesto y lo firmado quedan como copia, para leer
+  await page.getByText("Historial de versiones · 2").click();
+  await expect(page.getByText("Propuesto · versión 1")).toBeVisible();
+  await expect(page.getByText("Firmado · versión 1")).toBeVisible();
+  await expect(page.getByText(/Equity 7,5 % · 120 h/).first()).toBeVisible();
 });
 
 test.afterAll(async () => {

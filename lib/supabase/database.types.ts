@@ -176,6 +176,73 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"anexo_versiones": {
+                  Row: {
+                    "annex_id": string,"autor_id": string | null,"autor_nombre": string | null,"company_id": string,"contenido": NonNullable<Json>,"created_at": string,"id": string,"momento": string
+                  }
+                  Insert: {
+                    "annex_id": string,"autor_id"?: string | null,"autor_nombre"?: string | null,"company_id": string,"contenido": NonNullable<Json>,"created_at"?: string,"id"?: string,"momento": string
+                  }
+                  Update: {
+                    "annex_id"?: string,"autor_id"?: string | null,"autor_nombre"?: string | null,"company_id"?: string,"contenido"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"momento"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "anexo_versiones_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "annexes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["annex_id"]
+    },{
+      foreignKeyName: "anexo_versiones_autor_id_fkey"
+      columns: ["autor_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_autor_id_fkey"
+      columns: ["autor_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_autor_id_fkey"
+      columns: ["autor_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "anexo_versiones_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "anexo_versiones_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    }
+                  ]
                 },"annex_pillars": {
                   Row: {
                     "annex_id": string,"cadence": string | null,"company_id": string,"created_at": string,"id": string,"intensity": number,"pillar_id": string,"planned_hours": number | null
