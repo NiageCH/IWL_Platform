@@ -9,6 +9,43 @@ como es**.
 
 ---
 
+## 2026-11-11 · Contraseña olvidada y correos de acceso en español · commit c5eaf2d
+
+**Qué cambió**
+- **«¿Has olvidado tu contraseña?» en `/entrar`.** Pide el correo y manda un enlace de recuperación (`resetPasswordForEmail`) que aterriza en `/cambiar-contrasena?recuperar=1`, con «Elige tu nueva contraseña». Después dice «Si hay una cuenta con ese correo, te hemos mandado un enlace…», exista o no la cuenta.
+- Las otras dos vías siguen: contraseña, y «Pedir un enlace para entrar». Las tres se cambian con botones bajo el formulario.
+- **`/cambiar-contrasena`** abre en dos casos: con la marca de contraseña temporal, como antes, o al volver del enlace. Sin ninguno de los dos, devuelve a la portada.
+- **Plantillas de Supabase Auth en español**, en `supabase/templates/`: entrar con enlace, recuperar contraseña, invitación y cambio de correo. Tienen el mismo aspecto que los correos de `lib/correo`: la marca arriba, texto corto, un botón, la dirección por si el botón falla y la firma de IWL.
+  - En local las lee `config.toml`.
+  - En la nube se pegan a mano: `DESPLIEGUE.md`, paso 6 de «El correo», dice qué asunto y qué fichero van en cada pestaña.
+- **Seguimiento de Brevo:** `DESPLIEGUE.md`, paso 7, dice dónde quitarlo para toda la cuenta y cómo comprobarlo. No he tocado el adaptador, como dijiste.
+- **Pruebas:** `recuperar-contrasena.spec.ts`, de punta a punta con Mailpit. Comprueba el asunto y la plantilla, el enlace, la contraseña nueva y entrar con ella. También que un correo sin cuenta recibe la misma respuesta y ningún correo, y que `/cambiar-contrasena` no se abre a mano.
+
+**Qué decidí yo**
+- Que alguien con sesión abra `/cambiar-contrasena?recuperar=1` escribiéndolo a mano no le da nada nuevo: desde Mi cuenta ya puede cambiar su contraseña sin la anterior.
+- Tras elegirla, se entra directamente, sin mensaje: el acuse es estar dentro, como en la primera entrada.
+- El error al repetir la contraseña de antes ahora dice «Tiene que ser distinta de la que tenías.», que vale para los dos casos.
+- «Entrar con un enlace» pasó a llamarse «Pedir un enlace para entrar». Las pruebas buscan «Entrar» exacto, porque hay más botones que contienen la palabra.
+- La invitación dice que caduca en una hora: es lo que dura cualquier enlace (`otp_expiry`).
+- Si en la nube el enlace de recuperación acabara en la portada, `DESPLIEGUE.md` dice que se añada `…/auth/confirmar**` a las direcciones de redirección: el enlace lleva `?siguiente=` detrás. En local funciona sin eso.
+
+**Qué necesito que decidas**
+1. ¿Quitamos «Pedir un enlace para entrar»? Con «¿Has olvidado tu contraseña?» ya no hace falta, y son dos correos de acceso parecidos para la misma persona.
+
+**Estado**
+- **Suites:** 230 unitarias; 227 de acceso, dos veces seguidas; 388 de interfaz, con 4 saltadas.
+- **Despliegue:** sin desplegar, y sin migración nueva.
+- **Al desplegar:** pegar las cuatro plantillas en Supabase y quitar el seguimiento en Brevo.
+
+**Siguiente**
+- Lo pendiente, en el orden de REVISION:
+  1. el correo con enlace al «Darle cuenta»;
+  2. el motivo obligatorio al cambiar o cancelar una reunión;
+  3. los apellidos donde se identifica a la persona;
+  4. el historial de versiones del Anexo.
+
+---
+
 ## 2026-11-11 · Correo: Brevo en lugar de Resend · commit a67a304
 
 **Qué cambió**
