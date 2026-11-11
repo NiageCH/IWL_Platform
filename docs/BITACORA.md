@@ -9,6 +9,35 @@ como es**.
 
 ---
 
+## 2026-11-11 · Cambiar una reunión confirmada pide el motivo · commit 811e275
+
+**Qué cambió**
+- Cambiar una reunión confirmada (proponer fechas nuevas sobre ella) pide ahora el motivo, como cancelarla.
+  - En el formulario, «Por qué se cambia» es obligatorio.
+  - La acción lo comprueba.
+  - La base lo exige: `guard_reunion`, recreada desde su última definición, no deja pasar de confirmada a propuesta sin `cambiada_motivo`.
+- El motivo se guarda en la reunión (`candidatura_reuniones.cambiada_motivo`, migración `20261111160000_reunion_cambio_con_motivo`). Va en el correo que le llega a ella como «El motivo: …» y en el historial de la candidatura.
+- Cancelar ya pedía el motivo y lo exigía la base; no ha cambiado.
+- Pruebas:
+  - acceso: sin motivo, la base lo rechaza; con motivo, pasa;
+  - interfaz: IWL cambia una confirmada con motivo, el correo llega con «El motivo: …», ella elige de nuevo y después IWL la cancela.
+
+**Qué decidí yo**
+- El motivo del cambio no se enseña en su tarjeta de la reunión, solo en el correo: es lo que pedía la respuesta. Si se quiere también en su página, es añadir el campo a `reunion_vigente`.
+- Al proponer fechas sin que hubiera una confirmada, el motivo se borra: solo cuenta el del último cambio.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 231 unitarias, 227 de acceso dos veces seguidas, 390 de interfaz con 4 saltadas.
+- Sin desplegar. Entra una migración más: `20261111160000_reunion_cambio_con_motivo`.
+
+**Siguiente**
+- Los apellidos donde se identifica a la persona.
+
+---
+
 ## 2026-11-11 · «Darle cuenta» manda el correo con el enlace · commit 14afcdc
 
 **Qué cambió**
