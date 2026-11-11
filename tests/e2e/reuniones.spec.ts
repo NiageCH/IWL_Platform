@@ -80,7 +80,7 @@ test("ella propone otras fechas, IWL acepta una, y se anota", async ({ page, bro
 
     // IWL: el aviso, y acepta una de las suyas
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const avisoIwl = page.locator("li").filter({ hasText: "Agustina propone otras fechas para la reunión" });
+    const avisoIwl = page.locator("li").filter({ hasText: "Agustina Prueba propone otras fechas para la reunión" });
     await expect(avisoIwl).toBeVisible();
     await avisoIwl.getByRole("link", { name: "Ver la reunión" }).click();
     const bloque = page.locator("section").filter({ has: page.getByRole("heading", { name: "Reuniones", exact: true }) });

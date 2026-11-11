@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
@@ -65,7 +66,7 @@ export async function VistaPlan({
       .select(
         `id, content, status, current_version, updated_at, validated_at,
          bp_section_templates ( code, name, guidance, order_index ),
-         profiles:updated_by ( full_name )`,
+         profiles:updated_by ( full_name, last_name )`,
       )
       .eq("company_id", companyId),
     supabase
@@ -75,7 +76,7 @@ export async function VistaPlan({
     supabase
       .from("comments")
       .select(
-        "id, entity_id, body, created_at, resolved_at, profiles:author_id ( full_name )",
+        "id, entity_id, body, created_at, resolved_at, profiles:author_id ( full_name, last_name )",
       )
       .eq("company_id", companyId)
       .eq("entity", "bp_section")
@@ -269,7 +270,7 @@ export async function VistaPlan({
                 <p className="mt-3 text-xs text-metadato">
                   Última edición {fecha(seccion.updated_at)}
                   {seccion.profiles?.full_name
-                    ? ` · ${seccion.profiles.full_name}`
+                    ? ` · ${nombreCompleto(seccion.profiles.full_name, seccion.profiles.last_name)}`
                     : ""}
                 </p>
               ) : null}
@@ -320,7 +321,7 @@ export async function VistaPlan({
                     <li key={c.id} className="border-l-2 border-filete pl-3">
                       <p className="text-sm text-titular">{c.body}</p>
                       <p className="text-xs text-metadato">
-                        {c.profiles?.full_name ?? "IWL"} · {fecha(c.created_at)}
+                        {(nombreCompleto(c.profiles?.full_name, c.profiles?.last_name) || "IWL")} · {fecha(c.created_at)}
                       </p>
                     </li>
                   ))}

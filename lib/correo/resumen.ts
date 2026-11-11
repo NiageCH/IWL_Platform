@@ -1,4 +1,5 @@
 import "server-only";
+import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
 import { textoAviso } from "@/lib/avisos";
@@ -24,7 +25,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
       .eq("resumen_avisos", "diario"),
     servicio
       .from("avisos")
-      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre )")
+      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, last_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre, contacto_apellidos )")
       .is("cerrado_at", null)
       .order("created_at"),
   ]);
@@ -37,13 +38,13 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
     if (!suyos.length) continue;
     const lista = suyos
       .map((a) => {
-        const quien = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
-        const candidatura = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null } | null;
+        const quien = a.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
+        const candidatura = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null; contacto_apellidos: string | null } | null;
         const donde =
           (a.companies as unknown as { name: string } | null)?.name ??
           (a.candidaturas as unknown as { nombre: string } | null)?.nombre ??
           null;
-        return `· ${textoAviso(a.tipo, quien?.full_name ?? quien?.email ?? candidatura?.contacto_nombre ?? "Alguien", donde)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
+        return `· ${textoAviso(a.tipo, quien ? nombrePersona(quien) : nombreCompleto(candidatura?.contacto_nombre, candidatura?.contacto_apellidos) || "Alguien", donde)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
       })
       .join("\n");
     const r = await notificar(

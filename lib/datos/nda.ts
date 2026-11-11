@@ -1,4 +1,5 @@
 import { problemaParaEnviar } from "@/lib/nda-texto";
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -64,7 +65,7 @@ export async function leerComentariosNda(candidaturaId: string): Promise<Comenta
   const supabase = await clienteServidor();
   const { data } = await supabase
     .from("nda_comentarios")
-    .select("id, texto, created_at, respuesta, respondido_at, nda_plantillas(version), profiles!nda_comentarios_respondido_por_fkey(full_name)")
+    .select("id, texto, created_at, respuesta, respondido_at, nda_plantillas(version), profiles!nda_comentarios_respondido_por_fkey(full_name, last_name)")
     .eq("candidatura_id", candidaturaId)
     .order("created_at");
   return (data ?? []).map((c) => ({
@@ -74,7 +75,10 @@ export async function leerComentariosNda(candidaturaId: string): Promise<Comenta
     version: (c.nda_plantillas as unknown as { version: number } | null)?.version ?? null,
     respuesta: c.respuesta,
     respondido_at: c.respondido_at,
-    respondidoPor: (c.profiles as unknown as { full_name: string | null } | null)?.full_name ?? null,
+    respondidoPor: (() => {
+      const p = c.profiles as unknown as { full_name: string | null; last_name: string | null } | null;
+      return p ? nombreCompleto(p.full_name, p.last_name) || null : null;
+    })(),
   }));
 }
 

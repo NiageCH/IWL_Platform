@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -88,7 +89,7 @@ export async function leerDatosTecnicos(
       supabase
         .from("tech_assessments")
         .select(
-          "assessed_on, status, published_at, summary, strengths, profiles!tech_assessments_reviewer_id_fkey ( full_name )",
+          "assessed_on, status, published_at, summary, strengths, profiles!tech_assessments_reviewer_id_fkey ( full_name, last_name )",
         )
         .eq("company_id", companyId)
         .order("assessed_on", { ascending: false })
@@ -140,7 +141,7 @@ export async function leerDatosTecnicos(
           publicada: evaluacion.published_at,
           resumen: evaluacion.summary,
           fortalezas: evaluacion.strengths,
-          revisor: evaluacion.profiles?.full_name ?? null,
+          revisor: (nombreCompleto(evaluacion.profiles?.full_name, evaluacion.profiles?.last_name) || null),
         }
       : null,
     sesiones: (sesiones ?? []).map((s) => ({
@@ -182,12 +183,12 @@ export async function quienGenera() {
   const { data: perfil } = correo
     ? await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, last_name")
         .eq("email", correo)
         .maybeSingle()
     : { data: null };
 
-  return perfil?.full_name ?? correo ?? "la plataforma";
+  return (perfil ? nombreCompleto(perfil.full_name, perfil.last_name) : "") || correo || "la plataforma";
 }
 
 // -----------------------------------------------------------------------------

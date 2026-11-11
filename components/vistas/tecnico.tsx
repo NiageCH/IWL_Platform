@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { dimensionesPorPrioridad } from "@/lib/scoring/score-tecnico";
 import type { ResumenCompania } from "@/lib/datos/compania";
@@ -68,7 +69,7 @@ export async function VistaTecnico({
        * autor, que es lo que dejaba la sección sin forma de empezar.
        */
       .from("tech_assessments")
-      .select("id, assessed_on, summary, strengths, stage, status, profiles:reviewer_id ( full_name )")
+      .select("id, assessed_on, summary, strengths, stage, status, profiles:reviewer_id ( full_name, last_name )")
       .eq("company_id", companyId)
       .order("assessed_on", { ascending: false })
       .limit(1)
@@ -245,7 +246,7 @@ export async function VistaTecnico({
                 </div>
               ) : null}
               <Metadato>
-                {evaluacionActual.profiles?.full_name ?? "Ingeniería Niage"}
+                {(nombreCompleto(evaluacionActual.profiles?.full_name, evaluacionActual.profiles?.last_name) || "Ingeniería Niage")}
               </Metadato>
             </div>
           </Bloque>

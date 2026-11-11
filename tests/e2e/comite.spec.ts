@@ -21,7 +21,13 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     estado: "comite",
     estado_declarado: "mvp",
   });
-  const [admin] = await consultar<{ full_name: string }>("profiles", { email: `eq.${USUARIOS.admin}` }, "full_name");
+  // En el acta se identifica a cada miembro con nombre y apellidos
+  const [admin] = await consultar<{ full_name: string; last_name: string | null }>(
+    "profiles",
+    { email: `eq.${USUARIOS.admin}` },
+    "full_name,last_name",
+  );
+  const nombreAdmin = [admin.full_name, admin.last_name].filter(Boolean).join(" ");
 
   try {
     await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
@@ -33,7 +39,7 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     await expect(acta.getByText("Por su estado de entrada: Construcción")).toBeVisible();
     await expect(acta.getByLabel("Vía de entrada")).toHaveValue("construccion");
 
-    await acta.getByLabel(admin.full_name, { exact: true }).check();
+    await acta.getByLabel(nombreAdmin, { exact: true }).check();
     await acta.getByLabel("Resumen").fill("Equipo sólido y problema claro. Producto en MVP, sin facturar.");
     await acta.getByRole("button", { name: "Guardar el acta para firmar" }).click();
 

@@ -4367,7 +4367,7 @@ isOneToOne: false
                   ]
                 },"admin_personas": {
                   Row: {
-                    "archived_at": string | null,"asignaciones": Json | null,"bio": string | null,"correo_editable": boolean | null,"created_at": string | null,"cv_path": string | null,"email": string | null,"expertise": (string)[] | null,"full_name": string | null,"id": string | null,"is_active": boolean | null,"job_title": string | null,"organization_name": string | null,"role": Database["public"]['Enums']["app_role"] | null,"tiene_actividad": boolean | null
+                    "archived_at": string | null,"asignaciones": Json | null,"bio": string | null,"correo_editable": boolean | null,"created_at": string | null,"cv_path": string | null,"email": string | null,"expertise": (string)[] | null,"full_name": string | null,"id": string | null,"is_active": boolean | null,"job_title": string | null,"last_name": string | null,"organization_name": string | null,"role": Database["public"]['Enums']["app_role"] | null,"tiene_actividad": boolean | null
                   }
                   Relationships: [
                     
@@ -4682,7 +4682,7 @@ isOneToOne: false
                   ]
                 },"personas_asignables": {
                   Row: {
-                    "email": string | null,"expertise": (string)[] | null,"full_name": string | null,"horas_comprometidas": number | null,"id": string | null,"job_title": string | null,"organization_name": string | null,"proyectos": number | null,"role": Database["public"]['Enums']["app_role"] | null
+                    "email": string | null,"expertise": (string)[] | null,"full_name": string | null,"horas_comprometidas": number | null,"id": string | null,"job_title": string | null,"last_name": string | null,"organization_name": string | null,"proyectos": number | null,"role": Database["public"]['Enums']["app_role"] | null
                   }
                   Relationships: [
                     

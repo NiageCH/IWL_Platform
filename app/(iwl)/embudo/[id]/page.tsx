@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { nombreCompleto } from "@/lib/etiquetas";
 import { notFound, redirect } from "next/navigation";
 import { personaActual, clienteServidor } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
@@ -223,7 +224,7 @@ export default async function FichaCandidatura({
           <BloqueReuniones
             reuniones={reuniones}
             candidaturaId={c.id!}
-            contacto={c.contacto_nombre ?? ""}
+            contacto={nombreCompleto(c.contacto_nombre, c.contacto_apellidos)}
             personas={personasIwl}
             abierta={estado !== "firmada" && estado !== "descartada"}
           />
@@ -344,7 +345,7 @@ export default async function FichaCandidatura({
               <div className="flex justify-between gap-3">
                 <dt className="text-metadato">Nombre</dt>
                 <dd className="min-w-0 text-right text-cuerpo [overflow-wrap:anywhere]">
-                  {[c.contacto_nombre, c.contacto_apellidos].filter(Boolean).join(" ")}
+                  {nombreCompleto(c.contacto_nombre, c.contacto_apellidos)}
                   {c.contacto_apellidos ? null : <span className="text-metadato"> (sin apellidos)</span>}
                   {c.contacto_cargo ? ` · ${c.contacto_cargo}` : ""}
                 </dd>
@@ -527,7 +528,7 @@ export default async function FichaCandidatura({
                   denominacion_social: c.denominacion_social,
                   cif: c.cif,
                 }}
-                fundadoras={c.contacto_nombre ?? ""}
+                fundadoras={nombreCompleto(c.contacto_nombre, c.contacto_apellidos)}
               />
               <DescartarCandidatura id={c.id!} />
             </Bloque>

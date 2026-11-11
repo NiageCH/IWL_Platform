@@ -1,3 +1,4 @@
+import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { contarEntradaParaDireccion } from "@/lib/datos/entrada";
@@ -39,13 +40,14 @@ export const leerUmbrales = cache(async (): Promise<Umbrales> => {
 interface Perfil {
   id: string;
   full_name: string | null;
+  last_name: string | null;
   email: string | null;
   created_at: string;
   primer_acceso_at: string | null;
   contrasena_cambiada_at: string | null;
 }
 
-const COLUMNAS_PERFIL = "id, full_name, email, created_at, primer_acceso_at, contrasena_cambiada_at";
+const COLUMNAS_PERFIL = "id, full_name, last_name, email, created_at, primer_acceso_at, contrasena_cambiada_at";
 
 /** Lo que hace falta de varias candidaturas a la vez, en cuatro consultas */
 async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
@@ -130,7 +132,7 @@ export async function leerAltaCandidatura(id: string): Promise<AltaDe> {
 
   const { data: c } = await supabase
     .from("candidaturas")
-    .select("id, estado, profile_id, acuerdo_firmado_on, contacto_nombre, contacto_email")
+    .select("id, estado, profile_id, acuerdo_firmado_on, contacto_nombre, contacto_apellidos, contacto_email")
     .eq("id", id)
     .maybeSingle();
   if (!c) return { persona: null, pasos: [] };
@@ -155,7 +157,9 @@ export async function leerAltaCandidatura(id: string): Promise<AltaDe> {
   return {
     persona: {
       id: c.profile_id ?? "",
-      nombre: (perfil as Perfil | null)?.full_name ?? c.contacto_nombre,
+      nombre: perfil
+        ? nombrePersona(perfil as Perfil)
+        : nombreCompleto(c.contacto_nombre, c.contacto_apellidos) || c.contacto_email,
       correo: (perfil as Perfil | null)?.email ?? c.contacto_email,
     },
     pasos,
@@ -190,7 +194,7 @@ export async function leerAltaCompania(companyId: string): Promise<AltaDe[]> {
     .map((m) => m.profiles as unknown as Perfil | null)
     .filter((p): p is Perfil => Boolean(p))
     .map((p) => ({
-      persona: { id: p.id, nombre: p.full_name ?? p.email ?? "Sin nombre", correo: p.email },
+      persona: { id: p.id, nombre: nombrePersona(p), correo: p.email },
       pasos: pasosDeOnboarding({ ...datosDePerfil(p), candidatura: null }, umbrales),
     }));
 }
@@ -218,7 +222,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 
   const { data: candidaturas } = await supabase
     .from("candidaturas")
-    .select("id, nombre, estado, profile_id, contacto_nombre, contacto_email, is_demo")
+    .select("id, nombre, estado, profile_id, contacto_nombre, contacto_apellidos, contacto_email, is_demo")
     .not("profile_id", "is", null)
     .not("estado", "in", "(firmada,descartada)")
     .eq("is_demo", false);
@@ -241,7 +245,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
     salida.push({
       href: `/embudo/${c.id}`,
       donde: c.nombre,
-      persona: perfil?.full_name ?? c.contacto_nombre,
+      persona: perfil ? nombrePersona(perfil) : nombreCompleto(c.contacto_nombre, c.contacto_apellidos),
       correo: perfil?.email ?? c.contacto_email,
       paso,
       detenido: estaDetenido(pasos),
@@ -265,7 +269,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
     salida.push({
       href: `/cartera/${compania.slug}`,
       donde: compania.name,
-      persona: perfil.full_name ?? perfil.email ?? "Sin nombre",
+      persona: nombrePersona(perfil),
       correo: perfil.email,
       paso,
       detenido: estaDetenido(pasos),
@@ -307,7 +311,7 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   let consulta = supabase
     .from("avisos")
     .select(
-      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, email), candidaturas(nombre, contacto_nombre), companies(name, slug)",
+      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug)",
     )
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
@@ -315,15 +319,15 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   const { data } = await consulta;
 
   return (data ?? []).map((a) => {
-    const p = a.profiles as unknown as { full_name: string | null; email: string | null } | null;
-    const c = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null } | null;
+    const p = a.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
+    const c = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null; contacto_apellidos: string | null } | null;
     const co = a.companies as unknown as { name: string; slug: string } | null;
     return {
       id: a.id,
       tipo: a.tipo as Aviso["tipo"],
       created_at: a.created_at,
       // Sin cuenta todavía —responde desde su enlace—, por su nombre de contacto
-      persona: p?.full_name ?? p?.email ?? c?.contacto_nombre ?? "Alguien",
+      persona: p ? nombrePersona(p) : nombreCompleto(c?.contacto_nombre, c?.contacto_apellidos) || "Alguien",
       candidaturaId: a.candidatura_id,
       companiaSlug: co?.slug ?? null,
       donde: c?.nombre ?? co?.name ?? null,

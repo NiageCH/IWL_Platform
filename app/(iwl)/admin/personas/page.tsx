@@ -129,6 +129,7 @@ export default async function AdminPersonas() {
             persona={{
               id: p.id!,
               full_name: p.full_name,
+              last_name: p.last_name,
               role: p.role!,
               job_title: p.job_title,
               expertise: p.expertise,

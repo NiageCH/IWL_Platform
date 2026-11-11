@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -48,7 +49,7 @@ export async function leerTareas(companyId: string): Promise<{
   const { data } = await supabase
     .from("tasks")
     .select(
-      "id, title, description, status, due_date, owner_id, source_entity, profiles:owner_id ( full_name )",
+      "id, title, description, status, due_date, owner_id, source_entity, profiles:owner_id ( full_name, last_name )",
     )
     .eq("company_id", companyId)
     .order("status")
@@ -63,7 +64,7 @@ export async function leerTareas(companyId: string): Promise<{
     status: t.status,
     due_date: t.due_date,
     owner_id: t.owner_id,
-    owner: t.profiles?.full_name ?? null,
+    owner: (nombreCompleto(t.profiles?.full_name, t.profiles?.last_name) || null),
     source_entity: t.source_entity,
     vencida:
       ABIERTAS.includes(t.status) && t.due_date !== null && t.due_date < hoy,
@@ -90,11 +91,11 @@ export async function leerAsignables(companyId: string): Promise<Asignable[]> {
   const [{ data: miembros }, { data: iwl }] = await Promise.all([
     supabase
       .from("company_members")
-      .select("profile_id, member_role, profiles ( full_name, is_active )")
+      .select("profile_id, member_role, profiles ( full_name, last_name, is_active )")
       .eq("company_id", companyId),
     supabase
       .from("profiles")
-      .select("id, full_name, role")
+      .select("id, full_name, last_name, role")
       .in("role", ["admin_iwl", "equipo_iwl"])
       .eq("is_active", true),
   ]);
@@ -109,7 +110,7 @@ export async function leerAsignables(companyId: string): Promise<Asignable[]> {
     vistos.add(m.profile_id);
     lista.push({
       id: m.profile_id,
-      nombre: m.profiles.full_name ?? "Sin nombre",
+      nombre: (nombreCompleto(m.profiles.full_name, m.profiles.last_name) || "Sin nombre"),
       grupo: "En el proyecto",
     });
   }
@@ -119,7 +120,7 @@ export async function leerAsignables(companyId: string): Promise<Asignable[]> {
     vistos.add(p.id);
     lista.push({
       id: p.id,
-      nombre: p.full_name ?? "Sin nombre",
+      nombre: (nombreCompleto(p.full_name, p.last_name) || "Sin nombre"),
       grupo: "Equipo de IWL",
     });
   }

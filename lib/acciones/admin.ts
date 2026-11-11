@@ -294,6 +294,7 @@ const areas = z
 const esquemaPersona = z.object({
   email: z.string().trim().email("Eso no parece un correo."),
   full_name: textoObligatorio(2, "¿Cómo se llama?"),
+  last_name: textoOpcional,
   role: z.enum(ROLES),
   job_title: textoOpcional,
   expertise: areas,
@@ -353,7 +354,7 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
      * público estos metadatos los escribe quien se registra. El rol se fija
      * abajo, con la clave de servicio, que es lo que este código ya hacía.
      */
-    user_metadata: { full_name: datos.full_name },
+    user_metadata: { full_name: datos.full_name, last_name: datos.last_name },
   });
 
   let usuarioId = creada?.user?.id;
@@ -393,6 +394,7 @@ export async function crearPersona(formData: FormData): Promise<Resultado> {
     .from("profiles")
     .update({
       full_name: datos.full_name,
+      last_name: datos.last_name,
       role: datos.role,
       job_title: datos.job_title,
       expertise: datos.expertise,
@@ -906,6 +908,7 @@ export async function borrarCompania(formData: FormData): Promise<Resultado> {
 const esquemaEditarPersona = z.object({
   id: uuid,
   full_name: textoObligatorio(2, "¿Cómo se llama?"),
+  last_name: textoOpcional,
   role: z.enum(ROLES),
   job_title: textoOpcional,
   expertise: areas,

@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -98,7 +99,7 @@ export async function leerCorrecciones(
   const { data } = await supabase
     .from("kpi_value_history")
     .select(
-      "id, period, valor_anterior, valor_nuevo, changed_at, profiles:changed_by ( full_name ), company_kpis ( kpi_definitions ( name ), custom_name )",
+      "id, period, valor_anterior, valor_nuevo, changed_at, profiles:changed_by ( full_name, last_name ), company_kpis ( kpi_definitions ( name ), custom_name )",
     )
     .eq("company_id", companyId)
     .order("changed_at", { ascending: false })
@@ -113,7 +114,7 @@ export async function leerCorrecciones(
       "KPI",
     anterior: c.valor_anterior === null ? null : Number(c.valor_anterior),
     nuevo: c.valor_nuevo === null ? null : Number(c.valor_nuevo),
-    quien: c.profiles?.full_name ?? null,
+    quien: (nombreCompleto(c.profiles?.full_name, c.profiles?.last_name) || null),
     cuando: c.changed_at,
   }));
 }

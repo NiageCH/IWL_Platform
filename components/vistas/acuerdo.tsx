@@ -1,4 +1,5 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { nombreCompleto } from "@/lib/etiquetas";
 import {
   AceptarAnexo,
   ComentarAnexo,
@@ -84,7 +85,7 @@ export async function PropuestaAcuerdo({
       .eq("annex_id", anexo.id)
       .order("created_at"),
     borrador
-      ? supabase.from("candidaturas").select("contacto_nombre").eq("company_id", compania.id).maybeSingle()
+      ? supabase.from("candidaturas").select("contacto_nombre, contacto_apellidos").eq("company_id", compania.id).maybeSingle()
       : Promise.resolve({ data: null }),
     // Sin una fundadora con cuenta no se propone: lo dice la base, y aquí se ofrece el remedio
     borrador
@@ -191,7 +192,7 @@ export async function PropuestaAcuerdo({
             id={anexo.id}
             slug={compania.slug}
             situacion={(compania.situacion_societaria as Situacion | null) ?? null}
-            fundadoras={candidatura.data?.contacto_nombre ?? ""}
+            fundadoras={nombreCompleto(candidatura.data?.contacto_nombre, candidatura.data?.contacto_apellidos)}
             horquilla={horquillaDe(horquillas.data?.value, compania.via as Via | null)}
             via={compania.via}
             equity={anexo.equity_pct === null ? null : Number(anexo.equity_pct)}

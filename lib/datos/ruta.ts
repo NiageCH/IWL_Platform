@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -305,7 +306,7 @@ export async function leerAvances(
   const { data } = await supabase
     .from("progress_entries")
     .select(
-      "id, side, entry_date, title, body, evidence_url, stage_id, milestone_id, author_id, profiles ( full_name )",
+      "id, side, entry_date, title, body, evidence_url, stage_id, milestone_id, author_id, profiles ( full_name, last_name )",
     )
     .eq("company_id", companyId)
     .order("entry_date", { ascending: false })
@@ -320,7 +321,7 @@ export async function leerAvances(
     enlace: a.evidence_url,
     etapaId: a.stage_id,
     hitoId: a.milestone_id,
-    autor: a.profiles?.full_name ?? null,
+    autor: (nombreCompleto(a.profiles?.full_name, a.profiles?.last_name) || null),
     esMio: quienMira !== null && a.author_id === quienMira,
   }));
 }

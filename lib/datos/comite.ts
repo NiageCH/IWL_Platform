@@ -1,17 +1,18 @@
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { Decision, Via } from "@/lib/comite";
+import { nombrePersona } from "@/lib/etiquetas";
 
 /** Las personas de IWL, que son quienes pueden formar el comité */
 export const leerPersonasIwl = cache(async () => {
   const supabase = await clienteServidor();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email")
+    .select("id, full_name, last_name, email")
     .in("role", ["admin_iwl", "equipo_iwl"])
     .is("archived_at", null)
     .order("full_name");
-  return (data ?? []).map((p) => ({ id: p.id, nombre: p.full_name ?? p.email ?? "Sin nombre" }));
+  return (data ?? []).map((p) => ({ id: p.id, nombre: nombrePersona(p) }));
 });
 
 export const leerComiteDefecto = cache(async (): Promise<string[]> => {
@@ -29,7 +30,7 @@ export async function leerActas(candidaturaId: string) {
   const { data } = await supabase
     .from("comite_actas")
     .select(
-      "id, fecha, resumen, decision, via, via_propuesta, via_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, email))",
+      "id, fecha, resumen, decision, via, via_propuesta, via_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, last_name, email))",
     )
     .eq("candidatura_id", candidaturaId)
     .order("created_at", { ascending: false });
@@ -56,10 +57,10 @@ export async function leerActas(candidaturaId: string) {
     firmas: (a.comite_firmas as unknown as {
       profile_id: string;
       firmado_at: string | null;
-      profiles: { full_name: string | null; email: string | null } | null;
+      profiles: { full_name: string | null; last_name: string | null; email: string | null } | null;
     }[]).map((f) => ({
       profileId: f.profile_id,
-      nombre: f.profiles?.full_name ?? f.profiles?.email ?? "—",
+      nombre: f.profiles ? nombrePersona(f.profiles) : "—",
       firmadoAt: f.firmado_at,
     })),
   }));

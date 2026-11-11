@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { estadoTope, pasoEntrada, type BaseIncorporacion, type DecisionIncorporacion } from "@/lib/entrada";
 import type { Via } from "@/lib/comite";
@@ -23,7 +24,7 @@ export const leerEntrada = cache(async (companyId: string) => {
   const [{ data: d }, { data: c }] = await Promise.all([
     supabase
       .from("decisiones_incorporacion")
-      .select("decision, base, motivo, mensaje, decidido_on, profiles:decidido_por(full_name, email)")
+      .select("decision, base, motivo, mensaje, decidido_on, profiles:decidido_por(full_name, last_name, email)")
       .eq("company_id", companyId)
       .maybeSingle(),
     supabase
@@ -33,7 +34,7 @@ export const leerEntrada = cache(async (companyId: string) => {
       .maybeSingle(),
   ]);
 
-  const p = d?.profiles as unknown as { full_name: string | null; email: string | null } | null;
+  const p = d?.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
   const decision: DecisionLeida | null = d
     ? {
         decision: d.decision as DecisionIncorporacion,
@@ -41,7 +42,7 @@ export const leerEntrada = cache(async (companyId: string) => {
         motivo: d.motivo,
         mensaje: d.mensaje,
         decididoOn: d.decidido_on,
-        quien: p?.full_name ?? p?.email ?? null,
+        quien: p ? nombrePersona(p) : null,
       }
     : null;
 
@@ -97,7 +98,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
     supabase.from("candidaturas").select("id, company_id").in("company_id", ids),
     supabase
       .from("company_members")
-      .select("company_id, profile_id, profiles ( full_name, email )")
+      .select("company_id, profile_id, profiles ( full_name, last_name, email )")
       .in("company_id", ids)
       .eq("member_role", "fundadora"),
     supabase.from("platform_settings").select("value").eq("key", "entrada_tope_construccion_dias").maybeSingle(),
@@ -122,7 +123,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
     const anexo = (anexos.data ?? []).find((a) => a.company_id === c.id)?.status ?? null;
     const candidatura = (candidaturas.data ?? []).find((x) => x.company_id === c.id) ?? null;
     const m = (miembros.data ?? []).find((x) => x.company_id === c.id);
-    const perfil = m?.profiles as unknown as { full_name: string | null; email: string | null } | null;
+    const perfil = m?.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
     const via = c.via as Via | null;
     const dias = Math.max(0, Math.floor((hoy - new Date(c.created_at).getTime()) / 86_400_000));
 
@@ -152,7 +153,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
       },
       candidaturaId: candidatura?.id ?? null,
       fundadora: m
-        ? { id: m.profile_id, nombre: perfil?.full_name ?? perfil?.email ?? "", correo: perfil?.email ?? null }
+        ? { id: m.profile_id, nombre: perfil ? nombreCompleto(perfil.full_name, perfil.last_name) || perfil.email || "" : "", correo: perfil?.email ?? null }
         : null,
     };
   });

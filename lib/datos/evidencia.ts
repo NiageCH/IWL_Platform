@@ -1,3 +1,4 @@
+import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type {
   DocumentoElegible,
@@ -19,7 +20,7 @@ export async function leerEvidencias(
 
   const { data } = await supabase
     .from("evidence_links")
-    .select("id, entity_id, label, target_id, url, created_at, profiles:created_by ( full_name )")
+    .select("id, entity_id, label, target_id, url, created_at, profiles:created_by ( full_name, last_name )")
     .eq("company_id", companyId)
     .eq("entity", entidad)
     .order("created_at");
@@ -35,7 +36,7 @@ export async function leerEvidencias(
       documentId: fila.target_id,
       url: fila.url,
       cuando: fila.created_at,
-      quien: fila.profiles?.full_name ?? null,
+      quien: (nombreCompleto(fila.profiles?.full_name, fila.profiles?.last_name) || null),
     });
     porEntidad.set(fila.entity_id, suyas);
   }
@@ -79,7 +80,7 @@ export async function leerAperturas(companyId: string): Promise<
 
   const { data } = await supabase
     .from("document_access_log")
-    .select("id, created_at, documents ( name ), profiles:profile_id ( full_name )")
+    .select("id, created_at, documents ( name ), profiles:profile_id ( full_name, last_name )")
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })
     .limit(30);
@@ -87,7 +88,7 @@ export async function leerAperturas(companyId: string): Promise<
   return (data ?? []).map((a) => ({
     id: a.id,
     documento: a.documents?.name ?? "Un documento borrado",
-    quien: a.profiles?.full_name ?? "Alguien",
+    quien: (nombreCompleto(a.profiles?.full_name, a.profiles?.last_name) || "Alguien"),
     cuando: a.created_at,
   }));
 }

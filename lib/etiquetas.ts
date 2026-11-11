@@ -136,7 +136,17 @@ export function papel(valor: Papel | string): string {
 }
 
 /**
- * Cómo se llama alguien en una lista.
+ * Nombre y apellidos juntos, o cadena vacía. Donde se identifica a una
+ * persona —fichas, listas de IWL, actas, firmas, registro, PDF— va con
+ * apellidos; en lo que le habla a ella («Hola, Alba»), solo el nombre
+ * (REVISION, 11 nov).
+ */
+export function nombreCompleto(nombre?: string | null, apellidos?: string | null): string {
+  return [nombre?.trim(), apellidos?.trim()].filter(Boolean).join(" ");
+}
+
+/**
+ * Cómo se llama alguien en una lista: con apellidos, si los tiene.
  *
  * Un perfil puede no tener nombre: se crea desde `auth.users` y los metadatos
  * pueden llegar vacíos. Cuando eso pasa, la opción del desplegable salía en
@@ -147,9 +157,10 @@ export function papel(valor: Papel | string): string {
  */
 export function nombrePersona(persona: {
   full_name?: string | null;
+  last_name?: string | null;
   email?: string | null;
 }): string {
-  const nombre = persona.full_name?.trim();
+  const nombre = nombreCompleto(persona.full_name, persona.last_name);
   if (nombre) return nombre;
 
   const correo = persona.email?.trim();

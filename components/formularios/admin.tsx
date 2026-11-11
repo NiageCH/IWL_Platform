@@ -362,6 +362,14 @@ export function FormularioPersona({
                 />
               </Campo>
 
+              <Campo
+                etiqueta="Apellidos"
+                ayuda="Salen en las fichas, las actas y las firmas"
+                error={!resultado.ok ? resultado.campos?.last_name : undefined}
+              >
+                <Texto name="last_name" autoComplete="off" />
+              </Campo>
+
               <Campo etiqueta="Rol en la plataforma">
                 <Seleccion name="role" required defaultValue="fundadora">
                   {ROLES.map((r) => (
@@ -936,6 +944,7 @@ export function EditarPersona({
   persona: {
     id: string;
     full_name: string | null;
+    last_name: string | null;
     role: string;
     job_title: string | null;
     expertise: string[] | null;
@@ -969,6 +978,12 @@ export function EditarPersona({
                 error={!resultado.ok ? resultado.campos?.full_name : undefined}
               >
                 <Texto name="full_name" defaultValue={persona.full_name ?? ""} required />
+              </Campo>
+              <Campo
+                etiqueta="Apellidos"
+                error={!resultado.ok ? resultado.campos?.last_name : undefined}
+              >
+                <Texto name="last_name" defaultValue={persona.last_name ?? ""} />
               </Campo>
               <Campo
                 etiqueta="Rol"

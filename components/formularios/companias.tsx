@@ -516,6 +516,7 @@ export function BorrarCompania({
 export interface Asignable {
   id: string;
   full_name: string | null;
+  last_name?: string | null;
   email: string | null;
   job_title: string | null;
   expertise: string[];

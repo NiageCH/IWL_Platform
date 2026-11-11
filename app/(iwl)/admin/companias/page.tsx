@@ -39,6 +39,7 @@ export const metadata = { title: "Compañías · Administración" };
 interface Miembro {
   profile_id: string;
   full_name: string | null;
+  last_name?: string | null;
   email: string | null;
   job_title: string | null;
   member_role: string;
@@ -60,7 +61,7 @@ export default async function AdminCompanias() {
     supabase
       .from("personas_asignables")
       .select(
-        "id, full_name, email, job_title, expertise, proyectos, horas_comprometidas",
+        "id, full_name, last_name, email, job_title, expertise, proyectos, horas_comprometidas",
       )
       .order("full_name"),
   ]);
@@ -68,6 +69,7 @@ export default async function AdminCompanias() {
   const equipoDisponible: Asignable[] = (asignables.data ?? []).map((p) => ({
     id: p.id!,
     full_name: p.full_name,
+    last_name: p.last_name,
     job_title: p.job_title,
     email: p.email,
     expertise: p.expertise ?? [],
