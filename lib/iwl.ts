@@ -4,7 +4,7 @@
  */
 export const SOCIEDAD = {
   nombre: "Inception Woman Lab, S.L.",
-  nif: "B27646559",
+  nif: "B27646355",
   domicilio: "Ancha del Carmen 32, 29002 Málaga",
 } as const;
 
