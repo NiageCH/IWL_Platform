@@ -9,6 +9,34 @@ como es**.
 
 ---
 
+## 2026-11-11 · Fuera «Pedir un enlace para entrar» · commit cbe3def
+
+**Qué cambió**
+- `/entrar` queda con el correo, la contraseña y «¿Has olvidado tu contraseña?». Ya no hay enlace para entrar sin contraseña: el código que lo pedía (`signInWithOtp`) está quitado.
+- Fuera `supabase/templates/magic_link.html` y su sección en `config.toml`. `DESPLIEGUE.md` ya no tiene su fila y dice que la pestaña «Magic link» de Supabase no se usa.
+- `DECISIONES.md` tiene una entrada nueva con el porqué. `CLAUDE.md` y `README.md` ya no dicen «enlace mágico».
+- La prueba «nadie se crea una cuenta por su cuenta» comprueba ahora dos cosas: que no hay botón de enlace para entrar, y que pedir la recuperación para un correo sin cuenta no crea ningún perfil.
+
+**Qué decidí yo**
+- Las pruebas de interfaz siguen preparando la sesión con `generateLink` de tipo `magiclink`. Lo hace la clave de servicio y no manda correo, así que no es una vía de entrada; está dicho en `DECISIONES.md`.
+- Por la API de Supabase todavía se puede pedir un enlace mágico, aunque ninguna pantalla lo ofrezca. Solo llega a cuentas que ya existen, porque el registro está cerrado, y llegaría con la plantilla por defecto de Supabase. No lo he cerrado: Supabase no deja apagar el enlace mágico sin apagar también la recuperación.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 230 unitarias, 227 de acceso dos veces seguidas, 388 de interfaz con 4 saltadas.
+- Sin desplegar y sin migración nueva.
+- En la nube se pegan tres plantillas, no cuatro.
+
+**Siguiente**
+- El correo con enlace al «Darle cuenta».
+- El motivo obligatorio al cambiar o cancelar una reunión.
+- Los apellidos donde se identifica a la persona.
+- El historial de versiones del Anexo.
+
+---
+
 ## 2026-11-11 · Contraseña olvidada y correos de acceso en español · commit c5eaf2d
 
 **Qué cambió**
