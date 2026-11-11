@@ -58,7 +58,7 @@ nada.
 ## Cómo está montado
 
 - **Next 16** con App Router y Server Actions. `proxy.ts`, no `middleware.ts`.
-- **Supabase**: Postgres 17 con Row Level Security, Auth por enlace mágico,
+- **Supabase**: Postgres 17 con Row Level Security, Auth con contraseña,
   Storage privado. PostgREST solo expone `public`; lo interno vive en `app`.
 - **Tailwind 4** con tokens en `@theme`. El tema lo decide `<Marco>`.
 

@@ -163,7 +163,7 @@ Fuera de esto: alertas por correo, sesiones y dedicación por pilar, informe de 
 |---|---|
 | Aplicación | Next.js 16 (App Router) con TypeScript estricto |
 | Interfaz | Tailwind CSS 4, con iconos de lucide |
-| Datos, auth y ficheros | Supabase: Postgres, contraseña y enlace mágico, Storage y Row Level Security. Región UE |
+| Datos, auth y ficheros | Supabase: Postgres, contraseña (y enlace para recuperarla), Storage y Row Level Security. Región UE |
 | Gráficos | Recharts |
 | Informes | Se imprimen desde el navegador, con CSS de impresión |
 | Tests | Vitest, Playwright y tests de RLS contra Supabase local |

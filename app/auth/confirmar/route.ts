@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
- * Destino del enlace mágico.
+ * Destino de los enlaces de acceso: el de recuperar la contraseña y el del
+ * correo del NDA para elegirla.
  *
  * El flujo normal de la aplicación es PKCE: el enlace trae `?code=` y el
  * intercambio se hace aquí, en servidor. Algunos enlaces llegan en flujo

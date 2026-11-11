@@ -1780,3 +1780,13 @@ El NDA y el acta de comité salen de la misma plantilla, `DocumentoIwl` en `lib/
 - **Una franja pasada no se elige**, y la base lo comprueba. Si pasan todas sin elegir, la reunión está caducada: se calcula al leer (`caducada` en `lib/reuniones.ts`), y el cron diario deja un aviso a IWL una sola vez (`avisar_reuniones_caducadas`).
 - **Las acciones de IWL sobre la reunión no devuelven mensaje.** Proponer, aceptar o cancelar cambian el estado, y con él desaparece el formulario que lo hizo. El acuse es la reunión cambiada, y si el correo salió lo dice el bloque «Correos» de la misma ficha.
 - **«Añadir a mi calendario» es un `.ics` en un enlace `data:`.** Sin integración con Google, que sigue aparcada, y sin ruta que proteger.
+
+## 2026-11-11 · Se entra con contraseña, y quien la olvida pide otra
+
+`/entrar` tiene correo, contraseña y «¿Has olvidado tu contraseña?», que manda un enlace de recuperación (`resetPasswordForEmail`) a `/cambiar-contrasena?recuperar=1`. **No hay enlace para entrar sin contraseña**: lo hubo como segunda vía (28 sep) y, con la recuperación, eran dos correos de acceso parecidos para la misma persona. Decisión de Rodrigo.
+
+Lo que se dice tras pedir la recuperación es lo mismo exista o no la cuenta: si no, el formulario serviría para averiguar qué correos están dados de alta.
+
+La pestaña «Magic link» de las plantillas de Supabase no se usa, y por eso no tiene plantilla en `supabase/templates/`. Las pruebas de interfaz siguen entrando con `generateLink` de tipo `magiclink` (`tests/e2e/entrada.ts`), que no manda correo: es la clave de servicio preparando una sesión, no una vía de entrada.
+
+El enlace de recuperación y el del NDA pasan por `/auth/confirmar`, que intercambia el código por la sesión y lleva a `?siguiente=`.

@@ -284,10 +284,7 @@ otp_expiry = 3600
 # Los correos de acceso, en español y con el aspecto de los de `lib/correo`.
 # En la nube no se leen de aquí: se pegan a mano en Authentication → Emails →
 # Templates, con estos mismos asuntos (DESPLIEGUE.md, «Los correos de acceso»).
-[auth.email.template.magic_link]
-subject = "Tu enlace para entrar en la plataforma de IWL"
-content_path = "./supabase/templates/magic_link.html"
-
+# Sin plantilla de «magic_link»: no hay enlace para entrar sin contraseña.
 [auth.email.template.recovery]
 subject = "Elige tu nueva contraseña de la plataforma de IWL"
 content_path = "./supabase/templates/recovery.html"

@@ -412,10 +412,12 @@ ni los demás `{{ … }}`:
 
 | Pestaña | Asunto | Fichero |
 |---|---|---|
-| Magic link | `Tu enlace para entrar en la plataforma de IWL` | `supabase/templates/magic_link.html` |
 | Reset password | `Elige tu nueva contraseña de la plataforma de IWL` | `supabase/templates/recovery.html` |
 | Invite user | `Tu acceso a la plataforma de Inception Woman Lab` | `supabase/templates/invite.html` |
 | Change email address | `Confirma el cambio de correo en la plataforma de IWL` | `supabase/templates/email_change.html` |
+
+La pestaña **Magic link no se usa**: en `/entrar` no hay enlace para entrar
+sin contraseña, solo el de recuperarla. Se deja como esté.
 
 En local se leen solas de `supabase/config.toml`; en la nube, solo así. Si
 se cambia una plantilla en el repositorio, hay que volver a pegarla.

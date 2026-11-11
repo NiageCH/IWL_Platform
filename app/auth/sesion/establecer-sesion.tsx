@@ -6,7 +6,7 @@ import Link from "next/link";
 import { clienteNavegador } from "@/lib/supabase/navegador";
 
 /**
- * Cierre del enlace mágico en flujo implícito.
+ * Cierre de un enlace de acceso en flujo implícito.
  *
  * El token viaja en el fragmento de la URL, que nunca llega al servidor. Se
  * lee aquí, se establece la sesión y se limpia el fragmento de la barra de

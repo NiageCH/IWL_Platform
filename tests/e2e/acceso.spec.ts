@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrarCuenta, entrarComo } from "./entrada";
+import { USUARIOS, borrarCuenta, consultar, entrarComo } from "./entrada";
 
 /**
  * Entrada con contraseña.
@@ -59,14 +59,16 @@ test("nadie se crea una cuenta por su cuenta", async ({ page }) => {
   // No hay forma de registrarse en la pantalla
   await expect(page.getByText(/crear cuenta|reg[ií]strate|sign up/i)).toHaveCount(0);
 
-  // Y pedir un enlace para un correo no dado de alta tampoco crea nada
-  await page.getByRole("button", { name: "Pedir un enlace para entrar" }).click();
-  await page.getByLabel("Correo").fill("nadie@ejemplo-inexistente.test");
-  await page.getByRole("button", { name: "Enviar enlace de entrada" }).click();
+  // Ni hay enlace para entrar sin contraseña: solo el de recuperarla
+  await expect(page.getByRole("button", { name: /enlace para entrar/i })).toHaveCount(0);
 
-  await expect(
-    page.getByText(/no tiene acceso a la plataforma/),
-  ).toBeVisible();
+  // Y pedir la recuperación para un correo no dado de alta tampoco crea nada
+  const nadie = `nadie.${Date.now()}@ejemplo-inexistente.test`;
+  await page.getByRole("button", { name: "¿Has olvidado tu contraseña?" }).click();
+  await page.getByLabel("Correo").fill(nadie);
+  await page.getByRole("button", { name: "Enviarme el enlace" }).click();
+  await expect(page.getByText(/Si hay una cuenta con .* te hemos mandado un enlace/)).toBeVisible();
+  expect(await consultar("profiles", { email: `eq.${nadie}` }, "id")).toEqual([]);
 });
 
 test("la dirección pone la contraseña al dar de alta y se enseña una vez", async ({
