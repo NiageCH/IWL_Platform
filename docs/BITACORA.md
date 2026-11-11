@@ -9,6 +9,38 @@ como es**.
 
 ---
 
+## 2026-11-11 · «Darle cuenta» manda el correo con el enlace · commit 14afcdc
+
+**Qué cambió**
+- Cuando el NDA se firmó fuera, dar cuenta manda ahora el correo con un enlace para entrar y elegir contraseña, como el del NDA. Nunca lleva la contraseña.
+  - Vale en las dos vías: «Darle cuenta para el due diligence», en la candidatura, y «Dar acceso», desde el Acuerdo.
+  - Es un evento nuevo, `acceso_dado`, que se lee «Su cuenta en la plataforma» en el bloque «Correos». Su migración amplía el check de eventos: `20261111150000_correo_acceso_dado`.
+- El asunto es «Tu cuenta en la plataforma de IWL · <startup>».
+  - El texto dice para qué es la cuenta: el due diligence, el Acuerdo y el programa.
+  - Si el enlace caduca, remite a «¿Has olvidado tu contraseña?».
+- El mensaje de la acción dice si el correo ha salido o se ha quedado «sin enviar». La contraseña temporal se sigue enseñando una vez, por si hay que dársela por otro canal.
+- En la candidatura, la ayuda del botón ya no dice «te deja su acceso escrito para mandárselo», sino que le llega el correo. «Lo primero que verá es el NDA» solo aparece cuando el NDA está por firmar.
+- Pruebas:
+  - unitaria de la plantilla;
+  - de interfaz: la vía de la candidatura, con correo, enlace y «Enviado» en «Correos»;
+  - el Acuerdo comprueba también que llega el correo y que no lleva la contraseña.
+
+**Qué decidí yo**
+- Si ya tenía cuenta, no se manda nada: entra con la suya, que no se toca.
+- Un correo propio y no el del NDA: el del NDA dice «tu acuerdo de confidencialidad, listo para firmar», y aquí ya está firmado.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 231 unitarias; 227 de acceso, dos veces seguidas; 390 de interfaz, con 4 saltadas.
+- Sin desplegar. Entra una migración más: `20261111150000_correo_acceso_dado`.
+
+**Siguiente**
+- El motivo obligatorio al cambiar o cancelar una reunión confirmada.
+
+---
+
 ## 2026-11-11 · Fuera «Pedir un enlace para entrar» · commit cbe3def
 
 **Qué cambió**
