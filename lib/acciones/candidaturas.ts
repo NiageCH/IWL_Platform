@@ -729,18 +729,21 @@ export async function darAccesoCandidata(
 
   /*
    * El correo, con un enlace para entrar y elegir su contraseña: la
-   * temporal no va por correo. Si no sale, la acción no falla —ya tiene
-   * cuenta y el NDA está enviado—: se dice, queda «sin enviar» en la
-   * ficha, y la contraseña se le da por otro canal.
+   * temporal no va por correo. Con el NDA, el del NDA; sin él —se firmó
+   * fuera—, el de su cuenta (REVISION, 11 nov). Si ya tenía cuenta, no va
+   * ninguno: entra con la suya. Si no sale, la acción no falla —ya tiene
+   * cuenta—: se dice, queda «sin enviar» en la ficha, y la contraseña se le
+   * da por otro canal.
    */
-  const correo = enviado
-    ? await notificar(
-        { correo: candidatura.contacto_email!, nombre: candidatura.contacto_nombre, profileId },
-        "nda_enviado",
-        { nombre: candidatura.contacto_nombre, startup: candidatura.nombre },
-        { candidaturaId: id, autor: persona?.id },
-      )
-    : null;
+  const correo =
+    enviado || !falloAlta
+      ? await notificar(
+          { correo: candidatura.contacto_email!, nombre: candidatura.contacto_nombre, profileId },
+          enviado ? "nda_enviado" : "acceso_dado",
+          { nombre: candidatura.contacto_nombre, startup: candidatura.nombre },
+          { candidaturaId: id, autor: persona?.id },
+        )
+      : null;
   const aviso = !correo
     ? ""
     : correo.estado === "enviado"
@@ -752,7 +755,7 @@ export async function darAccesoCandidata(
     ok: true,
     mensaje: enviado
       ? `NDA enviado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`
-      : `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
+      : `Acceso dado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
     datos: {
       correo: candidatura.contacto_email!,
       nombre: candidatura.contacto_nombre ?? "",

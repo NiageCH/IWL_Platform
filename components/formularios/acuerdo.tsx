@@ -313,8 +313,9 @@ export function DarAccesoFundadora({
             <div className="flex flex-col gap-3 rounded-lg border border-filete px-4 py-3">
               <p className="text-sm text-titular" role="status">
                 Cuenta creada para {r.datos.correo}. Su contraseña es{" "}
-                <strong className="cifra">{r.datos.clave}</strong> — cópiala ahora y pásasela: no se
-                vuelve a enseñar. Al entrar la cambiará y verá su compañía.
+                <strong className="cifra">{r.datos.clave}</strong> — cópiala ahora por si hay que
+                dársela por otro canal: no se vuelve a enseñar. Al entrar la cambiará y verá su
+                compañía.
               </p>
               <div>
                 <button type="button" className="accion text-xs" onClick={() => setHecho(true)}>

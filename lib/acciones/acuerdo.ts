@@ -312,19 +312,21 @@ export async function pasarAAceleracion(formData: FormData): Promise<Resultado> 
  * mano antes. Hacerla fundadora de la compañía lo decide la base
  * (`dar_acceso_fundadora`), con la sesión de quien pulsa.
  *
- * La contraseña sale en el mensaje una sola vez: el panel se cierra con
- * «Hecho».
+ * Con la cuenta nueva le llega el correo con un enlace para elegir su
+ * contraseña, como el del NDA (REVISION, 11 nov). La temporal sale además
+ * en el mensaje una sola vez, por si hay que dársela por otro canal: el
+ * panel se cierra con «Hecho».
  */
 export async function darAccesoFundadora(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(z.object({ company_id: uuid, slug }), formData);
   if (fallo) return fallo;
-  const { fallo: sinPermiso } = await soloIwl();
+  const { fallo: sinPermiso, persona } = await soloIwl();
   if (sinPermiso) return sinPermiso;
 
   const supabase = await clienteServidor();
   const { data: candidatura } = await supabase
     .from("candidaturas")
-    .select("contacto_email, contacto_nombre, contacto_apellidos")
+    .select("id, nombre, contacto_email, contacto_nombre, contacto_apellidos")
     .eq("company_id", datos.company_id)
     .maybeSingle();
   if (!candidatura?.contacto_email) {
@@ -368,12 +370,31 @@ export async function darAccesoFundadora(formData: FormData): Promise<Resultado>
   });
   if (falloAcceso) return traducirError(falloAcceso);
 
+  // Si no sale, no falla: ya tiene cuenta, y queda «sin enviar» para reintentarlo
+  const correo = nueva
+    ? await notificar(
+        { correo: candidatura.contacto_email, nombre: candidatura.contacto_nombre, profileId },
+        "acceso_dado",
+        { nombre: candidatura.contacto_nombre, startup: candidatura.nombre },
+        { candidaturaId: candidatura.id, companyId: datos.company_id, autor: persona?.id },
+      )
+    : null;
+  const aviso = !correo
+    ? ""
+    : correo.estado === "enviado"
+      ? " Le ha llegado un correo con un enlace para entrar y elegir su contraseña."
+      : " El correo no ha salido; queda «sin enviar» para reintentarlo.";
+
   refrescar(datos.slug);
   return nueva
     ? {
         ok: true,
-        mensaje: `Acceso dado a ${candidatura.contacto_email}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. Al entrar la cambiará.`,
-        datos: { correo: candidatura.contacto_email, nombre: candidatura.contacto_nombre ?? "", clave },
+        mensaje: `Acceso dado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. Al entrar la cambiará.`,
+        datos: {
+          correo: candidatura.contacto_email,
+          nombre: candidatura.contacto_nombre ?? "",
+          clave,
+        },
       }
     : { ok: true, mensaje: `${candidatura.contacto_email} ya tenía cuenta: entra con la suya, que no se ha tocado.` };
 }

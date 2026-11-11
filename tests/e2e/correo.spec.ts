@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrar, consultar, correosRecibidos, entrarComo, insertar } from "./entrada";
+import { USUARIOS, borrar, borrarCuenta, consultar, correosRecibidos, entrarComo, insertar } from "./entrada";
 
 /**
  * El correo de la plataforma, por lo que no cubre ningún flujo: un envío
@@ -59,4 +59,45 @@ test("un correo sin enviar se reintenta desde la ficha, y sale", async ({ page }
 test("el resumen diario no hace nada sin el secreto del cron", async ({ request }) => {
   const r = await request.get("/api/cron/resumen-avisos");
   expect(r.status()).toBe(401);
+});
+
+/**
+ * Darle cuenta con el NDA firmado fuera (REVISION, 11 nov): le llega el
+ * correo con un enlace para elegir su contraseña, como el del NDA. Nunca la
+ * contraseña.
+ */
+test("darle cuenta para el due diligence le manda el enlace para elegir contraseña", async ({ page }) => {
+  const sello = `${Date.now()}a`;
+  const correo = `e2e.acceso.${sello}@ejemplo.test`;
+  const c = await insertar<{ id: string }>("candidaturas", {
+    cohort_id: COHORTE,
+    nombre: `Acceso Prueba ${sello}`,
+    contacto_nombre: "Alba",
+    contacto_apellidos: "Prueba",
+    contacto_email: correo,
+    estado: "entrada",
+  });
+  try {
+    await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
+    await page.getByRole("button", { name: "Darle cuenta para el due diligence" }).click();
+    await expect(page.getByText(/Le ha llegado un correo con un enlace para entrar y elegir su contraseña/)).toBeVisible();
+    const temporal = (await page.getByRole("textbox", { name: /Su acceso/ }).inputValue()).match(/· Contraseña: (\S+)/)?.[1];
+
+    const [aviso] = await correosRecibidos(correo);
+    expect(aviso.asunto).toBe(`Tu cuenta en la plataforma de IWL · Acceso Prueba ${sello}`);
+    expect(aviso.texto).toContain("Hola, Alba:");
+    expect(aviso.texto).toContain(`Tu usuario es ${correo}`);
+    expect(aviso.texto).toMatch(/Entrar y elegir mi contraseña: http\S+\/auth\/v1\/verify/);
+    if (temporal) expect(aviso.texto).not.toContain(temporal);
+
+    // Y en «Correos», enviado
+    const bloque = page.locator("section").filter({ has: page.getByRole("heading", { name: "Correos", exact: true }) });
+    await page.getByRole("button", { name: "Hecho" }).click();
+    await page.reload();
+    await expect(bloque.locator("li").filter({ hasText: "Su cuenta en la plataforma" }).getByText("Enviado", { exact: true })).toBeVisible();
+  } finally {
+    const [cand] = await consultar<{ profile_id: string | null }>("candidaturas", { id: `eq.${c.id}` }, "profile_id");
+    await borrar("candidaturas", { id: c.id });
+    if (cand?.profile_id) await borrarCuenta(correo);
+  }
 });

@@ -14,6 +14,7 @@ export const EVENTOS = [
   "reunion_cambiada",
   "reunion_cancelada",
   "nda_enviado",
+  "acceso_dado",
   "respuesta_comentario",
   "acuerdo_propuesto",
   "descarte",
@@ -30,6 +31,7 @@ export const NOMBRE_EVENTO: Record<Evento, string> = {
   reunion_cambiada: "Reunión cambiada",
   reunion_cancelada: "Reunión cancelada",
   nda_enviado: "NDA enviado",
+  acceso_dado: "Su cuenta en la plataforma",
   respuesta_comentario: "Respuesta a su comentario",
   acuerdo_propuesto: "Acuerdo propuesto",
   descarte: "Mensaje de descarte",
@@ -105,6 +107,16 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
       saludo(d),
       "Antes de compartir información confidencial, en las dos direcciones, firmamos un acuerdo de confidencialidad. Ya lo tienes en la plataforma.",
       `Entra con este enlace, elige tu contraseña y lo verás nada más entrar. Tu usuario es ${s(d.correo)}. El enlace vale una vez; si caduca, pídenos otro.`,
+    ],
+    boton: { texto: "Entrar y elegir mi contraseña", url: s(d.enlace) },
+  }),
+  // «Darle cuenta» sin «Enviar el NDA»: el NDA se firmó fuera
+  acceso_dado: (d) => ({
+    asunto: `Tu cuenta en la plataforma de IWL · ${s(d.startup)}`,
+    parrafos: [
+      saludo(d),
+      "Ya tienes cuenta en la plataforma de Inception Woman Lab. Desde ella seguiremos lo que viene: el due diligence, el Acuerdo y el programa.",
+      `Entra con este enlace y elige tu contraseña. Tu usuario es ${s(d.correo)}. El enlace vale una vez; si caduca, pídelo en la entrada, en «¿Has olvidado tu contraseña?».`,
     ],
     boton: { texto: "Entrar y elegir mi contraseña", url: s(d.enlace) },
   }),

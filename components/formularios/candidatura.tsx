@@ -762,9 +762,11 @@ export function AccesoCandidata({
                 <strong>{correo}</strong>, enseña una contraseña{" "}
                 <strong>una sola vez</strong> y anula el enlace privado
                 {enviar ? ", y la candidatura pasa a «NDA enviado»" : ""}.
-                {enviar ? " Le llega un correo con un enlace para entrar y elegir su contraseña; la temporal queda para dársela por otro canal si hace falta." : " Te deja su acceso escrito para mandárselo."} Al entrar cambiará
-                la contraseña, y lo primero que verá es el NDA, para
-                comentarlo o firmarlo.
+                {" "}Le llega un correo con un enlace para entrar y elegir su contraseña; la
+                temporal queda para dársela por otro canal si hace falta.
+                {enviar || estado === "nda"
+                  ? " Lo primero que verá al entrar es el NDA, para comentarlo o firmarlo."
+                  : ""}
               </p>
               <Boton variante="secundario">
                 {enviar ? "Enviar el NDA" : "Darle cuenta para el due diligence"}

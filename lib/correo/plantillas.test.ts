@@ -32,6 +32,15 @@ describe("las plantillas", () => {
     expect(c.texto).not.toMatch(/Contraseña:/);
   });
 
+  it("darle cuenta sin el NDA también lleva el enlace, nunca la contraseña", () => {
+    const c = escribirCorreo("acceso_dado", { nombre: "Ana Prueba", startup: "Siren", correo: "ana@x.test", enlace: "https://x.test/r" });
+    expect(c.asunto).toBe("Tu cuenta en la plataforma de IWL · Siren");
+    expect(c.texto).toContain("Hola, Ana:");
+    expect(c.texto).toContain("Tu usuario es ana@x.test");
+    expect(c.texto).toContain("Entrar y elegir mi contraseña: https://x.test/r");
+    expect(c.texto).not.toMatch(/Contraseña:/);
+  });
+
   it("el descarte va tal cual lo escribió IWL, sin botón", () => {
     const c = escribirCorreo("descarte", { startup: "Siren", mensaje: "Hola, Ana:\n\nEsta vez no.\n\nUn saludo" });
     expect(c.asunto).toBe("Siren · Inception Woman Lab");

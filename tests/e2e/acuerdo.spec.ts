@@ -4,6 +4,7 @@ import {
   borrar,
   borrarCuenta,
   consultar,
+  correosRecibidos,
   entrarComo,
   insertar,
   llamar,
@@ -84,6 +85,11 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     const acceso = page.getByText(/Cuenta creada para .* Su contraseña es/);
     await expect(acceso).toBeVisible();
     const temporal = (await acceso.innerText()).match(/contraseña es ([^\s]+)/)![1];
+    // Y le llega el correo con el enlace para elegir contraseña, nunca la contraseña
+    await expect(page.getByText(/Le ha llegado un correo con un enlace para entrar y elegir su contraseña/)).toBeVisible();
+    const [bienvenida] = await correosRecibidos(CORREO);
+    expect(bienvenida.asunto).toMatch(/^Tu cuenta en la plataforma de IWL · /);
+    expect(bienvenida.texto).not.toContain(temporal);
     await page.getByRole("button", { name: "Hecho" }).click();
     await expect(acceso).toHaveCount(0);
 

@@ -41,7 +41,7 @@ export interface ResultadoCorreo {
  * fijar la contraseña. Se genera en cada intento, nuevo.
  */
 async function preparar(evento: Evento, datos: DatosCorreo, para: Destinatario): Promise<DatosCorreo> {
-  if (evento !== "nda_enviado") return datos;
+  if (evento !== "nda_enviado" && evento !== "acceso_dado") return datos;
   const { data, error } = await clienteServicio().auth.admin.generateLink({
     type: "recovery",
     email: para.correo,
