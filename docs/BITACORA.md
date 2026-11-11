@@ -9,6 +9,45 @@ como es**.
 
 ---
 
+## 2026-11-11 · El historial de versiones del Anexo · commit ff21349
+
+**Qué cambió**
+- Cada vez que un Anexo se propone, y cuando se firma, la base guarda una copia en `anexo_versiones`. Lleva:
+  - el equity, las horas, su valor y el motivo si no es el calculado;
+  - la financiación, la duración y las fechas;
+  - lo demás comprometido, quién firma y la fecha de firma;
+  - el nombre de quien la hizo, copiado.
+- La copia la hace un disparador de `annexes`, no la acción: sale igual al firmar desde `firmar_acuerdo` o desde la semilla.
+- Es de solo lectura:
+  - la lee quien ve la compañía, también ella;
+  - nadie con sesión la escribe;
+  - ni la clave de servicio la cambia o la borra suelta: se va solo con su Anexo o con su compañía.
+- En Programa, dentro del bloque del Anexo: un desplegable «Historial de versiones · N». Cada entrada lleva «Propuesto» o «Firmado», la versión, la fecha, quién y las cifras de entonces.
+- Migración `20261111180000_anexo_versiones`. Los Anexos que ya estaban propuestos o firmados en la nube empiezan su historial con lo que dicen hoy.
+- Pruebas:
+  - de acceso: la primera propuesta guarda las cifras de entonces aunque después cambien, una fundadora ajena no ve las copias y nadie las escribe ni las borra;
+  - de interfaz: después de firmar, el historial enseña la propuesta y la firma;
+  - la del Acuerdo busca «120 h» exacto: el historial también dice «120 h» y la prueba encontraba dos;
+  - la del embudo espera hasta 15 s a que la firma cree la compañía: en una pasada, en Safari, tardó más de 5 s. Repetida tres veces pasó siempre.
+
+**Qué decidí yo**
+- Se copia lo que las dos partes leen y acuerdan, no las marcas internas como las notas de IWL o quién aceptó. La aceptación ya queda en el propio Anexo y en el registro.
+- Los pilares no entran en la copia: hoy se fijan por compañía, no por Anexo.
+- Una copia que se queda sin autor, porque la hizo la semilla o el arranque de la migración, sale sin nombre. No se inventa.
+- En el historial, el equity va con sus decimales: la ficha del Anexo redondea 7,5 % a «8 %», y en una copia de lo firmado eso no vale. La ficha la he dejado como estaba.
+
+**Qué necesito que decidas**
+1. ¿La ficha del Anexo también debería enseñar el equity con decimales, en lugar de redondearlo?
+
+**Estado**
+- Suites: 233 unitarias; 228 de acceso, dos veces seguidas. Interfaz, con un solo trabajador: en la última pasada completa, 389 pasan, 4 se saltan y 1 falla, la espera del embudo en Safari. Corregida, el fichero del embudo pasa entero (18) y las del Acuerdo y el Anexo también (6).
+- Sin desplegar. Entra una migración más: `20261111180000_anexo_versiones`.
+
+**Siguiente**
+- Lo pendiente de REVISION está hecho. Quedan los pasos de despliegue cuando quieras.
+
+---
+
 ## 2026-11-11 · Los apellidos, donde se identifica a la persona · commit 2384369
 
 **Qué cambió**
