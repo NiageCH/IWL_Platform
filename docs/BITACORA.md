@@ -9,6 +9,40 @@ como es**.
 
 ---
 
+## 2026-11-11 · Tarifas de mercado con tope de 120 €/h · commit 9279074
+
+**Qué cambió**
+- **Semilla** (`supabase/seed/01_config.sql`): las seis tarifas con tus cifras, todas con la fuente «Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h». La tarifa del Anexo queda en 100 €/h. Local y pruebas coinciden ya con lo que vas a poner en la nube.
+- **La base no deja la aplicada por encima de la de mercado.** Migración `20261111190000_tarifa_aplicada_no_supera_mercado`. Da igual por dónde llegue:
+  - al subir la aplicada;
+  - al bajar la de mercado;
+  - al crear una tarifa nueva;
+  - también con la clave de servicio.
+
+  El motivo sale tal cual en pantalla: «La tarifa aplicada (130 €/h) no puede pasar de la de mercado (100 €/h): la diferencia es la aportación de IWL, y saldría negativa.»
+- **Programa → Tarifas** tiene un campo para la fuente, y guardar la exige. Hasta ahora la fuente solo se leía, y en la nube no habrías podido poner la nueva.
+- Pruebas:
+  - **de acceso:** las de aportación leen las tarifas de la semilla. Una nueva comprueba el guardián de las tres maneras y que nada cambia.
+  - **de interfaz:** `tarifas.spec.ts`. Dirección intenta dejar la aplicada por encima y ve el motivo; después guarda la fuente. Restaura lo que encontró.
+
+**Qué decidí yo**
+- El tope de 120 €/h no lo impone la base: es una decisión de valor, que puede cambiar. Lo que sí impone es que la aplicada no pase de la de mercado, que es integridad.
+- La comprobación es al escribir. Las tarifas que ya hay en la nube cumplen; las horas ya imputadas guardaron su tarifa y no se tocan.
+- La prueba de aportación subía la aplicada a 999 para ver que las horas imputadas no cambian. Ahora la sube hasta la de mercado, que es lo más que puede.
+- La fuente es obligatoria al guardar: sin ella la de mercado no es defendible, y es lo que sostiene el equity.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 236 unitarias; 229 de acceso, dos veces seguidas; interfaz, 392 pasan y 4 se saltan, con un solo trabajador.
+- Sin desplegar. Entra una migración más: `20261111190000_tarifa_aplicada_no_supera_mercado`.
+
+**Siguiente**
+- Desplegar. En la nube, después: las seis tarifas y su fuente en Programa → Tarifas, y la del Anexo en 100 €/h.
+
+---
+
 ## 2026-11-11 · El equity no se redondea nunca · commit 86abf3a
 
 **Qué cambió**
