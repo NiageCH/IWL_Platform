@@ -1203,7 +1203,8 @@ export async function cambiarMiContrasena(
 }
 
 /**
- * Cambiar la contraseña temporal en la primera entrada.
+ * Cambiar la contraseña temporal en la primera entrada, o elegir una nueva
+ * al volver del enlace de «¿Has olvidado tu contraseña?».
  *
  * La misma operación que la de Mi cuenta, con dos diferencias. No devuelve
  * mensaje: el acuse es entrar en la plataforma, y un mensaje se perdería
@@ -1226,12 +1227,12 @@ export async function estrenarContrasena(
 
   if (falloAuth) {
     if (/different|same/i.test(falloAuth.message)) {
-      return error("Tiene que ser distinta de la que te dieron.", {
+      return error("Tiene que ser distinta de la que tenías.", {
         password: "Elige otra.",
       });
     }
     if (/session|jwt|expired/i.test(falloAuth.message)) {
-      return error("Tu sesión ha caducado. Sal y vuelve a entrar con la contraseña que te dieron.");
+      return error("Tu sesión ha caducado. Sal y pide otro enlace desde la entrada, en «¿Has olvidado tu contraseña?».");
     }
     return error(falloAuth.message);
   }

@@ -281,10 +281,24 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Los correos de acceso, en español y con el aspecto de los de `lib/correo`.
+# En la nube no se leen de aquí: se pegan a mano en Authentication → Emails →
+# Templates, con estos mismos asuntos (DESPLIEGUE.md, «Los correos de acceso»).
+[auth.email.template.magic_link]
+subject = "Tu enlace para entrar en la plataforma de IWL"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.recovery]
+subject = "Elige tu nueva contraseña de la plataforma de IWL"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.invite]
+subject = "Tu acceso a la plataforma de Inception Woman Lab"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.email_change]
+subject = "Confirma el cambio de correo en la plataforma de IWL"
+content_path = "./supabase/templates/email_change.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

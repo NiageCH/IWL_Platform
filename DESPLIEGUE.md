@@ -404,9 +404,41 @@ Supabase:
 | Sender email | `plataforma@inceptionwlab.es` |
 | Sender name | `Inception Woman Lab` |
 
+**6. Los correos de acceso, en español** (Authentication → Emails →
+Templates). Supabase manda los suyos con su plantilla en inglés hasta que se
+cambian aquí. En cada pestaña, el asunto y el **contenido entero** del
+fichero, en la vista de código (*Source*), sin tocar `{{ .ConfirmationURL }}`
+ni los demás `{{ … }}`:
+
+| Pestaña | Asunto | Fichero |
+|---|---|---|
+| Magic link | `Tu enlace para entrar en la plataforma de IWL` | `supabase/templates/magic_link.html` |
+| Reset password | `Elige tu nueva contraseña de la plataforma de IWL` | `supabase/templates/recovery.html` |
+| Invite user | `Tu acceso a la plataforma de Inception Woman Lab` | `supabase/templates/invite.html` |
+| Change email address | `Confirma el cambio de correo en la plataforma de IWL` | `supabase/templates/email_change.html` |
+
+En local se leen solas de `supabase/config.toml`; en la nube, solo así. Si
+se cambia una plantilla en el repositorio, hay que volver a pegarla.
+
+**7. Sin seguimiento de aperturas ni de clics.** Con él, Brevo envuelve cada
+enlace en una dirección suya (`r.iwl.inceptionwlab.es/tr/cl/…`). En correos
+de acceso y a candidatas no lo queremos: los enlaces de un solo uso pasarían
+por un tercero, y no hay por qué saber quién abre qué. **No se puede quitar
+envío a envío**: se decide para toda la cuenta, y afecta igual a lo que sale
+por la API (la plataforma) y por el SMTP (Supabase). Está en Brevo →
+Settings → **Transactional** (o Automations → Transactional emails) →
+**Tracking**: desactiva el seguimiento de aperturas y el de clics. Si el plan
+no deja apagarlo del todo, actívalo anonimizado, y pídeselo a soporte de
+Brevo. Para comprobarlo: pide «¿Has olvidado tu contraseña?» y mira que el
+botón del correo lleve a `…supabase.co/auth/v1/verify…`, no a
+`r.iwl.inceptionwlab.es`.
+
 Y en Authentication → URL Configuration, que `https://ride.inceptionwlab.es/auth/confirmar`
-esté entre las direcciones de redirección: es a donde lleva el enlace del
-correo del NDA para elegir la contraseña.
+esté entre las direcciones de redirección: es a donde llevan el enlace del
+correo del NDA y el de «¿Has olvidado tu contraseña?». Si al abrir este
+último se acaba en la portada en vez de en «Elige tu nueva contraseña»,
+añade también `https://ride.inceptionwlab.es/auth/confirmar**`: el enlace
+lleva detrás `?siguiente=…`.
 
 **Para comprobarlo**: en Administración desaparece el aviso «No hay proveedor
 de correo configurado», y al enviar un NDA de prueba la ficha dice «Enviado»

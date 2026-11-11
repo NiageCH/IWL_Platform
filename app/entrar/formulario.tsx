@@ -7,9 +7,9 @@ import { clienteNavegador } from "@/lib/supabase/navegador";
  * Entrada.
  *
  * Con contraseña, que es lo que pone la dirección de IWL al dar de alta a
- * alguien. El enlace por correo sigue estando como segunda vía, para quien
- * no se acuerda de la suya, pero ya no es la puerta principal: obligaba a
- * tener el correo funcionando antes de que nadie pudiera entrar a mirar.
+ * alguien. Quien la ha olvidado pide un enlace para elegir otra
+ * (`resetPasswordForEmail`), que aterriza en `/cambiar-contrasena`. El
+ * enlace para entrar sin contraseña sigue como tercera vía.
  *
  * Esto además libera los correos: con contraseña no hace falta que el buzón
  * exista de verdad, así que una cuenta se puede dar de alta con la dirección
@@ -48,7 +48,7 @@ function traducir(mensaje: string): string {
 }
 
 export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
-  const [via, setVia] = useState<"clave" | "enlace">("clave");
+  const [via, setVia] = useState<"clave" | "enlace" | "recuperar">("clave");
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
   const [estado, setEstado] = useState<
@@ -114,16 +114,50 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
     setEstado("enviado");
   }
 
+  /*
+   * El enlace para elegir contraseña nueva. Lo que se dice después es lo
+   * mismo exista o no la cuenta: si no, este formulario serviría para
+   * averiguar qué correos están dados de alta. El servidor de auth tampoco
+   * lo distingue.
+   */
+  async function pedirRecuperacion(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    setEstado("enviando");
+
+    const supabase = clienteNavegador();
+    const destino = new URL("/auth/confirmar", window.location.origin);
+    destino.searchParams.set("siguiente", "/cambiar-contrasena?recuperar=1");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), {
+      redirectTo: destino.toString(),
+    });
+
+    if (error && !/not found|signup|not allowed/i.test(error.message)) {
+      setEstado("error");
+      setMensaje(traducir(error.message));
+      return;
+    }
+
+    setEstado("enviado");
+  }
+
   if (estado === "enviado") {
     return (
       <div className="relative pl-4">
         <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
-        <p className="text-sm text-titular">
-          Enlace enviado a <span className="cifra">{correo}</span>.
-        </p>
+        {via === "recuperar" ? (
+          <p className="text-sm text-titular">
+            Si hay una cuenta con <span className="cifra">{correo}</span>, te
+            hemos mandado un enlace para elegir tu nueva contraseña.
+          </p>
+        ) : (
+          <p className="text-sm text-titular">
+            Enlace enviado a <span className="cifra">{correo}</span>.
+          </p>
+        )}
         <p className="mt-2 text-sm text-secundario">
           Ábrelo desde este mismo navegador. Caduca en una hora y vale para un
-          solo uso.
+          solo uso. Si no llega en unos minutos, mira en el correo no deseado.
         </p>
 
         {esLocal() ? (
@@ -160,7 +194,7 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
 
   return (
     <form
-      onSubmit={via === "clave" ? entrarConClave : pedirEnlace}
+      onSubmit={via === "clave" ? entrarConClave : via === "recuperar" ? pedirRecuperacion : pedirEnlace}
       className="flex flex-col gap-4"
     >
       <label className="flex flex-col gap-2">
@@ -196,10 +230,14 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
 
       <button type="submit" disabled={estado === "enviando"} className="boton-marca px-4 py-2 text-xs disabled:opacity-50">
         {estado === "enviando"
-          ? "Entrando"
+          ? via === "clave"
+            ? "Entrando"
+            : "Enviando"
           : via === "clave"
             ? "Entrar"
-            : "Enviar enlace de entrada"}
+            : via === "recuperar"
+              ? "Enviarme el enlace"
+              : "Enviar enlace de entrada"}
       </button>
 
       {estado === "error" ? (
@@ -208,18 +246,36 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
         </p>
       ) : null}
 
-      <button
-        type="button"
-        onClick={() => {
-          setVia(via === "clave" ? "enlace" : "clave");
-          setEstado("inicial");
-        }}
-        className="accion self-start text-xs text-secundario"
-      >
-        {via === "clave"
-          ? "No recuerdo mi contraseña"
-          : "Entrar con contraseña"}
-      </button>
+      {via === "recuperar" ? (
+        <p className="text-xs text-secundario">
+          Te mandamos un enlace para elegir una contraseña nueva. La de ahora
+          deja de valer cuando la cambies.
+        </p>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["recuperar", "¿Has olvidado tu contraseña?"],
+            ["enlace", "Pedir un enlace para entrar"],
+            ["clave", "Entrar con contraseña"],
+          ] as const
+        )
+          .filter(([v]) => v !== via)
+          .map(([v, texto]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => {
+                setVia(v);
+                setEstado("inicial");
+              }}
+              className="accion text-xs text-secundario"
+            >
+              {texto}
+            </button>
+          ))}
+      </div>
 
       {esLocal() ? (
         <p className="border-t border-filete pt-3 text-xs text-metadato">

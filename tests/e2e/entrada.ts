@@ -453,7 +453,7 @@ export async function llamar(funcion: string, args: Record<string, unknown>): Pr
 export async function correosRecibidos(
   para: string,
   { esperar = 1 }: { esperar?: number } = {},
-): Promise<{ asunto: string; texto: string }[]> {
+): Promise<{ asunto: string; texto: string; html: string }[]> {
   const base = process.env.MAILPIT_URL || "http://127.0.0.1:54324";
   for (let intento = 0; intento < 20; intento++) {
     const r = await fetch(`${base}/api/v1/search?query=${encodeURIComponent(`to:"${para}"`)}`);
@@ -461,8 +461,8 @@ export async function correosRecibidos(
     if (messages.length >= esperar) {
       return Promise.all(
         messages.map(async (m) => {
-          const d = (await (await fetch(`${base}/api/v1/message/${m.ID}`)).json()) as { Text: string };
-          return { asunto: m.Subject, texto: d.Text };
+          const d = (await (await fetch(`${base}/api/v1/message/${m.ID}`)).json()) as { Text: string; HTML: string };
+          return { asunto: m.Subject, texto: d.Text, html: d.HTML };
         }),
       );
     }

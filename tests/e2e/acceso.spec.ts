@@ -20,7 +20,7 @@ test("se entra con correo y contraseña", async ({ page }) => {
 
   await page.getByLabel("Correo").fill(USUARIOS.fundadoraMarea);
   await page.getByLabel("Contraseña").fill(CLAVE);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).toHaveURL(/\/proyecto/, { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Marea Clínica" })).toBeVisible();
@@ -31,7 +31,7 @@ test("una contraseña que no es no dice si el correo existe", async ({ page }) =
 
   await page.getByLabel("Correo").fill(USUARIOS.fundadoraMarea);
   await page.getByLabel("Contraseña").fill("esta-no-es-la-buena");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   /*
    * El mismo mensaje para un correo que no existe y para una contraseña
@@ -48,7 +48,7 @@ test("tras entrar se vuelve a donde se iba", async ({ page }) => {
 
   await page.getByLabel("Correo").fill(USUARIOS.admin);
   await page.getByLabel("Contraseña").fill(CLAVE);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).toHaveURL(/\/cartera/, { timeout: 15_000 });
 });
@@ -60,7 +60,7 @@ test("nadie se crea una cuenta por su cuenta", async ({ page }) => {
   await expect(page.getByText(/crear cuenta|reg[ií]strate|sign up/i)).toHaveCount(0);
 
   // Y pedir un enlace para un correo no dado de alta tampoco crea nada
-  await page.getByRole("button", { name: /No recuerdo mi contraseña/ }).click();
+  await page.getByRole("button", { name: "Pedir un enlace para entrar" }).click();
   await page.getByLabel("Correo").fill("nadie@ejemplo-inexistente.test");
   await page.getByRole("button", { name: "Enviar enlace de entrada" }).click();
 
@@ -98,7 +98,7 @@ test("la dirección pone la contraseña al dar de alta y se enseña una vez", as
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("tres-palabras-y-42");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).not.toHaveURL(/\/entrar/);
 
@@ -157,7 +157,7 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-de-siempre-77");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
   await page.getByRole("button", { name: "Salir" }).click();
 
@@ -193,7 +193,7 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill(nueva);
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   // Y como la puso la dirección, vuelve a ser temporal
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
@@ -258,7 +258,7 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-primera-clave-9");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
 
   // No hay otra salida que cambiarla
@@ -269,7 +269,7 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await page.getByLabel("Nueva contraseña").fill("la-primera-clave-9");
   await page.getByLabel("Otra vez").fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
-  await expect(page.getByText("Tiene que ser distinta de la que te dieron.")).toBeVisible();
+  await expect(page.getByText("Tiene que ser distinta de la que tenías.")).toBeVisible();
 
   await page.getByLabel("Nueva contraseña").fill("la-segunda-clave-7");
   await page.getByLabel("Otra vez").fill("la-segunda-clave-7");
@@ -296,11 +296,11 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
   await page.getByLabel("Contraseña").fill("la-primera-clave-9");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page.getByText("El correo o la contraseña no son correctos.")).toBeVisible();
 
   await page.getByLabel("Contraseña").fill("la-tercera-clave-5");
-  await page.getByRole("button", { name: "Entrar" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).not.toHaveURL(/\/entrar|\/cambiar-contrasena/, { timeout: 15_000 });
 
   await borrarCuenta(correo);
