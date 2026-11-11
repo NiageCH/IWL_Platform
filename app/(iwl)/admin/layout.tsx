@@ -46,8 +46,8 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
           <Estado valor="atencion" rotulo="Correo" />
           <p className="min-w-0 flex-1 text-cuerpo">
             <strong className="text-titular">No hay proveedor de correo configurado.</strong> La
-            plataforma apunta cada correo, pero se queda «sin enviar». Falta la clave
-            <code className="cifra"> RESEND_API_KEY </code>en Vercel; cuando esté, cada uno se
+            plataforma apunta cada correo, pero se queda «sin enviar». Falta la clave de Brevo,
+            <code className="cifra"> BREVO_API_KEY</code>, en Vercel; cuando esté, cada uno se
             reintenta desde su ficha.
           </p>
         </div>

@@ -219,7 +219,7 @@ Comentarios con menciones y notificación por correo · tareas por compañía co
 | Integración con repositorios | GitHub App propia de IWL con permisos de solo lectura. Token de GitLab como alternativa |
 | Gráficos | Recharts |
 | PDF | React PDF en servidor |
-| Correo | Resend |
+| Correo | Brevo (decisión del 11 nov 2026: IWL ya lo usa) |
 | Tests | Vitest, Playwright y tests de RLS contra Supabase local |
 | Despliegue | Vercel en región UE |
 

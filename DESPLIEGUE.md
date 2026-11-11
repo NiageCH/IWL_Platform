@@ -321,8 +321,8 @@ por usuario.
 
 Esto es una prueba. Antes de que entre gente de fuera de IWL:
 
-- **Un proveedor de correo.** El código ya está (`lib/correo`, Resend por
-  defecto). Falta la cuenta y el dominio: ver «El correo» más abajo.
+- **Un proveedor de correo.** El código ya está (`lib/correo`, con
+  Brevo). Falta la cuenta y el dominio: ver «El correo» más abajo.
 - ~~Un dominio propio.~~ **Hecho**: `ride.inceptionwlab.es`, activo en Vercel
   desde el 5 de noviembre. El de `vercel.app` redirige a él desde el proxy.
 - **Copias de seguridad.** El plan gratuito de Supabase no las hace. El Pro
@@ -332,48 +332,75 @@ Esto es una prueba. Antes de que entre gente de fuera de IWL:
 
 ## El correo
 
-La plataforma envía sus correos por `notificar` (`lib/correo`), con Resend por
-su API. Sin clave, cada correo queda «sin enviar» en la ficha y Administración
-lo avisa; cuando la haya, se reintentan desde ahí.
+La plataforma envía sus correos por `notificar` (`lib/correo`), con Brevo por
+su API de correo transaccional. Sin clave, cada correo queda «sin enviar» en la
+ficha y Administración lo avisa; cuando la haya, se reintentan desde ahí.
 
-**1. Resend.** Crea la cuenta y añade el dominio `inceptionwlab.es` con la
-región **UE (eu-west-1)**. Resend da los valores exactos de cada registro; son
-de esta forma:
+Brevo da **dos credenciales distintas**, y cada una va a un sitio:
+
+| Credencial | Dónde se saca en Brevo | Dónde va |
+|---|---|---|
+| Clave API (`xkeysib-…`) | SMTP & API → API Keys | Vercel, `BREVO_API_KEY` |
+| Usuario y clave SMTP (`xsmtpsib-…`) | SMTP & API → SMTP | Supabase, SMTP Settings |
+
+**1. Brevo: cuenta y dominio.** Con la cuenta de IWL (o una nueva), en
+Settings → **Senders, Domains & Dedicated IPs** → Domains → *Add a domain*:
+`inceptionwlab.es`. Elige autenticarlo a mano: Brevo enseña los registros con
+sus valores exactos. Son de esta forma, y van en GoDaddy (Dominio → DNS →
+Añadir registro nuevo):
 
 | Tipo | Nombre (en GoDaddy) | Valor |
 |---|---|---|
-| MX | `send` | `feedback-smtp.eu-west-1.amazonses.com`, prioridad 10 |
-| TXT (SPF) | `send` | `v=spf1 include:amazonses.com ~all` |
-| TXT (DKIM) | `resend._domainkey` | la clave pública que da Resend, entera |
+| TXT (verificación) | `@` | `brevo-code:…`, el que da Brevo |
+| TXT (DKIM) | `brevo1._domainkey` | el que da Brevo (si da un CNAME, va como CNAME) |
+| TXT (DKIM) | `brevo2._domainkey` | ídem, si da un segundo |
+| TXT (SPF) | `@` | `v=spf1 include:spf.brevo.com ~all` |
 | TXT (DMARC) | `_dmarc` | `v=DMARC1; p=none; rua=mailto:iwl@inceptionwlab.es` |
 
-El MX y el SPF van en el subdominio `send`, no en la raíz: no tocan el correo
-que ya recibe `inceptionwlab.es`. Si ya hay un `_dmarc`, se deja el que hay.
-Cuando Resend marque el dominio como verificado, crea una clave de API con
-permiso de envío.
+Cuidado con dos:
+- **SPF: solo puede haber uno en `@`.** Si ya hay un `v=spf1 …` (el del
+  correo que recibe `inceptionwlab.es`, Google o Microsoft), no se añade otro:
+  se mete `include:spf.brevo.com` en el que hay, antes del `~all`.
+- **DMARC: si ya hay un `_dmarc`, se deja el que hay.**
 
-**2. Vercel** (Settings → Environment Variables, en producción):
+Copia los nombres y valores de la pantalla de Brevo, no de esta tabla: los
+de DKIM cambian por cuenta. GoDaddy añade el dominio solo, así que en
+«Nombre» va `brevo1._domainkey`, no `brevo1._domainkey.inceptionwlab.es`.
+Cuando Brevo marque el dominio como autenticado (puede tardar unas horas),
+sigue.
+
+**2. Brevo: el remitente.** En Senders → *Add a sender*: nombre
+`Inception Woman Lab`, correo `plataforma@inceptionwlab.es`. Con el dominio
+autenticado no hace falta que el buzón exista; las respuestas van a
+`iwl@inceptionwlab.es` (`CORREO_RESPUESTA`).
+
+**3. Brevo: la clave API.** SMTP & API → API Keys → *Generate a new API key*,
+con nombre «Plataforma». Se ve una sola vez: va directa a Vercel.
+
+**4. Vercel** (Settings → Environment Variables, en producción):
 
 | Variable | Valor |
 |---|---|
-| `RESEND_API_KEY` | la clave de Resend |
+| `BREVO_API_KEY` | la clave API de Brevo (`xkeysib-…`) |
 | `CRON_SECRET` | una cadena aleatoria larga (`openssl rand -hex 32`) |
 | `CORREO_REMITENTE` | opcional; por defecto `Inception Woman Lab <plataforma@inceptionwlab.es>` |
 | `CORREO_RESPUESTA` | opcional; por defecto `iwl@inceptionwlab.es` |
+| `CORREO_PROVEEDOR` | no hace falta: con `BREVO_API_KEY` ya es Brevo |
 
 `CRON_SECRET` protege `/api/cron/resumen-avisos`, que Vercel llama cada día a
 las 7:00 UTC (`vercel.json`) para el resumen de avisos. Después de añadir las
 variables, otro `npx vercel --prod`: no se aplican a un despliegue ya hecho.
 
-**3. Supabase Auth con el mismo proveedor** (Authentication → Emails → SMTP
-Settings), para los correos de contraseña que manda Supabase:
+**5. Supabase Auth por el SMTP de Brevo** (Authentication → Emails → SMTP
+Settings → *Enable custom SMTP*), para los correos de contraseña que manda
+Supabase:
 
 | Campo | Valor |
 |---|---|
-| Host | `smtp.resend.com` |
-| Port | `465` |
-| Username | `resend` |
-| Password | la misma clave de Resend |
+| Host | `smtp-relay.brevo.com` |
+| Port | `587` |
+| Username | el «Login» de SMTP & API → SMTP (un `…@smtp-brevo.com`) |
+| Password | una clave SMTP de esa misma pantalla (`xsmtpsib-…`), **no la API** |
 | Sender email | `plataforma@inceptionwlab.es` |
 | Sender name | `Inception Woman Lab` |
 

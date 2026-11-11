@@ -2,7 +2,8 @@
  * Quién entrega los correos. Cambiar de proveedor es escribir otro
  * adaptador aquí: el resto de la plataforma solo conoce `notificar`.
  *
- *   · resend: el de producción, por su API HTTP. Con `RESEND_API_KEY`.
+ *   · brevo: el de producción, por su API HTTP. Con `BREVO_API_KEY`. IWL
+ *     ya lo usaba y no quiere un proveedor por proyecto (REVISION, 11 nov).
  *   · mailpit: el buzón local que trae Supabase. No sale nada a internet;
  *     se lee en http://127.0.0.1:54324, y las pruebas lo consultan.
  *
@@ -18,7 +19,7 @@ export interface Mensaje {
 }
 
 export interface Proveedor {
-  nombre: "resend" | "mailpit";
+  nombre: "brevo" | "mailpit";
   enviar(m: Mensaje): Promise<{ id: string }>;
 }
 
@@ -36,24 +37,33 @@ export function respuestaA() {
   return process.env.CORREO_RESPUESTA || "iwl@inceptionwlab.es";
 }
 
-const resend: Proveedor = {
-  nombre: "resend",
+/**
+ * Brevo, por su API de correo transaccional. Devuelve el id del mensaje
+ * («<…@smtp-relay.mailin.fr>»), que va al registro de envíos.
+ */
+export const brevo: Proveedor = {
+  nombre: "brevo",
   async enviar(m) {
-    const r = await fetch("https://api.resend.com/emails", {
+    const de = partirRemitente(remitente());
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+        "api-key": process.env.BREVO_API_KEY ?? "",
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({
-        from: remitente(),
-        to: [m.para.nombre ? `${m.para.nombre} <${m.para.correo}>` : m.para.correo],
-        reply_to: respuestaA(),
+        sender: { email: de.correo, ...(de.nombre ? { name: de.nombre } : {}) },
+        to: [{ email: m.para.correo, ...(m.para.nombre ? { name: m.para.nombre } : {}) }],
+        replyTo: { email: respuestaA() },
         subject: m.asunto,
-        text: m.texto,
-        html: m.html,
+        textContent: m.texto,
+        htmlContent: m.html,
       }),
     });
-    const cuerpo = (await r.json().catch(() => ({}))) as { id?: string; message?: string };
-    if (!r.ok || !cuerpo.id) throw new Error(cuerpo.message ?? `Resend respondió ${r.status}`);
-    return { id: cuerpo.id };
+    const cuerpo = (await r.json().catch(() => ({}))) as { messageId?: string; message?: string };
+    if (!r.ok || !cuerpo.messageId) throw new Error(cuerpo.message ?? `Brevo respondió ${r.status}`);
+    return { id: cuerpo.messageId };
   },
 };
 
@@ -80,16 +90,16 @@ const mailpit: Proveedor = {
 };
 
 /**
- * El proveedor que toca. `CORREO_PROVEEDOR` lo fuerza («resend»,
- * «mailpit» o «ninguno»). Si no, Resend si hay clave; Mailpit si la base
- * es la local; y si no, ninguno.
+ * El proveedor que toca. `CORREO_PROVEEDOR` lo fuerza («brevo», «mailpit»
+ * o «ninguno»). Si no, Brevo si hay clave; Mailpit si la base es la local;
+ * y si no, ninguno.
  */
 export function proveedor(): Proveedor | null {
   const forzado = process.env.CORREO_PROVEEDOR;
   if (forzado === "ninguno") return null;
-  if (forzado === "resend") return process.env.RESEND_API_KEY ? resend : null;
+  if (forzado === "brevo") return process.env.BREVO_API_KEY ? brevo : null;
   if (forzado === "mailpit") return mailpit;
-  if (process.env.RESEND_API_KEY) return resend;
+  if (process.env.BREVO_API_KEY) return brevo;
   if (/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")) return mailpit;
   return null;
 }
