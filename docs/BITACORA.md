@@ -9,6 +9,47 @@ como es**.
 
 ---
 
+## 2026-11-11 · Los apellidos, donde se identifica a la persona · commit 2384369
+
+**Qué cambió**
+- Dos ayudantes en `lib/etiquetas.ts`:
+  - `nombreCompleto(nombre, apellidos)`;
+  - `nombrePersona`, que ahora lleva los apellidos.
+- Con nombre y apellidos:
+  - **Administración → Personas:** la lista y la ficha. El alta y la edición tienen un campo «Apellidos», opcional.
+  - **Administración → Compañías:** el equipo de cada compañía y el selector de personas para asignar.
+  - **Candidatura:** la cabecera de contacto, el bloque de reuniones (quién va y lo que propone ella) y quién firma el Acuerdo por defecto, también en la vista del Acuerdo.
+  - **Comité:** las personas que se eligen como miembros y las firmas del acta, en pantalla. En el PDF ya iban así.
+  - **Registro:** quién decidió la incorporación y quién respondió a un comentario del NDA.
+  - **Autoría:** evidencias, accesos a documentos, correcciones de KPI, entradas de la hoja de ruta, tareas y a quién se asignan, ediciones y comentarios del plan, y quién firma la evaluación técnica, también en los informes en PDF.
+  - **Seguimiento de altas y avisos de IWL:** el panel, la lista de avisos y la del resumen diario por correo.
+- Solo con el nombre, como pediste: los saludos de todos los correos («Hola, Alba»), el mensaje de descarte y el nombre de cada cual en su propia barra.
+- Migración `20261111170000_apellidos_en_personas`. Recrea tres vistas desde su última definición:
+  - `admin_personas`, con `last_name`;
+  - `admin_companias`, con `last_name` dentro de `equipo`;
+  - `personas_asignables`, con `last_name` al final.
+- Pruebas:
+  - unitarias de los dos ayudantes;
+  - la del comité marca al miembro por nombre y apellidos;
+  - la de reuniones espera «Agustina Prueba propone otras fechas».
+
+**Qué decidí yo**
+- Los apellidos son opcionales en Administración → Personas. Las personas de IWL los ponen en Mi cuenta, donde sí son obligatorios para contrafirmar el NDA.
+- La propuesta de mensaje de descarte y el recordatorio usan solo el nombre: le hablan a ella.
+- Los nombres de los miembros del comité no entran en el hash del acta, que va por ids. Las actas ya cerradas se pueden regenerar igual.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 233 unitarias; 227 de acceso, dos veces seguidas; interfaz, 390 pasan y 4 se saltan (con un solo trabajador: la pasada anterior la paró el sistema por falta de memoria).
+- Sin desplegar. Entra una migración más: `20261111170000_apellidos_en_personas`.
+
+**Siguiente**
+- El historial de versiones del Anexo: una copia de solo lectura cada vez que se propone y cuando se firma.
+
+---
+
 ## 2026-11-11 · Cambiar una reunión confirmada pide el motivo · commit 811e275
 
 **Qué cambió**
