@@ -9,6 +9,49 @@ como es**.
 
 ---
 
+## 2026-11-11 · Correo: Brevo en lugar de Resend · commit a67a304
+
+**Qué cambió**
+- **Adaptador de Brevo** en `lib/correo/proveedores.ts`. Envía por `POST https://api.brevo.com/v3/smtp/email`, con la cabecera `api-key`. El `messageId` que devuelve Brevo va al registro de envíos, en `correos.proveedor_id`, y su mensaje de error a `correos.error`.
+- **Elección del proveedor:** con `BREVO_API_KEY` se envía por Brevo. Sin clave, en local se usa Mailpit y en producción ninguno: el correo queda «sin enviar». `CORREO_PROVEEDOR` (`brevo`, `mailpit` o `ninguno`) lo fuerza.
+- **Aviso de Administración:** sin proveedor, dice «Falta la clave de Brevo, BREVO_API_KEY, en Vercel».
+- **`DESPLIEGUE.md`, «El correo»:** reescrito para Brevo. También `.env.example` y la tabla de la especificación.
+- **Pruebas unitarias nuevas:** la elección del proveedor, la llamada a Brevo (dirección, cabecera y cuerpo) y el error cuando Brevo rechaza el envío.
+
+**Qué decidí yo**
+- **Quité el adaptador de Resend.** Me dejabas elegir. Sin uso era una acción sin botón, y además una segunda clave que, olvidada en Vercel, decidiría por dónde sale el correo.
+- **Supabase va por el puerto 587** (STARTTLS), como dice la entrada.
+- **SPF en la raíz y no en un subdominio**, porque Brevo lo pide así. Si `inceptionwlab.es` ya tiene un SPF, se añade el include al que hay; no se crea un segundo.
+
+**Pasos para Rodrigo** (detallados en `DESPLIEGUE.md` → «El correo»)
+1. **Brevo:** Settings → Senders, Domains & Dedicated IPs → Domains → añadir `inceptionwlab.es`, autenticado a mano.
+2. **GoDaddy** (DNS de `inceptionwlab.es`), los registros que enseñe Brevo:
+   - TXT `@` con `brevo-code:…`, la verificación;
+   - DKIM en `brevo1._domainkey` (y `brevo2._domainkey` si da dos), como TXT o CNAME según lo dé Brevo;
+   - SPF: `include:spf.brevo.com` dentro del `v=spf1` que ya haya en `@`, o uno nuevo `v=spf1 include:spf.brevo.com ~all`;
+   - DMARC: TXT `_dmarc` con `v=DMARC1; p=none; rua=mailto:iwl@inceptionwlab.es`, si no hay ya uno.
+3. **Brevo, el remitente:** Senders → `Inception Woman Lab <plataforma@inceptionwlab.es>`.
+4. **Brevo, la clave API:** SMTP & API → API Keys → nueva clave (`xkeysib-…`). Va a **Vercel** como `BREVO_API_KEY`.
+5. **Vercel:** además, `CRON_SECRET`, una cadena aleatoria hecha con `openssl rand -hex 32`. Después, `npx vercel --prod`.
+6. **Brevo, SMTP:** SMTP & API → SMTP, el Login (`…@smtp-brevo.com`) y una clave SMTP (`xsmtpsib-…`, que **no es la API**). Van a **Supabase** → Authentication → Emails → SMTP Settings:
+   - host `smtp-relay.brevo.com`, puerto 587;
+   - remitente `plataforma@inceptionwlab.es`, «Inception Woman Lab».
+7. **Comprobarlo:** desaparece el aviso de Administración, y un NDA de prueba sale «Enviado» en el bloque «Correos» de su ficha.
+
+**Qué necesito que decidas**
+1. ¿El remitente es `plataforma@inceptionwlab.es` sin buzón detrás, con las respuestas a `iwl@`, o queréis que exista el buzón?
+
+**Estado**
+- **Suites:** 230 unitarias, 227 de acceso dos veces seguidas, 382 de interfaz con 4 saltadas.
+- **Despliegue:** sin desplegar. Va con lo anterior y no trae migración nueva.
+- **Sin probar:** el envío real por Brevo; solo se verá en producción con la clave.
+
+**Siguiente**
+- Desplegar.
+- Después, lo pendiente de las respuestas del 11 nov: los apellidos donde se identifica a la persona, el correo con enlace en «Darle cuenta» y el motivo obligatorio al cambiar una reunión.
+
+---
+
 ## 2026-11-11 · El NIF de IWL y el Anexo sin «Perfiles sénior» · commits 085e0b3, 53bca20
 
 **Qué cambió**
