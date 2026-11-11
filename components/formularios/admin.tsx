@@ -807,17 +807,19 @@ export function FilaTarifa({
   id,
   aplicada,
   mercado,
+  fuente,
 }: {
   id: string;
   aplicada: number;
   mercado: number;
+  fuente: string | null;
 }) {
   return (
     <Formulario accion={guardarTarifa} className="gap-0">
       {(resultado) => (
         <>
           <input type="hidden" name="id" value={id} />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Texto
               key={`a-${aplicada}`}
               name="applied_rate"
@@ -840,6 +842,15 @@ export function FilaTarifa({
               error={!resultado.ok}
             />
             <span className="text-xs text-metadato">mercado</span>
+            <Texto
+              key={`f-${fuente ?? ""}`}
+              name="source"
+              aria-label="Fuente de la tarifa de mercado"
+              placeholder="De dónde sale la de mercado"
+              defaultValue={fuente ?? ""}
+              className="w-72 max-w-full py-1 text-xs"
+              error={!resultado.ok && Boolean(resultado.campos?.source)}
+            />
             <Boton variante="secundario" className="py-1 text-xs">
               Guardar
             </Boton>

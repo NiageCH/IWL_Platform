@@ -676,6 +676,8 @@ const esquemaTarifa = z.object({
   id: uuid,
   applied_rate: z.coerce.number().min(0).max(1000),
   market_rate: z.coerce.number().min(0).max(1000),
+  // Sin fuente, la de mercado no es defendible: es lo que sostiene el equity
+  source: textoObligatorio(3, "Di de dónde sale la tarifa de mercado."),
 });
 
 /**
@@ -690,7 +692,7 @@ export async function guardarTarifa(formData: FormData): Promise<Resultado> {
   const supabase = await clienteServidor();
   const { error: falloBase } = await supabase
     .from("rate_cards")
-    .update({ applied_rate: datos.applied_rate, market_rate: datos.market_rate })
+    .update({ applied_rate: datos.applied_rate, market_rate: datos.market_rate, source: datos.source })
     .eq("id", datos.id);
 
   if (falloBase) return traducirError(falloBase);

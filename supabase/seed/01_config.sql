@@ -620,14 +620,22 @@ on conflict (code) do nothing;
 -- sostiene el equity, así que la fuente queda registrada.
 -- -----------------------------------------------------------------------------
 
+-- Ninguna de mercado pasa de 120 €/h: decisión de Rodrigo (REVISION, 11 nov).
+-- Las de antes, hasta 180, eran de ejemplo y sin validar. En la nube las pone
+-- dirección desde Programa → Tarifas; aquí van igual para que local y pruebas
+-- coincidan.
 insert into rate_cards (profile_code, profile_name, applied_rate, market_rate, source, valid_from) values
-  ('socio',       'Socio o dirección',        95.00, 180.00, 'Tarifas de consultoría estratégica en España, 2026', '2026-01-01'),
-  ('senior',      'Perfil sénior',            80.00, 140.00, 'Tarifas de consultoría especializada, 2026',         '2026-01-01'),
-  ('especialista','Especialista de materia',  70.00, 120.00, 'Tarifas de consultoría especializada, 2026',         '2026-01-01'),
-  ('ingenieria',  'Ingeniería Niage',         85.00, 150.00, 'Tarifas de ingeniería de software sénior, 2026',     '2026-01-01'),
-  ('mentor',      'Mentoría de la red',        0.00, 130.00, 'Aportada por la red de IWL, sin coste para la compañía', '2026-01-01'),
-  ('operacion',   'Equipo de operación',      55.00,  85.00, 'Tarifas de gestión de programa, 2026',               '2026-01-01')
+  ('socio',       'Socio o dirección',        95.00, 120.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01'),
+  ('senior',      'Perfil sénior',            80.00, 100.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01'),
+  ('especialista','Especialista de materia',  70.00,  90.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01'),
+  ('ingenieria',  'Ingeniería Niage',         85.00, 110.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01'),
+  ('mentor',      'Mentoría de la red',        0.00,  90.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01'),
+  ('operacion',   'Equipo de operación',      55.00,  60.00, 'Decisión de dirección de IWL, 11-nov-2026: tope de 120 €/h', '2026-01-01')
 on conflict do nothing;
+
+-- La tarifa con que se valoran las horas del Anexo: 100 €/h (REVISION, 11 nov).
+-- La fila la crea la migración, vacía; aquí se le pone el valor
+update platform_settings set value = '{"euros_hora": 100}'::jsonb where key = 'anexo_tarifa_hora';
 
 -- -----------------------------------------------------------------------------
 -- KPI para compañías sin facturación

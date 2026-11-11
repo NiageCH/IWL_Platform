@@ -317,6 +317,7 @@ export default async function AdminPrograma() {
                   id={t.id}
                   aplicada={Number(t.applied_rate)}
                   mercado={Number(t.market_rate)}
+                  fuente={t.source}
                 />
                 <span className="flex-1" />
                 <span className="cifra text-xs text-acento-texto">
@@ -324,9 +325,6 @@ export default async function AdminPrograma() {
                   aportación por hora
                 </span>
               </div>
-              {t.source ? (
-                <p className="mt-1 text-xs text-metadato">Fuente: {t.source}</p>
-              ) : null}
             </li>
           ))}
         </ul>

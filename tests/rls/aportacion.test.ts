@@ -25,6 +25,20 @@ beforeAll(async () => {
   ]);
 });
 
+/**
+ * La tarifa de un perfil, tal como la deja la semilla. Las pruebas no
+ * escriben cifras a mano: el día que cambian las tarifas (pasó el 11 nov,
+ * con el tope de 120 €/h), una cifra escrita aquí deja de comprobar nada.
+ */
+async function tarifaDe(perfil: string) {
+  const { data } = await servicio
+    .from("rate_cards")
+    .select("id, applied_rate, market_rate")
+    .eq("profile_code", perfil)
+    .single();
+  return { id: data!.id as string, aplicada: Number(data!.applied_rate), mercado: Number(data!.market_rate) };
+}
+
 /** Deja una compañía con Anexo y una hora imputada, y devuelve sus ids */
 async function prepararAportacion(companyId: string) {
   const { data: anexoExistente } = await servicio
@@ -63,6 +77,7 @@ async function prepararAportacion(companyId: string) {
 describe("horas de aportación", () => {
   it("las registra IWL, no la compañía", async () => {
     const { anexoId, materiaId } = await prepararAportacion(COMPANIAS.marea);
+    const socio = await tarifaDe("socio");
 
     const deLaFundadora = await fundadoraMarea.from("contribution_hours").insert({
       company_id: COMPANIAS.marea,
@@ -73,8 +88,8 @@ describe("horas de aportación", () => {
       subject_id: materiaId,
       description: "Horas que me apunto yo",
       hours: 8,
-      applied_rate: 95,
-      market_rate: 180,
+      applied_rate: socio.aplicada,
+      market_rate: socio.mercado,
     });
 
     expect(deLaFundadora.error).not.toBeNull();
@@ -116,19 +131,14 @@ describe("horas de aportación", () => {
       .select("applied_rate, market_rate")
       .single();
 
-    expect(Number(antes!.applied_rate)).toBe(80);
+    const tarifa = await tarifaDe("senior");
+    expect(Number(antes!.applied_rate)).toBe(tarifa.aplicada);
 
-    // Se cambia la tarifa del perfil
-    const { data: tarifa } = await servicio
-      .from("rate_cards")
-      .select("id, applied_rate")
-      .eq("profile_code", "senior")
-      .single();
-
-    await servicio
-      .from("rate_cards")
-      .update({ applied_rate: 999 })
-      .eq("id", tarifa!.id);
+    // Se cambia la tarifa del perfil: la aplicada sube hasta la de mercado,
+    // que es lo más que puede subir
+    expect(
+      (await servicio.from("rate_cards").update({ applied_rate: tarifa.mercado }).eq("id", tarifa.id)).error,
+    ).toBeNull();
 
     const { data: despues } = await servicio
       .from("contribution_hours")
@@ -136,16 +146,36 @@ describe("horas de aportación", () => {
       .eq("person_name", "Prueba de tarifa")
       .single();
 
-    expect(Number(despues!.applied_rate)).toBe(80);
+    expect(Number(despues!.applied_rate)).toBe(tarifa.aplicada);
 
     await servicio
       .from("rate_cards")
-      .update({ applied_rate: tarifa!.applied_rate })
-      .eq("id", tarifa!.id);
+      .update({ applied_rate: tarifa.aplicada })
+      .eq("id", tarifa.id);
     await servicio
       .from("contribution_hours")
       .delete()
       .eq("person_name", "Prueba de tarifa");
+  });
+
+  /**
+   * La diferencia entre las dos es la aportación de IWL por hora (REVISION,
+   * 11 nov). Es integridad: ni la clave de servicio la pone negativa, ni
+   * subiendo la aplicada ni bajando la de mercado.
+   */
+  it("la aplicada no pasa de la de mercado, y se dice por qué", async () => {
+    const tarifa = await tarifaDe("especialista");
+    const subir = await servicio.from("rate_cards").update({ applied_rate: tarifa.mercado + 1 }).eq("id", tarifa.id);
+    expect(subir.error?.message).toMatch(/no puede pasar de la de mercado.*saldría negativa/);
+    const bajar = await servicio.from("rate_cards").update({ market_rate: tarifa.aplicada - 1 }).eq("id", tarifa.id);
+    expect(bajar.error?.message).toMatch(/no puede pasar de la de mercado/);
+    const nueva = await servicio
+      .from("rate_cards")
+      .insert({ profile_code: "prueba", profile_name: "Prueba", applied_rate: 50, market_rate: 40, valid_from: "2026-01-01" });
+    expect(nueva.error?.message).toMatch(/no puede pasar de la de mercado/);
+
+    // Nada ha cambiado
+    expect(await tarifaDe("especialista")).toEqual(tarifa);
   });
 
   it("la compañía ve su extracto con el valor en euros", async () => {
