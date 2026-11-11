@@ -9,6 +9,41 @@ como es**.
 
 ---
 
+## 2026-11-11 · El NIF de IWL y el Anexo sin «Perfiles sénior» · commits 085e0b3, 53bca20
+
+**Qué cambió**
+- **NIF (085e0b3).** `lib/iwl.ts` lleva ahora B27646355, el correcto. Una prueba nueva comprueba su dígito de control: el viejo no lo pasaba, y cualquier cifra cambiada hace fallar la prueba. Las cinco muestras de `docs/constancia/` están regeneradas y llevan el NIF nuevo.
+- **Anexo (53bca20).**
+  - El formulario va en este orden: Equity, Horas, Valoradas en, Financiación directa, Duración, Empieza el, Termina el y Otros compromisos.
+  - «Perfiles sénior» sale del formulario, de la vista (la tuya y la de ella) y de la acción. La columna `committed_seniors` se queda en la base, sin uso.
+  - **Valoradas en** se calcula en vivo con un ajuste nuevo de Programa, «Tarifa para valorar el Anexo (€/h)», en el bloque Tarifas. Para poner otra cifra se marca «Poner otro valor que el calculado», y entonces el motivo es obligatorio. El motivo se ve junto al valor y no cambia mientras el Anexo está propuesto. Sin tarifa, el valor se escribe a mano como antes.
+  - **Termina el** se calcula y se enseña: la víspera del mismo día, N meses después. Se guarda al guardar el Anexo.
+  - **Financiación** vacía o 0 se lee «Sin financiación».
+  - Migración `20261111140000_anexo_sin_seniors`.
+
+**Qué decidí yo**
+- La entrada del PDF del NDA y el acta (927a887) sigue diciendo el NIF viejo. La entrada que pedía no dejar ninguno chocaba con la regla de no reescribir la bitácora, y he seguido la regla: la corrección queda aquí. Fuera de esa entrada, en el repositorio no queda ninguno.
+- «La tarifa del programa» no existía como una sola cifra: en Programa hay seis tarifas, una por perfil, con aplicada y de mercado. He creado un ajuste propio para el Anexo, vacío al desplegar.
+- El motivo de otro valor se enseña a los dos, como el de salirse de la horquilla de equity: forma parte de lo que se le propone a ella.
+- No hay historial de versiones del Anexo en pantalla, solo la última. Por eso los perfiles sénior de los Anexos ya guardados no se enseñan en ningún sitio.
+- Fin del Anexo: si el día de destino no existe (31 de enero más un mes), termina el último día del mes.
+- Los Anexos propuestos o firmados no se recalculan; solo se calcula al guardar un borrador.
+
+**Qué necesito que decidas**
+1. ¿Qué tarifa se pone en «Tarifa para valorar el Anexo»? ¿Una propia, o debería ser una de las seis de perfil (aplicada o de mercado)?
+2. ¿Quieres un historial de versiones del Anexo en pantalla, donde se vería lo que tenían los anteriores?
+
+**Estado**
+- Suites: 224 unitarias; 227 de acceso, dos veces seguidas; 382 de interfaz, con 4 saltadas.
+- Sin desplegar.
+- Las respuestas del 11 nov que piden trabajo están por hacer: los apellidos donde se identifica a la persona, el correo con enlace en «Darle cuenta» y el motivo obligatorio al cambiar una reunión.
+
+**Siguiente**
+- Desplegar. Entran cinco migraciones: `20261111100000_nombre_y_apellidos`, `…110000_acta_hash`, `…120000_correos`, `…130000_reunion_acordada` y `…140000_anexo_sin_seniors`.
+- Después, esas tres respuestas.
+
+---
+
 ## 2026-11-11 · La reunión se acuerda en la plataforma · commit 46c2f3d
 
 **Qué cambió**
