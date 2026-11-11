@@ -9,6 +9,39 @@ como es**.
 
 ---
 
+## 2026-11-11 · El equity no se redondea nunca · commit 86abf3a
+
+**Qué cambió**
+- Una sola función, `equity()` en `lib/utils.ts`: la cifra tal como se escribió, con coma y sin ceros de relleno («7,5 %», «12,25 %», «10 %»), y «—» sin dato. `cifraEquity()` da la cifra sola, para los campos de formulario.
+- Pasan por ella todos los sitios que escribían un equity, y cada uno lo hacía a su manera:
+  - **ficha del Anexo:** sin decimales, 7,5 salía «8 %»;
+  - **historial del Anexo:** tenía su propia función;
+  - **Aportación, en pantalla:** sin decimales;
+  - **informe de Aportación en PDF:** con dos fijos, «7,50 %»;
+  - **embudo, la lista y la ficha:** con uno fijo, «10,0 %»;
+  - **la propuesta del Acuerdo y la horquilla de cada vía:** el número tal cual, con punto, «7.5 %».
+- Los campos de formulario que traen un equity guardado lo rellenan con coma («7,5», no «7.5»): el Anexo, la candidatura y la horquilla de Programa.
+- Pruebas:
+  - unitarias de `equity()` y `cifraEquity()`, y de la horquilla con decimales;
+  - la de interfaz del Anexo comprueba «7,5 %» en la ficha y «7,5» en el campo. Antes daba por buenos «7,5 %» o «8 %».
+
+**Qué decidí yo**
+- Entre la cifra y el «%» va un espacio duro, como en el resto de porcentajes de la plataforma, para que el símbolo no se quede solo a final de línea.
+- Hasta dos decimales, que es lo que admite la columna (`numeric(5,2)`): no hay más que enseñar.
+- La cartera, el acta, el NDA y los correos no enseñan el equity hoy, así que no había nada que cambiar ahí.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Suites: 236 unitarias; 228 de acceso, dos veces seguidas; interfaz, 390 pasan y 4 se saltan, con un solo trabajador.
+- Sin desplegar.
+
+**Siguiente**
+- Desplegar todo junto.
+
+---
+
 ## 2026-11-11 · El historial de versiones del Anexo · commit ff21349
 
 **Qué cambió**
