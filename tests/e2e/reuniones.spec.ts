@@ -147,9 +147,30 @@ test("ella elige una franja y queda confirmada; IWL la cancela con motivo", asyn
     await fila.getByRole("button", { name: "Elegir esta" }).click();
     await expect(tarjeta.getByRole("heading", { name: "Reunión confirmada" })).toBeVisible();
 
-    // IWL la ve confirmada y la cancela
+    // IWL la ve confirmada. Cambiarla pide el motivo, y el motivo le llega
     await page.reload();
     const bloque = page.locator("section").filter({ has: page.getByRole("heading", { name: "Reuniones", exact: true }) });
+    await expect(bloque.getByText("Confirmada", { exact: true })).toBeVisible();
+    await bloque.getByText("Cambiar la reunión", { exact: true }).first().click();
+    const cambio = page.locator("form", { has: page.getByRole("button", { name: "Cambiar la reunión" }) });
+    const nuevas: [string, string] = [local(27, "10:00"), local(28, "12:30")];
+    await cambio.getByLabel("Fecha 1").fill(nuevas[0]);
+    await cambio.getByLabel("Fecha 2").fill(nuevas[1]);
+    await cambio.getByRole("checkbox").first().check();
+    await cambio.getByLabel("Enlace de la videollamada").fill("https://meet.ejemplo.test/iwl");
+    // Sin motivo no sale: el navegador no deja enviarlo vacío
+    await expect(cambio.getByLabel(/Por qué se cambia/)).toHaveAttribute("required", "");
+    await cambio.getByLabel(/Por qué se cambia/).fill("Se nos ha juntado con el comité.");
+    await cambio.getByRole("button", { name: "Cambiar la reunión" }).click();
+    await expect(bloque.getByText(/Esperando a que elija/)).toBeVisible();
+    const cambiada = (await correosRecibidos(correo, { esperar: 3 })).find((m) => /Hemos cambiado la reunión/.test(m.asunto));
+    expect(cambiada?.texto).toContain("El motivo: Se nos ha juntado con el comité.");
+
+    // Ella elige otra vez, y IWL la cancela
+    await suya.reload();
+    await tarjeta.locator("li").filter({ hasText: new RegExp(dice(nuevas[0]), "i") }).getByRole("button", { name: "Elegir esta" }).click();
+    await expect(tarjeta.getByRole("heading", { name: "Reunión confirmada" })).toBeVisible();
+    await page.reload();
     await expect(bloque.getByText("Confirmada", { exact: true })).toBeVisible();
     await bloque.getByText("Cancelar la reunión", { exact: true }).first().click();
     await bloque.getByLabel("Motivo").fill("La persona de IWL que iba no puede ese día.");
@@ -159,7 +180,7 @@ test("ella elige una franja y queda confirmada; IWL la cancela con motivo", asyn
     await suya.reload();
     await expect(tarjeta.getByRole("heading", { name: "Reunión cancelada" })).toBeVisible();
     await expect(tarjeta.getByText(/La persona de IWL que iba no puede ese día\./)).toBeVisible();
-    const cancelada = (await correosRecibidos(correo, { esperar: 3 })).find((m) => /Reunión cancelada/.test(m.asunto));
+    const cancelada = (await correosRecibidos(correo, { esperar: 5 })).find((m) => /Reunión cancelada/.test(m.asunto));
     expect(cancelada?.texto).toContain("La persona de IWL que iba no puede ese día.");
     await ajena.close();
   } finally {

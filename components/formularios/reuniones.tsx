@@ -115,8 +115,13 @@ export function ProponerReunion({
                 <AreaTexto name="nota" rows={2} />
               </Campo>
               {cambio ? (
-                <Campo etiqueta="Por qué se cambia" ayuda="Va en el correo que le llega">
-                  <AreaTexto name="motivo" rows={2} />
+                <Campo
+                  etiqueta="Por qué se cambia"
+                  ayuda="Va en el correo que le llega"
+                  obligatorio
+                  error={!r.ok ? r.campos?.motivo : undefined}
+                >
+                  <AreaTexto name="motivo" rows={2} required />
                 </Campo>
               ) : null}
               <div>

@@ -155,6 +155,15 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
     .limit(1)
     .maybeSingle();
 
+  /*
+   * Cambiar una confirmada pide el motivo, como cancelarla: va en el aviso
+   * que le llega (REVISION, 11 nov). Lo exige también la base.
+   */
+  const cambio = enJuego?.estado === "confirmada";
+  if (cambio && !datos.motivo) {
+    return error("Falta el motivo.", { motivo: "¿Por qué se cambia? Va en el correo que le llega." });
+  }
+
   const fila = {
     estado: "propuesta",
     propuesta_de: "iwl",
@@ -169,6 +178,7 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
     elegida: null,
     confirmada_at: null,
     caducada_avisada_at: null,
+    cambiada_motivo: cambio ? datos.motivo! : null,
   };
   const { error: falloBase } = enJuego
     ? await supabase.from("candidatura_reuniones").update(fila).eq("id", enJuego.id)
@@ -177,7 +187,6 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
         .insert({ ...fila, candidatura_id: datos.candidatura_id, created_by: persona!.id });
   if (falloBase) return traducirError(falloBase);
 
-  const cambio = enJuego?.estado === "confirmada";
   await supabase.from("candidatura_eventos").insert({
     candidatura_id: datos.candidatura_id,
     tipo: "reunion",

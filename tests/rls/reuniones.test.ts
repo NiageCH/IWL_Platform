@@ -204,6 +204,21 @@ describe("la reunión se acuerda en la plataforma", () => {
     expect(
       (await servicio.from("candidatura_reuniones").update({ estado: "confirmada", elegida: franjas[0] }).eq("id", id)).error,
     ).toBeNull();
+
+    // Confirmada, cambiarla —volver a propuesta— también lleva su motivo
+    const cambioSinMotivo = await servicio
+      .from("candidatura_reuniones")
+      .update({ estado: "propuesta", elegida: null, cambiada_motivo: " " })
+      .eq("id", id);
+    expect(cambioSinMotivo.error?.message).toMatch(/Cambiar una reunión confirmada lleva su motivo/);
+    expect(
+      (
+        await servicio
+          .from("candidatura_reuniones")
+          .update({ estado: "propuesta", elegida: null, cambiada_motivo: "Quien iba de IWL no puede." })
+          .eq("id", id)
+      ).error,
+    ).toBeNull();
   });
 
   it("caducada —todas las fechas pasadas sin elegir—, un aviso a IWL, una sola vez", async () => {

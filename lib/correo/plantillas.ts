@@ -92,7 +92,7 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
     parrafos: [
       saludo(d),
       "Tenemos que mover la reunión que teníamos. Te proponemos fechas nuevas: elige la que te venga bien.",
-      ...(s(d.motivo) ? [s(d.motivo)] : []),
+      ...(s(d.motivo) ? [`El motivo: ${s(d.motivo)}`] : []),
     ],
     boton: { texto: "Elegir fecha", url: s(d.enlace) },
   }),
