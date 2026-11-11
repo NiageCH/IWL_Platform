@@ -8,7 +8,8 @@ import {
   registrarHoras,
 } from "@/lib/acciones/programa";
 import type { EstadoVisual } from "@/lib/estados";
-import { cn } from "@/lib/utils";
+import { cn, euros, fecha } from "@/lib/utils";
+import { finAnexo, valorHoras } from "@/lib/anexo";
 import {
   AreaTexto,
   Boton,
@@ -242,31 +243,51 @@ export function AbrirAnexo({
 }
 
 /**
- * Rellenar y firmar el Anexo en borrador.
+ * Rellenar el Anexo en borrador: lo que IWL compromete en horas y en dinero.
  *
- * Dos formularios separados a propósito: guardar es reversible y firmar no.
- * Al firmar, la base deja de aceptar cambios en las horas, el dinero y el
- * equity, así que juntarlos en un botón sería invitar a congelar algo a
- * medio escribir.
+ * «Termina el» no se teclea: sale del inicio y la duración. Con tarifa en
+ * Programa, «Valoradas en» tampoco: se calcula con las horas, y escribir otro
+ * valor pide el motivo, que va con la propuesta. Los dos cálculos son los de
+ * `lib/anexo.ts`, los mismos que hace la acción al guardar.
+ *
+ * Firmar no está aquí: guardar es reversible y firmar no. Se propone, ella lo
+ * acepta y se firma desde la propuesta.
  */
 export function EditarAnexo({
   slug,
   anexo,
+  tarifa,
 }: {
   slug: string;
   anexo: {
     id: string;
     duration_months: number | null;
     starts_on: string | null;
-    ends_on: string | null;
     committed_hours: number | string | null;
     committed_hours_value: number | string | null;
+    committed_hours_value_motivo: string | null;
     committed_cash: number | string | null;
-    committed_seniors: number | null;
     equity_pct: number | string | null;
     other_commitments: string | null;
   };
+  /** €/h del programa para valorar las horas; sin ella, el valor va a mano */
+  tarifa: number | null;
 }) {
+  const leer = (v: string) => {
+    const limpio = v.replace(/\s/g, "").replace(",", ".");
+    return limpio === "" || !Number.isFinite(Number(limpio)) ? null : Number(limpio);
+  };
+  const [horas, setHoras] = useState(String(anexo.committed_hours ?? ""));
+  const [meses, setMeses] = useState(String(anexo.duration_months ?? ""));
+  const [inicio, setInicio] = useState(anexo.starts_on ?? "");
+  const calculado = valorHoras(leer(horas), tarifa);
+  const [aMano, setAMano] = useState(
+    tarifa !== null &&
+      anexo.committed_hours_value !== null &&
+      Number(anexo.committed_hours_value) !== valorHoras(leer(String(anexo.committed_hours ?? "")), tarifa),
+  );
+  const fin = finAnexo(inicio || null, leer(meses));
+
   return (
     <div className="border-t border-filete px-4 py-4">
       <Formulario accion={guardarAnexo}>
@@ -277,32 +298,11 @@ export function EditarAnexo({
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Campo
-                etiqueta="Duración (meses)"
-                error={!resultado.ok ? resultado.campos?.duration_months : undefined}
-              >
-                <Texto
-                  name="duration_months"
-                  inputMode="numeric"
-                  defaultValue={anexo.duration_months ?? ""}
-                />
-              </Campo>
-              <Campo etiqueta="Empieza el">
-                <Texto name="starts_on" type="date" defaultValue={anexo.starts_on ?? ""} />
-              </Campo>
-              <Campo etiqueta="Termina el">
-                <Texto name="ends_on" type="date" defaultValue={anexo.ends_on ?? ""} />
-              </Campo>
-              <Campo
                 etiqueta="Equity (%)"
                 error={!resultado.ok ? resultado.campos?.equity_pct : undefined}
               >
-                <Texto
-                  name="equity_pct"
-                  inputMode="decimal"
-                  defaultValue={anexo.equity_pct ?? ""}
-                />
+                <Texto name="equity_pct" inputMode="decimal" defaultValue={anexo.equity_pct ?? ""} />
               </Campo>
-
               <Campo
                 etiqueta="Horas comprometidas"
                 error={!resultado.ok ? resultado.campos?.committed_hours : undefined}
@@ -310,51 +310,97 @@ export function EditarAnexo({
                 <Texto
                   name="committed_hours"
                   inputMode="decimal"
-                  defaultValue={anexo.committed_hours ?? ""}
+                  value={horas}
+                  onChange={(e) => setHoras(e.target.value)}
                 />
               </Campo>
-              <Campo
-                etiqueta="Valoradas en (€)"
-                error={
-                  !resultado.ok ? resultado.campos?.committed_hours_value : undefined
-                }
-              >
-                <Texto
-                  name="committed_hours_value"
-                  inputMode="decimal"
-                  defaultValue={anexo.committed_hours_value ?? ""}
-                />
-              </Campo>
+              {tarifa !== null && !aMano ? (
+                <Campo
+                  etiqueta="Valoradas en (€)"
+                  ayuda={`Horas × ${euros(tarifa)}/h, la tarifa del programa`}
+                >
+                  <span className="cifra block py-2 text-sm text-titular" aria-live="polite">
+                    {calculado === null ? "Pon las horas" : euros(calculado)}
+                  </span>
+                </Campo>
+              ) : (
+                <Campo
+                  etiqueta="Valoradas en (€)"
+                  ayuda={
+                    tarifa === null
+                      ? "Sin tarifa del Anexo en Programa, se escribe a mano"
+                      : `Calculado: ${calculado === null ? "—" : euros(calculado)}`
+                  }
+                  error={!resultado.ok ? resultado.campos?.committed_hours_value : undefined}
+                >
+                  <Texto
+                    name="committed_hours_value"
+                    inputMode="decimal"
+                    defaultValue={anexo.committed_hours_value ?? ""}
+                  />
+                </Campo>
+              )}
               <Campo
                 etiqueta="Financiación directa (€)"
+                ayuda="Vacía o 0, sin financiación"
                 error={!resultado.ok ? resultado.campos?.committed_cash : undefined}
               >
-                <Texto
-                  name="committed_cash"
-                  inputMode="decimal"
-                  defaultValue={anexo.committed_cash ?? ""}
-                />
+                <Texto name="committed_cash" inputMode="decimal" defaultValue={anexo.committed_cash ?? ""} />
               </Campo>
+            </div>
+
+            {tarifa !== null ? (
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2 text-sm text-cuerpo">
+                  <input
+                    type="checkbox"
+                    name="valor_a_mano"
+                    checked={aMano}
+                    onChange={(e) => setAMano(e.target.checked)}
+                  />
+                  Poner otro valor que el calculado
+                </label>
+                {aMano ? (
+                  <Campo
+                    etiqueta="Por qué otro valor"
+                    ayuda="Va con la propuesta"
+                    obligatorio
+                    error={!resultado.ok ? resultado.campos?.committed_hours_value_motivo : undefined}
+                  >
+                    <AreaTexto
+                      name="committed_hours_value_motivo"
+                      rows={2}
+                      defaultValue={anexo.committed_hours_value_motivo ?? ""}
+                    />
+                  </Campo>
+                ) : null}
+              </div>
+            ) : null}
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Campo
-                etiqueta="Perfiles sénior"
-                error={
-                  !resultado.ok ? resultado.campos?.committed_seniors : undefined
-                }
+                etiqueta="Duración (meses)"
+                error={!resultado.ok ? resultado.campos?.duration_months : undefined}
               >
                 <Texto
-                  name="committed_seniors"
+                  name="duration_months"
                   inputMode="numeric"
-                  defaultValue={anexo.committed_seniors ?? ""}
+                  value={meses}
+                  onChange={(e) => setMeses(e.target.value)}
                 />
+              </Campo>
+              <Campo etiqueta="Empieza el" error={!resultado.ok ? resultado.campos?.starts_on : undefined}>
+                <Texto name="starts_on" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+              </Campo>
+              <Campo etiqueta="Termina el" ayuda="Sale del inicio y la duración">
+                <span className="block py-2 text-sm text-titular" aria-live="polite">
+                  {fin ? fecha(fin) : "Pon el inicio y la duración"}
+                </span>
               </Campo>
             </div>
 
             <Campo etiqueta="Otros compromisos">
-              <AreaTexto
-                name="other_commitments"
-                rows={2}
-                defaultValue={anexo.other_commitments ?? ""}
-              />
+              <AreaTexto name="other_commitments" rows={2} defaultValue={anexo.other_commitments ?? ""} />
             </Campo>
 
             <div>

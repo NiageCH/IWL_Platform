@@ -11,6 +11,7 @@ import {
 import { AbrirAnexo, EditarAnexo } from "@/components/formularios/programa";
 import { BloqueVia, ESTADOS_ANEXO, PropuestaAcuerdo } from "@/components/vistas/acuerdo";
 import { euros, fecha, numero } from "@/lib/utils";
+import { tarifaAnexo } from "@/lib/anexo";
 
 /**
  * El programa visto desde dentro: en qué fase estamos, qué se acordó y qué
@@ -34,7 +35,7 @@ export async function VistaPrograma({
   const { compania } = resumen;
   const esIwl = resumen.permisos.esIwl;
 
-  const [anexo, hitos, fases, pilares] = await Promise.all([
+  const [anexo, hitos, fases, pilares, ajusteTarifa] = await Promise.all([
     supabase
       .from("annexes")
       .select("*")
@@ -52,6 +53,7 @@ export async function VistaPrograma({
       .from("company_pillars")
       .select("intensity, cadence, is_active, pillars ( name, description, order_index )")
       .eq("company_id", companyId),
+    supabase.from("platform_settings").select("value").eq("key", "anexo_tarifa_hora").maybeSingle(),
   ]);
 
   const listaHitos = hitos.data ?? [];
@@ -141,21 +143,21 @@ export async function VistaPrograma({
               }
               nota={
                 anexo.data.committed_hours_value
-                  ? `Valoradas en ${euros(Number(anexo.data.committed_hours_value))}`
+                  ? `Valoradas en ${euros(Number(anexo.data.committed_hours_value))}${
+                      anexo.data.committed_hours_value_motivo
+                        ? `, no con la tarifa del programa: ${anexo.data.committed_hours_value_motivo}`
+                        : ""
+                    }`
                   : undefined
               }
             />
             <Dato
               etiqueta="Financiación directa"
-              valor={euros(
-                anexo.data.committed_cash === null
-                  ? null
-                  : Number(anexo.data.committed_cash),
-              )}
-              nota={
-                anexo.data.committed_seniors
-                  ? `${anexo.data.committed_seniors} perfiles sénior asignados`
-                  : undefined
+              // Vacía o 0 es lo mismo: no hay financiación (REVISION, 10 nov)
+              valor={
+                Number(anexo.data.committed_cash ?? 0) > 0
+                  ? euros(Number(anexo.data.committed_cash))
+                  : "Sin financiación"
               }
             />
             <Dato
@@ -192,7 +194,7 @@ export async function VistaPrograma({
             deja de aceptar cambios en horas, dinero y equity.
           */}
           {esIwl && anexo.data.status === "borrador" ? (
-            <EditarAnexo slug={compania.slug} anexo={anexo.data} />
+            <EditarAnexo slug={compania.slug} anexo={anexo.data} tarifa={tarifaAnexo(ajusteTarifa.data?.value)} />
           ) : null}
 
           {/* El Anexo es también la propuesta de Acuerdo: proponerlo, comentarlo, aceptarlo y firmarlo */}

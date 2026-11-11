@@ -16,6 +16,7 @@ import {
   validar,
   type Resultado,
 } from "./resultado";
+import { finAnexo, tarifaAnexo, valorHoras } from "@/lib/anexo";
 
 /**
  * Acciones del programa: hitos y registro de aportación.
@@ -297,11 +298,12 @@ const esquemaAnexo = z.object({
   id: uuid,
   duration_months: numeroEscritoAMano(1, 60, "La duración va de 1 a 60 meses."),
   starts_on: fechaOpcional,
-  ends_on: fechaOpcional,
   committed_hours: numeroEscritoAMano(0, 100_000, "Escribe las horas en número."),
   committed_hours_value: numeroEscritoAMano(0, 10_000_000, "Escribe el valor en número."),
+  // Con tarifa en Programa, el valor se calcula; escribir otro pide el motivo
+  valor_a_mano: z.preprocess((v) => v === "on", z.boolean()),
+  committed_hours_value_motivo: textoOpcional,
   committed_cash: numeroEscritoAMano(0, 10_000_000, "Escribe el importe en número."),
-  committed_seniors: numeroEscritoAMano(0, 100, "Escribe cuántas personas, en número."),
   equity_pct: numeroEscritoAMano(0, 100, "El equity va entre 0 y 100."),
   other_commitments: textoOpcional,
 });
@@ -313,12 +315,41 @@ export async function guardarAnexo(formData: FormData): Promise<Resultado> {
   const noPuede = await soloIwl();
   if (noPuede) return noPuede;
 
-  const { slug, id, ...campos } = datos;
+  const { slug, id, valor_a_mano, committed_hours_value_motivo, ...campos } = datos;
   const supabase = await clienteServidor();
+
+  /*
+   * «Termina el» no se teclea: sale del inicio y la duración. Y con tarifa
+   * en Programa, «Valoradas en» tampoco, salvo que se escriba otro valor y
+   * se diga por qué: el motivo va con la propuesta.
+   */
+  const { data: ajuste } = await supabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "anexo_tarifa_hora")
+    .maybeSingle();
+  const tarifa = tarifaAnexo(ajuste?.value);
+  let valor = campos.committed_hours_value;
+  let motivo: string | null = null;
+  if (tarifa !== null && !valor_a_mano) {
+    valor = valorHoras(campos.committed_hours, tarifa);
+  } else if (tarifa !== null && valor !== valorHoras(campos.committed_hours, tarifa)) {
+    if (!committed_hours_value_motivo) {
+      return error("Falta el motivo.", {
+        committed_hours_value_motivo: "Escribe por qué no es el valor calculado con la tarifa del programa.",
+      });
+    }
+    motivo = committed_hours_value_motivo;
+  }
 
   const { data, error: falloBase } = await supabase
     .from("annexes")
-    .update(campos)
+    .update({
+      ...campos,
+      committed_hours_value: valor,
+      committed_hours_value_motivo: motivo,
+      ends_on: finAnexo(campos.starts_on, campos.duration_months),
+    })
     .eq("id", id)
     .eq("status", "borrador")
     .select("id");

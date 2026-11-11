@@ -144,6 +144,12 @@ describe("la horquilla de equity", () => {
     // Y propuesto, el motivo tampoco se cambia
     const { error: cambiar } = await servicio.from("annexes").update({ equity_fuera_motivo: "Otro" }).eq("id", anexo);
     expect(cambiar?.message).toMatch(/no se edita/);
+    // Ni el de valorar las horas con otra cifra que la tarifa (REVISION, 10 nov)
+    const { error: valor } = await servicio
+      .from("annexes")
+      .update({ committed_hours_value_motivo: "Otro" })
+      .eq("id", anexo);
+    expect(valor?.message).toMatch(/no se edita/);
 
     const admin = await entrarComo(USUARIOS.admin);
     expect((await admin.from("annexes").update({ status: "borrador" }).eq("id", anexo)).error).toBeNull();

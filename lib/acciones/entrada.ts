@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
-import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { error, numeroEscritoAMano, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { camposSocietarios, exigir, paraGuardar } from "@/lib/societario";
 
 /**
@@ -145,6 +145,22 @@ export async function guardarTopeEntrada(formData: FormData): Promise<Resultado>
     "entrada_tope_construccion_dias",
     datos.dias,
     `Guardado. Una compañía de Construcción avisará a los ${datos.dias} días en entrada sin Acuerdo, y estará vencida a la semana.`,
+  );
+}
+
+/** La tarifa con que se valoran las horas del Anexo. Vacía, el valor va a mano */
+export async function guardarTarifaAnexo(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ euros_hora: numeroEscritoAMano(0.01, 10_000, "Escribe los euros por hora en número, o déjalo vacío.") }),
+    formData,
+  );
+  if (fallo) return fallo;
+  return guardarAjuste(
+    "anexo_tarifa_hora",
+    { euros_hora: datos.euros_hora },
+    datos.euros_hora === null
+      ? "Guardado. Sin tarifa, el valor de las horas del Anexo se escribe a mano."
+      : "Guardada. Los Anexos en borrador valoran sus horas con ella al guardarlos; los propuestos y firmados no cambian.",
   );
 }
 

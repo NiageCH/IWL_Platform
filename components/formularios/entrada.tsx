@@ -6,6 +6,7 @@ import {
   decidirIncorporacion,
   decirSituacion,
   guardarHorquilla,
+  guardarTarifaAnexo,
   guardarTopeEntrada,
 } from "@/lib/acciones/entrada";
 import { BASES, baseSugerida, mensajeNoIncorporada, type BaseIncorporacion } from "@/lib/entrada";
@@ -129,6 +130,33 @@ export function TopeEntrada({ dias }: { dias: number }) {
           </Campo>
           <div>
             <Boton variante="secundario">Guardar el tope</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/** La tarifa del programa para valorar las horas del Anexo */
+export function TarifaAnexo({ eurosHora }: { eurosHora: number | null }) {
+  return (
+    <Formulario accion={guardarTarifaAnexo} className="gap-3 px-4 py-4">
+      {(r) => (
+        <>
+          <Campo
+            etiqueta="Tarifa para valorar el Anexo (€/h)"
+            ayuda="«Valoradas en» se calcula con ella. Vacía, se escribe a mano"
+            error={r.ok ? undefined : r.campos?.euros_hora}
+          >
+            <Texto
+              name="euros_hora"
+              inputMode="decimal"
+              defaultValue={eurosHora === null ? "" : String(eurosHora)}
+              className="w-32"
+            />
+          </Campo>
+          <div>
+            <Boton variante="secundario">Guardar la tarifa del Anexo</Boton>
           </div>
         </>
       )}

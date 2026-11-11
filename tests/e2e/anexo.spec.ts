@@ -127,3 +127,75 @@ test.afterAll(async () => {
   if (slug) await borrar("companies", { slug });
   await borrarCuenta(CORREO);
 });
+
+/**
+ * El Anexo, más corto (REVISION, 10 nov): sin «Perfiles sénior», con el
+ * valor de las horas y el fin calculados. La tarifa es un ajuste de toda la
+ * plataforma: se lee antes y se restaura en el `finally`.
+ */
+test("el valor de las horas sale de la tarifa del programa y el fin, de la duración", async ({ page }) => {
+  const sello = `${Date.now()}t`;
+  const [antes] = await consultar<{ value: unknown }>("platform_settings", { key: "eq.anexo_tarifa_hora" }, "value");
+  const [modelo] = await consultar<{ organization_id: string }>(
+    "companies",
+    { slug: "eq.marea-clinica" },
+    "organization_id",
+  );
+  const co = await insertar<{ id: string; slug: string }>("companies", {
+    organization_id: modelo.organization_id,
+    name: `Anexo Tarifa ${sello}`,
+    slug: `anexo-tarifa-${sello}`,
+    stage: "semilla",
+    tech_profile: "software",
+  });
+
+  try {
+    // Dirección fija la tarifa en Programa, con su botón
+    await entrarComo(page, USUARIOS.admin, "/admin/programa");
+    const ajuste = page.locator("form", { has: page.getByRole("button", { name: "Guardar la tarifa del Anexo" }) });
+    await ajuste.getByLabel(/Tarifa para valorar el Anexo/).fill("75");
+    await ajuste.getByRole("button", { name: "Guardar la tarifa del Anexo" }).click();
+    await expect(ajuste.getByText(/Guardada\. Los Anexos en borrador valoran sus horas con ella/)).toBeVisible();
+
+    await page.goto(`/cartera/${co.slug}/programa`);
+    await page.getByRole("button", { name: "Abrir el Anexo" }).click();
+    const anexo = page.locator("form", { has: page.locator('input[name="duration_months"]') });
+    await expect(anexo.getByText("Perfiles sénior")).toHaveCount(0);
+
+    // Se calcula mientras se escribe
+    await anexo.locator('input[name="committed_hours"]').fill("120");
+    await expect(anexo.getByText(/9\.000\s*€/)).toBeVisible();
+    await anexo.locator('input[name="duration_months"]').fill("6");
+    await anexo.locator('input[name="starts_on"]').fill("2026-12-01");
+    await expect(anexo.getByText("31 may 2027")).toBeVisible();
+    await expect(anexo.locator('input[name="ends_on"]')).toHaveCount(0);
+    await anexo.getByRole("button", { name: "Guardar el Anexo" }).click();
+    await expect(page.getByText("Anexo guardado.")).toBeVisible();
+
+    const [guardado] = await consultar<{ committed_hours_value: number; ends_on: string; committed_hours_value_motivo: string | null }>(
+      "annexes",
+      { company_id: `eq.${co.id}` },
+      "committed_hours_value,ends_on,committed_hours_value_motivo",
+    );
+    expect(guardado).toEqual({ committed_hours_value: 9000, ends_on: "2027-05-31", committed_hours_value_motivo: null });
+
+    // Otro valor pide el motivo, y el motivo va con el Anexo
+    await anexo.getByLabel("Poner otro valor que el calculado").check();
+    await anexo.locator('input[name="committed_hours_value"]').fill("8000");
+    await anexo.getByRole("button", { name: "Guardar el Anexo" }).click();
+    await expect(anexo.getByText(/Escribe por qué no es el valor calculado/)).toBeVisible();
+    await anexo.getByLabel(/Por qué otro valor/).fill("Veinte horas las pone la red de mentoras sin coste.");
+    await anexo.getByRole("button", { name: "Guardar el Anexo" }).click();
+    await expect(page.getByText("Anexo guardado.")).toBeVisible();
+
+    await page.reload();
+    await expect(
+      page.getByText(/Valoradas en 8\.000\s*€, no con la tarifa del programa: Veinte horas las pone la red/),
+    ).toBeVisible();
+    // Sin financiación escrita, se dice
+    await expect(page.getByText("Sin financiación", { exact: true })).toBeVisible();
+  } finally {
+    await actualizar("platform_settings", { key: "eq.anexo_tarifa_hora" }, { value: antes?.value ?? { euros_hora: null } });
+    await borrar("companies", { id: co.id });
+  }
+});

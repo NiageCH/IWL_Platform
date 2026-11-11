@@ -1,7 +1,8 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
-import { HorquillaEquity, TopeEntrada } from "@/components/formularios/entrada";
+import { HorquillaEquity, TarifaAnexo, TopeEntrada } from "@/components/formularios/entrada";
+import { tarifaAnexo } from "@/lib/anexo";
 import { problemaParaEnviar } from "@/lib/nda-texto";
 import { faltanMarcas } from "@/lib/nda-formato";
 import { fecha } from "@/lib/utils";
@@ -335,6 +336,9 @@ export default async function AdminPrograma() {
           suya el día que se registró. Lo que cambia es lo que se aplicará de
           aquí en adelante.
         </p>
+        <div className="border-t border-filete">
+          <TarifaAnexo eurosHora={tarifaAnexo(ajuste("anexo_tarifa_hora"))} />
+        </div>
       </Bloque>
 
       <Bloque>
