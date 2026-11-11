@@ -38,7 +38,7 @@ import {
   ReabrirCandidatura,
 } from "@/components/formularios/candidatura";
 import { PASOS_ABIERTOS, nombrePaso, paso, tonoPaso } from "@/lib/embudo";
-import { cn, numero } from "@/lib/utils";
+import { cn, equity, numero } from "@/lib/utils";
 
 const ESTADOS_ENTRADA: Record<string, string> = {
   idea: "Idea",
@@ -197,7 +197,7 @@ export default async function FichaCandidatura({
           <div className="px-5 py-4 text-sm text-cuerpo">
             Firmó el {c.acuerdo_firmado_on}
             {c.equity_pct !== null
-              ? `, con un ${numero(c.equity_pct, 1)} % de equity`
+              ? `, con un ${equity(c.equity_pct)} de equity`
               : ""}
             .{" "}
             <Link

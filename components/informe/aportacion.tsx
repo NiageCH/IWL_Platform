@@ -12,7 +12,7 @@ import {
   Tabla,
 } from "./piezas";
 import { etapa } from "@/lib/etiquetas";
-import { euros, fecha, numero, porcentaje } from "@/lib/utils";
+import { equity, euros, fecha, numero, porcentaje } from "@/lib/utils";
 
 /**
  * Extracto de aportación · §9 del documento de aportación.
@@ -98,7 +98,7 @@ export async function InformeAportacion({
             etiqueta: "Participación acordada",
             valor:
               compromiso?.equityPct != null
-                ? `${numero(compromiso.equityPct, 2)} %`
+                ? equity(compromiso.equityPct)
                 : "Sin Anexo firmado",
           },
           {

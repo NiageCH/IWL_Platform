@@ -68,7 +68,9 @@ test("el Anexo se abre, se rellena, se propone, ella lo acepta y se firma", asyn
 
   await page.reload();
   await expect(page.getByText("120 h")).toBeVisible();
-  await expect(page.getByText(/7,5 %|8 %/)).toBeVisible();
+  // El equity no se redondea nunca, ni en la ficha ni en el campo (REVISION, 11 nov)
+  await expect(page.getByText(/^7,5\s%$/)).toBeVisible();
+  await expect(anexo.locator('input[name="equity_pct"]')).toHaveValue("7,5");
 
   /*
    * Sin una fundadora con cuenta no se propone: se dice por qué, y «Dar
@@ -126,7 +128,7 @@ test("el Anexo se abre, se rellena, se propone, ella lo acepta y se firma", asyn
   await page.getByText("Historial de versiones · 2").click();
   await expect(page.getByText("Propuesto · versión 1")).toBeVisible();
   await expect(page.getByText("Firmado · versión 1")).toBeVisible();
-  await expect(page.getByText(/Equity 7,5 % · 120 h/).first()).toBeVisible();
+  await expect(page.getByText(/Equity 7,5\s% · 120 h/).first()).toBeVisible();
 });
 
 test.afterAll(async () => {

@@ -8,7 +8,7 @@ import {
   registrarHoras,
 } from "@/lib/acciones/programa";
 import type { EstadoVisual } from "@/lib/estados";
-import { cn, euros, fecha } from "@/lib/utils";
+import { cifraEquity, cn, euros, fecha } from "@/lib/utils";
 import { finAnexo, valorHoras } from "@/lib/anexo";
 import {
   AreaTexto,
@@ -301,7 +301,7 @@ export function EditarAnexo({
                 etiqueta="Equity (%)"
                 error={!resultado.ok ? resultado.campos?.equity_pct : undefined}
               >
-                <Texto name="equity_pct" inputMode="decimal" defaultValue={anexo.equity_pct ?? ""} />
+                <Texto name="equity_pct" inputMode="decimal" defaultValue={cifraEquity(anexo.equity_pct)} />
               </Campo>
               <Campo
                 etiqueta="Horas comprometidas"

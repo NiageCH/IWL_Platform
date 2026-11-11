@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useState } from "react";
+import { cifraEquity } from "@/lib/utils";
 import { Pencil } from "lucide-react";
 import {
   anadirEnlace,
@@ -282,7 +283,7 @@ export function AcuerdoCandidatura({
                 key={equity === null ? "sin-equity" : String(equity)}
                 name="equity_pct"
                 inputMode="decimal"
-                defaultValue={equity === null ? "" : String(equity)}
+                defaultValue={cifraEquity(equity)}
               />
             </Campo>
           </div>

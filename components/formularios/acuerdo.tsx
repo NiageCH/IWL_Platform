@@ -16,6 +16,7 @@ import { CamposFirmantes } from "@/components/formularios/situacion";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 import type { Situacion } from "@/lib/societario";
 import { fueraDeHorquilla, textoHorquilla, type Horquilla } from "@/lib/entrada";
+import { equity as textoEquity } from "@/lib/utils";
 
 /**
  * Proponerle el Acuerdo: el Anexo en borrador, más quién firma.
@@ -63,8 +64,8 @@ export function ProponerAnexo({
                 {equity === null
                   ? "Este Anexo no tiene equity todavía."
                   : fuera
-                    ? `Este propone el ${equity} %: se sale, y hay que decir por qué.`
-                    : `Este propone el ${equity} %.`}
+                    ? `Este propone el ${textoEquity(equity)}: se sale, y hay que decir por qué.`
+                    : `Este propone el ${textoEquity(equity)}.`}
               </p>
             ) : null}
             {fuera ? (

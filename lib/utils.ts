@@ -39,6 +39,29 @@ export function porcentaje(valor: number | null | undefined, decimales = 1): str
   return `${numero(valor, decimales)}\u00a0%`;
 }
 
+/**
+ * El equity tal como se escribió: es una cifra contractual y no se redondea
+ * nunca (REVISION, 11 nov). Coma española y sin ceros de relleno: «7,5»,
+ * «12,25», «10». La columna lleva dos decimales, así que no hay más que
+ * enseñar. Todo lo que escribe un equity pasa por aquí.
+ */
+export function cifraEquity(valor: number | string | null | undefined): string {
+  if (valor === null || valor === undefined || valor === "") return "";
+  const n = Number(valor);
+  if (!Number.isFinite(n)) return "";
+  return new Intl.NumberFormat("es-ES", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  }).format(n);
+}
+
+/** El equity para leer: «7,5 %», con espacio duro antes del símbolo. Sin dato, «—» */
+export function equity(valor: number | string | null | undefined): string {
+  const cifra = cifraEquity(valor);
+  return cifra ? `${cifra}\u00a0%` : "—";
+}
+
 export function fecha(valor: string | Date | null | undefined): string {
   if (!valor) return "—";
   const d = typeof valor === "string" ? new Date(valor) : valor;

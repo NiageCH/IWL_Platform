@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/primitivas";
 import { AbrirAnexo, EditarAnexo } from "@/components/formularios/programa";
 import { BloqueVia, ESTADOS_ANEXO, PropuestaAcuerdo } from "@/components/vistas/acuerdo";
-import { euros, fecha, numero } from "@/lib/utils";
+import { equity, euros, fecha, numero } from "@/lib/utils";
 import { tarifaAnexo } from "@/lib/anexo";
 
 /**
@@ -168,9 +168,7 @@ export async function VistaPrograma({
             <Dato
               etiqueta="Equity"
               valor={
-                anexo.data.equity_pct === null
-                  ? "—"
-                  : `${numero(Number(anexo.data.equity_pct), 0)} %`
+                equity(anexo.data.equity_pct)
               }
               /*
                * Sin sociedad no hay participaciones que comprar: el equity
@@ -310,9 +308,6 @@ function Dato({
   );
 }
 
-/** En una copia de lo acordado no se redondea: 7,5 % no es 8 % */
-const porcentaje = (x: number) => numero(x, Number.isInteger(x) ? 0 : Number.isInteger(x * 10) ? 1 : 2);
-
 type ContenidoVersion = {
   version?: number;
   equity_pct?: number | null;
@@ -364,7 +359,7 @@ function HistorialAnexo({
                 {[
                   c.equity_pct === null || c.equity_pct === undefined
                     ? "Sin equity"
-                    : `Equity ${porcentaje(Number(c.equity_pct))} %`,
+                    : `Equity ${equity(c.equity_pct)}`,
                   c.committed_hours
                     ? `${numero(Number(c.committed_hours), 0)} h${
                         c.committed_hours_value ? ` valoradas en ${euros(Number(c.committed_hours_value))}` : ""

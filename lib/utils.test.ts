@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { euros, numero, porcentaje } from "./utils";
+import { cifraEquity, equity, euros, numero, porcentaje } from "./utils";
 
 describe("euros", () => {
   /**
@@ -31,5 +31,28 @@ describe("numero", () => {
 describe("porcentaje", () => {
   it("escribe el símbolo separado con espacio duro", () => {
     expect(porcentaje(32.8)).toBe("32,8\u00a0%");
+  });
+});
+
+describe("equity", () => {
+  /** Es una cifra contractual: se enseña tal como se escribió (REVISION, 11 nov) */
+  it("no se redondea nunca, con coma y sin ceros de relleno", () => {
+    expect(equity(7.5)).toBe("7,5\u00a0%");
+    expect(equity(12.25)).toBe("12,25\u00a0%");
+    expect(equity(10)).toBe("10\u00a0%");
+    expect(equity(0.5)).toBe("0,5\u00a0%");
+    // Postgres devuelve numeric como texto a veces
+    expect(equity("7.50")).toBe("7,5\u00a0%");
+  });
+
+  it("sin dato, una raya; y el cero es un cero", () => {
+    expect(equity(null)).toBe("—");
+    expect(equity(undefined)).toBe("—");
+    expect(equity(0)).toBe("0\u00a0%");
+  });
+
+  it("para un campo de formulario, la cifra sola, con coma", () => {
+    expect(cifraEquity(7.5)).toBe("7,5");
+    expect(cifraEquity(null)).toBe("");
   });
 });

@@ -10,6 +10,7 @@ import {
   guardarTopeEntrada,
 } from "@/lib/acciones/entrada";
 import { BASES, baseSugerida, mensajeNoIncorporada, type BaseIncorporacion } from "@/lib/entrada";
+import { cifraEquity } from "@/lib/utils";
 import type { Via } from "@/lib/comite";
 import { CamposSituacion } from "@/components/formularios/situacion";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
@@ -170,7 +171,7 @@ type Horquillas = Record<"aceleracion" | "construccion", { min: number | null; m
 export function HorquillaEquity({ horquillas }: { horquillas: Partial<Horquillas> }) {
   const valor = (via: "aceleracion" | "construccion", lado: "min" | "max") => {
     const v = horquillas[via]?.[lado];
-    return typeof v === "number" ? String(v) : "";
+    return typeof v === "number" ? cifraEquity(v) : "";
   };
   return (
     <Formulario accion={guardarHorquilla} className="gap-4 px-4 py-4">

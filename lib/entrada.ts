@@ -1,4 +1,5 @@
 import type { Via } from "@/lib/comite";
+import { equity } from "@/lib/utils";
 
 /**
  * La compañía en entrada: entre el NDA firmado por las dos partes y el
@@ -106,9 +107,9 @@ export function fueraDeHorquilla(equity: number | null, h: Horquilla | null): bo
 }
 
 export function textoHorquilla(h: Horquilla): string {
-  if (h.min !== null && h.max !== null) return `entre el ${h.min} % y el ${h.max} %`;
-  if (h.min !== null) return `desde el ${h.min} %`;
-  return `hasta el ${h.max} %`;
+  if (h.min !== null && h.max !== null) return `entre el ${equity(h.min)} y el ${equity(h.max)}`;
+  if (h.min !== null) return `desde el ${equity(h.min)}`;
+  return `hasta el ${equity(h.max)}`;
 }
 
 /**

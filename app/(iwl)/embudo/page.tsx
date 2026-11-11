@@ -24,7 +24,7 @@ import { Convocatoria } from "@/components/formularios/convocatoria";
 import { EnlacePublico } from "@/components/formularios/enlace-publico";
 import { direccionBase } from "@/lib/direccion";
 import { PASOS_ABIERTOS, nombrePaso, tonoPaso } from "@/lib/embudo";
-import { numero, porcentaje } from "@/lib/utils";
+import { equity, numero, porcentaje } from "@/lib/utils";
 
 export const metadata = { title: "Embudo · Plataforma IWL" };
 
@@ -222,7 +222,7 @@ export default async function Embudo() {
                     <span className="block text-xs text-metadato">
                       Firmó el {c.acuerdo_firmado_on ?? "—"}
                       {c.equity_pct !== null
-                        ? ` · ${numero(c.equity_pct, 1)} % de equity`
+                        ? ` · ${equity(c.equity_pct)} de equity`
                         : ""}
                     </span>
                   </span>

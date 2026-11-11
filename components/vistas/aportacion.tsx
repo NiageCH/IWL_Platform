@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/primitivas";
 import { Estado } from "@/components/ui/estado";
 import { estadoVisual } from "@/lib/estados";
-import { euros, fecha, numero, porcentaje } from "@/lib/utils";
+import { equity as textoEquity, euros, fecha, numero, porcentaje } from "@/lib/utils";
 
 /**
  * Extracto de aportación (documento de aportación §3).
@@ -108,7 +108,7 @@ export async function VistaAportacion({
           accion={
             compromiso.equityPct !== null ? (
               <Metadato>
-                Equity acordado {numero(compromiso.equityPct, 0)} %
+                Equity acordado {textoEquity(compromiso.equityPct)}
                 {equity === "comprometido"
                   ? " · comprometido, se materializa al constituir"
                   : equity === "materializado"

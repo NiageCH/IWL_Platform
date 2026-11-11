@@ -71,7 +71,9 @@ describe("Construcción: no se trabaja sin Acuerdo", () => {
     expect(fueraDeHorquilla(10, h)).toBe(false);
     expect(fueraDeHorquilla(5, h)).toBe(true);
     expect(fueraDeHorquilla(5, null)).toBe(false);
-    expect(textoHorquilla(h!)).toBe("entre el 8 % y el 12 %");
+    expect(textoHorquilla(h!)).toBe("entre el 8\u00a0% y el 12\u00a0%");
+    // Con decimales, tal cual y con coma
+    expect(textoHorquilla({ min: 7.5, max: null })).toBe("desde el 7,5\u00a0%");
   });
 
   it("sin sociedad el equity está comprometido; constituida, materializado", () => {
