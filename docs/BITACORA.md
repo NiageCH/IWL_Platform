@@ -9,6 +9,27 @@ como es**.
 
 ---
 
+## 2026-11-13 · La suite de interfaz, en verde dos veces seguidas · commit ec426bf
+
+**Qué cambió**
+- Nada en el código. Corrige el estado de la entrada anterior: la suite de interfaz pasa entera dos veces seguidas, 420 y 4 que se saltan, y otra vez 420 y 4.
+
+**Qué decidí yo**
+- **Reinicié la base local antes de probar.** Un intento intermedio no vale: el Mac se durmió a mitad, Docker se cayó y 73 pruebas fallaron sin base. Esas pruebas no pudieron reponer lo que tocaron, y por eso el reinicio.
+- **Las dos pasadas, con el Mac despierto** (`caffeinate`). La memoria sigue muy justa: 12,5 de 13,3 GB de swap en uso al acabar.
+
+**Qué necesito que decidas**
+- Nada nuevo. Sigue abierta la pregunta de «archivados» en la limpieza de ficheros.
+
+**Estado**
+- Unitarias: 255. De acceso: 241, dos veces. De interfaz: 420, dos veces.
+- Despliegue pendiente: `20261113120000_ficheros_sueltos` y `20261113130000_correo_contrapropuesta`.
+
+**Siguiente**
+- Contraste en oscuro, y la propuesta del camino claro.
+
+---
+
 ## 2026-11-13 · Urgentes: enlace de la videollamada, ver la contraseña, correos de reunión · commit ec426bf
 
 **Qué cambió**
