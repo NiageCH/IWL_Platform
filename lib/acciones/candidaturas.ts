@@ -16,6 +16,7 @@ import {
 } from "@/lib/identificador";
 import { camposSocietarios, exigir, leerFirmantes, paraGuardar } from "@/lib/societario";
 import {
+  enlaceObligatorio,
   error,
   fechaOpcional,
   ok,
@@ -353,7 +354,7 @@ export async function guardarAcuerdo(formData: FormData): Promise<Resultado> {
 const esquemaEnlace = z.object({
   candidatura_id: uuid,
   titulo: textoObligatorio(1, "¿Qué es este documento?"),
-  url: z.string().trim().url("Eso no parece una dirección web."),
+  url: enlaceObligatorio("Pega el enlace del documento."),
   tipo: textoOpcional,
 });
 

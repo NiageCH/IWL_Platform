@@ -1823,3 +1823,13 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La base lista y el cron borra por la API de Storage.** Storage no deja borrar con SQL (`protect_objects_delete`), porque el fichero de verdad vive fuera de la base.
 - **Va dentro del cron diario que ya existía** (`/api/cron/resumen-avisos`), después del resumen, y si falla no lo tumba. El plan de Vercel limita cuántos crons se pueden tener.
 - **Queda constancia en `activity_log`** (`ficheros_sueltos_borrados`): cuántos, qué rutas y cuánto ocupaban. Los días sin nada que borrar no escribe.
+
+## 2026-11-13 · Enlaces pegados, contraseñas a la vista y correos de reunión con enlaces
+
+- **Ningún campo de enlace es `type="url"`.** El navegador rechazaba `meet.google.com/…` sin `https://` antes de que el servidor pudiera arreglarlo. Ahora todos son de texto, y lo pegado se arregla en el servidor con `normalizarEnlace` (`lib/enlaces.ts`): quita espacios, saca la primera dirección si se pega la invitación entera y añade `https://` si falta. En los esquemas de Zod se usa con `enlaceOpcional` y `enlaceObligatorio`, en `lib/acciones/resultado.ts`.
+- **`<CampoContrasena>` es el único campo de contraseña.** Oculta por defecto, con el ojo dentro, y vuelve a ocultarse al enviar el formulario: escucha el `submit` del formulario que la contiene. La nueva y la repetida comparten un solo ojo. Las contraseñas de Administración siguen a la vista a propósito, porque la dirección las acaba de poner y las tiene que dictar o copiar.
+- **`<Campo htmlFor>`** etiqueta por `htmlFor` en vez de envolver, cuando dentro hay además un botón. Envuelto, el nombre del botón se sumaba al del campo.
+- **Los correos aceptan enlaces dentro del texto.** En HTML son `<a>` con el acento sobre papel (`#c4005c`); en texto plano, la dirección va entera en su línea. Además del botón, pueden llevar texto después de él y adjuntos.
+- **Los correos de reunión leen la reunión guardada** (`datosReunion`), no el formulario, para que digan lo mismo que la pantalla. Esos datos se guardan con el correo, así que al reintentar sale igual, con la invitación de calendario.
+- **La invitación `.ics` va solo en la confirmada.** Cambiar una reunión es proponer fechas nuevas, y hasta que ella elige no hay fecha que poner en un calendario.
+- **A IWL le llega correo** cuando ella elige fecha (la misma confirmación, con la invitación) y cuando propone otras (`reunion_contrapropuesta`, evento nuevo). Lo recibe quien va de IWL en esa reunión y, si no consta nadie, quien la propuso.

@@ -55,8 +55,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     await page.locator('input[type="password"]').fill(clave!);
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
-    await page.getByLabel("Nueva contraseña").fill("la-de-la-prueba-2026");
-    await page.getByLabel("Otra vez").fill("la-de-la-prueba-2026");
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-de-la-prueba-2026");
+    await page.getByLabel("Otra vez", { exact: true }).fill("la-de-la-prueba-2026");
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
     await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
     await page.getByRole("button", { name: "Salir" }).first().click();

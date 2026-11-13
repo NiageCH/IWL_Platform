@@ -471,7 +471,7 @@ export function NuevoAvance({
                 <Texto type="date" name="entry_date" defaultValue={HOY()} required />
               </Campo>
               <Campo etiqueta="Enlace a la evidencia" error={campo("evidence_url")}>
-                <Texto type="url" name="evidence_url" placeholder="https://" />
+                <Texto inputMode="url" name="evidence_url" placeholder="https://" />
               </Campo>
             </div>
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import {
+  enlaceOpcional,
   error,
   ok,
   textoObligatorio,
@@ -56,9 +57,7 @@ const esquema = z.object({
   /** Cuando se enlaza uno que ya está en el data room */
   document_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
   /** Cuando es un enlace de fuera */
-  url: z.string().url("Eso no parece una dirección web.").optional().or(
-    z.literal("").transform(() => undefined),
-  ),
+  url: enlaceOpcional.transform((v) => v ?? undefined),
 });
 
 export async function adjuntarEvidencia(formData: FormData): Promise<Resultado> {

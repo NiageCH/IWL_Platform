@@ -9,6 +9,7 @@ import { normalizarLinkedin } from "@/lib/linkedin";
 import { leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { camposSocietarios, exigir, paraGuardar } from "@/lib/societario";
 import {
+  enlaceOpcional,
   error,
   fechaOpcional,
   numeroEscritoAMano,
@@ -93,7 +94,7 @@ const esquemaCompania = z.object({
       "Un porcentaje entre 0 y 100.",
     ),
   founded_on: fechaOpcional,
-  website: textoOpcional,
+  website: enlaceOpcional,
 })
   // Desde dónde parte: obligatorio al dar de alta, como al firmar
   .merge(camposSocietarios)
@@ -186,7 +187,7 @@ const esquemaFicha = z.object({
    * fecha de constitución casi nunca se sabe al dar de alta, y el
    * liderazgo femenino es el dato que sostiene el criterio 2X.
    */
-  website: textoOpcional,
+  website: enlaceOpcional,
   founded_on: fechaOpcional,
   female_leadership_pct: numeroEscritoAMano(
     0,

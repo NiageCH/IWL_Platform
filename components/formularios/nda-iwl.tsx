@@ -115,7 +115,7 @@ export function RegistrarNdaExterno({ candidaturaId }: { candidaturaId: string }
               </Campo>
             ) : (
               <Campo etiqueta="Dónde está" error={r.ok ? undefined : r.campos?.url}>
-                <Texto type="url" name="url" placeholder="https://" />
+                <Texto inputMode="url" name="url" placeholder="https://" />
               </Campo>
             )}
             <Campo etiqueta="Se firmó el" error={r.ok ? undefined : r.campos?.firmado_on} obligatorio>

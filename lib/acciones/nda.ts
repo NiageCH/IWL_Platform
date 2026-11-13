@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
-import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { enlaceOpcional, error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { generarPdfNda } from "@/lib/nda-pdf";
 import { faltanMarcas } from "@/lib/nda-formato";
@@ -460,10 +460,7 @@ export async function regenerarPdfNda(formData: FormData): Promise<Resultado> {
 const esquemaExterno = z.object({
   candidatura_id: z.string().uuid(),
   firmado_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "¿Qué día se firmó?"),
-  url: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((v) => (v ?? "").trim()),
+  url: enlaceOpcional.transform((v) => v ?? ""),
 });
 
 export async function registrarNdaExterno(formData: FormData): Promise<Resultado> {
@@ -477,9 +474,6 @@ export async function registrarNdaExterno(formData: FormData): Promise<Resultado
     return error("Sube el NDA firmado o pega el enlace donde está.", {
       documento: "El documento firmado, o el enlace de abajo.",
     });
-  }
-  if (datos.url && !/^https?:\/\//i.test(datos.url)) {
-    return error("Revisa el enlace.", { url: "Tiene que empezar por https://" });
   }
 
   const supabase = await clienteServidor();

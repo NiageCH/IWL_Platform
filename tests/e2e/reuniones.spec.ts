@@ -65,6 +65,12 @@ test("ella propone otras fechas, IWL acepta una, y se anota", async ({ page, bro
     const [aviso] = await correosRecibidos(correo);
     expect(aviso.asunto).toMatch(/Te proponemos fecha para reunirnos/);
     expect(aviso.texto).toContain(`/candidatura/${c.token}`);
+    // Con las fechas y el enlace de la videollamada, que se puede pulsar
+    expect(aviso.texto).toContain(`· ${dice(nuestras[0])}`);
+    expect(aviso.texto).toContain("Enlace de la videollamada:");
+    // En su línea: Mailpit deja espacios al final de cada una
+    expect(aviso.texto.split("\n").map((l) => l.trim())).toContain("https://meet.ejemplo.test/iwl");
+    expect(aviso.html).toContain('<a href="https://meet.ejemplo.test/iwl"');
 
     // En su página, arriba: las franjas, y «Ninguna me va»
     await suya.reload();
@@ -77,6 +83,18 @@ test("ella propone otras fechas, IWL acepta una, y se anota", async ({ page, bro
     await tarjeta.getByLabel("Nota").fill("Por la mañana nos va mejor.");
     await tarjeta.getByRole("button", { name: "Proponer estas fechas" }).click();
     await expect(tarjeta.getByRole("heading", { name: "Has propuesto otras fechas" })).toBeVisible();
+
+    // A quien va de IWL le llega un correo con sus fechas
+    const [reunion] = await consultar<{ personas_iwl: string[] }>(
+      "candidatura_reuniones",
+      { candidatura_id: `eq.${c.id}` },
+      "personas_iwl",
+    );
+    const [deIwl] = await consultar<{ email: string }>("profiles", { id: `eq.${reunion.personas_iwl[0]}` }, "email");
+    const otras = (await correosRecibidos(deIwl.email, { esperar: 1 })).find((m) => m.asunto.includes(`Reunión Prueba ${sello}`));
+    expect(otras?.asunto).toBe(`Agustina Prueba propone otras fechas · Reunión Prueba ${sello}`);
+    expect(otras?.texto).toContain(`· ${dice(suyas[0])}`);
+    expect(otras?.texto).toContain(`/embudo/${c.id}`);
 
     // IWL: el aviso, y acepta una de las suyas
     await entrarComo(page, USUARIOS.admin, "/cartera");
@@ -99,6 +117,10 @@ test("ella propone otras fechas, IWL acepta una, y se anota", async ({ page, bro
     expect(decodeURIComponent((await calendario.getAttribute("href"))!)).toContain("DTSTART:");
     const confirmacion = (await correosRecibidos(correo, { esperar: 2 })).find((m) => /Reunión confirmada/.test(m.asunto));
     expect(confirmacion?.texto).toContain("por videollamada");
+    // El botón para unirse, el enlace escrito y la invitación de calendario adjunta
+    expect(confirmacion?.html).toMatch(/<a href="https:\/\/meet\.ejemplo\.test\/iwl"[^>]*>Unirse a la videollamada<\/a>/);
+    expect(confirmacion?.texto).toContain("Unirse a la videollamada: https://meet.ejemplo.test/iwl");
+    expect(confirmacion?.adjuntos).toEqual(["reunion-iwl.ics"]);
     await ajena.close();
 
     // Y se anota cómo quedó
@@ -147,6 +169,20 @@ test("ella elige una franja y queda confirmada; IWL la cancela con motivo", asyn
     await fila.getByRole("button", { name: "Elegir esta" }).click();
     await expect(tarjeta.getByRole("heading", { name: "Reunión confirmada" })).toBeVisible();
 
+    // A quien va de IWL le llega lo mismo que a ella, con su invitación
+    const [reunion] = await consultar<{ personas_iwl: string[] }>(
+      "candidatura_reuniones",
+      { candidatura_id: `eq.${c.id}` },
+      "personas_iwl",
+    );
+    const [deIwl] = await consultar<{ email: string }>("profiles", { id: `eq.${reunion.personas_iwl[0]}` }, "email");
+    const suyaIwl = (await correosRecibidos(deIwl.email, { esperar: 1 })).find(
+      (m) => /Reunión confirmada/.test(m.asunto) && m.asunto.includes(`Reunión Prueba ${sello}`),
+    );
+    expect(suyaIwl?.texto).toContain("Unirse a la videollamada: https://meet.ejemplo.test/iwl");
+    expect(suyaIwl?.texto).toContain(`/embudo/${c.id}`);
+    expect(suyaIwl?.adjuntos).toEqual(["reunion-iwl.ics"]);
+
     // IWL la ve confirmada. Cambiarla pide el motivo, y el motivo le llega
     await page.reload();
     const bloque = page.locator("section").filter({ has: page.getByRole("heading", { name: "Reuniones", exact: true }) });
@@ -183,6 +219,40 @@ test("ella elige una franja y queda confirmada; IWL la cancela con motivo", asyn
     const cancelada = (await correosRecibidos(correo, { esperar: 5 })).find((m) => /Reunión cancelada/.test(m.asunto));
     expect(cancelada?.texto).toContain("La persona de IWL que iba no puede ese día.");
     await ajena.close();
+  } finally {
+    await borrar("candidaturas", { id: c.id });
+  }
+});
+
+test("el enlace de Meet se pega como se copia, sin https, y se guarda completo", async ({ page }) => {
+  const sello = `${Date.now()}`;
+  const c = await nueva(sello);
+  try {
+    await entrarComo(page, USUARIOS.equipoIwl, `/embudo/${c.id}`);
+    await page.getByText("Proponer reunión", { exact: true }).click();
+    const form = page.locator("form", { has: page.getByRole("button", { name: "Proponer las fechas" }) });
+    await form.getByLabel("Fecha 1").fill(local(20, "10:00"));
+    await form.getByLabel("Fecha 2").fill(local(21, "16:30"));
+    await form.getByRole("checkbox").first().check();
+
+    // Lo que no es un enlace se dice, con el mensaje de la REVISION
+    await form.getByLabel("Enlace de la videollamada").fill("mañana a las diez");
+    await form.getByRole("button", { name: "Proponer las fechas" }).click();
+    await expect(
+      page.getByText("No reconozco ese enlace. Pégalo tal como lo copias de Meet, Zoom o Teams.").first(),
+    ).toBeVisible();
+
+    // Como se copia de Meet: el navegador ya no lo rechaza
+    await form.getByLabel("Enlace de la videollamada").fill("meet.google.com/abc-defg-hij");
+    await form.getByRole("button", { name: "Proponer las fechas" }).click();
+    await expect(page.getByText(/Esperando a que elija/)).toBeVisible();
+
+    const [reunion] = await consultar<{ enlace: string }>(
+      "candidatura_reuniones",
+      { candidatura_id: `eq.${c.id}` },
+      "enlace",
+    );
+    expect(reunion.enlace).toBe("https://meet.google.com/abc-defg-hij");
   } finally {
     await borrar("candidaturas", { id: c.id });
   }

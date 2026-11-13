@@ -54,6 +54,105 @@ describe("las plantillas", () => {
   });
 });
 
+describe("los correos de reunión (REVISION, 13 nov)", () => {
+  const MEET = "https://meet.google.com/abc-defg-hij";
+  const PLATAFORMA = "https://plataforma.test/candidatura/xyz";
+  const base = {
+    nombre: "Ana Prueba",
+    startup: "Siren",
+    enlace: PLATAFORMA,
+    reunion_id: "r1",
+    franjas: "lunes, 17 de noviembre, de 10:00 a 10:45\nmartes, 18 de noviembre, de 16:30 a 17:15",
+    formato: "videollamada",
+    enlace_reunion: MEET,
+    personas_iwl: "Laura Gómez, Marta Ruiz",
+  };
+  const conFecha = {
+    ...base,
+    cuando: "lunes, 17 de noviembre, de 10:00 a 10:45",
+    inicio: "2026-11-17T09:00:00.000Z",
+    fin: "2026-11-17T09:45:00.000Z",
+  };
+
+  /** El enlace, como `<a href>` en el HTML y entero, en su línea, en el texto */
+  function enlaceEnLosDos(c: { html: string; texto: string }, url: string) {
+    expect(c.html).toContain(`<a href="${url.replace(/&/g, "&amp;")}"`);
+    expect(c.texto.split("\n")).toContain(url);
+  }
+
+  it("la propuesta lleva las fechas, una por línea, el enlace, quién va y «Elegir fecha»", () => {
+    const c = escribirCorreo("reunion_propuesta", base);
+    expect(c.texto).toContain("· lunes, 17 de noviembre, de 10:00 a 10:45\n· martes, 18 de noviembre, de 16:30 a 17:15");
+    expect(c.texto).toContain("Enlace de la videollamada:");
+    enlaceEnLosDos(c, MEET);
+    expect(c.texto).toContain("De IWL estaremos: Laura Gómez, Marta Ruiz.");
+    expect(c.texto).toContain(`Elegir fecha: ${PLATAFORMA}`);
+    expect(c.html).toContain(`href="${PLATAFORMA}"`);
+    expect(c.adjuntos).toBeUndefined();
+  });
+
+  it("en persona, la dirección enlaza a Google Maps", () => {
+    const c = escribirCorreo("reunion_propuesta", { ...base, formato: "presencial", enlace_reunion: null, direccion: "Calle Larios 1, Málaga" });
+    const mapa = "https://www.google.com/maps/search/?api=1&query=Calle%20Larios%201%2C%20M%C3%A1laga";
+    enlaceEnLosDos(c, mapa);
+    expect(c.texto).not.toContain("videollamada");
+  });
+
+  it("la confirmada: «Unirse a la videollamada», el enlace escrito debajo y el .ics con el enlace dentro", () => {
+    const c = escribirCorreo("reunion_confirmada", conFecha);
+    expect(c.html).toMatch(/<a href="https:\/\/meet\.google\.com\/abc-defg-hij"[^>]*>Unirse a la videollamada<\/a>/);
+    expect(c.texto).toContain(`Unirse a la videollamada: ${MEET}`);
+    // Escrito también después del botón, por si el botón no se ve
+    expect(c.html.indexOf("Unirse a la videollamada")).toBeLessThan(c.html.lastIndexOf(`>${MEET}</a>`));
+    enlaceEnLosDos(c, PLATAFORMA);
+
+    expect(c.adjuntos).toHaveLength(1);
+    const [adjunto] = c.adjuntos!;
+    expect(adjunto).toMatchObject({ nombre: "reunion-iwl.ics", tipo: "text/calendar" });
+    const ics = new TextDecoder().decode(Uint8Array.from(atob(adjunto.contenido), (x) => x.charCodeAt(0)));
+    expect(ics).toContain("DTSTART:20261117T090000Z");
+    // La línea se dobla a 75 octetos: se compara sin los dobleces
+    const desplegado = ics.replace(/\r\n /g, "");
+    expect(desplegado).toContain(`LOCATION:${MEET}`);
+    expect(desplegado).toContain(`DESCRIPTION:Enlace de la videollamada: ${MEET}`);
+  });
+
+  it("confirmada en persona: «Cómo llegar»", () => {
+    const c = escribirCorreo("reunion_confirmada", { ...conFecha, formato: "presencial", enlace_reunion: null, direccion: "Calle Larios 1" });
+    expect(c.html).toMatch(/>Cómo llegar<\/a>/);
+    expect(c.texto).toContain("Cómo llegar: https://www.google.com/maps/search/?api=1&query=Calle%20Larios%201");
+  });
+
+  it("la cambiada: las fechas nuevas, el motivo y el enlace, sin invitación hasta que elija", () => {
+    const c = escribirCorreo("reunion_cambiada", { ...base, motivo: "Coincide con el comité." });
+    expect(c.texto).toContain("El motivo: Coincide con el comité.");
+    expect(c.texto).toContain("· martes, 18 de noviembre");
+    enlaceEnLosDos(c, MEET);
+    expect(c.adjuntos).toBeUndefined();
+  });
+
+  it("a IWL, cuando ella propone otras: sus fechas, su nota y el enlace a la ficha", () => {
+    const c = escribirCorreo("reunion_contrapropuesta", {
+      ...base,
+      nombre: "Laura Gómez",
+      contacto: "Ana Prueba",
+      nota: "Por la mañana nos va mejor.",
+      enlace: "https://plataforma.test/embudo/c1",
+    });
+    expect(c.asunto).toBe("Ana Prueba propone otras fechas · Siren");
+    expect(c.texto).toMatch(/^Hola, Laura:/);
+    expect(c.texto).toContain("Su nota: Por la mañana nos va mejor.");
+    expect(c.texto).toContain("Elegir una: https://plataforma.test/embudo/c1");
+  });
+
+  it("un enlace con & no se rompe en el HTML", () => {
+    const zoom = "https://zoom.us/j/123?pwd=a&b=c";
+    const c = escribirCorreo("reunion_propuesta", { ...base, enlace_reunion: zoom });
+    expect(c.html).toContain('href="https://zoom.us/j/123?pwd=a&amp;b=c"');
+    expect(c.texto.split("\n")).toContain(zoom);
+  });
+});
+
 describe("el remitente", () => {
   it("«Nombre <correo>» en sus dos partes", () => {
     expect(partirRemitente("Inception Woman Lab <plataforma@inceptionwlab.es>")).toEqual({

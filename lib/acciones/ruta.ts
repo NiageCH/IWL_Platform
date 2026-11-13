@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
+  enlaceOpcional,
   error,
   fechaOpcional,
   ok,
@@ -451,7 +452,7 @@ const esquemaAvance = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha se escribe como 2026-12-31."),
   title: textoObligatorio(5, "Una línea sobre qué ha pasado."),
   body: textoOpcional,
-  evidence_url: textoOpcional,
+  evidence_url: enlaceOpcional,
 });
 
 export async function registrarAvance(formData: FormData): Promise<Resultado> {

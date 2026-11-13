@@ -114,7 +114,7 @@ export function ProponerReunion({
                 </Campo>
                 {formato === "videollamada" ? (
                   <Campo etiqueta="Enlace de la videollamada" obligatorio error={campos?.enlace}>
-                    <Texto name="enlace" type="url" placeholder="https://" required />
+                    <Texto name="enlace" inputMode="url" autoComplete="off" placeholder="meet.google.com/…" required />
                   </Campo>
                 ) : (
                   <Campo etiqueta="Dirección" obligatorio error={campos?.direccion}>

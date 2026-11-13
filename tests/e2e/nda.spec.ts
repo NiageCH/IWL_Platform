@@ -56,8 +56,8 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     // Entra, cambia la contraseña y no ve más que el NDA
     await entrarComoElla(page, temporal);
     await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
-    await page.getByLabel("Nueva contraseña").fill("la-de-la-firma-2026");
-    await page.getByLabel("Otra vez").fill("la-de-la-firma-2026");
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-de-la-firma-2026");
+    await page.getByLabel("Otra vez", { exact: true }).fill("la-de-la-firma-2026");
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
     await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
 

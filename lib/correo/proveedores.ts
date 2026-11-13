@@ -16,6 +16,8 @@ export interface Mensaje {
   asunto: string;
   texto: string;
   html: string;
+  /** La invitación de calendario de una reunión, por ejemplo. En base64 */
+  adjuntos?: Array<{ nombre: string; tipo: string; contenido: string }>;
 }
 
 export interface Proveedor {
@@ -59,6 +61,8 @@ export const brevo: Proveedor = {
         subject: m.asunto,
         textContent: m.texto,
         htmlContent: m.html,
+        // Brevo deduce el tipo por la extensión: `.ics` está entre los admitidos
+        ...(m.adjuntos?.length ? { attachment: m.adjuntos.map((a) => ({ name: a.nombre, content: a.contenido })) } : {}),
       }),
     });
     const cuerpo = (await r.json().catch(() => ({}))) as { messageId?: string; message?: string };
@@ -81,6 +85,9 @@ const mailpit: Proveedor = {
         Subject: m.asunto,
         Text: m.texto,
         HTML: m.html,
+        ...(m.adjuntos?.length
+          ? { Attachments: m.adjuntos.map((a) => ({ Filename: a.nombre, ContentType: a.tipo, Content: a.contenido })) }
+          : {}),
       }),
     });
     const cuerpo = (await r.json().catch(() => ({}))) as { ID?: string };

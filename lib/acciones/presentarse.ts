@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { normalizarEnlace } from "@/lib/enlaces";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import {
@@ -69,14 +70,9 @@ const esquema = z.object({
 });
 
 /** Solo http y https, y que se pueda analizar como dirección */
+/** La web como la escriba: sin https, con texto alrededor. Si no es una web, se queda sin web */
 function enlaceValido(url: string | undefined): string | null {
-  if (!url) return null;
-  try {
-    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
-    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null;
-  } catch {
-    return null;
-  }
+  return normalizarEnlace(url) || null;
 }
 
 export async function presentarse(

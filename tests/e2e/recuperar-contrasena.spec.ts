@@ -33,8 +33,8 @@ test("quien olvida su contraseña pide un enlace, elige otra y entra con ella", 
 
   await page.goto(enlace);
   await expect(page.getByRole("heading", { name: "Elige tu nueva contraseña" })).toBeVisible();
-  await page.getByLabel("Nueva contraseña").fill(NUEVA);
-  await page.getByLabel("Otra vez").fill(NUEVA);
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill(NUEVA);
+  await page.getByLabel("Otra vez", { exact: true }).fill(NUEVA);
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/cambiar-contrasena"));
 
@@ -42,7 +42,7 @@ test("quien olvida su contraseña pide un enlace, elige otra y entra con ella", 
   await page.context().clearCookies();
   await page.goto("/entrar");
   await page.getByLabel("Correo").fill(CORREO);
-  await page.getByLabel("Contraseña").fill(NUEVA);
+  await page.getByLabel("Contraseña", { exact: true }).fill(NUEVA);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/entrar"));
 });

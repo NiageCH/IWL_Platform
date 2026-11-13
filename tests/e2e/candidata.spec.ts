@@ -223,8 +223,8 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
 
   // La contraseña la puso IWL: antes de nada, la cambia
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
-  await page.getByLabel("Nueva contraseña").fill("la-de-envio-2026");
-  await page.getByLabel("Otra vez").fill("la-de-envio-2026");
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-de-envio-2026");
+  await page.getByLabel("Otra vez", { exact: true }).fill("la-de-envio-2026");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
 
   /*

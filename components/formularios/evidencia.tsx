@@ -243,7 +243,7 @@ export function Evidencia({
                   >
                     <Texto
                       name="url"
-                      type="url"
+                      inputMode="url"
                       placeholder="https://"
                       error={!resultado.ok && Boolean(resultado.campos?.url)}
                     />

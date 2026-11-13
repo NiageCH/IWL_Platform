@@ -48,8 +48,8 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     // Entra, cambia la contraseña, comenta y firma
     await entrarComoElla(page, temporal);
     await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
-    await page.getByLabel("Nueva contraseña").fill(CLAVE);
-    await page.getByLabel("Otra vez").fill(CLAVE);
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill(CLAVE);
+    await page.getByLabel("Otra vez", { exact: true }).fill(CLAVE);
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
     await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible({ timeout: 15_000 });
 

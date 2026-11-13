@@ -9,6 +9,8 @@ import { error, ok, traducirError, validar, type Resultado } from "@/lib/accione
 import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { notificar, type Evento } from "@/lib/correo";
 import { direccionBase } from "@/lib/direccion";
+import { nombreCompleto } from "@/lib/etiquetas";
+import { ENLACE_REUNION_NO_VALE, normalizarEnlace } from "@/lib/enlaces";
 import {
   CONCLUSIONES,
   FORMATOS,
@@ -81,6 +83,83 @@ async function avisarla(
   return r.estado;
 }
 
+/**
+ * Lo que necesita un correo de reunión (REVISION, 13 nov): las franjas,
+ * una por línea; el formato; el enlace de la videollamada o la dirección;
+ * quién va de IWL; y, si ya hay fecha, cuándo, para la invitación de
+ * calendario. Se lee de la reunión guardada, no del formulario: así el
+ * correo dice lo mismo que la pantalla.
+ */
+async function datosReunion(reunionId: string): Promise<Record<string, string | null>> {
+  const servicio = clienteServicio();
+  const { data: r } = await servicio
+    .from("candidatura_reuniones")
+    .select("franjas, elegida, formato, enlace, direccion, personas_iwl")
+    .eq("id", reunionId)
+    .maybeSingle();
+  if (!r) return {};
+  const ids = (r.personas_iwl ?? []) as string[];
+  const { data: personas } = ids.length
+    ? await servicio.from("profiles").select("id, full_name, last_name").in("id", ids)
+    : { data: [] };
+  const nombres = ids
+    .map((id) => personas?.find((p) => p.id === id))
+    .filter(Boolean)
+    .map((p) => nombreCompleto(p!.full_name, p!.last_name))
+    .filter(Boolean);
+  const elegida = r.elegida as unknown as Franja | null;
+  return {
+    reunion_id: reunionId,
+    franjas: (r.franjas as unknown as Franja[]).map(describirFranja).join("\n"),
+    formato: r.formato,
+    enlace_reunion: r.enlace,
+    direccion: r.direccion,
+    personas_iwl: nombres.join(", ") || null,
+    ...(elegida ? { cuando: describirFranja(elegida), inicio: elegida.inicio, fin: elegida.fin } : {}),
+  };
+}
+
+/**
+ * El mismo aviso a quien va de IWL: cuando ella elige fecha o propone
+ * otras (REVISION, 13 nov). Con el enlace a la ficha de la candidatura, que
+ * es desde donde responden. Si la reunión no dice quién va, a quien la
+ * propuso.
+ */
+async function avisarIwl(
+  reunionId: string,
+  candidaturaId: string,
+  evento: Evento,
+  datos: Record<string, string | null | undefined>,
+) {
+  const servicio = clienteServicio();
+  const [{ data: r }, { data: c }] = await Promise.all([
+    servicio.from("candidatura_reuniones").select("personas_iwl, propuesta_por").eq("id", reunionId).maybeSingle(),
+    servicio.from("candidaturas").select("nombre, contacto_nombre, contacto_apellidos").eq("id", candidaturaId).maybeSingle(),
+  ]);
+  const ids = ((r?.personas_iwl ?? []) as string[]).length ? (r!.personas_iwl as string[]) : [r?.propuesta_por].filter(Boolean);
+  if (!ids.length || !c) return;
+  const { data: personas } = await servicio
+    .from("profiles")
+    .select("id, email, full_name, is_active")
+    .in("id", ids as string[]);
+  const enlace = `${direccionBase()}/embudo/${candidaturaId}`;
+  for (const p of personas ?? []) {
+    if (!p.email || p.is_active === false) continue;
+    await notificar(
+      { correo: p.email, nombre: p.full_name, profileId: p.id },
+      evento,
+      {
+        ...datos,
+        nombre: p.full_name,
+        startup: c.nombre,
+        contacto: nombreCompleto(c.contacto_nombre, c.contacto_apellidos) || c.contacto_nombre,
+        enlace,
+      },
+      { candidaturaId },
+    );
+  }
+}
+
 /*
  * Sin mensaje de vuelta en lo que hace IWL: el acuse es la reunión
  * cambiada, y el formulario que la cambió deja de tener sitio —una
@@ -136,6 +215,11 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
   if (datos.formato === "videollamada" && !datos.enlace) {
     return error("Falta el enlace de la videollamada.", { enlace: "¿Dónde os conectáis?" });
   }
+  // Como se copie de Meet, Zoom o Teams: sin https, o la invitación entera
+  const enlace = datos.formato === "videollamada" ? normalizarEnlace(datos.enlace) : null;
+  if (datos.formato === "videollamada" && !enlace) {
+    return error(ENLACE_REUNION_NO_VALE, { enlace: ENLACE_REUNION_NO_VALE });
+  }
   if (datos.formato === "presencial" && !datos.direccion) {
     return error("Falta la dirección.", { direccion: "¿Dónde os veis?" });
   }
@@ -172,7 +256,7 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
     propuesta_por: persona!.id,
     franjas,
     formato: datos.formato,
-    enlace: datos.formato === "videollamada" ? datos.enlace : null,
+    enlace: datos.formato === "videollamada" ? enlace : null,
     direccion: datos.formato === "presencial" ? datos.direccion : null,
     nota: datos.nota || null,
     personas_iwl: personasIwl,
@@ -181,12 +265,14 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
     caducada_avisada_at: null,
     cambiada_motivo: cambio ? datos.motivo! : null,
   };
-  const { error: falloBase } = enJuego
-    ? await supabase.from("candidatura_reuniones").update(fila).eq("id", enJuego.id)
+  const { data: guardada, error: falloBase } = enJuego
+    ? await supabase.from("candidatura_reuniones").update(fila).eq("id", enJuego.id).select("id").single()
     : await supabase
         .from("candidatura_reuniones")
-        .insert({ ...fila, candidatura_id: datos.candidatura_id, created_by: persona!.id });
-  if (falloBase) return traducirError(falloBase);
+        .insert({ ...fila, candidatura_id: datos.candidatura_id, created_by: persona!.id })
+        .select("id")
+        .single();
+  if (falloBase || !guardada) return falloBase ? traducirError(falloBase) : error("No se ha podido guardar la reunión.");
 
   await supabase.from("candidatura_eventos").insert({
     candidatura_id: datos.candidatura_id,
@@ -200,7 +286,7 @@ export async function proponerReunion(formData: FormData): Promise<Resultado> {
   await avisarla(
     datos.candidatura_id,
     cambio ? "reunion_cambiada" : "reunion_propuesta",
-    { nota: datos.nota, motivo: datos.motivo },
+    { nota: datos.nota, motivo: datos.motivo, ...(await datosReunion(guardada.id)) },
     persona!.id,
   );
   refrescar(datos.candidatura_id);
@@ -243,11 +329,7 @@ export async function aceptarFranja(formData: FormData): Promise<Resultado> {
   await avisarla(
     datos.candidatura_id,
     "reunion_confirmada",
-    {
-      cuando: describirFranja(franja),
-      formato: r.formato ? FORMATOS[r.formato as Formato] : "",
-      lugar: r.enlace ?? r.direccion,
-    },
+    await datosReunion(datos.reunion_id),
     persona!.id,
   );
   refrescar(datos.candidatura_id);
@@ -341,11 +423,10 @@ export async function elegirFranja(formData: FormData): Promise<Resultado> {
   // Su confirmación por correo, con lo que necesita para ir
   const r = await candidaturaDeReunion(datos.reunion_id);
   if (r?.elegida) {
-    await avisarla(r.candidatura_id, "reunion_confirmada", {
-      cuando: describirFranja(r.elegida as unknown as Franja),
-      formato: r.formato ? FORMATOS[r.formato as Formato] : "",
-      lugar: r.enlace ?? r.direccion,
-    });
+    const datosCorreo = await datosReunion(datos.reunion_id);
+    await avisarla(r.candidatura_id, "reunion_confirmada", datosCorreo);
+    // Y a quien va de IWL, lo mismo: con su invitación y el enlace
+    await avisarIwl(datos.reunion_id, r.candidatura_id, "reunion_confirmada", datosCorreo);
     refrescar(r.candidatura_id);
   }
   revalidatePath(`/candidatura/${datos.token ?? ""}`);
@@ -384,7 +465,14 @@ export async function contraproponerReunion(formData: FormData): Promise<Resulta
   if (falloBase) return traducirError(falloBase);
 
   const r = await candidaturaDeReunion(datos.reunion_id);
-  if (r) refrescar(r.candidatura_id);
+  if (r) {
+    // Sus fechas, a quien va de IWL: con ellas delante se elige
+    await avisarIwl(datos.reunion_id, r.candidatura_id, "reunion_contrapropuesta", {
+      ...(await datosReunion(datos.reunion_id)),
+      nota: datos.nota,
+    });
+    refrescar(r.candidatura_id);
+  }
   revalidatePath(`/candidatura/${datos.token ?? ""}`);
   // El acuse es la tarjeta cambiada: «Has propuesto otras fechas»
   return ok();

@@ -110,8 +110,8 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     await page.locator('input[type="password"]').fill(temporal);
     await page.getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
-    await page.getByLabel("Nueva contraseña").fill("la-del-acuerdo-2026");
-    await page.getByLabel("Otra vez").fill("la-del-acuerdo-2026");
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-del-acuerdo-2026");
+    await page.getByLabel("Otra vez", { exact: true }).fill("la-del-acuerdo-2026");
     await page.getByRole("button", { name: "Guardar y entrar" }).click();
     await expect(page).toHaveURL(/\/proyecto/, { timeout: 15_000 });
 

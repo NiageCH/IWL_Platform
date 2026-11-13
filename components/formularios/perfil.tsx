@@ -1,7 +1,9 @@
 "use client";
 
 import { cambiarMiContrasena, estrenarContrasena, guardarMisDatos, guardarResumenAvisos } from "@/lib/acciones/admin";
+import { useId, useState } from "react";
 import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
+import { CampoContrasena } from "@/components/ui/campo-contrasena";
 
 /**
  * Cambiar la propia contraseña.
@@ -14,6 +16,9 @@ import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
  * marca con la contraseña ya cambiada.
  */
 export function CambiarContrasena({ primera = false }: { primera?: boolean }) {
+  // Un solo ojo para las dos: se comprueba que coinciden mirándolas juntas
+  const [visibles, setVisibles] = useState(false);
+  const id = useId();
   return (
     <Formulario
       accion={primera ? estrenarContrasena : cambiarMiContrasena}
@@ -27,25 +32,32 @@ export function CambiarContrasena({ primera = false }: { primera?: boolean }) {
             etiqueta="Nueva contraseña"
             ayuda="Al menos 12 caracteres"
             error={!resultado.ok ? resultado.campos?.password : undefined}
+            htmlFor={`${id}-nueva`}
           >
-            <Texto
+            <CampoContrasena
+              id={`${id}-nueva`}
               name="password"
-              type="password"
               autoComplete="new-password"
               minLength={12}
               required
+              visible={visibles}
+              alCambiar={setVisibles}
             />
           </Campo>
 
           <Campo
             etiqueta="Otra vez"
             error={!resultado.ok ? resultado.campos?.repetida : undefined}
+            htmlFor={`${id}-repetida`}
           >
-            <Texto
+            <CampoContrasena
+              id={`${id}-repetida`}
               name="repetida"
-              type="password"
               autoComplete="new-password"
               required
+              visible={visibles}
+              alCambiar={setVisibles}
+              sinBoton
             />
           </Campo>
 

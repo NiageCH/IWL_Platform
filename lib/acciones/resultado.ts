@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ENLACE_NO_VALE, normalizarEnlace } from "@/lib/enlaces";
 
 /**
  * Resultado de una Server Action.
@@ -142,6 +143,39 @@ export const textoObligatorio = (min = 1, mensaje = "Escribe algo aquí.") =>
  * tocar la nota), y si el esquema lo exigiera, esa acción fallaría entera con
  * un «revisa los campos marcados» que no señala ningún campo.
  */
+/**
+ * Un enlace como se pegue —sin `https://`, o con texto alrededor—, guardado
+ * como dirección completa (`lib/enlaces.ts`). Vacío es `null`. Los campos de
+ * enlace son de texto, no `type="url"`: el navegador rechazaría lo pegado
+ * antes de que esto pudiera arreglarlo.
+ */
+export const enlaceOpcional = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((v, ctx) => {
+    const normal = normalizarEnlace(v);
+    if (normal === null) {
+      ctx.addIssue({ code: "custom", message: ENLACE_NO_VALE });
+      return z.NEVER;
+    }
+    return normal || null;
+  });
+
+/** Lo mismo, cuando el enlace es obligatorio */
+export function enlaceObligatorio(falta = "Falta el enlace.") {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v, ctx) => {
+      const normal = normalizarEnlace(v);
+      if (!normal) {
+        ctx.addIssue({ code: "custom", message: normal === "" ? falta : ENLACE_NO_VALE });
+        return z.NEVER;
+      }
+      return normal;
+    });
+}
+
 export const textoOpcional = z
   .union([z.string(), z.null()])
   // `.optional()` va antes del transform: es lo que marca la clave como

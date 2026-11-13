@@ -151,6 +151,7 @@ export function Campo({
   error,
   ayuda,
   obligatorio,
+  htmlFor,
   children,
 }: {
   etiqueta: string;
@@ -165,29 +166,57 @@ export function Campo({
    * tener que descubrirlo al final.
    */
   obligatorio?: boolean;
+  /**
+   * El id del campo, cuando dentro hay además un botón —el ojo de la
+   * contraseña—. Entonces la etiqueta va por `htmlFor` y no envolviendo:
+   * envuelto, el nombre del botón se sumaría al del campo.
+   */
+  htmlFor?: string;
   children: ReactNode;
 }) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="cifra text-xs uppercase tracking-wide text-metadato">
-        {etiqueta}
-        {obligatorio ? (
-          <span aria-hidden="true" className="ml-1 text-acento-texto">
-            *
-          </span>
-        ) : null}
-        {obligatorio ? <span className="sr-only"> (obligatorio)</span> : null}
-      </span>
-      {children}
+  const rotulo = (
+    <>
+      {etiqueta}
+      {obligatorio ? (
+        <span aria-hidden="true" className="ml-1 text-acento-texto">
+          *
+        </span>
+      ) : null}
+      {obligatorio ? <span className="sr-only"> (obligatorio)</span> : null}
+    </>
+  );
+  const pie = (
+    <>
       {ayuda && !error ? (
         <span className="text-xs text-metadato">{ayuda}</span>
       ) : null}
       {error ? <span className="text-xs text-mal">{error}</span> : null}
+    </>
+  );
+
+  if (htmlFor) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={htmlFor} className="cifra text-xs uppercase tracking-wide text-metadato">
+          {rotulo}
+        </label>
+        {children}
+        {pie}
+      </div>
+    );
+  }
+
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="cifra text-xs uppercase tracking-wide text-metadato">{rotulo}</span>
+      {children}
+      {pie}
     </label>
   );
 }
 
-const CLASES_CAMPO =
+/** Lo que viste un campo. Lo usa también `<CampoContrasena>` */
+export const CLASES_CAMPO =
   "rounded-md border border-filete bg-hundido px-3 py-2 text-sm text-titular outline-none transition-colors focus:border-acento focus:ring-1 focus:ring-acento/40";
 
 export function Texto({

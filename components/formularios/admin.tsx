@@ -235,7 +235,7 @@ export function FormularioCompania({
                 <Texto name="founded_on" type="date" />
               </Campo>
               <Campo etiqueta="Web">
-                <Texto name="website" type="url" placeholder="https://" />
+                <Texto name="website" inputMode="url" placeholder="siren.es" />
               </Campo>
             </div>
 

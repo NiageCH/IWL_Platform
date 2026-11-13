@@ -19,7 +19,7 @@ test("se entra con correo y contraseña", async ({ page }) => {
   await page.goto("/entrar");
 
   await page.getByLabel("Correo").fill(USUARIOS.fundadoraMarea);
-  await page.getByLabel("Contraseña").fill(CLAVE);
+  await page.getByLabel("Contraseña", { exact: true }).fill(CLAVE);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).toHaveURL(/\/proyecto/, { timeout: 15_000 });
@@ -30,7 +30,7 @@ test("una contraseña que no es no dice si el correo existe", async ({ page }) =
   await page.goto("/entrar");
 
   await page.getByLabel("Correo").fill(USUARIOS.fundadoraMarea);
-  await page.getByLabel("Contraseña").fill("esta-no-es-la-buena");
+  await page.getByLabel("Contraseña", { exact: true }).fill("esta-no-es-la-buena");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   /*
@@ -47,7 +47,7 @@ test("tras entrar se vuelve a donde se iba", async ({ page }) => {
   await expect(page).toHaveURL(/\/entrar\?siguiente=/);
 
   await page.getByLabel("Correo").fill(USUARIOS.admin);
-  await page.getByLabel("Contraseña").fill(CLAVE);
+  await page.getByLabel("Contraseña", { exact: true }).fill(CLAVE);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).toHaveURL(/\/cartera/, { timeout: 15_000 });
@@ -99,7 +99,7 @@ test("la dirección pone la contraseña al dar de alta y se enseña una vez", as
   await page.getByRole("button", { name: "Salir" }).click();
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
-  await page.getByLabel("Contraseña").fill("tres-palabras-y-42");
+  await page.getByLabel("Contraseña", { exact: true }).fill("tres-palabras-y-42");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   await expect(page).not.toHaveURL(/\/entrar/);
@@ -158,7 +158,7 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.getByRole("button", { name: "Salir" }).click();
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
-  await page.getByLabel("Contraseña").fill("la-de-siempre-77");
+  await page.getByLabel("Contraseña", { exact: true }).fill("la-de-siempre-77");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
   await page.getByRole("button", { name: "Salir" }).click();
@@ -197,7 +197,7 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.getByRole("button", { name: "Salir" }).click();
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
-  await page.getByLabel("Contraseña").fill(nueva);
+  await page.getByLabel("Contraseña", { exact: true }).fill(nueva);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
 
   // Y como la puso la dirección, vuelve a ser temporal
@@ -262,7 +262,7 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await page.getByRole("button", { name: "Salir" }).click();
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
-  await page.getByLabel("Contraseña").fill("la-primera-clave-9");
+  await page.getByLabel("Contraseña", { exact: true }).fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/cambiar-contrasena/, { timeout: 15_000 });
 
@@ -271,13 +271,13 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
 
   // Repetir la que te dieron no vale: esa la conoce quien la puso
-  await page.getByLabel("Nueva contraseña").fill("la-primera-clave-9");
-  await page.getByLabel("Otra vez").fill("la-primera-clave-9");
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-primera-clave-9");
+  await page.getByLabel("Otra vez", { exact: true }).fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
   await expect(page.getByText("Tiene que ser distinta de la que tenías.")).toBeVisible();
 
-  await page.getByLabel("Nueva contraseña").fill("la-segunda-clave-7");
-  await page.getByLabel("Otra vez").fill("la-segunda-clave-7");
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-segunda-clave-7");
+  await page.getByLabel("Otra vez", { exact: true }).fill("la-segunda-clave-7");
   await page.getByRole("button", { name: "Guardar y entrar" }).click();
 
   // El acuse es estar dentro
@@ -286,8 +286,8 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   // Y ya se puede ir a cualquier sitio, también a cambiarla otra vez
   await page.goto("/perfil");
   await expect(page).toHaveURL(/\/perfil/);
-  await page.getByLabel("Nueva contraseña").fill("la-tercera-clave-5");
-  await page.getByLabel("Otra vez").fill("la-tercera-clave-5");
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-tercera-clave-5");
+  await page.getByLabel("Otra vez", { exact: true }).fill("la-tercera-clave-5");
   await page.getByRole("button", { name: "Cambiar contraseña" }).click();
   await expect(page.getByText(/Contraseña cambiada/)).toBeVisible();
 
@@ -300,11 +300,11 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
   await page.getByRole("button", { name: "Salir" }).click();
   await page.waitForURL(/\/entrar/);
   await page.getByLabel("Correo").fill(correo);
-  await page.getByLabel("Contraseña").fill("la-primera-clave-9");
+  await page.getByLabel("Contraseña", { exact: true }).fill("la-primera-clave-9");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page.getByText("El correo o la contraseña no son correctos.")).toBeVisible();
 
-  await page.getByLabel("Contraseña").fill("la-tercera-clave-5");
+  await page.getByLabel("Contraseña", { exact: true }).fill("la-tercera-clave-5");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).not.toHaveURL(/\/entrar|\/cambiar-contrasena/, { timeout: 15_000 });
 
@@ -314,8 +314,8 @@ test("la contraseña que pone la dirección se cambia al entrar", async ({ page 
 test("las dos contraseñas del cambio tienen que coincidir", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/perfil");
 
-  await page.getByLabel("Nueva contraseña").fill("una-clave-larga-1");
-  await page.getByLabel("Otra vez").fill("otra-clave-larga-2");
+  await page.getByLabel("Nueva contraseña", { exact: true }).fill("una-clave-larga-1");
+  await page.getByLabel("Otra vez", { exact: true }).fill("otra-clave-larga-2");
   await page.getByRole("button", { name: "Cambiar contraseña" }).click();
 
   await expect(page.getByText("Las dos contraseñas no coinciden.")).toBeVisible();

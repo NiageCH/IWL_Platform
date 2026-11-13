@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { clienteNavegador } from "@/lib/supabase/navegador";
+import { CampoContrasena } from "@/components/ui/campo-contrasena";
 
 /**
  * Entrada.
@@ -182,19 +183,22 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
       </label>
 
       {via === "clave" ? (
-        <label className="flex flex-col gap-2">
-          <span className="cifra text-xs uppercase tracking-wide text-metadato">
+        /*
+          Etiqueta por `htmlFor` y no envolviendo: dentro va el botón del
+          ojo, y envuelto, su nombre se sumaría al del campo.
+        */
+        <div className="flex flex-col gap-2">
+          <label htmlFor="clave-entrar" className="cifra text-xs uppercase tracking-wide text-metadato">
             Contraseña
-          </span>
-          <input
-            type="password"
+          </label>
+          <CampoContrasena
+            id="clave-entrar"
             required
             autoComplete="current-password"
             value={clave}
             onChange={(e) => setClave(e.target.value)}
-            className={campo}
           />
-        </label>
+        </div>
       ) : null}
 
       <button type="submit" disabled={estado === "enviando"} className="boton-marca px-4 py-2 text-xs disabled:opacity-50">
