@@ -4850,6 +4850,11 @@ isOneToOne: false
 "estado_nda":
 { Args: { "p_candidatura": string }; Returns: string
                            },
+"ficheros_sueltos":
+{ Args: { "p_antes": string }; Returns: {
+              "bucket": string,"bytes": number,"creado": string,"ruta": string
+            }[]
+                           },
 "firmar_acta":
 { Args: { "p_acta": string,"p_ip": string,"p_profile": string,"p_ua": string }; Returns: boolean
                            },

@@ -28,6 +28,8 @@ function entornoSupabase(): Record<string, string> {
     SUPABASE_URL: leer("API_URL"),
     SUPABASE_ANON_KEY: leer("ANON_KEY"),
     SUPABASE_SERVICE_ROLE_KEY: leer("SERVICE_ROLE_KEY"),
+    // Para lo que no se puede preparar por la API, como envejecer un fichero
+    SUPABASE_DB_URL: leer("DB_URL"),
   };
 }
 

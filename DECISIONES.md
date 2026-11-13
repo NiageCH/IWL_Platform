@@ -1815,3 +1815,11 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **El id del documento va en la ruta** (`<compañía>/<área>/<id>/<fichero>`). El servidor lo genera al firmar, y el documento se registra con ese mismo id.
 - **La foto no sube directa.** El navegador ya la reduce a menos de 1 MB antes de mandarla, y el servidor necesita tenerla para rehacerla con sharp. El límite de 5 MB es el del fichero que se elige.
 - **Una subida que no se llega a registrar deja el fichero sin documento.** Ocupa sitio pero no se ve. Si la acción la rechaza, la borra (`descartarSubida`, con la clave de servicio: quien la subió no siempre puede borrar en ese bucket).
+
+## 2026-11-13 · Los ficheros sueltos se borran a las 24 horas, en el cron de siempre
+
+- **Un fichero suelto cumple todo esto a la vez:** está en un bucket donde se sube a mano, ninguna fila lo apunta y tiene más de 24 horas. Lo decide la base, `app.ficheros_sueltos`. Las 24 horas son para no llevarse una subida que se está registrando.
+- **Nunca se borra algo con nombre de documento firmado** (NDA, acta, Anexo, Acuerdo), **ni nada de una compañía archivada.** Un firmado siempre está apuntado, así que en la práctica no filtra nada. Es la red por si un día deja de estarlo: antes que borrar un firmado, que ocupe sitio.
+- **La base lista y el cron borra por la API de Storage.** Storage no deja borrar con SQL (`protect_objects_delete`), porque el fichero de verdad vive fuera de la base.
+- **Va dentro del cron diario que ya existía** (`/api/cron/resumen-avisos`), después del resumen, y si falla no lo tumba. El plan de Vercel limita cuántos crons se pueden tener.
+- **Queda constancia en `activity_log`** (`ficheros_sueltos_borrados`): cuántos, qué rutas y cuánto ocupaban. Los días sin nada que borrar no escribe.
