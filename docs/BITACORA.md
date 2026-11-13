@@ -9,6 +9,51 @@ como es**.
 
 ---
 
+## 2026-11-13 · Urgentes: enlace de la videollamada, ver la contraseña, correos de reunión · commit ec426bf
+
+**Qué cambió**
+- **El enlace de la videollamada se deja pegar.** Ningún campo de enlace es ya `type="url"`: el navegador rechazaba `meet.google.com/…` antes de que nadie pudiera arreglarlo. En el servidor, `normalizarEnlace` (`lib/enlaces.ts`):
+  - quita los espacios;
+  - si se pega la invitación entera, toma la primera dirección;
+  - añade `https://` si falta;
+  - y si no es un enlace, dice «No reconozco ese enlace. Pégalo tal como lo copias de Meet, Zoom o Teams.».
+
+  Vale igual para la web de la compañía, las evidencias por enlace, el NDA firmado fuera, el avance del mes, los enlaces de la candidatura y la web del formulario público.
+- **Ver la contraseña.** `<CampoContrasena>` en «Entrar», «Elige tu contraseña» y Mi cuenta, y no queda ningún `type="password"` suelto. Va oculta por defecto. El botón dice «Mostrar contraseña» u «Ocultar contraseña» y no envía el formulario. La nueva y la repetida se ven con un solo ojo, y al enviar se ocultan.
+- **Correos de reunión con enlaces.** Las plantillas aceptan enlaces dentro del texto (en HTML un `<a>` del color de acento; en texto plano, la dirección entera en su línea) y adjuntos.
+  - **`reunion_propuesta`:** las fechas una por línea, con día de la semana y hora de Madrid; el enlace de la videollamada (o la dirección, que enlaza a Google Maps); quién va de IWL; y «Elegir fecha».
+  - **`reunion_confirmada`:** «Unirse a la videollamada» (o «Cómo llegar»), el enlace escrito debajo y el `.ics` adjunto, con el enlace en la ubicación y en la descripción.
+  - **`reunion_cambiada`:** las fechas nuevas, el motivo y el enlace.
+  - **A IWL**, cuando ella elige fecha, la misma confirmación con su `.ics`. Cuando propone otras, un correo nuevo con sus fechas y su nota (`reunion_contrapropuesta`).
+- **Migración `20261113130000_correo_contrapropuesta`:** el evento nuevo entra en la lista de `correos`.
+- **Pruebas:**
+  - unitarias, de cada plantilla de reunión: el enlace como `<a href>` en el HTML y entero en el texto plano, el `.ics` con el enlace dentro y un enlace con `&` que no se rompe;
+  - de interfaz:
+    - en la propuesta se pega `meet.google.com/abc-defg-hij` y se guarda `https://meet.google.com/abc-defg-hij`;
+    - los correos de verdad, en el buzón local, llevan el enlace y el `.ics`, y a IWL le llegan los suyos;
+    - el ojo de la contraseña, al entrar y en Mi cuenta.
+
+**Qué decidí yo**
+- **`reunion_cambiada` no lleva `.ics` ni «Unirse».** Cambiar una reunión confirmada es proponer fechas nuevas, y hasta que ella elige no hay fecha que meter en un calendario. Las dos cosas llegan en la confirmación al elegir.
+- **Las contraseñas de Administración siguen a la vista.** Las acaba de poner la dirección y tiene que dictarlas o copiarlas: ocultarlas sería un paso de más.
+- **«Lo mismo» a IWL** se manda a quien va de IWL en esa reunión, o, si no consta nadie, a quien la propuso. Con el enlace a la ficha de la candidatura, no al de ella.
+- **El botón, en texto plano, sigue como estaba** («Elegir fecha: https://…»). En su línea van los enlaces de dentro del texto.
+- **`<Campo htmlFor>`:** con el ojo dentro, la etiqueta va por `htmlFor` y no envolviendo. Envuelta, el nombre del campo era «Nueva contraseña Mostrar contraseña».
+- **Las pruebas buscan los campos de contraseña por su nombre exacto.** Por subcadena, «Contraseña» encontraba también el botón del ojo.
+
+**Qué necesito que decidas**
+- Nada nuevo. Sigue abierta: ¿«archivados», en la limpieza de ficheros, incluye las candidaturas descartadas?
+
+**Estado**
+- Unitarias: 255. De acceso: 241, dos veces.
+- De interfaz: la primera pasada, entera en verde (420 pasan, 4 se saltan). **La segunda no salió**: 7 fallos, todos en Safari de escritorio y en la segunda mitad, y 37 minutos en vez de 6. La máquina se había quedado sin memoria (11,9 GB de 13,3 GB de swap en uso y casi nada libre). Las siete, lanzadas solas en Safari, pasan: 30 de 30. No toca nada de este cambio, pero no puedo decir que salió en verde dos veces seguidas.
+- Despliegue pendiente: una migración nueva más la de ficheros sueltos, si aún no está.
+
+**Siguiente**
+- Contraste en oscuro, y la propuesta del camino claro, según el orden de la REVISION.
+
+---
+
 ## 2026-11-13 · Safari ya no se cuelga en las pruebas · commit e2135b3
 
 **Qué cambió**
