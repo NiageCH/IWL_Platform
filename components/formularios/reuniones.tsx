@@ -11,6 +11,17 @@ import {
   Seleccion,
   Texto,
 } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
+
+/** Los adjuntos de una reunión van al expediente de la candidatura */
+const ADJUNTOS_REUNION: CampoSubida[] = [
+  {
+    campo: "adjuntos",
+    clase: "reunion",
+    destino: (fd) => ({ clase: "reunion", candidaturaId: String(fd.get("candidatura_id")) }),
+  },
+];
 
 /** Las dos o tres franjas, en hora de Madrid, y su duración */
 export function CamposFranjas({
@@ -197,9 +208,10 @@ export function AnotarReunion({
   reunionId?: string;
   contacto: string;
 }) {
+  const { progreso, conSubidas } = useSubidas();
   return (
     <Desplegable titulo={reunionId ? "Anotar esta reunión" : "Anotar una reunión"}>
-      <Formulario accion={anotarReunion} className="gap-4 px-4 pb-4">
+      <Formulario accion={conSubidas(anotarReunion, ADJUNTOS_REUNION)} className="gap-4 px-4 pb-4">
         {(r) => (
           <>
             <input type="hidden" name="candidatura_id" value={candidaturaId} />
@@ -224,11 +236,17 @@ export function AnotarReunion({
               </Campo>
             </div>
             <Campo etiqueta="Qué se habló" obligatorio error={r.ok ? undefined : r.campos?.notas}>
-              <AreaTexto name="notas" rows={4} required />
+              {/* Mínimo aquí también: los adjuntos se suben antes de que la acción lo mire */}
+              <AreaTexto name="notas" rows={4} required minLength={10} />
             </Campo>
-            <Campo etiqueta="Adjuntos" ayuda="Lo que se compartió: presentación, notas, lo que sea">
+            <Campo
+              etiqueta="Adjuntos"
+              ayuda={`Lo que se compartió: presentación, notas, lo que sea. ${textoLimite("reunion")} por fichero.`}
+              error={r.ok ? undefined : r.campos?.adjuntos}
+            >
               <Texto type="file" name="adjuntos" multiple />
             </Campo>
+            <BarraSubida progreso={progreso} />
             <div>
               <Boton variante="secundario">Guardar la reunión</Boton>
             </div>

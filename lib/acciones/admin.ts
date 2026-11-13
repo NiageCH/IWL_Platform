@@ -6,6 +6,7 @@ import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
 import { normalizarLinkedin } from "@/lib/linkedin";
+import { leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { camposSocietarios, exigir, paraGuardar } from "@/lib/societario";
 import {
   error,
@@ -1251,18 +1252,6 @@ export async function estrenarContrasena(
 // El logo de una compañía
 // -----------------------------------------------------------------------------
 
-/**
- * Tipos que aceptamos, y por qué estos.
- *
- * PNG y WebP para logos con transparencia, JPEG para los que vienen de una
- * foto, y SVG porque es lo que suele mandar un estudio de diseño y escala
- * sin perder nada.
- */
-const TIPOS_LOGO = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-
-/** Dos megas. Lo que pase de ahí es una foto, no un logo */
-const MAXIMO_LOGO = 2 * 1024 * 1024;
-
 export async function subirLogo(formData: FormData): Promise<Resultado> {
   const persona = await personaActual();
   if (!persona) return error("Hay que entrar para hacer esto.");
@@ -1273,42 +1262,15 @@ export async function subirLogo(formData: FormData): Promise<Resultado> {
   const companyId = String(formData.get("company_id") ?? "");
   if (!companyId) return error("Falta saber de qué compañía es el logo.");
 
-  const fichero = formData.get("logo");
-  if (!(fichero instanceof File) || fichero.size === 0) {
-    return error("Elige un fichero de imagen.");
-  }
-
-  if (!TIPOS_LOGO.includes(fichero.type)) {
-    return error(
-      "Ese tipo de fichero no vale como logo. Sirven PNG, JPEG, WebP y SVG.",
-    );
-  }
-
-  if (fichero.size > MAXIMO_LOGO) {
-    return error(
-      `El fichero pesa ${(fichero.size / 1024 / 1024).toFixed(1)} MB y el máximo son 2. Prueba a exportarlo más pequeño.`,
-    );
-  }
+  const [subida] = subidasDe(formData, "logo");
+  if (!subida) return error("Elige un fichero de imagen.", { logo: "Falta el fichero." });
 
   const supabase = await clienteServidor();
 
-  /*
-   * La ruta lleva la marca de tiempo.
-   *
-   * Storage cachea por dirección, así que reusar el mismo nombre al cambiar
-   * el logo deja el anterior en pantalla hasta que caduca la caché. Con un
-   * nombre nuevo cada vez, el cambio se ve al momento.
-   */
-  const extension = fichero.name.split(".").pop()?.toLowerCase() ?? "png";
-  const ruta = `${companyId}/${Date.now()}.${extension.replace(/[^a-z0-9]/g, "")}`;
-
-  const { error: falloSubida } = await supabase.storage
-    .from("logos")
-    .upload(ruta, fichero, { contentType: fichero.type });
-
-  if (falloSubida) {
-    return error(`No se ha podido subir el logo: ${falloSubida.message}`);
-  }
+  // Ya está en Storage: lo subió el navegador (`prepararSubida`)
+  const fichero = await leerSubida(supabase, "logos", "logo", subida.ruta, subida.nombre, `${companyId}/`);
+  if ("error" in fichero) return error(fichero.error, { logo: fichero.error });
+  const ruta = fichero.ruta;
 
   // El anterior, para borrarlo si este entra bien
   const { data: antes } = await supabase
@@ -1371,14 +1333,6 @@ export async function quitarLogo(formData: FormData): Promise<Resultado> {
   return ok("Logo quitado. La compañía vuelve a salir con sus iniciales.");
 }
 
-/** Lo que vale como CV: un PDF o un Word */
-const TIPOS_CV = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/msword",
-];
-const MAXIMO_CV = 10 * 1024 * 1024;
-
 /**
  * Adjuntar el CV de una persona.
  *
@@ -1401,37 +1355,15 @@ export async function subirCv(formData: FormData): Promise<Resultado> {
     return error("Un CV lo sube su dueña o el equipo de IWL.");
   }
 
-  const fichero = formData.get("cv");
-  if (!(fichero instanceof File) || fichero.size === 0) {
-    return error("Elige un fichero.", { cv: "Falta el fichero." });
-  }
-
-  if (!TIPOS_CV.includes(fichero.type)) {
-    return error("Ese tipo de fichero no vale como CV.", {
-      cv: "Sirve un PDF o un Word.",
-    });
-  }
-
-  if (fichero.size > MAXIMO_CV) {
-    return error(
-      `El fichero pesa ${(fichero.size / 1024 / 1024).toFixed(1)} MB y el máximo son 10.`,
-      { cv: "Como mucho 10 MB." },
-    );
-  }
+  const [subida] = subidasDe(formData, "cv");
+  if (!subida) return error("Elige un fichero.", { cv: "Falta el fichero." });
 
   const supabase = await clienteServidor();
 
-  // Nombre nuevo cada vez, por la caché de Storage: ver `subirLogo`
-  const extension = fichero.name.split(".").pop()?.toLowerCase() ?? "pdf";
-  const ruta = `${profileId}/${Date.now()}.${extension.replace(/[^a-z0-9]/g, "")}`;
-
-  const { error: falloSubida } = await supabase.storage
-    .from("personas")
-    .upload(ruta, fichero, { contentType: fichero.type });
-
-  if (falloSubida) {
-    return error(`No se ha podido subir el CV: ${falloSubida.message}`);
-  }
+  // Ya está en Storage: lo subió el navegador (`prepararSubida`)
+  const fichero = await leerSubida(supabase, "personas", "cv", subida.ruta, subida.nombre, `${profileId}/`);
+  if ("error" in fichero) return error(fichero.error, { cv: fichero.error });
+  const ruta = fichero.ruta;
 
   const { data: antes } = await supabase
     .from("profiles")

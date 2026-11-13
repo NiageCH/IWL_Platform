@@ -26,6 +26,7 @@ import {
   validar,
   type Resultado,
 } from "./resultado";
+import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 
 /**
  * El embudo de selección.
@@ -781,16 +782,8 @@ export async function subirDocumentoCandidata(
   const persona = await personaActual();
   if (!persona) return error("Hay que entrar para hacer esto.");
 
-  const fichero = formData.get("documento");
-  if (!(fichero instanceof File) || fichero.size === 0) {
-    return error("Elige un fichero.");
-  }
-
-  if (fichero.size > 50 * 1024 * 1024) {
-    return error(
-      `Ese fichero pesa ${(fichero.size / 1024 / 1024).toFixed(0)} MB y el máximo son 50. Si es un vídeo, mándanos el enlace.`,
-    );
-  }
+  const [subida] = subidasDe(formData, "documento");
+  if (!subida) return error("Elige un fichero.", { documento: "Falta el fichero." });
 
   const peticion = String(formData.get("peticion_id") ?? "") || null;
 
@@ -801,43 +794,37 @@ export async function subirDocumentoCandidata(
     return error("No encontramos tu candidatura. Escríbenos.");
   }
 
-  const seguro = fichero.name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9._-]/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 120);
-
-  const ruta = `${candidaturaId}/${Date.now()}-${seguro}`;
-
-  const { error: falloSubida } = await supabase.storage
-    .from("candidaturas")
-    .upload(ruta, fichero, { contentType: fichero.type || undefined });
-
-  if (falloSubida) {
-    return error(`No se ha podido subir: ${falloSubida.message}`);
-  }
+  // El fichero ya está en su carpeta: lo subió el navegador (`prepararSubida`)
+  const fichero = await leerSubida(
+    supabase,
+    "candidaturas",
+    "candidata",
+    subida.ruta,
+    subida.nombre,
+    `${candidaturaId}/`,
+  );
+  if ("error" in fichero) return error(fichero.error, { documento: fichero.error });
 
   const { error: falloFicha } = await supabase
     .from("candidatura_documentos")
     .insert({
       candidatura_id: candidaturaId,
       peticion_id: peticion,
-      nombre: fichero.name,
-      storage_path: ruta,
-      mime: fichero.type || null,
-      bytes: fichero.size,
+      nombre: fichero.nombre,
+      storage_path: fichero.ruta,
+      mime: fichero.tipo,
+      bytes: fichero.tamano,
       created_by: persona.id,
     });
 
   if (falloFicha) {
     // Sin metadato, el fichero no se encuentra: no se deja suelto
-    await supabase.storage.from("candidaturas").remove([ruta]);
+    await descartarSubida("candidaturas", fichero.ruta);
     return traducirError(falloFicha);
   }
 
   revalidatePath("/candidatura");
-  return ok(`${fichero.name} entregado. Gracias.`);
+  return ok(`${fichero.nombre} entregado. Gracias.`);
 }
 
 /**

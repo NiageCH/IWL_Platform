@@ -3,6 +3,13 @@
 import { CheckCircle2, Circle } from "lucide-react";
 import { subirDocumentoCandidata } from "@/lib/acciones/candidaturas";
 import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
+
+/** Lo que entrega va a la carpeta de su candidatura: la decide la sesión */
+const DOCUMENTO_CANDIDATA: CampoSubida[] = [
+  { campo: "documento", clase: "candidata", destino: () => ({ clase: "candidata" }) },
+];
 import { cn } from "@/lib/utils";
 
 type Peticion = {
@@ -149,8 +156,9 @@ export function SalaDeDatosCandidata({
 }
 
 function SubirParaPeticion({ peticionId }: { peticionId: string }) {
+  const { progreso, conSubidas } = useSubidas();
   return (
-    <Formulario accion={subirDocumentoCandidata} className="gap-2">
+    <Formulario accion={conSubidas(subirDocumentoCandidata, DOCUMENTO_CANDIDATA)} className="gap-2">
       {(r) => (
         <>
           <input type="hidden" name="peticion_id" value={peticionId} />
@@ -160,6 +168,8 @@ function SubirParaPeticion({ peticionId }: { peticionId: string }) {
               Entregar
             </Boton>
           </div>
+          <span className="text-xs text-metadato">{textoLimite("candidata")}</span>
+          <BarraSubida progreso={progreso} />
           {!r.ok && r.campos?.documento ? (
             <span className="text-xs text-mal">{r.campos.documento}</span>
           ) : null}
@@ -170,16 +180,19 @@ function SubirParaPeticion({ peticionId }: { peticionId: string }) {
 }
 
 function SubirSuelto() {
+  const { progreso, conSubidas } = useSubidas();
   return (
-    <Formulario accion={subirDocumentoCandidata}>
-      {() => (
+    <Formulario accion={conSubidas(subirDocumentoCandidata, DOCUMENTO_CANDIDATA)}>
+      {(r) => (
         <>
           <Campo
             etiqueta="Documento"
-            ayuda="Hasta 50 MB por fichero. De uno en uno."
+            ayuda={`${textoLimite("candidata")} De uno en uno. Si es un vídeo, mándanos el enlace.`}
+            error={!r.ok ? r.campos?.documento : undefined}
           >
             <Texto type="file" name="documento" required />
           </Campo>
+          <BarraSubida progreso={progreso} />
           <Boton>Subir</Boton>
         </>
       )}

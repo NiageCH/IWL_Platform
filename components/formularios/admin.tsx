@@ -4,6 +4,8 @@ import { CamposSituacion } from "@/components/formularios/situacion";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { FileText, KeyRound } from "lucide-react";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
 import {
   abrirCv,
   archivarPersona,
@@ -1384,6 +1386,15 @@ function claveSugerida(): string {
  * lo inmediato, que es no tener que buscar el CV en un correo de hace
  * meses cuando alguien pregunta quién es esta persona.
  */
+/** El CV va a la carpeta de la persona, en el bucket `personas` */
+const FICHERO_CV: CampoSubida[] = [
+  {
+    campo: "cv",
+    clase: "cv",
+    destino: (fd) => ({ clase: "cv", profileId: String(fd.get("profile_id")) }),
+  },
+];
+
 export function CvDePersona({
   profileId,
   tieneCv,
@@ -1393,6 +1404,7 @@ export function CvDePersona({
 }) {
   const [abierto, setAbierto] = useState(false);
   const [pendiente, empezar] = useTransition();
+  const { progreso, conSubidas } = useSubidas();
 
   return (
     <div className="px-4 py-4">
@@ -1429,7 +1441,7 @@ export function CvDePersona({
 
       {abierto ? (
         <div className="mt-3 border-t border-filete pt-3">
-          <Formulario accion={subirCv} className="gap-3">
+          <Formulario accion={conSubidas(subirCv, FICHERO_CV)} className="gap-3">
             {(resultado) => {
               const subido = resultado.ok && Boolean(resultado.mensaje);
 
@@ -1440,7 +1452,7 @@ export function CvDePersona({
                   {subido ? null : (
                     <Campo
                       etiqueta="El fichero"
-                      ayuda="PDF o Word, hasta 10 MB. Lo ve IWL y la propia persona"
+                      ayuda={`${textoLimite("cv")} Lo ve IWL y la propia persona`}
                       error={!resultado.ok ? resultado.campos?.cv : undefined}
                     >
                       <input
@@ -1453,6 +1465,7 @@ export function CvDePersona({
                     </Campo>
                   )}
 
+                  <BarraSubida progreso={progreso} />
                   <div className="flex gap-2">
                     {subido ? null : <Boton>Adjuntar</Boton>}
                     <button

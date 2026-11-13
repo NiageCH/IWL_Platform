@@ -149,7 +149,7 @@ test("no se admite un tipo de fichero que no pinta nada en un data room", async 
   await formulario.getByRole("button", { name: /Subir al data room/ }).click();
 
   await expect(
-    page.getByText(/Ese tipo de fichero no se admite|Revisa los campos/),
+    page.getByText(/script\.js no vale aquí\. Sirve PDF/).first(),
   ).toBeVisible();
 });
 

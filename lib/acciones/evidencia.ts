@@ -12,6 +12,7 @@ import {
   validar,
   type Resultado,
 } from "./resultado";
+import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 
 /**
  * Evidencia: lo que respalda una afirmación.
@@ -34,8 +35,7 @@ import {
  *     un acta.
  */
 
-/** 50 MB, el mismo límite que declara el bucket. Decisión del 5 nov 2026 */
-const TAMANO_MAXIMO = 50 * 1024 * 1024;
+// Cuánto pesa como mucho: `lib/subidas.ts`, clase «evidencia»
 
 /** A qué se le puede colgar una evidencia */
 const ENTIDADES = [
@@ -73,8 +73,8 @@ export async function adjuntarEvidencia(formData: FormData): Promise<Resultado> 
 
   const { datos, fallo: malLeido } = validar(esquema, texto);
   if (malLeido) return malLeido;
-  const fichero = formData.get("fichero");
-  const hayFichero = fichero instanceof File && fichero.size > 0;
+  const [subida] = subidasDe(formData, "fichero");
+  const hayFichero = Boolean(subida);
 
   if (!hayFichero && !datos.document_id && !datos.url) {
     return error(
@@ -86,16 +86,12 @@ export async function adjuntarEvidencia(formData: FormData): Promise<Resultado> 
 
   let documentId = datos.document_id ?? null;
 
-  if (hayFichero) {
-    if (fichero.size > TAMANO_MAXIMO) {
-      return error("El archivo pasa de 50 MB, que es el máximo del data room.");
-    }
-
+  if (subida) {
     const subido = await subirAlDataRoom(
       supabase,
       datos.company_id,
       datos.label,
-      fichero,
+      subida,
       persona.id,
     );
     if ("error" in subido) return error(subido.error);
@@ -146,49 +142,50 @@ export async function adjuntarEvidencia(formData: FormData): Promise<Resultado> 
  * documento de la compañía, y tenerlo en dos sitios es tenerlo en ninguno.
  * Va a la carpeta «evidencia», que es la única que no es un área de due
  * diligence.
+ *
+ * El fichero ya lo ha subido el navegador (`prepararSubida`), con el id del
+ * documento en la ruta: `<compañía>/evidencia/<id>/<fichero>`.
  */
 async function subirAlDataRoom(
   supabase: Awaited<ReturnType<typeof clienteServidor>>,
   companyId: string,
   nombre: string,
-  fichero: File,
+  subida: { ruta: string; nombre: string },
   autorId: string,
 ): Promise<{ documentId: string } | { error: string }> {
-  const { data: documento, error: falloDocumento } = await supabase
-    .from("documents")
-    .insert({
-      company_id: companyId,
-      name: nombre,
-      folder: "evidencia",
-      created_by: autorId,
-    })
-    .select("id")
-    .single();
+  const fichero = await leerSubida(
+    supabase,
+    "data-room",
+    "evidencia",
+    subida.ruta,
+    subida.nombre,
+    `${companyId}/evidencia/`,
+  );
+  if ("error" in fichero) return fichero;
+  const documentId = fichero.ruta.split("/")[2];
+
+  const { error: falloDocumento } = await supabase.from("documents").insert({
+    id: documentId,
+    company_id: companyId,
+    name: nombre,
+    folder: "evidencia",
+    created_by: autorId,
+  });
 
   if (falloDocumento) {
+    // Sin documento que lo apunte, el fichero no significa nada
+    await descartarSubida("data-room", fichero.ruta);
     return { error: mensajeDe(falloDocumento) };
   }
 
-  const ruta = `${companyId}/evidencia/${documento.id}/${sanear(fichero.name)}`;
-
-  const { error: falloSubida } = await supabase.storage
-    .from("data-room")
-    .upload(ruta, fichero, { contentType: fichero.type || undefined });
-
-  if (falloSubida) {
-    // Sin fichero, el metadato no significa nada: se deshace
-    await supabase.from("documents").delete().eq("id", documento.id);
-    return { error: `No se ha podido subir el fichero: ${falloSubida.message}` };
-  }
-
   const { error: falloVersion } = await supabase.from("document_versions").insert({
-    document_id: documento.id,
+    document_id: documentId,
     company_id: companyId,
     version: 1,
-    storage_path: ruta,
-    file_name: fichero.name,
-    mime_type: fichero.type || null,
-    size_bytes: fichero.size,
+    storage_path: fichero.ruta,
+    file_name: fichero.nombre,
+    mime_type: fichero.tipo,
+    size_bytes: fichero.tamano,
     uploaded_by: autorId,
   });
 
@@ -196,7 +193,7 @@ async function subirAlDataRoom(
     return { error: mensajeDe(falloVersion) };
   }
 
-  return { documentId: documento.id };
+  return { documentId };
 }
 
 /** Quitar una evidencia que se puso donde no era */
@@ -224,13 +221,4 @@ export async function quitarEvidencia(formData: FormData): Promise<Resultado> {
 function mensajeDe(fallo: { message: string }): string {
   const traducido = traducirError(fallo);
   return traducido.ok ? "No se ha podido guardar." : traducido.error;
-}
-
-/** Nombre de fichero seguro para una ruta de Storage */
-function sanear(nombre: string): string {
-  return nombre
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-zA-Z0-9._-]/g, "-")
-    .slice(0, 120);
 }

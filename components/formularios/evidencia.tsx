@@ -11,6 +11,8 @@ import {
   Seleccion,
   Texto,
 } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
 import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +51,15 @@ export interface DocumentoElegible {
 
 type Modo = "archivo" | "data-room" | "enlace";
 
+/** El archivo de una evidencia va al data room, a la carpeta «evidencia» */
+const FICHERO_EVIDENCIA: CampoSubida[] = [
+  {
+    campo: "fichero",
+    clase: "evidencia",
+    destino: (fd) => ({ clase: "evidencia", companyId: String(fd.get("company_id")) }),
+  },
+];
+
 export function Evidencia({
   slug,
   companyId,
@@ -69,6 +80,7 @@ export function Evidencia({
 }) {
   const [abierto, setAbierto] = useState(false);
   const [modo, setModo] = useState<Modo>("archivo");
+  const { progreso, conSubidas } = useSubidas();
 
   return (
     <div className="flex flex-col gap-2">
@@ -165,7 +177,7 @@ export function Evidencia({
             ))}
           </div>
 
-          <Formulario accion={adjuntarEvidencia} onOk={() => setAbierto(false)}>
+          <Formulario accion={conSubidas(adjuntarEvidencia, FICHERO_EVIDENCIA)} onOk={() => setAbierto(false)}>
             {(resultado) => (
               <>
                 <input type="hidden" name="slug" value={slug} />
@@ -189,7 +201,7 @@ export function Evidencia({
                 {modo === "archivo" ? (
                   <Campo
                     etiqueta="El archivo"
-                    ayuda="Hasta 50 MB. Queda en el data room de la compañía, no suelto aquí"
+                    ayuda={`${textoLimite("evidencia")} Queda en el data room de la compañía, no suelto aquí`}
                   >
                     <input
                       type="file"
@@ -238,6 +250,7 @@ export function Evidencia({
                   </Campo>
                 ) : null}
 
+                <BarraSubida progreso={progreso} />
                 <div className="flex items-center gap-3">
                   <Boton>Adjuntar</Boton>
                   <button

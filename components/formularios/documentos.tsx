@@ -11,6 +11,23 @@ import {
   Seleccion,
   Texto,
 } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
+
+/** El fichero de un documento va al data room de la compañía, al área elegida */
+const FICHERO_DOCUMENTO: CampoSubida[] = [
+  {
+    campo: "fichero",
+    clase: "documento",
+    destino: (fd) => ({
+      clase: "documento",
+      companyId: String(fd.get("company_id")),
+      areaId: String(fd.get("area_id")),
+    }),
+  },
+];
+
+const ACEPTA = ".pdf,.xlsx,.xls,.docx,.doc,.pptx,.ppt,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
 /**
  * Subida de un documento al data room.
@@ -31,12 +48,13 @@ export function SubirDocumento({
   puntos: Array<{ id: string; titulo: string; areaId: string }>;
 }) {
   const [area, setArea] = useState(areas[0]?.id ?? "");
+  const { progreso, conSubidas } = useSubidas();
 
   const puntosDelArea = puntos.filter((p) => p.areaId === area);
 
   return (
     <Desplegable titulo="Subir un documento">
-      <Formulario accion={subirDocumento}>
+      <Formulario accion={conSubidas(subirDocumento, FICHERO_DOCUMENTO)}>
         {(resultado) => (
           <>
             <input type="hidden" name="slug" value={slug} />
@@ -87,14 +105,14 @@ export function SubirDocumento({
 
             <Campo
               etiqueta="Fichero"
-              ayuda="PDF, hoja de cálculo, documento, CSV o imagen. Hasta 25 MB"
+              ayuda={textoLimite("documento")}
               error={!resultado.ok ? resultado.campos?.fichero : undefined}
             >
               <input
                 type="file"
                 name="fichero"
                 required
-                accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.txt,.png,.jpg,.jpeg"
+                accept={ACEPTA}
                 className="text-sm text-secundario file:mr-3 file:border file:border-filete file:bg-papel file:px-3 file:py-1.5 file:text-sm file:text-titular"
               />
             </Campo>
@@ -106,6 +124,7 @@ export function SubirDocumento({
               <Texto name="expires_on" type="date" className="w-48" />
             </Campo>
 
+            <BarraSubida progreso={progreso} />
             <div>
               <Boton>Subir al data room</Boton>
             </div>
@@ -142,6 +161,7 @@ export function SubirAlPunto({
   titulo: string;
 }) {
   const [abierto, setAbierto] = useState(false);
+  const { progreso, conSubidas } = useSubidas();
 
   if (!abierto) {
     return (
@@ -163,7 +183,7 @@ export function SubirAlPunto({
         un panel que se desmonta al tener éxito se lleva su propia
         confirmación. Se cierra con Hecho, o al pulsar Cancelar antes.
       */}
-      <Formulario accion={subirDocumento} className="gap-3">
+      <Formulario accion={conSubidas(subirDocumento, FICHERO_DOCUMENTO)} className="gap-3">
         {(resultado) => {
           const subido = resultado.ok && Boolean(resultado.mensaje);
 
@@ -179,14 +199,14 @@ export function SubirAlPunto({
                 <>
                   <Campo
                     etiqueta={`Fichero para «${titulo}»`}
-                    ayuda="PDF, hoja de cálculo, documento, CSV o imagen. Hasta 25 MB"
+                    ayuda={textoLimite("documento")}
                     error={!resultado.ok ? resultado.campos?.fichero : undefined}
                   >
                     <input
                       type="file"
                       name="fichero"
                       required
-                      accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.txt,.png,.jpg,.jpeg"
+                      accept={ACEPTA}
                       className="text-sm text-secundario file:mr-3 file:border file:border-filete file:bg-papel file:px-3 file:py-1.5 file:text-sm file:text-titular"
                     />
                   </Campo>
@@ -200,6 +220,7 @@ export function SubirAlPunto({
                 </>
               )}
 
+              <BarraSubida progreso={progreso} />
               <div className="flex gap-2">
                 {subido ? null : <Boton>Subir</Boton>}
                 <button
@@ -278,6 +299,7 @@ export function AdjuntarBusinessPlan({
   hayUno: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
+  const { progreso, conSubidas } = useSubidas();
 
   if (!abierto) {
     return (
@@ -294,7 +316,7 @@ export function AdjuntarBusinessPlan({
 
   return (
     <div className="w-full px-4 py-4">
-      <Formulario accion={subirDocumento} className="gap-3">
+      <Formulario accion={conSubidas(subirDocumento, FICHERO_DOCUMENTO)} className="gap-3">
         {(resultado) => {
           const subido = resultado.ok && Boolean(resultado.mensaje);
 
@@ -311,8 +333,8 @@ export function AdjuntarBusinessPlan({
                   etiqueta="El documento"
                   ayuda={
                     hayUno
-                      ? "PDF, Word o presentación. Reemplaza al que hay"
-                      : "PDF, Word o presentación. Hasta 25 MB"
+                      ? `Reemplaza al que hay. ${textoLimite("documento")}`
+                      : textoLimite("documento")
                   }
                   error={!resultado.ok ? resultado.campos?.fichero : undefined}
                 >
@@ -320,12 +342,13 @@ export function AdjuntarBusinessPlan({
                     type="file"
                     name="fichero"
                     required
-                    accept=".pdf,.docx,.doc,.xlsx,.xls"
+                    accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls"
                     className="text-sm text-secundario file:mr-3 file:border file:border-filete file:bg-papel file:px-3 file:py-1.5 file:text-sm file:text-titular"
                   />
                 </Campo>
               )}
 
+              <BarraSubida progreso={progreso} />
               <div className="flex gap-2">
                 {subido ? null : <Boton>Adjuntar</Boton>}
                 <button

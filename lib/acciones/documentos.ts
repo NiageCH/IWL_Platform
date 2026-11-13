@@ -15,6 +15,7 @@ import {
   uuid,
   type Resultado,
 } from "./resultado";
+import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 
 /**
  * Subida de documentos al data room (§4.3).
@@ -27,20 +28,7 @@ import {
  * En la base quedan los metadatos y la versión; el contenido nunca.
  */
 
-const TAMANO_MAXIMO = 25 * 1024 * 1024;
-
-/** Tipos que tienen sentido en un data room */
-const TIPOS = new Set([
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/msword",
-  "text/csv",
-  "text/plain",
-  "image/png",
-  "image/jpeg",
-]);
+// Qué tipos y cuánto pesan: `lib/subidas.ts`, clase «documento»
 
 const esquema = z.object({
   slug: textoObligatorio(),
@@ -71,23 +59,8 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
   }
 
   const datos = parseo.data;
-  const fichero = formData.get("fichero");
-
-  if (!(fichero instanceof File) || fichero.size === 0) {
-    return error("Elige un fichero.", { fichero: "Falta el fichero." });
-  }
-
-  if (fichero.size > TAMANO_MAXIMO) {
-    return error("El fichero pasa de 25 MB.", {
-      fichero: "Como mucho 25 MB por documento.",
-    });
-  }
-
-  if (fichero.type && !TIPOS.has(fichero.type)) {
-    return error("Ese tipo de fichero no se admite en el data room.", {
-      fichero: "Se admiten PDF, hojas de cálculo, documentos, CSV e imágenes.",
-    });
-  }
+  const [subida] = subidasDe(formData, "fichero");
+  if (!subida) return error("Elige un fichero.", { fichero: "Falta el fichero." });
 
   const persona = await personaActual();
   if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
@@ -102,6 +75,20 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
 
   if (!area) return error("Esa área de due diligence no existe.");
 
+  // El fichero ya está en Storage: lo subió el navegador (`prepararSubida`)
+  const fichero = await leerSubida(
+    supabase,
+    "data-room",
+    "documento",
+    subida.ruta,
+    subida.nombre,
+    `${datos.company_id}/${area.code}/`,
+  );
+  if ("error" in fichero) return error(fichero.error, { fichero: fichero.error });
+
+  // La ruta lleva el id que tendrá el documento: `<compañía>/<área>/<id>/<fichero>`
+  const documentoId = fichero.ruta.split("/")[2];
+
   /*
    * Si ya había uno de este tipo, se va: «el business plan» es singular, y
    * subir uno nuevo es reemplazar, no acumular. El índice único lo impide,
@@ -115,44 +102,32 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
       .eq("kind", datos.kind);
   }
 
-  // El documento primero, para tener su id en la ruta del fichero
-  const { data: documento, error: falloDocumento } = await supabase
-    .from("documents")
-    .insert({
-      company_id: datos.company_id,
-      area_id: datos.area_id,
-      name: datos.name,
-      description: datos.description,
-      folder: area.code,
-      expires_on: datos.expires_on,
-      kind: datos.kind ?? null,
-      created_by: persona.id,
-    })
-    .select("id")
-    .single();
+  const { error: falloDocumento } = await supabase.from("documents").insert({
+    id: documentoId,
+    company_id: datos.company_id,
+    area_id: datos.area_id,
+    name: datos.name,
+    description: datos.description,
+    folder: area.code,
+    expires_on: datos.expires_on,
+    kind: datos.kind ?? null,
+    created_by: persona.id,
+  });
 
-  if (falloDocumento) return traducirError(falloDocumento);
-
-  const ruta = `${datos.company_id}/${area.code}/${documento.id}/${sanear(fichero.name)}`;
-
-  const { error: falloSubida } = await supabase.storage
-    .from("data-room")
-    .upload(ruta, fichero, { contentType: fichero.type || undefined });
-
-  if (falloSubida) {
-    // Sin fichero, el metadato no significa nada: se deshace
-    await supabase.from("documents").delete().eq("id", documento.id);
-    return error(`No se ha podido subir el fichero: ${falloSubida.message}`);
+  if (falloDocumento) {
+    // Sin documento que lo apunte, el fichero no significa nada
+    await descartarSubida("data-room", fichero.ruta);
+    return traducirError(falloDocumento);
   }
 
   const { error: falloVersion } = await supabase.from("document_versions").insert({
-    document_id: documento.id,
+    document_id: documentoId,
     company_id: datos.company_id,
     version: 1,
-    storage_path: ruta,
-    file_name: fichero.name,
-    mime_type: fichero.type || null,
-    size_bytes: fichero.size,
+    storage_path: fichero.ruta,
+    file_name: fichero.nombre,
+    mime_type: fichero.tipo,
+    size_bytes: fichero.tamano,
     uploaded_by: persona.id,
   });
 
@@ -169,7 +144,7 @@ export async function subirDocumento(formData: FormData): Promise<Resultado> {
     await supabase
       .from("dd_items")
       .update({
-        document_id: documento.id,
+        document_id: documentoId,
         status: "en_revision",
         expires_on: datos.expires_on,
       })
@@ -225,14 +200,4 @@ export async function enlaceDocumento(documentId: string): Promise<
   });
 
   return { ok: true, url: data.signedUrl };
-}
-
-/** Nombre de fichero seguro para una ruta de Storage */
-function sanear(nombre: string): string {
-  return nombre
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-zA-Z0-9._-]/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 120);
 }

@@ -1798,3 +1798,20 @@ El enlace de recuperación y el del NDA pasan por `/auth/confirmar`, que interca
 - **Bucket `fotos`, privado, con la foto en la carpeta de su dueña.** La sube y la quita solo ella; tampoco la dirección. La ve quien ya puede ver a esa persona: la política pregunta a `profiles`, y que esa pregunta pase por las políticas de `profiles` es justo lo que se quiere. La base no deja que un perfil apunte a una foto de otra carpeta.
 - **El LinkedIn se guarda en una sola forma**, `https://www.linkedin.com/in/<identificador>`. Lo pegado se limpia (`lib/linkedin.ts`), y la base solo admite esa forma. El campo es de texto y no `type="url"`: el navegador rechazaría «linkedin.com/in/…» antes de poder limpiarlo.
 - Ni la foto ni el LinkedIn entran en los PDF ni en los correos.
+
+## 2026-11-13 · Los ficheros suben directos a Storage, con dirección firmada
+
+Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora todos los ficheros pasaban por una, así que un PDF de cuentas normal no llegaba. Las pruebas no lo vieron porque subían ficheros de unos bytes.
+
+- **El servidor firma, el navegador sube y el servidor registra.**
+  - `prepararSubida` (`lib/acciones/subidas.ts`) decide la ruta y comprueba tamaño y tipo. Firma la dirección con la sesión de quien sube, y Storage aplica las políticas de `storage.objects` al firmar: quien no puede escribir en esa carpeta no obtiene dirección.
+  - `useSubidas` (`components/ui/subida.tsx`) sube con barra de progreso.
+  - La acción de siempre recibe la ruta y lee de Storage el tamaño y el tipo con `leerSubida` (`lib/subidas-servidor.ts`). No se fía de lo que diga el formulario.
+- **Los límites viven en un solo sitio**, `lib/subidas.ts`, y también en los buckets, porque una dirección firmada habla con Storage y no con la aplicación:
+  - documentos, evidencias, expediente de candidatura y adjuntos: 25 MB;
+  - CV: 10 MB;
+  - foto: 5 MB;
+  - logo: 2 MB.
+- **El id del documento va en la ruta** (`<compañía>/<área>/<id>/<fichero>`). El servidor lo genera al firmar, y el documento se registra con ese mismo id.
+- **La foto no sube directa.** El navegador ya la reduce a menos de 1 MB antes de mandarla, y el servidor necesita tenerla para rehacerla con sharp. El límite de 5 MB es el del fichero que se elige.
+- **Una subida que no se llega a registrar deja el fichero sin documento.** Ocupa sitio pero no se ve. Si la acción la rechaza, la borra (`descartarSubida`, con la clave de servicio: quien la subió no siempre puede borrar en ese bucket).

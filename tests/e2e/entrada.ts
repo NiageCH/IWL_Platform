@@ -329,6 +329,31 @@ export async function quitarFicherosSueltos(bucket: string, rutas: string[]): Pr
 }
 
 /**
+ * Vacía una carpeta de Storage entera, con sus subcarpetas: el data room
+ * guarda `<compañía>/<área>/<documento>/<fichero>`, y listar solo devuelve
+ * un nivel. Para limpiar lo que dejó una compañía creada por la prueba.
+ */
+export async function vaciarCarpeta(bucket: string, prefijo: string): Promise<void> {
+  const { url, clave } = supabase();
+  const cab = { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" };
+  const rutas: string[] = [];
+  const pendientes = [prefijo.replace(/\/$/, "")];
+  while (pendientes.length) {
+    const carpeta = pendientes.pop()!;
+    const r = await fetch(`${url}/storage/v1/object/list/${bucket}`, {
+      method: "POST",
+      headers: cab,
+      body: JSON.stringify({ prefix: carpeta, limit: 1000, offset: 0 }),
+    });
+    if (!r.ok) continue;
+    for (const e of (await r.json()) as { name: string; id: string | null }[]) {
+      (e.id === null ? pendientes : rutas).push(`${carpeta}/${e.name}`);
+    }
+  }
+  if (rutas.length) await quitarFicherosSueltos(bucket, rutas);
+}
+
+/**
  * Deja un fichero en el almacenamiento, para montar el escenario de una
  * prueba. El tipo importa: los buckets rechazan lo que no esperan —el de
  * logos solo admite imágenes—, así que va como argumento y no fijo.

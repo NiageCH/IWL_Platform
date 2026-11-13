@@ -3,6 +3,7 @@ import { CabeceraProyecto } from "@/components/cabecera-proyecto";
 import { leerMovimiento } from "@/lib/datos/movimiento";
 import { VistaResumen } from "@/components/vistas/resumen";
 import { EntradaFundadora } from "@/components/vistas/entrada";
+import { EquipoIwl } from "@/components/vistas/equipo-iwl";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 export default async function ResumenProyecto() {
@@ -30,6 +31,7 @@ export default async function ResumenProyecto() {
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
         {resumen.compania.tramo === "entrada" ? <EntradaFundadora compania={resumen.compania} propuesta={propuesta} /> : null}
         <VistaResumen resumen={resumen} />
+        <EquipoIwl companyId={resumen.compania.id} />
       </main>
     </>
   );

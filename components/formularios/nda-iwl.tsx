@@ -13,6 +13,17 @@ import {
   registrarNdaExterno,
 } from "@/lib/acciones/nda";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Texto } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
+
+/** El NDA firmado fuera va al expediente de la candidatura */
+const NDA_EXTERNO: CampoSubida[] = [
+  {
+    campo: "documento",
+    clase: "nda",
+    destino: (fd) => ({ clase: "nda", candidaturaId: String(fd.get("candidatura_id")) }),
+  },
+];
 
 /**
  * La firma de IWL, con su nombre. Sin mensaje de vuelta: el acuse es la
@@ -74,10 +85,11 @@ export function RegenerarPdfNda({ candidaturaId }: { candidaturaId: string }) {
  */
 export function RegistrarNdaExterno({ candidaturaId }: { candidaturaId: string }) {
   const [modo, setModo] = useState<"archivo" | "enlace">("archivo");
+  const { progreso, conSubidas } = useSubidas();
 
   return (
     <Desplegable titulo="Se firmó fuera de la plataforma">
-      <Formulario accion={registrarNdaExterno} className="gap-4">
+      <Formulario accion={conSubidas(registrarNdaExterno, NDA_EXTERNO)} className="gap-4">
         {(r) => (
           <>
             <input type="hidden" name="candidatura_id" value={candidaturaId} />
@@ -98,7 +110,7 @@ export function RegistrarNdaExterno({ candidaturaId }: { candidaturaId: string }
               ))}
             </div>
             {modo === "archivo" ? (
-              <Campo etiqueta="El NDA firmado" error={r.ok ? undefined : r.campos?.documento}>
+              <Campo etiqueta="El NDA firmado" ayuda={textoLimite("nda")} error={r.ok ? undefined : r.campos?.documento}>
                 <Texto type="file" name="documento" accept="application/pdf,image/*" />
               </Campo>
             ) : (
@@ -109,6 +121,7 @@ export function RegistrarNdaExterno({ candidaturaId }: { candidaturaId: string }
             <Campo etiqueta="Se firmó el" error={r.ok ? undefined : r.campos?.firmado_on} obligatorio>
               <Texto type="date" name="firmado_on" required />
             </Campo>
+            <BarraSubida progreso={progreso} />
             <div>
               <Boton variante="secundario">Darlo por firmado</Boton>
             </div>

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { notificar, type Evento } from "@/lib/correo";
 import { direccionBase } from "@/lib/direccion";
 import {
@@ -433,27 +434,29 @@ export async function anotarReunion(formData: FormData): Promise<Resultado> {
         .single();
   if (falloBase || !reunion) return falloBase ? traducirError(falloBase) : error("Esa reunión ya no está.");
 
-  // Los adjuntos, al expediente, colgando de la reunión
-  for (const fichero of formData.getAll("adjuntos")) {
-    if (!(fichero instanceof File) || fichero.size === 0) continue;
-    if (fichero.size > 50 * 1024 * 1024) return error(`${fichero.name} pasa de 50 MB.`);
-    const seguro = fichero.name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
-    const ruta = `${datos.candidatura_id}/${Date.now()}-${seguro}`;
-    const { error: falloSubida } = await supabase.storage
-      .from("candidaturas")
-      .upload(ruta, fichero, { contentType: fichero.type || undefined });
-    if (falloSubida) return error(`No se ha podido subir ${fichero.name}: ${falloSubida.message}`);
+  // Los adjuntos, al expediente, colgando de la reunión. Ya están en
+  // Storage: los subió el navegador (`prepararSubida`)
+  for (const subida of subidasDe(formData, "adjuntos")) {
+    const fichero = await leerSubida(
+      supabase,
+      "candidaturas",
+      "reunion",
+      subida.ruta,
+      subida.nombre,
+      `${datos.candidatura_id}/`,
+    );
+    if ("error" in fichero) return error(fichero.error, { adjuntos: fichero.error });
     const { error: falloFicha } = await supabase.from("candidatura_documentos").insert({
       candidatura_id: datos.candidatura_id,
       reunion_id: reunion.id,
-      nombre: fichero.name,
-      storage_path: ruta,
-      mime: fichero.type || null,
-      bytes: fichero.size,
+      nombre: fichero.nombre,
+      storage_path: fichero.ruta,
+      mime: fichero.tipo,
+      bytes: fichero.tamano,
       created_by: persona!.id,
     });
     if (falloFicha) {
-      await supabase.storage.from("candidaturas").remove([ruta]);
+      await descartarSubida("candidaturas", fichero.ruta);
       return traducirError(falloFicha);
     }
   }

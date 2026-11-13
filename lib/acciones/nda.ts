@@ -6,6 +6,7 @@ import { z } from "zod";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { generarPdfNda } from "@/lib/nda-pdf";
 import { faltanMarcas } from "@/lib/nda-formato";
 import { notificar } from "@/lib/correo";
@@ -471,9 +472,8 @@ export async function registrarNdaExterno(formData: FormData): Promise<Resultado
   const { persona, fallo: sinPermiso } = await soloDireccion();
   if (sinPermiso) return sinPermiso;
 
-  const fichero = formData.get("documento");
-  const conFichero = fichero instanceof File && fichero.size > 0;
-  if (!conFichero && !datos.url) {
+  const [subida] = subidasDe(formData, "documento");
+  if (!subida && !datos.url) {
     return error("Sube el NDA firmado o pega el enlace donde está.", {
       documento: "El documento firmado, o el enlace de abajo.",
     });
@@ -485,29 +485,32 @@ export async function registrarNdaExterno(formData: FormData): Promise<Resultado
   const supabase = await clienteServidor();
   let documentoId: string | null = null;
 
-  if (conFichero) {
-    const archivo = fichero as File;
-    if (archivo.size > 50 * 1024 * 1024) return error("El máximo son 50 MB.");
-    const ruta = `${datos.candidatura_id}/${Date.now()}-NDA-firmado-fuera.pdf`;
-    const { error: falloSubida } = await supabase.storage
-      .from("candidaturas")
-      .upload(ruta, archivo, { contentType: archivo.type || "application/pdf" });
-    if (falloSubida) return error(`No se ha podido subir: ${falloSubida.message}`);
+  if (subida) {
+    // Ya está en Storage: lo subió el navegador (`prepararSubida`)
+    const archivo = await leerSubida(
+      supabase,
+      "candidaturas",
+      "nda",
+      subida.ruta,
+      subida.nombre,
+      `${datos.candidatura_id}/`,
+    );
+    if ("error" in archivo) return error(archivo.error, { documento: archivo.error });
 
     const { data: doc, error: falloFicha } = await supabase
       .from("candidatura_documentos")
       .insert({
         candidatura_id: datos.candidatura_id,
-        nombre: `NDA firmado fuera de la plataforma · ${archivo.name}`,
-        storage_path: ruta,
-        mime: archivo.type || "application/pdf",
-        bytes: archivo.size,
+        nombre: `NDA firmado fuera de la plataforma · ${archivo.nombre}`,
+        storage_path: archivo.ruta,
+        mime: archivo.tipo || "application/pdf",
+        bytes: archivo.tamano,
         created_by: persona!.id,
       })
       .select("id")
       .single();
     if (falloFicha) {
-      await supabase.storage.from("candidaturas").remove([ruta]);
+      await descartarSubida("candidaturas", archivo.ruta);
       return traducirError(falloFicha);
     }
     documentoId = doc.id;

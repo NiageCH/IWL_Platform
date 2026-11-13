@@ -5,6 +5,16 @@ import { ImagePlus } from "lucide-react";
 import { quitarLogo, subirLogo } from "@/lib/acciones/admin";
 import { ChipCompania } from "@/components/chip-compania";
 import { Boton, Campo, Formulario, Texto } from "@/components/ui/formulario";
+import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { textoLimite } from "@/lib/subidas";
+
+const FICHERO_LOGO: CampoSubida[] = [
+  {
+    campo: "logo",
+    clase: "logo",
+    destino: (fd) => ({ clase: "logo", companyId: String(fd.get("company_id")) }),
+  },
+];
 
 /**
  * El logo de una compañía, en administración.
@@ -32,6 +42,7 @@ export function LogoCompania({
   logo?: string | null;
 }) {
   const [abierto, setAbierto] = useState(false);
+  const { progreso, conSubidas } = useSubidas();
 
   return (
     <div className="flex items-center gap-3">
@@ -50,13 +61,13 @@ export function LogoCompania({
 
         {abierto ? (
           <div className="mt-1 flex flex-col gap-2">
-            <Formulario accion={subirLogo}>
+            <Formulario accion={conSubidas(subirLogo, FICHERO_LOGO)}>
               {(resultado) => (
                 <>
                   <input type="hidden" name="company_id" value={companyId} />
                   <Campo
                     etiqueta="Fichero"
-                    ayuda="PNG, JPEG, WebP o SVG. Hasta 2 MB."
+                    ayuda={textoLimite("logo")}
                     error={resultado.ok ? undefined : resultado.campos?.logo}
                   >
                     <Texto
@@ -66,6 +77,7 @@ export function LogoCompania({
                       required
                     />
                   </Campo>
+                  <BarraSubida progreso={progreso} />
                   <Boton>Subir</Boton>
                 </>
               )}
