@@ -9,6 +9,58 @@ como es**.
 
 ---
 
+## 2026-11-13 · Ficheros grandes y «Tu equipo IWL» · commit 1437ce7
+
+**Qué cambió**
+- **Los ficheros suben directos a Storage.** Antes pasaban por una Server Action, que no admite más de 1 MB: un PDF de cuentas normal no llegaba. Ahora:
+  1. el servidor comprueba permisos, tamaño y tipo, decide la ruta y firma una dirección de subida (`prepararSubida`);
+  2. el navegador sube a esa dirección con barra de progreso;
+  3. la acción de siempre registra lo subido, y lee de Storage su tamaño y su tipo, no del formulario.
+- **Puntos de subida cambiados:**
+  - «Subir un documento» del data room;
+  - «Subir» en cada punto del checklist;
+  - «Adjuntar el business plan»;
+  - evidencias;
+  - los dos de la candidata;
+  - adjuntos al anotar una reunión;
+  - NDA firmado fuera;
+  - CV;
+  - logo.
+- **Límites en un solo sitio**, `lib/subidas.ts`: documentos, evidencias y expediente 25 MB, CV 10 MB, foto 5 MB, logo 2 MB.
+  - Cada pantalla dice el límite antes de subir.
+  - Si se pasa, lo dice sin gastar la subida: «enorme.pdf pesa 26 MB y el máximo son 25 MB.»
+  - Migración `20261113110000_limites_de_subida`: los buckets aplican los mismos topes, porque con una dirección firmada se habla con Storage directamente.
+- **«Tu equipo IWL»** en el Resumen de la fundadora: mentoría principal, mentoría técnica (Niage), su contacto en IWL y mentoría de apoyo, con foto, papel, LinkedIn y «Escribir a…», que abre su correo. Sin mentoría principal: «Te asignaremos mentor en cuanto firmemos el Acuerdo.»
+- **Pruebas:**
+  - De interfaz, `subidas.spec.ts`, con un PDF de 5 MB por cada punto de subida, en Chrome y en Safari, comprobando en la base que lo registrado pesa 5 MB. Además, uno de 26 MB rechazado y un logo de 5 MB rechazado. Compañías y candidaturas creadas para la prueba y borradas con sus ficheros.
+  - De interfaz, `tu-equipo.spec.ts`: el equipo de Marea, y una compañía recién nacida sin mentor.
+  - De acceso, `tests/rls/subidas.test.ts`: nadie obtiene una dirección firmada para el data room de otra compañía, el CV de otra persona, el expediente de otra candidatura o un logo, ni sin sesión. Los buckets rechazan más de lo decidido aunque la dirección sea buena.
+  - Unitarias, `lib/subidas.test.ts`.
+
+**Qué decidí yo**
+- **Quien autoriza sigue siendo la base.** La dirección se firma con la sesión de quien sube, y Storage aplica las políticas al firmar. Lo comprobé antes de construir nada.
+- **La foto no sube directa.** El navegador ya la deja por debajo de 1 MB, y el servidor la necesita para rehacerla con sharp. El límite de 5 MB es el del fichero elegido.
+- **Bajé de 50 a 25 MB** el expediente de la candidata, los adjuntos de reunión, el NDA firmado fuera y las evidencias, que tenían 50. Pediste 25 para documentos y evidencias, y el expediente son documentos. Un vídeo se manda por enlace, y la pantalla lo dice.
+- **«Tu equipo IWL» enseña también la mentoría de apoyo**, además de las tres que nombraste. «Mentor técnico» es el papel `revisor_niage` («Mentoría técnica · Niage»), y «contacto de IWL» es `responsable_iwl`. Escribí «Mentoría principal», sin género.
+- **El correo va en un enlace `mailto:`**, sin formulario dentro de la plataforma.
+- **Una subida que no se llega a registrar deja el fichero sin documento.** Por ejemplo, si se cierra la pestaña a mitad. No se ve en ninguna pantalla, solo ocupa sitio. Si es la acción la que la rechaza, se borra.
+- **Al anotar una reunión, «Qué se habló» exige ya en pantalla 10 caracteres**, como la acción. Los adjuntos se suben antes de que la acción lo mire.
+- **El id del documento va en la ruta y lo genera el servidor al firmar**, para no crear un documento sin fichero si la subida no llega.
+
+**Qué necesito que decidas**
+1. ¿Limpio periódicamente los ficheros subidos que nunca se registraron, por ejemplo con más de un día y sin documento que los apunte? Hoy no hay ninguno, y el coste es solo espacio.
+
+**Estado**
+- Unitarias: 244.
+- De acceso: 239, dos veces.
+- De interfaz: 414 pasan y 4 se saltan.
+- Despliegue pendiente. Se suma a la foto y el LinkedIn: dos migraciones nuevas.
+
+**Siguiente**
+- Hitos: ella entrega con evidencia y el mentor valida. Ya con ficheros de verdad.
+
+---
+
 ## 2026-11-13 · Mi cuenta: foto y LinkedIn · commit bfd2f60
 
 **Qué cambió**
