@@ -19,6 +19,8 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { nombrePersona, papel } from "@/lib/etiquetas";
+import { firmarFotos } from "@/lib/datos/logos";
+import { Avatar, EnlaceLinkedin } from "@/components/ui/persona";
 
 
 export const metadata = { title: "Personas · Administración" };
@@ -55,6 +57,7 @@ export default async function AdminPersonas() {
   const activas = todas.filter((p) => p.is_active);
   const archivadas = todas.filter((p) => !p.is_active);
   const lista = (companias.data ?? []).map((c) => ({ id: c.id, name: c.name }));
+  const fotos = await firmarFotos(todas.map((p) => p.photo_path));
 
   function Persona({ p }: { p: (typeof todas)[number] }) {
     const asignaciones = (p.asignaciones ?? []) as unknown as Asignacion[];
@@ -69,13 +72,15 @@ export default async function AdminPersonas() {
           que no se podía buscar a nadie. En una lista se busca; lo que esa
           persona es se lee en su ficha.
         */}
-        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
+          <Avatar nombre={nombrePersona(p)} foto={fotos.get(p.photo_path ?? "")} tamano="xs" />
           <Link
             href={`/admin/personas/${p.id}`}
             className="enlace enlace-destacado text-sm font-medium text-titular"
           >
             {nombrePersona(p)}
           </Link>
+          <EnlaceLinkedin url={p.linkedin_url} nombre={nombrePersona(p)} className="-ml-2" />
           {p.job_title ? (
             <span className="text-xs text-secundario">{p.job_title}</span>
           ) : null}

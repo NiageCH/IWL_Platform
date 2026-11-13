@@ -1790,3 +1790,11 @@ Lo que se dice tras pedir la recuperación es lo mismo exista o no la cuenta: si
 La pestaña «Magic link» de las plantillas de Supabase no se usa, y por eso no tiene plantilla en `supabase/templates/`. Las pruebas de interfaz siguen entrando con `generateLink` de tipo `magiclink` (`tests/e2e/entrada.ts`), que no manda correo: es la clave de servicio preparando una sesión, no una vía de entrada.
 
 El enlace de recuperación y el del NDA pasan por `/auth/confirmar`, que intercambia el código por la sesión y lleva a `?siguiente=`.
+
+## 2026-11-13 · La foto de cada persona: se reduce dos veces, y la ve quien ya ve a la persona
+
+- **El navegador la recorta y la reduce antes de mandarla** (`components/formularios/foto.tsx`): un cuadrado de 512 px, del centro. Una Server Action no admite más de 1 MB, y una foto de móvil pesa tres o cuatro.
+- **El servidor la rehace con sharp** a 256 × 256 en WebP (`subirMiFoto`). Lo guardado no depende de lo que haya hecho el navegador, y de paso se van los metadatos, que en una foto de móvil dicen dónde se hizo. sharp va declarado en `package.json`: Next lo traía, pero como dependencia opcional suya.
+- **Bucket `fotos`, privado, con la foto en la carpeta de su dueña.** La sube y la quita solo ella; tampoco la dirección. La ve quien ya puede ver a esa persona: la política pregunta a `profiles`, y que esa pregunta pase por las políticas de `profiles` es justo lo que se quiere. La base no deja que un perfil apunte a una foto de otra carpeta.
+- **El LinkedIn se guarda en una sola forma**, `https://www.linkedin.com/in/<identificador>`. Lo pegado se limpia (`lib/linkedin.ts`), y la base solo admite esa forma. El campo es de texto y no `type="url"`: el navegador rechazaría «linkedin.com/in/…» antes de poder limpiarlo.
+- Ni la foto ni el LinkedIn entran en los PDF ni en los correos.

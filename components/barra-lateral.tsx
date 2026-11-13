@@ -2,6 +2,8 @@ import Link from "next/link";
 import { personaActual } from "@/lib/supabase/servidor";
 import { menuDe } from "@/lib/navegacion";
 import { contarPendientesDireccion } from "@/lib/datos/onboarding";
+import { firmarFotos } from "@/lib/datos/logos";
+import { Avatar } from "./ui/persona";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavLateral, type EntradaLateral } from "./nav-lateral";
@@ -15,16 +17,6 @@ const ROLES: Record<string, string> = {
   lector_externo: "Acceso de lectura",
   candidata: "Candidatura en curso",
 };
-
-/** Las iniciales, para el círculo de la persona */
-function iniciales(nombre: string) {
-  return nombre
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 /**
  * La barra lateral, la misma para todo el mundo.
@@ -71,6 +63,9 @@ export async function BarraLateral() {
   }
 
   const nombre = persona.full_name ?? persona.email ?? "";
+  const foto = persona.photo_path
+    ? (await firmarFotos([persona.photo_path])).get(persona.photo_path)
+    : null;
 
   return (
     <Oscuro className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-filete bg-lienzo text-cuerpo md:flex">
@@ -111,12 +106,7 @@ export async function BarraLateral() {
           href="/perfil"
           className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-elevado"
         >
-          <span
-            aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-elevado text-xs font-bold text-acento-texto"
-          >
-            {iniciales(nombre)}
-          </span>
+          <Avatar nombre={nombre} foto={foto} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm text-titular">
               {nombre}

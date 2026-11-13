@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/primitivas";
 import { CvDePersona } from "@/components/formularios/admin";
 import { nombrePersona, papel } from "@/lib/etiquetas";
+import { firmarFotos } from "@/lib/datos/logos";
+import { Avatar, EnlaceLinkedin } from "@/components/ui/persona";
 import { fecha, numero } from "@/lib/utils";
 
 export const metadata = { title: "Persona · Administración" };
@@ -60,6 +62,9 @@ export default async function FichaPersona({
     .maybeSingle();
 
   if (!ficha) notFound();
+  const foto = ficha.photo_path
+    ? (await firmarFotos([ficha.photo_path])).get(ficha.photo_path)
+    : null;
 
   const asignaciones = (ficha.asignaciones ?? []) as unknown as Asignacion[];
   const horas = asignaciones.reduce((a, x) => a + x.imputadas, 0);
@@ -79,10 +84,13 @@ export default async function FichaPersona({
         Personas
       </Link>
 
-      <header className="relative mb-8 pl-4">
+      <header className="relative mb-8 flex items-center gap-4 pl-4">
         <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
-        <h1 className="titular-marca text-3xl text-titular sm:text-4xl">
+        <Avatar nombre={nombrePersona(ficha)} foto={foto} tamano="md" />
+        <div className="min-w-0">
+        <h1 className="flex flex-wrap items-center gap-2 titular-marca text-3xl text-titular sm:text-4xl">
           {nombrePersona(ficha)}
+          <EnlaceLinkedin url={ficha.linkedin_url} nombre={nombrePersona(ficha)} />
         </h1>
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-secundario">
           {ficha.job_title ? <span>{ficha.job_title}</span> : null}
@@ -92,6 +100,7 @@ export default async function FichaPersona({
           <Metadato>{ficha.email}</Metadato>
           {ficha.is_active ? null : <Etiqueta>Sin acceso</Etiqueta>}
         </p>
+        </div>
       </header>
 
       <div className="mb-8 grid gap-5 sm:grid-cols-3">

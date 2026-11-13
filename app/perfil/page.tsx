@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { Marco } from "@/components/marco";
 import { BarraSuperior } from "@/components/barra-superior";
 import { CambiarContrasena, MisDatos, ResumenAvisos } from "@/components/formularios/perfil";
+import { MiFoto } from "@/components/formularios/foto";
+import { firmarFotos } from "@/lib/datos/logos";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 
@@ -10,7 +12,7 @@ export const metadata = { title: "Mi cuenta · Plataforma IWL" };
 /**
  * La cuenta de quien mira.
  *
- * Nombre y apellidos —con ellos se firma por IWL— y la contraseña que
+ * Nombre y apellidos —con ellos se firma por IWL—, la foto, el LinkedIn y la contraseña que
  * puso la dirección al dar de alta. Mientras nadie la cambie, la dirección la conoce, y eso vale para
  * empezar pero no para quedarse.
  *
@@ -22,9 +24,12 @@ export default async function Perfil() {
   if (!persona) redirect("/entrar?siguiente=/perfil");
   const { data: preferencias } = await (await clienteServidor())
     .from("profiles")
-    .select("resumen_avisos")
+    .select("resumen_avisos, linkedin_url")
     .eq("id", persona.id)
     .single();
+  const foto = persona.photo_path
+    ? (await firmarFotos([persona.photo_path])).get(persona.photo_path)
+    : null;
 
   return (
     <Marco tema="claro">
@@ -47,8 +52,20 @@ export default async function Perfil() {
               ? " Con ellos firmas por Inception Woman Lab: sin apellidos no se puede contrafirmar un NDA."
               : ""}
           </p>
-          <div className="px-4 py-4">
-            <MisDatos nombre={persona.full_name ?? ""} apellidos={persona.last_name ?? ""} />
+          <div className="flex flex-col gap-6 px-4 py-4">
+            <MisDatos
+              nombre={persona.full_name ?? ""}
+              apellidos={persona.last_name ?? ""}
+              linkedin={preferencias?.linkedin_url ?? ""}
+            />
+            {/*
+              La foto sale donde sale la persona dentro de la plataforma:
+              barra lateral, equipos, mentores, comentarios. No en los PDF
+              ni en los correos.
+            */}
+            <div className="border-t border-filete pt-4">
+              <MiFoto nombre={persona.full_name ?? persona.email ?? ""} foto={foto} />
+            </div>
           </div>
         </Bloque>
 

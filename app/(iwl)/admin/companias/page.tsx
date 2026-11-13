@@ -1,5 +1,6 @@
 import { LogoCompania } from "@/components/formularios/logo";
-import { firmarLogos } from "@/lib/datos/logos";
+import { firmarFotos, firmarLogos } from "@/lib/datos/logos";
+import { Avatar, EnlaceLinkedin } from "@/components/ui/persona";
 import Link from "next/link";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import {
@@ -45,6 +46,8 @@ interface Miembro {
   member_role: string;
   assigned_hours: number | null;
   imputadas: number | null;
+  photo_path?: string | null;
+  linkedin_url?: string | null;
 }
 
 export default async function AdminCompanias() {
@@ -104,6 +107,12 @@ export default async function AdminCompanias() {
   // Los logos, firmados de una vez: el bucket es privado
   const logos = await firmarLogos(
     (companias.data ?? []).map((c) => c.logo_path),
+  );
+  // Y las fotos de los equipos, también de una vez
+  const fotos = await firmarFotos(
+    (companias.data ?? []).flatMap((c) =>
+      ((c.equipo ?? []) as unknown as Miembro[]).map((m) => m.photo_path),
+    ),
   );
 
   const listaFases = (fases.data ?? []).map((f) => ({ id: f.id, name: f.name }));
@@ -222,11 +231,17 @@ export default async function AdminCompanias() {
                       {equipo.map((m) => (
                         <li
                           key={`${m.profile_id}-${m.member_role}`}
-                          className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-1.5"
+                          className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5"
                         >
+                          <Avatar
+                            nombre={nombrePersona(m)}
+                            foto={fotos.get(m.photo_path ?? "")}
+                            tamano="xs"
+                          />
                           <span className="text-sm text-cuerpo">
                             {nombrePersona(m)}
                           </span>
+                          <EnlaceLinkedin url={m.linkedin_url} nombre={nombrePersona(m)} className="-ml-2" />
                           <Etiqueta>
                             {papel(m.member_role)}
                           </Etiqueta>

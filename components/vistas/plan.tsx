@@ -17,6 +17,8 @@ import { Estado } from "@/components/ui/estado";
 import { Avance } from "@/components/ui/avance";
 import { estadoVisual, type EstadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
+import { firmarFotos } from "@/lib/datos/logos";
+import { Avatar } from "@/components/ui/persona";
 
 /**
  * Business plan vivo (§4.2).
@@ -76,7 +78,7 @@ export async function VistaPlan({
     supabase
       .from("comments")
       .select(
-        "id, entity_id, body, created_at, resolved_at, profiles:author_id ( full_name, last_name )",
+        "id, entity_id, body, created_at, resolved_at, profiles:author_id ( full_name, last_name, photo_path )",
       )
       .eq("company_id", companyId)
       .eq("entity", "bp_section")
@@ -103,6 +105,7 @@ export async function VistaPlan({
 
   const hipotesisPorSeccion = agrupar(hipotesis.data ?? [], (h) => h.section_id);
   const comentariosPorSeccion = agrupar(comentarios.data ?? [], (c) => c.entity_id);
+  const fotos = await firmarFotos((comentarios.data ?? []).map((c) => c.profiles?.photo_path));
 
   /*
    * Sin responder, no «todos».
@@ -318,11 +321,19 @@ export async function VistaPlan({
               {susComentarios.length > 0 ? (
                 <ul className="mt-2 flex flex-col gap-2">
                   {susComentarios.map((c) => (
-                    <li key={c.id} className="border-l-2 border-filete pl-3">
-                      <p className="text-sm text-titular">{c.body}</p>
-                      <p className="text-xs text-metadato">
-                        {(nombreCompleto(c.profiles?.full_name, c.profiles?.last_name) || "IWL")} · {fecha(c.created_at)}
-                      </p>
+                    <li key={c.id} className="flex gap-2.5 border-l-2 border-filete pl-3">
+                      <Avatar
+                        nombre={nombreCompleto(c.profiles?.full_name, c.profiles?.last_name) || "IWL"}
+                        foto={fotos.get(c.profiles?.photo_path ?? "")}
+                        tamano="xs"
+                        className="mt-0.5"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm text-titular">{c.body}</p>
+                        <p className="text-xs text-metadato">
+                          {(nombreCompleto(c.profiles?.full_name, c.profiles?.last_name) || "IWL")} · {fecha(c.created_at)}
+                        </p>
+                      </div>
                     </li>
                   ))}
                 </ul>

@@ -38,7 +38,7 @@ import {
   ReabrirCandidatura,
 } from "@/components/formularios/candidatura";
 import { PASOS_ABIERTOS, nombrePaso, paso, tonoPaso } from "@/lib/embudo";
-import { cn, equity, numero } from "@/lib/utils";
+import { cn, equity } from "@/lib/utils";
 
 const ESTADOS_ENTRADA: Record<string, string> = {
   idea: "Idea",

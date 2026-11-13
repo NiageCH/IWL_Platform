@@ -59,10 +59,18 @@ export function CambiarContrasena({ primera = false }: { primera?: boolean }) {
 }
 
 /**
- * Nombre y apellidos. El formulario se queda montado: el acuse es su
+ * Nombre, apellidos y LinkedIn. El formulario se queda montado: el acuse es su
  * mensaje, y el nombre de arriba cambia con la página.
  */
-export function MisDatos({ nombre, apellidos }: { nombre: string; apellidos: string }) {
+export function MisDatos({
+  nombre,
+  apellidos,
+  linkedin,
+}: {
+  nombre: string;
+  apellidos: string;
+  linkedin: string;
+}) {
   return (
     <Formulario accion={guardarMisDatos} className="gap-4">
       {(r) => (
@@ -75,6 +83,24 @@ export function MisDatos({ nombre, apellidos }: { nombre: string; apellidos: str
               <Texto name="last_name" defaultValue={apellidos} autoComplete="family-name" required />
             </Campo>
           </div>
+          <Campo
+            etiqueta="LinkedIn"
+            ayuda="Opcional. La dirección de tu perfil: https://www.linkedin.com/in/…"
+            error={!r.ok ? r.campos?.linkedin_url : undefined}
+          >
+            {/*
+              Texto y no `type="url"`: el navegador rechazaría lo que más se
+              pega —«linkedin.com/in/…», sin https— antes de que la acción
+              pueda arreglarlo.
+            */}
+            <Texto
+              name="linkedin_url"
+              inputMode="url"
+              autoComplete="url"
+              defaultValue={linkedin}
+              placeholder="https://www.linkedin.com/in/…"
+            />
+          </Campo>
           <div>
             <Boton variante="secundario">Guardar mis datos</Boton>
           </div>

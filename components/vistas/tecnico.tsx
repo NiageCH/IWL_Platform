@@ -27,6 +27,8 @@ import {
 } from "@/components/formularios/tecnico";
 import { euros, fecha, numero } from "@/lib/utils";
 import { EnlacesInforme } from "@/components/informe/enlace";
+import { firmarFotos } from "@/lib/datos/logos";
+import { Avatar } from "@/components/ui/persona";
 
 /**
  * Due diligence tecnológico (§4.4). El módulo principal.
@@ -69,7 +71,7 @@ export async function VistaTecnico({
        * autor, que es lo que dejaba la sección sin forma de empezar.
        */
       .from("tech_assessments")
-      .select("id, assessed_on, summary, strengths, stage, status, profiles:reviewer_id ( full_name, last_name )")
+      .select("id, assessed_on, summary, strengths, stage, status, profiles:reviewer_id ( full_name, last_name, photo_path )")
       .eq("company_id", companyId)
       .order("assessed_on", { ascending: false })
       .limit(1)
@@ -155,6 +157,9 @@ export async function VistaTecnico({
   // La estrechez de tipo se pierde dentro de los callbacks del JSX, así que
   // se saca a una constante una vez comprobado que existe
   const evaluacionActual = evaluacion.data;
+  const fotoRevisor = evaluacionActual?.profiles?.photo_path
+    ? (await firmarFotos([evaluacionActual.profiles.photo_path])).get(evaluacionActual.profiles.photo_path)
+    : null;
 
   const movimiento = await leerMovimiento(companyId);
 
@@ -245,9 +250,16 @@ export async function VistaTecnico({
                   </p>
                 </div>
               ) : null}
-              <Metadato>
-                {(nombreCompleto(evaluacionActual.profiles?.full_name, evaluacionActual.profiles?.last_name) || "Ingeniería Niage")}
-              </Metadato>
+              <div className="flex items-center gap-2">
+                <Avatar
+                  nombre={nombreCompleto(evaluacionActual.profiles?.full_name, evaluacionActual.profiles?.last_name) || "Ingeniería Niage"}
+                  foto={fotoRevisor}
+                  tamano="xs"
+                />
+                <Metadato>
+                  {(nombreCompleto(evaluacionActual.profiles?.full_name, evaluacionActual.profiles?.last_name) || "Ingeniería Niage")}
+                </Metadato>
+              </div>
             </div>
           </Bloque>
         </div>

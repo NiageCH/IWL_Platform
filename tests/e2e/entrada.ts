@@ -305,6 +305,29 @@ export async function ficherosEn(
   return ficheros.map((f) => f.name);
 }
 
+/** Descarga un fichero del almacenamiento, para comprobar lo que se guardó */
+export async function descargarFichero(bucket: string, ruta: string): Promise<Buffer> {
+  const { url, clave } = supabase();
+  const respuesta = await fetch(`${url}/storage/v1/object/${bucket}/${ruta}`, {
+    headers: { apikey: clave, Authorization: `Bearer ${clave}` },
+  });
+  if (!respuesta.ok) {
+    throw new Error(`No se ha podido descargar ${bucket}/${ruta}: ${respuesta.status}`);
+  }
+  return Buffer.from(await respuesta.arrayBuffer());
+}
+
+/** Borra ficheros concretos, para limpiar solo lo que subió la prueba */
+export async function quitarFicherosSueltos(bucket: string, rutas: string[]): Promise<void> {
+  if (!rutas.length) return;
+  const { url, clave } = supabase();
+  await fetch(`${url}/storage/v1/object/${bucket}`, {
+    method: "DELETE",
+    headers: { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ prefixes: rutas }),
+  });
+}
+
 /**
  * Deja un fichero en el almacenamiento, para montar el escenario de una
  * prueba. El tipo importa: los buckets rechazan lo que no esperan —el de

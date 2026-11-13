@@ -5,6 +5,7 @@ import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio, marcarContrasenaTemporal } from "@/lib/supabase/servicio";
 import { generarClave } from "@/lib/claves";
+import { normalizarLinkedin } from "@/lib/linkedin";
 import { camposSocietarios, exigir, paraGuardar } from "@/lib/societario";
 import {
   error,
@@ -1628,6 +1629,24 @@ export async function borrarCompaniaConTodo(
 const esquemaMisDatos = z.object({
   full_name: textoObligatorio(1, "¿Cómo te llamas?"),
   last_name: textoObligatorio(1, "Faltan tus apellidos."),
+  /*
+   * Opcional. Vacío es quitarlo. Lo pegado se lleva a la forma canónica,
+   * que es la única que admite la base.
+   */
+  linkedin_url: z
+    .string()
+    .optional()
+    .transform((v, ctx) => {
+      const normal = normalizarLinkedin(v);
+      if (normal === null) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Tiene que ser tu perfil de LinkedIn: https://www.linkedin.com/in/…",
+        });
+        return z.NEVER;
+      }
+      return normal || null;
+    }),
 });
 
 /** Si recibe el resumen diario de avisos. Cada cual el suyo */
@@ -1657,4 +1676,108 @@ export async function guardarMisDatos(formData: FormData): Promise<Resultado> {
 
   revalidatePath("/", "layout");
   return ok("Guardado.");
+}
+
+// -----------------------------------------------------------------------------
+// La foto de cada persona
+// -----------------------------------------------------------------------------
+
+/** Lo que se puede elegir. Un HEIC del móvil, no: el navegador no lo pinta */
+const TIPOS_FOTO = ["image/png", "image/jpeg", "image/webp"];
+
+/** Lo que se guarda: un cuadrado de este lado, en WebP */
+const LADO_FOTO = 256;
+
+/**
+ * Poner o cambiar la propia foto. Solo la propia: lo impone la política del
+ * bucket, y la ruta va siempre bajo la carpeta de quien la sube.
+ *
+ * El navegador ya la manda recortada y reducida —ver
+ * `components/formularios/foto.tsx`—, porque una Server Action no admite
+ * más de 1 MB y una foto de móvil pasa de largo. Aquí se rehace igual con
+ * sharp: lo que se guarda no depende de lo que haya hecho el navegador, y de
+ * paso se van los metadatos, que en una foto de móvil incluyen dónde se hizo.
+ */
+export async function subirMiFoto(formData: FormData): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const fichero = formData.get("foto");
+  if (!(fichero instanceof File) || fichero.size === 0) {
+    return error("Elige una imagen.", { foto: "Falta la imagen." });
+  }
+  if (!TIPOS_FOTO.includes(fichero.type)) {
+    return error("Esa imagen no vale. Sirven JPG, PNG y WebP.", { foto: "JPG, PNG o WebP." });
+  }
+
+  let reducida: Buffer;
+  try {
+    const { default: sharp } = await import("sharp");
+    reducida = await sharp(Buffer.from(await fichero.arrayBuffer()))
+      .rotate()
+      .resize(LADO_FOTO, LADO_FOTO, { fit: "cover", position: "centre" })
+      .webp({ quality: 85 })
+      .toBuffer();
+  } catch {
+    return error("No se ha podido leer esa imagen. Prueba con otra, o guárdala como JPG.", {
+      foto: "No se puede leer.",
+    });
+  }
+
+  const supabase = await clienteServidor();
+
+  // Nombre nuevo cada vez, por la caché de Storage: ver `subirLogo`
+  const ruta = `${persona.id}/${Date.now()}.webp`;
+  const { error: falloSubida } = await supabase.storage
+    .from("fotos")
+    .upload(ruta, reducida, { contentType: "image/webp" });
+  if (falloSubida) return error(`No se ha podido subir la foto: ${falloSubida.message}`);
+
+  const { data: antes } = await supabase
+    .from("profiles")
+    .select("photo_path")
+    .eq("id", persona.id)
+    .maybeSingle();
+
+  const { error: falloPerfil } = await supabase
+    .from("profiles")
+    .update({ photo_path: ruta })
+    .eq("id", persona.id);
+  if (falloPerfil) {
+    await supabase.storage.from("fotos").remove([ruta]);
+    return traducirError(falloPerfil);
+  }
+
+  if (antes?.photo_path && antes.photo_path !== ruta) {
+    await supabase.storage.from("fotos").remove([antes.photo_path]);
+  }
+
+  revalidatePath("/", "layout");
+  return ok("Foto guardada.");
+}
+
+/** Quitar la propia foto: se vuelve a las iniciales */
+export async function quitarMiFoto(): Promise<Resultado> {
+  const persona = await personaActual();
+  if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const supabase = await clienteServidor();
+  const { data: antes } = await supabase
+    .from("profiles")
+    .select("photo_path")
+    .eq("id", persona.id)
+    .maybeSingle();
+
+  const { error: falloPerfil } = await supabase
+    .from("profiles")
+    .update({ photo_path: null })
+    .eq("id", persona.id);
+  if (falloPerfil) return traducirError(falloPerfil);
+
+  if (antes?.photo_path) {
+    await supabase.storage.from("fotos").remove([antes.photo_path]);
+  }
+
+  revalidatePath("/", "layout");
+  return ok("Foto quitada. Vuelves a salir con tus iniciales.");
 }
