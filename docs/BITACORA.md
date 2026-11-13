@@ -9,6 +9,31 @@ como es**.
 
 ---
 
+## 2026-11-13 · Safari ya no se cuelga en las pruebas · commit e2135b3
+
+**Qué cambió**
+- **Las pruebas de interfaz entran sin la redirección entre orígenes.** El enlace de Supabase lo seguía el navegador, y redirigía de `127.0.0.1:54321` a `localhost:3100`. WebKit se quedaba colgado en esa redirección de vez en cuando. Ahora la prueba hace ese salto con `fetch` y al navegador solo le llega la dirección de la aplicación (`tests/e2e/entrada.ts`).
+- **Las navegaciones tienen límite: 30 s** (`playwright.config.ts`). Sin límite, un cuelgue tenía la prueba esperando minutos y el fallo no decía dónde estaba.
+- **Dos pruebas salían y entraban como otra persona sin esperar a llegar a `/entrar`**, y esa navegación cortaba la entrada siguiente: `acceso.spec.ts` y `mentoria.spec.ts`. Ahora esperan. Antes no se notaba porque la entrada pasaba por otro origen.
+
+**Qué decidí yo**
+- **Corrijo lo que dije en las dos entradas anteriores.** Atribuí los fallos de Safari al Safari de las pruebas en esta máquina. Era la forma de entrar de las propias pruebas, no el entorno. Tampoco era un fallo de la aplicación: los usuarios entran por `/entrar` con contraseña, no por este enlace.
+- **No he puesto reintentos automáticos.** Habrían escondido el problema en vez de quitarlo.
+
+**Qué necesito que decidas**
+Nada.
+
+**Estado**
+- La suite de interfaz pasa entera dos veces seguidas: 414 pasan y 4 se saltan, en las dos.
+- Unitarias: 244.
+- De acceso: 241, dos veces.
+- Despliegue pendiente: la limpieza de ficheros sueltos. Este cambio solo toca pruebas.
+
+**Siguiente**
+- Hitos: ella entrega con evidencia y el mentor valida.
+
+---
+
 ## 2026-11-13 · Limpieza diaria de ficheros sueltos · commit f2a8e3d
 
 **Qué cambió**
