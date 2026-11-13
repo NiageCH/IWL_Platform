@@ -9,6 +9,45 @@ como es**.
 
 ---
 
+## 2026-11-13 · Limpieza diaria de ficheros sueltos · commit f2a8e3d
+
+**Qué cambió**
+- **El cron diario borra los ficheros sueltos**, después del resumen de avisos y en el mismo cron (`/api/cron/resumen-avisos`). Un fichero suelto es uno que ninguna fila apunta y tiene más de 24 horas, en los buckets donde se sube a mano: data room, expediente de candidaturas, CV, fotos y logos.
+- **Migración `20261113120000_ficheros_sueltos`:**
+  - `app.ficheros_sueltos(p_antes)` los lista;
+  - solo la puede llamar la clave de servicio: nadie con sesión, tampoco dirección;
+  - nunca devuelve nada con nombre de documento firmado (NDA, acta, Anexo, Acuerdo) ni de una compañía archivada.
+- **El borrado va por la API de Storage** (`lib/limpieza.ts`), porque Storage no deja borrar con SQL.
+- **Constancia en `activity_log`** (`ficheros_sueltos_borrados`): cuántos, qué rutas, cuánto ocupaban y cuándo se subieron.
+- **Si la limpieza falla, el resumen ya ha salido**, y la respuesta del cron lo dice.
+- **Prueba de acceso, `tests/rls/limpieza.test.ts`:**
+  - se borra un suelto de hace 2 días;
+  - se queda uno de hace 1 hora;
+  - se quedan uno viejo con nombre de NDA firmado y uno viejo apuntado por un documento;
+  - el registro lleva la ruta y los bytes;
+  - nadie con sesión puede listar los sueltos.
+
+**Qué decidí yo**
+- **La protección de los firmados es por nombre**, además de por estar apuntados. Un firmado siempre está apuntado, así que en la práctica no filtra nada: es la red por si un día deja de estarlo.
+- **«Archivados» = de una compañía archivada.** Si querías decir también candidaturas descartadas, dímelo: sus ficheros están apuntados y no se tocan, pero no tienen esta protección extra.
+- **Los días sin nada que borrar no escriben** en el registro.
+- **Para la prueba añadí `postgres` como dependencia de desarrollo.** La antigüedad de un fichero no se puede poner por la API de Storage, y la prueba la cambia con SQL contra la base local. No se despliega.
+- **Las pruebas de interfaz de `documentos.spec.ts` dejaban ficheros sueltos** en cada pasada en local: borraban el documento pero no el fichero. La limpieza se los lleva.
+
+**Qué necesito que decidas**
+1. ¿«Archivados» incluye las candidaturas descartadas? Ver arriba.
+
+**Estado**
+- Unitarias: 244.
+- De acceso: 241, dos veces.
+- De interfaz: 413 pasan, 4 se saltan y 1 falla en Safari: «una candidatura recorre el embudo y acaba siendo compañía» (`embudo.spec.ts`). Al firmar no llega a «Firmada» en 15 s. Sola, 5 de 5; falla solo con la suite entera. Ya pasó el 11 nov y subí la espera a 15 s. No toca nada de este cambio, pero es la segunda vez: lo miraré aparte, porque puede ser un fallo real de Safari al firmar con carga.
+- Despliegue pendiente: va con la foto y los ficheros grandes. El cron no cambia: misma ruta y misma hora.
+
+**Siguiente**
+- Hitos: ella entrega con evidencia y el mentor valida.
+
+---
+
 ## 2026-11-13 · Ficheros grandes y «Tu equipo IWL» · commit 1437ce7
 
 **Qué cambió**
