@@ -9,6 +9,49 @@ como es**.
 
 ---
 
+## 2026-11-13 · Mi cuenta: foto y LinkedIn · commit bfd2f60
+
+**Qué cambió**
+- **Mi cuenta → «Tus datos»**, para todos los roles:
+  - **Foto:** JPG, PNG o WebP, hasta 5 MB. Se recorta cuadrada desde el centro y se guarda a 256 × 256. Se puede cambiar o quitar, y sin foto vuelven las iniciales.
+  - **LinkedIn:** campo opcional. Lo que se pega se limpia: `es.linkedin.com/in/x/?utm_…` queda como `https://www.linkedin.com/in/x`. Si no es un perfil personal, lo dice.
+- **Migración `20261113100000_foto_y_linkedin`:**
+  - `profiles.photo_path` y `profiles.linkedin_url`;
+  - bucket privado `fotos`: la sube, la cambia y la quita solo su dueña, tampoco la dirección; la ve quien ya puede ver a esa persona (IWL, ella misma y quien comparte compañía con ella);
+  - la base no deja apuntar un perfil a una foto de otra carpeta, ni guardar un LinkedIn que no sea un perfil en forma canónica, aunque se use la clave de servicio;
+  - `admin_personas` y `admin_companias` se recrean desde su última definición, con la foto y el LinkedIn.
+- **Dónde sale la foto:** barra lateral, equipo de cada compañía (Administración → Compañías), Personas y su ficha, comentarios del business plan, y quién firma la evaluación técnica.
+- **Dónde sale el LinkedIn**, como icono enlazado junto al nombre: el equipo de cada compañía, la lista de Personas y la ficha de cada persona, que es la de los mentores.
+- Ni la foto ni el LinkedIn entran en los PDF ni en los correos.
+- **Pruebas:**
+  - unitarias, `lib/linkedin.test.ts`;
+  - de acceso, `tests/rls/fotos.test.ts`: quién sube, quién ve y quién no (otra fundadora, quien no ha entrado), quién no borra, y los dos guardianes;
+  - de interfaz, `tests/e2e/foto.spec.ts`: sube una foto apaisada y comprueba que se guarda en WebP de 256 × 256, que sale en la barra lateral, el LinkedIn mal y bien, y quitarla. Repone lo que encontró y borra solo lo que subió.
+- De paso: fuera un import sin usar en la ficha del embudo, que dejé yo en el cambio del equity.
+
+**Qué decidí yo**
+- **La foto se reduce dos veces.** Una Server Action no admite más de 1 MB y una foto de móvil pesa 3 o 4, así que el navegador manda un cuadrado de 512 px. El servidor lo rehace a 256 con sharp. Así lo guardado no depende del navegador, y se van los metadatos, que en un móvil dicen dónde se hizo la foto. sharp queda declarado en `package.json`: venía con Next, pero como opcional.
+- **«Quienes ya pueden ver a esa persona»** = lo que hoy dicen las políticas de `profiles`. Una candidata no ve fotos de IWL, porque no ve sus perfiles.
+- **La dirección no cambia la foto de nadie.** El LinkedIn de otra persona sí podría cambiarlo, porque ya edita perfiles, pero no le he puesto pantalla.
+- **«Firmas en pantalla»:** he puesto la foto en la firma de la evaluación técnica. Las firmas del NDA y del Anexo son nombres escritos, no perfiles, y ahí no hay foto que poner.
+- **El campo de LinkedIn es de texto, no `type="url"`.** Con `url` el navegador rechazaba «linkedin.com/in/…» sin https antes de poder limpiarlo. Lo cazó la prueba.
+- **HEIC no.** El navegador no lo pinta. Del móvil, el iPhone suele convertirlo a JPG al subirlo.
+
+**Qué necesito que decidas**
+1. **La fundadora no tiene dónde ver a su equipo de IWL.** No hay ningún bloque que diga quién es su mentor, así que hoy solo ve la foto y el nombre de quien le comenta el plan. ¿Añado «Tu equipo IWL» en su Resumen, con foto, papel y LinkedIn?
+2. **Los ficheros de más de 1 MB no suben, y lo he visto en el código de Next, no en una prueba.** El límite de 1 MB de las Server Actions vale también para el CV (que anuncia 10 MB) y para las evidencias y documentos que se suben por acción. Probablemente un PDF de más de 1 MB falla con un error de servidor. ¿Lo miro y lo arreglo (subida directa a Storage con dirección firmada) antes de los hitos con evidencia, que dependen de ello?
+
+**Estado**
+- Unitarias: 239.
+- De acceso: 234, dos veces.
+- De interfaz: 395 pasan y 4 se saltan. Una falló una vez en Safari, «ella propone otras fechas…» (`reuniones.spec.ts`): se quedó colgada 10,9 min. Repetida 3 veces en Chrome y en Safari, 12 de 12. No toca nada de este cambio.
+- Despliegue pendiente: va con las cinco migraciones anteriores.
+
+**Siguiente**
+- Hitos: ella entrega con evidencia y el mentor valida. Antes, la respuesta a la pregunta 2.
+
+---
+
 ## 2026-11-11 · Tarifas de mercado con tope de 120 €/h · commit 9279074
 
 **Qué cambió**
