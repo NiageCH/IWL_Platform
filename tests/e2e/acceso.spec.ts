@@ -162,6 +162,9 @@ test("la dirección restablece la contraseña de alguien que ya entró", async (
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/cambiar-contrasena/);
   await page.getByRole("button", { name: "Salir" }).click();
+  // Que llegue a `/entrar` antes de entrar como otra: si no, esa navegación
+  // corta la de la entrada, y en WebKit es un error
+  await page.waitForURL(/\/entrar/);
 
   // Y la dirección se la restablece
   await entrarComo(page, USUARIOS.admin, "/admin/personas");

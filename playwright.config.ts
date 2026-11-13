@@ -26,6 +26,12 @@ export default defineConfig({
   use: {
     baseURL: BASE,
     trace: "retain-on-failure",
+    /*
+     * Sin esto, una navegación no tiene límite. Si el navegador se cuelga
+     * en una, la prueba se queda esperando minutos —llegó a 10,9— y el
+     * fallo no dice dónde. Con límite, falla en la navegación que se colgó.
+     */
+    navigationTimeout: 30_000,
   },
   /*
    * Dos motores, y los dos son principales.

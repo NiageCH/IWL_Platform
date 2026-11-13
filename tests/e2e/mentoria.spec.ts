@@ -185,6 +185,8 @@ test("la fundadora de una compañía archivada deja de verla", async ({ page }) 
   await expect(page.getByRole("heading", { name: "Archivadas" })).toBeVisible();
 
   await page.getByRole("button", { name: "Salir" }).click();
+  // Que llegue a `/entrar` antes de entrar como otra: ver `acceso.spec.ts`
+  await page.waitForURL(/\/entrar/);
   await entrarComo(page, USUARIOS.fundadoraVega);
 
   // No tiene compañía visible, así que no llega a su proyecto

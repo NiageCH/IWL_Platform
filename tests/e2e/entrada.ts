@@ -58,7 +58,22 @@ export async function entrarComo(page: Page, email: string, destino = "/") {
     `${base}/auth/confirmar?siguiente=${encodeURIComponent(destino)}`,
   );
 
-  await page.goto(enlace.toString());
+  /*
+   * El primer salto —el enlace de Supabase, que redirige a la aplicación con
+   * la sesión— se hace desde aquí y no desde el navegador.
+   *
+   * Hecho por el navegador era una redirección entre dos orígenes
+   * (127.0.0.1:54321 → localhost:3100), y WebKit se quedaba colgado en ella
+   * de vez en cuando: una prueba de redirección de un segundo llegó a
+   * tardar 8,5 minutos, cada pasada en una prueba distinta. Al navegador
+   * solo le llega ya la dirección de la aplicación.
+   */
+  const salto = await fetch(enlace.toString(), { redirect: "manual" });
+  const destinoConSesion = salto.headers.get("location");
+  if (!destinoConSesion) {
+    throw new Error(`El enlace de entrada de ${email} no ha redirigido (${salto.status})`);
+  }
+  await page.goto(destinoConSesion);
 
   /*
    * Hasta que la sesión aterriza de verdad, no antes.
