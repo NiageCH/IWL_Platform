@@ -9,6 +9,28 @@ como es**.
 
 ---
 
+## 2026-11-18 · Limpieza: los ficheros de candidaturas descartadas no se tocan · commit b766b1c
+
+**Qué cambió**
+- La limpieza diaria ya no borra nada que cuelgue de una candidatura o una compañía que exista, sea cual sea su estado. Eso incluye descartada, firmada, activa y archivada. Migración `20261117100000_sueltos_respetan_expedientes`.
+- La prueba de limpieza añade tres casos: un fichero de una candidatura descartada hace 30 días se queda; uno sin apuntar en la carpeta de Vega también se queda; uno de una candidatura que ya no existe se borra.
+- Nueva entrada en `DECISIONES.md`.
+
+**Qué decidí yo**
+- «Bajo la ruta de» significa que el primer tramo de la ruta es el id de la candidatura o la compañía. Así construye las rutas `prepararSubida`.
+- Hice una migración nueva en vez de reescribir la del 13 nov, aunque esa todavía no está en la nube. Las dos van juntas en el `db push`.
+- Mantuve la red por nombre de documento firmado.
+- En CV y fotos la carpeta es la persona, no una candidatura, así que ahí no cambia nada: se borra lo que ninguna fila apunta.
+
+**Qué necesito que decidas**
+1. Con esta regla, una subida abandonada de una compañía viva ya no se limpia nunca, solo ocupa sitio. Si quieres que esas sí se borren y solo se protejan las candidaturas, es un cambio de una línea.
+
+**Estado** · Las tres suites en verde, dos veces seguidas: unitarias 255; acceso 241; interfaz 420 bien y 4 saltadas, con `--workers=1`. Sin desplegar: van tres migraciones a la nube.
+
+**Siguiente** · Contraste en oscuro y, después, la propuesta del camino claro.
+
+---
+
 ## 2026-11-13 · La suite de interfaz, en verde dos veces seguidas · commit ec426bf
 
 **Qué cambió**
