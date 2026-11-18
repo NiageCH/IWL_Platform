@@ -9,6 +9,52 @@ como es**.
 
 ---
 
+## 2026-11-18 · Hitos: ella entrega con evidencia, el mentor valida · commit 3576fc0
+
+**Qué cambió**
+- **Entregar.** En su hoja de ruta, cada hito abierto tiene «Entregar». El panel lleva `<Evidencia>` (archivo, documento del data room o enlace) y una nota opcional. Sin evidencia el botón no se activa, y la base tampoco deja entregar. El hito pasa a «Entregado · por revisar», en Atención.
+- **Revisar.** Quien revisa puede:
+  - «Validar», con nota opcional. El hito queda Cumplido, con fecha y quién.
+  - «Pedir cambios», con comentario obligatorio. El hito vuelve a En curso, y ella lee el comentario en el hito.
+  Cada ida y vuelta queda en el historial del hito (`milestone_reviews`).
+- **Quién revisa.** El mentor principal o IWL. También un mentor secundario o técnico, si quien coordina se lo encarga en ese hito. Ese mentor, sin encargo, solo deja notas.
+- **«Requiere validación»** va por hito y por defecto está a sí. Lo quita quien coordina. Sin validación, entregar es cumplir.
+- **Equity y financiación por hito.** Solo los pone dirección, y solo con el Anexo en borrador. La pantalla enseña cuánto queda por repartir, y la base no deja pasarse de lo pactado. Al proponer el Anexo quedan fijas, y van en la copia de esa versión. Con cualquiera de las dos marcas, o con «condiciona invertible», la validación es obligatoria.
+- **Al validar un hito marcado**, el registro guarda «Devengado X %» o «Liberados N €», con la fecha y quién validó. En Aportación hay un bloque nuevo, «Devengado por hitos», con lo devengado frente a lo pactado.
+- **Avisos:**
+  - «… ha entregado el hito …» llega al mentor principal y va en el resumen diario, que ahora también reciben los mentores;
+  - arriba de la cartera hay una lista nueva, «Hitos por revisar», con contador y botón «Revisar»;
+  - a los 7 días sin revisar, el hito sale vencido para quien revisa y dirección recibe un aviso desde el cron.
+- **Pruebas:**
+  - `tests/rls/hitos.test.ts`, 11 pruebas: entrega, permisos de cada rol, cambios, sin validación, marcas, Anexo fijo, devengo, lo devengado que no se reabre y el cron;
+  - `tests/e2e/hitos.spec.ts`, el circuito entero en Chrome y Safari;
+  - unitarias de estado e importes.
+
+**Qué hay de antes y qué reutilizo**
+- `<Evidencia>` y `adjuntarEvidencia` ya aceptaban hitos y no los usaba ninguna pantalla. Ahora son el corazón de «Entregar», sin cambios.
+- `app.guard_hito_cumplido` ya impedía que la fundadora diera un hito por cumplido. Lo amplío; no lo sustituyo.
+- El texto «Evidencia» del hito, que dice qué se espera, se queda como «Se espera: …».
+
+**Qué decidí yo**
+- Dirección valida porque es IWL. El equipo de IWL también puede validar, porque ya confirmaba hitos. Si quieres que sea solo dirección y el mentor principal, se cambia en una línea.
+- Ella no ve quién validó ni quién pidió los cambios, solo qué le dicen. La base no lo esconde, lo esconde la pantalla.
+- Las marcas quedan fijas desde que el Anexo se propone, no solo al firmarse. Es lo que pacta la propuesta que ella acepta.
+- Sin Anexo no se pueden marcar hitos, porque no hay de dónde repartir.
+- Un hito marcado no cambia de fecha ni se borra sin motivo. La base lo exige, pero hoy no hay pantalla para hacer ninguna de las dos cosas, así que no he añadido el campo de motivo.
+- Lo devengado no se reabre, ni siquiera dirección.
+- En la cartera, el aviso de hito entregado no se repite: lo enseña «Hitos por revisar». El aviso sigue existiendo para el correo diario.
+- La etapa que tiene un hito entregado se abre sola, para que el enlace «Revisar» lleve a algo visible.
+
+**Qué necesito que decidas**
+1. ¿El equipo de IWL (no dirección) puede validar hitos, como hasta ahora, o solo el mentor principal y dirección?
+2. ¿Hace falta una pantalla para cambiar la fecha de un hito o borrarlo, con su motivo? Hoy no existe para ningún hito.
+
+**Estado** · Las tres suites en verde, dos veces seguidas: unitarias 261, acceso 252 e interfaz 422 bien y 4 saltadas, con `--workers=1`. Sin desplegar: van tres migraciones nuevas, más la de limpieza si no la subiste.
+
+**Siguiente** · Sesiones y horas.
+
+---
+
 ## 2026-11-18 · Limpieza: las subidas a medias sí se borran · commit bfab377
 
 **Qué cambió**
