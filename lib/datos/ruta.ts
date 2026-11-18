@@ -49,6 +49,16 @@ export interface HitoDeEtapa {
   origen: string;
   evidencia: string | null;
   completadoEl: string | null;
+  /** Si al entregarlo lo tiene que validar el mentor */
+  requiereValidacion: boolean;
+  /** Equity que devenga al validarse, tal como se escribió */
+  equityPct: number | null;
+  /** Financiación directa que libera al validarse */
+  financiacion: number | null;
+  /** El mentor secundario o técnico al que se le encargó revisarlo */
+  revisorId: string | null;
+  entregadoEl: string | null;
+  confirmadoEl: string | null;
 }
 
 export interface Etapa {
@@ -102,6 +112,12 @@ function hito(fila: {
   origin: string;
   evidence: string | null;
   completed_on: string | null;
+  requires_validation: boolean;
+  accrues_equity_pct: number | string | null;
+  releases_funding: number | string | null;
+  reviewer_id: string | null;
+  delivered_at: string | null;
+  confirmed_at: string | null;
 }): HitoDeEtapa {
   return {
     id: fila.id,
@@ -114,11 +130,17 @@ function hito(fila: {
     origen: fila.origin,
     evidencia: fila.evidence,
     completadoEl: fila.completed_on,
+    requiereValidacion: fila.requires_validation,
+    equityPct: fila.accrues_equity_pct === null ? null : Number(fila.accrues_equity_pct),
+    financiacion: fila.releases_funding === null ? null : Number(fila.releases_funding),
+    revisorId: fila.reviewer_id,
+    entregadoEl: fila.delivered_at,
+    confirmadoEl: fila.confirmed_at,
   };
 }
 
 const CAMPOS_HITO =
-  "id, title, success_criteria, description, due_date, status, gates_investable, origin, evidence, completed_on, stage_id";
+  "id, title, success_criteria, description, due_date, status, gates_investable, origin, evidence, completed_on, stage_id, requires_validation, accrues_equity_pct, releases_funding, reviewer_id, delivered_at, confirmed_at";
 
 export async function leerHojaDeRuta(
   companyId: string,
@@ -331,4 +353,168 @@ export function avancesDeEtapa(avances: Avance[], etapaId: string): Avance[] {
   return avances
     .filter((a) => a.etapaId === etapaId)
     .sort((a, b) => a.fecha.localeCompare(b.fecha));
+}
+
+// -----------------------------------------------------------------------------
+// El circuito de los hitos: historial, quién revisa y lo que espera revisión
+// -----------------------------------------------------------------------------
+
+export type TipoRevision = "entrega" | "validacion" | "cambios" | "nota";
+
+export interface RevisionHito {
+  id: string;
+  tipo: TipoRevision;
+  comentario: string | null;
+  /** Lo que estaba adjunto en ese momento */
+  evidencias: Array<{ label: string; url: string | null }>;
+  autor: string | null;
+  cuando: string;
+}
+
+/** Cada ida y vuelta de los hitos de una compañía, por hito y en orden */
+export async function leerRevisionesHitos(companyId: string): Promise<Map<string, RevisionHito[]>> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("milestone_reviews")
+    .select("id, milestone_id, kind, comment, evidence, author_name, created_at")
+    .eq("company_id", companyId)
+    .order("created_at");
+
+  const porHito = new Map<string, RevisionHito[]>();
+  for (const r of data ?? []) {
+    const lista = porHito.get(r.milestone_id) ?? [];
+    lista.push({
+      id: r.id,
+      tipo: r.kind as TipoRevision,
+      comentario: r.comment,
+      evidencias: Array.isArray(r.evidence)
+        ? (r.evidence as Array<{ label?: string; url?: string | null }>).map((e) => ({
+            label: e.label ?? "Evidencia",
+            url: e.url ?? null,
+          }))
+        : [],
+      autor: r.author_name,
+      cuando: r.created_at,
+    });
+    porHito.set(r.milestone_id, lista);
+  }
+  return porHito;
+}
+
+/** Quien puede revisar un hito además de quien coordina: mentores y revisores asignados */
+export interface Acompanante {
+  id: string;
+  nombre: string;
+}
+
+export async function leerAcompanantes(companyId: string): Promise<Acompanante[]> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("company_members")
+    .select("profile_id, member_role, profiles ( full_name, last_name, email )")
+    .eq("company_id", companyId)
+    .in("member_role", ["mentor_secundario", "revisor_niage", "mentor"]);
+
+  const vistos = new Set<string>();
+  const salida: Acompanante[] = [];
+  for (const m of data ?? []) {
+    if (vistos.has(m.profile_id)) continue;
+    vistos.add(m.profile_id);
+    const p = m.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
+    salida.push({
+      id: m.profile_id,
+      nombre: nombreCompleto(p?.full_name, p?.last_name) || p?.email || "Sin nombre",
+    });
+  }
+  return salida.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+/** Lo que el Anexo vigente deja repartir entre los hitos marcados */
+export interface RepartoAnexo {
+  /** Si las marcas se pueden tocar: solo con el Anexo en borrador */
+  abierto: boolean;
+  hayAnexo: boolean;
+  equityPactado: number | null;
+  equityRepartido: number;
+  financiacionPactada: number | null;
+  financiacionRepartida: number;
+}
+
+export async function leerRepartoAnexo(companyId: string): Promise<RepartoAnexo> {
+  const supabase = await clienteServidor();
+  const [{ data: anexo }, { data: marcados }] = await Promise.all([
+    supabase
+      .from("annexes")
+      .select("status, equity_pct, committed_cash")
+      .eq("company_id", companyId)
+      .order("version", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("milestones")
+      .select("accrues_equity_pct, releases_funding")
+      .eq("company_id", companyId)
+      .or("accrues_equity_pct.not.is.null,releases_funding.not.is.null"),
+  ]);
+  return {
+    abierto: anexo?.status === "borrador",
+    hayAnexo: Boolean(anexo),
+    equityPactado: anexo?.equity_pct === null || anexo?.equity_pct === undefined ? null : Number(anexo.equity_pct),
+    equityRepartido: sumar((marcados ?? []).map((m) => m.accrues_equity_pct)),
+    financiacionPactada:
+      anexo?.committed_cash === null || anexo?.committed_cash === undefined ? null : Number(anexo.committed_cash),
+    financiacionRepartida: sumar((marcados ?? []).map((m) => m.releases_funding)),
+  };
+}
+
+/** Sin pasar por coma flotante: 2,5 + 0,1 tiene que dar 2,6 */
+function sumar(valores: Array<number | string | null>): number {
+  const centesimas = valores.reduce<number>((t, v) => t + (v === null ? 0 : Math.round(Number(v) * 100)), 0);
+  return centesimas / 100;
+}
+
+export interface HitoPorRevisar {
+  id: string;
+  titulo: string;
+  compania: string;
+  slug: string;
+  entregadoEl: string;
+}
+
+/**
+ * Los hitos entregados que espera revisar quien mira.
+ *
+ * IWL, todos los que ve; un mentor, los de las compañías que coordina y
+ * los que le han encargado. RLS ya le da solo sus compañías.
+ */
+export async function leerHitosPorRevisar(persona: { id: string; role: string }): Promise<HitoPorRevisar[]> {
+  const supabase = await clienteServidor();
+  const iwl = persona.role === "admin_iwl" || persona.role === "equipo_iwl";
+  const [{ data: hitos }, { data: coordina }] = await Promise.all([
+    supabase
+      .from("milestones")
+      .select("id, title, delivered_at, reviewer_id, company_id, companies ( name, slug )")
+      .eq("status", "entregado")
+      .order("delivered_at"),
+    iwl
+      ? Promise.resolve({ data: [] as Array<{ company_id: string }> })
+      : supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("profile_id", persona.id)
+          .eq("member_role", "mentor_principal"),
+  ]);
+  const suyas = new Set((coordina ?? []).map((c) => c.company_id));
+  return (hitos ?? [])
+    .filter((h) => iwl || suyas.has(h.company_id) || h.reviewer_id === persona.id)
+    .map((h) => {
+      const c = h.companies as unknown as { name: string; slug: string } | null;
+      return {
+        id: h.id,
+        titulo: h.title,
+        compania: c?.name ?? "",
+        slug: c?.slug ?? "",
+        entregadoEl: h.delivered_at ?? "",
+      };
+    });
 }

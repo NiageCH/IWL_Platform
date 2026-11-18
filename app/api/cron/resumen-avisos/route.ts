@@ -5,7 +5,8 @@ import { limpiarFicherosSueltos, type Limpieza } from "@/lib/limpieza";
 
 /**
  * El resumen diario de avisos, que llama el cron de Vercel (`vercel.json`).
- * Antes, avisa de las reuniones cuyas fechas han pasado todas sin elegir.
+ * Antes, avisa de las reuniones cuyas fechas han pasado todas sin elegir y
+ * de los hitos que llevan más de 7 días entregados sin revisar.
  * Después, borra los ficheros sueltos (`lib/limpieza.ts`).
  *
  * Todo en el mismo cron, y no uno por tarea: el plan de Vercel limita
@@ -23,6 +24,8 @@ export async function GET(request: NextRequest) {
   }
   // Antes del resumen, las reuniones caducadas dejan su aviso: así entran en él
   const { data: caducadas } = await clienteServicio().rpc("avisar_reuniones_caducadas");
+  // Y los hitos entregados que llevan más de 7 días sin revisar, a dirección
+  const { data: sinRevisar } = await clienteServicio().rpc("avisar_hitos_sin_revisar");
   const resultado = await enviarResumenes();
 
   /*
@@ -36,5 +39,10 @@ export async function GET(request: NextRequest) {
     limpieza = { error: e instanceof Error ? e.message : "fallo desconocido" };
   }
 
-  return NextResponse.json({ ...resultado, reunionesCaducadas: caducadas ?? 0, ficherosSueltos: limpieza });
+  return NextResponse.json({
+    ...resultado,
+    reunionesCaducadas: caducadas ?? 0,
+    hitosSinRevisar: sinRevisar ?? 0,
+    ficherosSueltos: limpieza,
+  });
 }

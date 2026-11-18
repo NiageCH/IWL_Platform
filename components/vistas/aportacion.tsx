@@ -1,7 +1,7 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { leerExtracto } from "@/lib/datos/aportacion";
+import { leerDevengos, leerExtracto, type Devengos } from "@/lib/datos/aportacion";
 import { leerAportacionExtra, nombreTipo } from "@/lib/datos/aportacion-extra";
-import { leerHojaDeRuta } from "@/lib/datos/ruta";
+import { leerHojaDeRuta, leerRepartoAnexo, type RepartoAnexo } from "@/lib/datos/ruta";
 import { NuevaAportacion } from "@/components/formularios/ruta";
 import { EnlacesInforme } from "@/components/informe/enlace";
 import { RegistroRapidoHoras } from "@/components/formularios/programa";
@@ -47,10 +47,12 @@ export async function VistaAportacion({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const [extracto, extra, ruta] = await Promise.all([
+  const [extracto, extra, ruta, devengos, reparto] = await Promise.all([
     leerExtracto(resumen.compania.id),
     leerAportacionExtra(resumen.compania.id),
     leerHojaDeRuta(resumen.compania.id, resumen.compania.entry_state),
+    leerDevengos(resumen.compania.id),
+    leerRepartoAnexo(resumen.compania.id),
   ]);
   const { compromiso } = extracto;
   const { permisos, compania } = resumen;
@@ -175,6 +177,14 @@ export async function VistaAportacion({
         <EnlacesInforme slug={compania.slug} tipos={["aportacion"]} />
       </Bloque>
       )}
+
+      <DevengadoPorHitos
+        devengos={devengos}
+        reparto={reparto}
+        equityPactado={compromiso?.equityPct ?? null}
+        financiacionPactada={compromiso?.cajaComprometida ?? null}
+        verQuien={permisos.esIwl}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Bloque>
@@ -552,5 +562,66 @@ function Barra({
         {formato(entregado)} de {formato(comprometido)}
       </span>
     </div>
+  );
+}
+
+/**
+ * Lo que los hitos validados han devengado y liberado, frente a lo pactado.
+ *
+ * Cada línea sale del registro que deja la base al validar. Quién validó lo
+ * ve IWL; ella ve qué y cuándo. Sin hitos marcados no se enseña nada: no
+ * todos los Anexos reparten el equity por hitos.
+ */
+function DevengadoPorHitos({
+  devengos,
+  reparto,
+  equityPactado,
+  financiacionPactada,
+  verQuien,
+}: {
+  devengos: Devengos;
+  reparto: RepartoAnexo;
+  equityPactado: number | null;
+  financiacionPactada: number | null;
+  verQuien: boolean;
+}) {
+  const hayMarcas = reparto.equityRepartido > 0 || reparto.financiacionRepartida > 0;
+  if (!hayMarcas && devengos.lineas.length === 0) return null;
+  return (
+    <Bloque>
+      <TituloBloque accion={<Metadato>Hitos con efecto económico</Metadato>}>Devengado por hitos</TituloBloque>
+      <div className="grid gap-6 px-4 py-4 sm:grid-cols-2">
+        <Cifra
+          etiqueta="Equity devengado"
+          valor={textoEquity(devengos.equity)}
+          referencia={equityPactado === null ? undefined : `de ${textoEquity(equityPactado)} pactado`}
+          nota={`${textoEquity(reparto.equityRepartido)} repartido en hitos`}
+        />
+        <Cifra
+          etiqueta="Financiación liberada"
+          valor={numero(devengos.financiacion, 0)}
+          unidad="€"
+          referencia={financiacionPactada === null ? undefined : `de ${euros(financiacionPactada)}`}
+          nota={`${euros(reparto.financiacionRepartida)} repartidos en hitos`}
+        />
+      </div>
+      {devengos.lineas.length === 0 ? (
+        <SinDatos>Todavía no se ha validado ningún hito con equity o financiación.</SinDatos>
+      ) : (
+        <ul className="divide-y divide-filete border-t border-filete">
+          {devengos.lineas.map((l) => (
+            <li key={l.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm">
+              <span className="min-w-0 flex-1 text-titular">
+                {l.tipo === "equity"
+                  ? `Devengado ${textoEquity(l.cifra)} el ${fecha(l.fecha)}`
+                  : `Liberados ${euros(l.cifra)} el ${fecha(l.fecha)}`}
+                {verQuien && l.validadoPor ? `, validado por ${l.validadoPor}` : ""}
+              </span>
+              <span className="text-xs text-metadato">{l.titulo}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Bloque>
   );
 }

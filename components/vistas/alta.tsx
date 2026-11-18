@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { textoAviso } from "@/lib/avisos";
+import { enlaceHito, textoAviso } from "@/lib/avisos";
 import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
 import { CerrarAviso } from "@/components/formularios/cerrar-aviso";
 import { ContrafirmarNda } from "@/components/formularios/nda-iwl";
 import type { AltaDe, AltaEnCurso, Aviso } from "@/lib/datos/onboarding";
+import type { HitoPorRevisar } from "@/lib/datos/ruta";
+import { estadoVisual } from "@/lib/estados";
 import type { ClavePaso, Paso } from "@/lib/onboarding";
 import { fecha } from "@/lib/utils";
 
@@ -173,7 +175,7 @@ export function AvisosDireccion({
             {avisos.map((a) => (
               <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
                 <span className="min-w-0 flex-1 text-sm text-titular">
-                  {textoAviso(a.tipo, a.persona)}
+                  {textoAviso(a.tipo, a.persona, a.donde, a.hito?.titulo)}
                   {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
                 </span>
                 <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
@@ -188,7 +190,11 @@ export function AvisosDireccion({
                           : "Ver su alta"}
                   </Link>
                 ) : null}
-                {a.companiaSlug && !a.candidaturaId ? (
+                {a.companiaSlug && !a.candidaturaId && a.hito ? (
+                  <Link href={enlaceHito(a.companiaSlug, a.hito.id)} className="enlace text-xs">
+                    Revisar
+                  </Link>
+                ) : a.companiaSlug && !a.candidaturaId ? (
                   <Link
                     href={
                       a.tipo === "anexo_comentario"
@@ -256,17 +262,62 @@ export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
         {avisos.map((a) => (
           <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
             <span className="min-w-0 flex-1 text-sm text-titular">
-              {textoAviso(a.tipo, a.persona, a.donde)}
+              {textoAviso(a.tipo, a.persona, a.donde, a.hito?.titulo)}
+              {a.hito && a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
             </span>
             <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
-            {a.companiaSlug ? (
+            {a.companiaSlug && a.hito ? (
+              <Link href={enlaceHito(a.companiaSlug, a.hito.id)} className="enlace text-xs">
+                Revisar
+              </Link>
+            ) : a.companiaSlug ? (
               <Link href={`/cartera/${a.companiaSlug}/programa`} className="enlace text-xs">
                 Ver el motivo
               </Link>
             ) : null}
-            <CerrarAviso id={a.id} />
+            {/* Uno de hito se cierra al validarlo o pedir cambios, no a mano */}
+            {a.hito ? null : <CerrarAviso id={a.id} />}
           </li>
         ))}
+      </ul>
+    </Bloque>
+  );
+}
+
+/**
+ * Los hitos entregados que esperan a quien mira.
+ *
+ * Arriba de la cartera, para IWL y para el mentor que coordina: es lo que
+ * tiene a una fundadora esperando. A los siete días sin revisar se pinta
+ * vencido, y dirección recibe aviso.
+ */
+export function HitosPorRevisar({ hitos }: { hitos: HitoPorRevisar[] }) {
+  if (!hitos.length) return null;
+  const hoy = new Date().toISOString().slice(0, 10);
+  return (
+    <Bloque className="mb-8">
+      <TituloBloque accion={<Metadato>{hitos.length} por revisar</Metadato>}>Hitos por revisar</TituloBloque>
+      <ul className="divide-y divide-filete">
+        {hitos.map((h) => {
+          const visual = estadoVisual("hito", { estado: "entregado", entregadoEl: h.entregadoEl, revisa: true }, hoy);
+          return (
+            <li key={h.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+              <span className="min-w-0 flex-1 text-sm text-titular">
+                {h.titulo}
+                <span className="text-metadato"> · {h.compania}</span>
+              </span>
+              <Estado
+                valor={visual}
+                rotulo={visual === "vencido" ? "Más de 7 días" : "Por revisar"}
+                motivo={`Entregado el ${fecha(h.entregadoEl)}`}
+              />
+              <span className="cifra text-xs text-metadato">{fecha(h.entregadoEl)}</span>
+              <Link href={enlaceHito(h.slug, h.id)} className="enlace text-xs">
+                Revisar
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </Bloque>
   );

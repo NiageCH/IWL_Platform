@@ -6,10 +6,29 @@ import {
   leerHojaDeRuta,
   leerPlantillas,
   nombreEstadoEntrada,
+  leerAcompanantes,
+  leerRepartoAnexo,
+  leerRevisionesHitos,
+  type Acompanante,
   type Avance,
   type Etapa,
   type HitoDeEtapa,
+  type RepartoAnexo,
+  type RevisionHito,
 } from "@/lib/datos/ruta";
+import { leerDocumentosElegibles, leerEvidencias } from "@/lib/datos/evidencia";
+import {
+  Evidencia,
+  type DocumentoElegible,
+  type EvidenciaAdjunta,
+} from "@/components/formularios/evidencia";
+import {
+  EfectoEconomicoHito,
+  EntregarHito,
+  NotaHito,
+  RevisarHito,
+  RevisionDeHito,
+} from "@/components/formularios/hito";
 import { personaActual } from "@/lib/supabase/servidor";
 import { EstadoHito } from "@/components/formularios/programa";
 import {
@@ -33,7 +52,7 @@ import {
 import { Estado, LeyendaEstados } from "@/components/ui/estado";
 import { BarraHitos, LineaRecorrido } from "@/components/linea-recorrido";
 import { estadoVisual } from "@/lib/estados";
-import { euros, fecha, numero } from "@/lib/utils";
+import { equity, euros, fecha, numero } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 /**
@@ -51,6 +70,7 @@ import { cn } from "@/lib/utils";
 const ESTADOS_HITO: Record<string, string> = {
   pendiente: "Pendiente",
   en_curso: "En curso",
+  entregado: "Entregado",
   cumplido: "Cumplido",
   retrasado: "Retrasado",
 };
@@ -62,10 +82,23 @@ export async function VistaRuta({
 }) {
   const { compania, permisos } = resumen;
   const persona = await personaActual();
-  const [ruta, avances] = await Promise.all([
+  const [ruta, avances, evidencias, elegibles, revisiones, acompanantes, reparto] = await Promise.all([
     leerHojaDeRuta(compania.id, compania.entry_state),
     leerAvances(compania.id, persona?.id ?? null),
+    leerEvidencias(compania.id, "milestone"),
+    permisos.esFundadora ? leerDocumentosElegibles(compania.id) : Promise.resolve([]),
+    leerRevisionesHitos(compania.id),
+    permisos.coordina ? leerAcompanantes(compania.id) : Promise.resolve([]),
+    leerRepartoAnexo(compania.id),
   ]);
+  const contexto: ContextoHitos = {
+    companyId: compania.id,
+    evidencias,
+    elegibles,
+    revisiones,
+    acompanantes,
+    reparto,
+  };
 
   if (ruta.etapas.length === 0) {
     const plantillas = permisos.esIwl ? await leerPlantillas() : [];
@@ -104,7 +137,7 @@ export async function VistaRuta({
             <ul className="divide-y divide-filete">
               {ruta.sueltos.map((h) => (
                 <li key={h.id} className="px-4 py-3">
-                  <Hito hito={h} slug={compania.slug} permisos={permisos} />
+                  <Hito hito={h} slug={compania.slug} permisos={permisos} contexto={contexto} />
                 </li>
               ))}
             </ul>
@@ -200,7 +233,9 @@ export async function VistaRuta({
               slug={compania.slug}
               companyId={compania.id}
               permisos={permisos}
-              abierta={etapa.id === ruta.etapaActual?.id}
+              contexto={contexto}
+              // Y la que tiene algo entregado: el aviso lleva a ese hito, y plegado no se ve
+              abierta={etapa.id === ruta.etapaActual?.id || etapa.hitos.some((h) => h.estado === "entregado")}
             />
           </li>
         ))}
@@ -232,6 +267,7 @@ export async function VistaRuta({
                   hito={h}
                   slug={compania.slug}
                   permisos={permisos}
+                  contexto={contexto}
                   stageId={null}
                   etapas={ruta.etapas.map((e) => ({
                     id: e.id,
@@ -265,6 +301,7 @@ function TarjetaEtapa({
   slug,
   companyId,
   permisos,
+  contexto,
   abierta,
 }: {
   etapa: Etapa;
@@ -274,6 +311,7 @@ function TarjetaEtapa({
   slug: string;
   companyId: string;
   permisos: NonNullable<ResumenCompania>["permisos"];
+  contexto: ContextoHitos;
   /** El tramo en el que está el proyecto se abre solo */
   abierta: boolean;
 }) {
@@ -360,6 +398,7 @@ function TarjetaEtapa({
                 hito={h}
                 slug={slug}
                 permisos={permisos}
+                contexto={contexto}
                 stageId={etapa.id}
                 etapas={etapas}
               />
@@ -408,87 +447,264 @@ function TarjetaEtapa({
   );
 }
 
+/**
+ * Lo que un hito necesita además de su fila: su evidencia, su historial,
+ * quién puede revisarlo y cuánto queda por repartir del Anexo. Se lee una
+ * vez por pantalla y no una por hito.
+ */
+export interface ContextoHitos {
+  companyId: string;
+  evidencias: Map<string, EvidenciaAdjunta[]>;
+  elegibles: DocumentoElegible[];
+  revisiones: Map<string, RevisionHito[]>;
+  acompanantes: Acompanante[];
+  reparto: RepartoAnexo;
+}
+
+const TEXTO_REVISION: Record<RevisionHito["tipo"], string> = {
+  entrega: "Entregado",
+  validacion: "Validado",
+  cambios: "Cambios pedidos",
+  nota: "Nota",
+};
+
 function Hito({
   hito,
   slug,
   permisos,
+  contexto,
   stageId = null,
   etapas = [],
 }: {
   hito: HitoDeEtapa;
   slug: string;
   permisos: NonNullable<ResumenCompania>["permisos"];
+  contexto: ContextoHitos;
   /** La etapa en la que está ahora, para poder moverlo a otra */
   stageId?: string | null;
   etapas?: Array<{ id: string; nombre: string }>;
 }) {
+  const economico = hito.equityPct !== null || hito.financiacion !== null;
+  const revisa =
+    hito.estado === "entregado" &&
+    (permisos.coordina || (hito.revisorId !== null && hito.revisorId === permisos.personaId));
   const visual = estadoVisual("hito", {
     estado: hito.estado,
     fecha: hito.fecha,
+    entregadoEl: hito.entregadoEl,
+    revisa,
   });
   const vencido = visual === "vencido";
+  const evidencias = contexto.evidencias.get(hito.id) ?? [];
+  const historial = contexto.revisiones.get(hito.id) ?? [];
+  const ultimaValidacion = [...historial].reverse().find((r) => r.tipo === "validacion");
+  const cambiosPendientes =
+    hito.estado !== "entregado" && hito.estado !== "cumplido"
+      ? [...historial].reverse().find((r) => r.tipo === "cambios" || r.tipo === "entrega")
+      : undefined;
+  const abierto = hito.estado !== "entregado" && hito.estado !== "cumplido";
+  // Entrega ella; la evidencia la toca mientras el hito está abierto
+  const entrega = permisos.esFundadora && abierto;
+  const efecto = [
+    hito.equityPct !== null ? `Devenga ${equity(hito.equityPct)} de equity` : null,
+    hito.financiacion !== null ? `Libera ${euros(hito.financiacion)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const rotulo =
+    hito.estado === "entregado" ? "Entregado · por revisar" : ESTADOS_HITO[hito.estado] ?? hito.estado;
+  // El selector de estado: no para lo entregado, que se revisa, ni para lo cumplido de ella
+  const conSelector =
+    hito.estado !== "entregado" &&
+    (permisos.coordina || (permisos.puedeEscribir && hito.estado !== "cumplido"));
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-      <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <span className="text-sm text-titular">{hito.titulo}</span>
-          {hito.condicionaInvertible ? (
-            <Etiqueta>Condiciona invertible</Etiqueta>
+    <div id={`hito-${hito.id}`} className="flex scroll-mt-24 flex-col gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-sm text-titular">{hito.titulo}</span>
+            {hito.condicionaInvertible ? <Etiqueta>Condiciona invertible</Etiqueta> : null}
+            {hito.equityPct !== null ? <Etiqueta>Devenga {equity(hito.equityPct)}</Etiqueta> : null}
+            {hito.financiacion !== null ? <Etiqueta>Libera {euros(hito.financiacion)}</Etiqueta> : null}
+            {!hito.requiereValidacion ? <Etiqueta>Sin validación</Etiqueta> : null}
+          </div>
+          <p className="text-xs text-secundario">{hito.criterio}</p>
+          {hito.evidencia ? (
+            <p className="text-xs text-metadato">Se espera: {hito.evidencia}</p>
           ) : null}
         </div>
-        <p className="text-xs text-secundario">{hito.criterio}</p>
-        {hito.evidencia ? (
-          <p className="text-xs text-metadato">Evidencia: {hito.evidencia}</p>
-        ) : null}
+
+        <div className="flex shrink-0 items-center gap-3">
+          <span className={cn("cifra text-xs", vencido ? "es-vencido texto-estado" : "text-metadato")}>
+            {hito.estado === "cumplido" && hito.completadoEl
+              ? fecha(hito.completadoEl)
+              : hito.estado === "entregado" && hito.entregadoEl
+                ? `Entregado el ${fecha(hito.entregadoEl)}`
+                : hito.fecha
+                  ? fecha(hito.fecha)
+                  : "Sin fecha"}
+          </span>
+          {/*
+            El estado se ve siempre, se pueda tocar o no. Quien podía
+            editarlo solo tenía delante un desplegable gris: el estado estaba
+            escrito, pero no se veía. Con el control delante va solo el
+            icono, que si no la fila dice «Cumplido» dos veces.
+          */}
+          {conSelector ? (
+            <>
+              <Estado valor={visual} soloIcono />
+              <EstadoHito
+                slug={slug}
+                id={hito.id}
+                estado={hito.estado}
+                visual={visual}
+                // Con efecto económico, cumplido solo por «Validar»
+                puedeConfirmar={permisos.coordina && !economico}
+              />
+            </>
+          ) : (
+            <Estado valor={visual} rotulo={rotulo} />
+          )}
+          {/* Mover de carril: la acción existía y no había por dónde llamarla,
+              así que un hito creado donde no tocaba se quedaba ahí */}
+          {permisos.esIwl ? (
+            <MoverHito slug={slug} id={hito.id} stageId={stageId} etapas={etapas} />
+          ) : null}
+        </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
-        <span
-          className={cn(
-            "cifra text-xs",
-            vencido ? "es-vencido texto-estado" : "text-metadato",
-          )}
-        >
-          {hito.estado === "cumplido" && hito.completadoEl
-            ? fecha(hito.completadoEl)
-            : hito.fecha
-              ? fecha(hito.fecha)
-              : "Sin fecha"}
-        </span>
-        {/*
-          El estado se ve siempre, se pueda tocar o no. Quien podía
-          editarlo solo tenía delante un desplegable gris: el estado estaba
-          escrito, pero no se veía. Con el control delante va solo el
-          icono, que si no la fila dice «Cumplido» dos veces.
-        */}
-        {permisos.puedeEscribir ? (
-          <>
-            <Estado valor={visual} soloIcono />
-            <EstadoHito
+      {/* Lo último que dijo quien revisa, cuando ella tiene que volver a entregar */}
+      {cambiosPendientes?.tipo === "cambios" ? (
+        <div className="rounded-md border-l-2 border-l-filete-fuerte bg-hundido px-3 py-2 text-xs">
+          <p className="text-metadato">
+            Cambios pedidos el {fecha(cambiosPendientes.cuando)}
+            {permisos.esFundadora ? "" : cambiosPendientes.autor ? ` por ${cambiosPendientes.autor}` : ""}
+          </p>
+          <p className="mt-1 whitespace-pre-line text-cuerpo">{cambiosPendientes.comentario}</p>
+        </div>
+      ) : null}
+
+      {/* La evidencia: la ve todo el que ve el hito; la toca ella mientras está abierto */}
+      {evidencias.length > 0 && !entrega ? (
+        <Evidencia
+          slug={slug}
+          companyId={contexto.companyId}
+          entidad="milestone"
+          entidadId={hito.id}
+          adjuntas={evidencias}
+          puedeEscribir={false}
+        />
+      ) : null}
+
+      {entrega ? (
+        <EntregarHito
+          slug={slug}
+          id={hito.id}
+          titulo={hito.titulo}
+          requiereValidacion={hito.requiereValidacion}
+          hayEvidencia={evidencias.length > 0}
+          evidencia={
+            <Evidencia
               slug={slug}
-              id={hito.id}
-              estado={hito.estado}
-              visual={visual}
-              puedeConfirmar={permisos.esIwl}
+              companyId={contexto.companyId}
+              entidad="milestone"
+              entidadId={hito.id}
+              adjuntas={evidencias}
+              elegibles={contexto.elegibles}
+              puedeEscribir
             />
-          </>
-        ) : (
-          <Estado valor={visual} rotulo={ESTADOS_HITO[hito.estado]} />
-        )}
-        {/* Mover de carril: la acción existía y no había por dónde llamarla,
-            así que un hito creado donde no tocaba se quedaba ahí */}
-        {permisos.esIwl ? (
-          <MoverHito
-            slug={slug}
-            id={hito.id}
-            stageId={stageId}
-            etapas={etapas}
-          />
-        ) : null}
-      </div>
+          }
+        />
+      ) : null}
+
+      {revisa ? <RevisarHito slug={slug} id={hito.id} titulo={hito.titulo} efecto={efecto || null} /> : null}
+
+      {/* Quién validó y cuándo: lo ve IWL */}
+      {hito.estado === "cumplido" && permisos.esIwl ? (
+        <p className="text-xs text-metadato">
+          {ultimaValidacion
+            ? `Validado por ${ultimaValidacion.autor ?? "alguien"} el ${fecha(ultimaValidacion.cuando)}`
+            : hito.requiereValidacion
+              ? `Confirmado el ${fecha(hito.confirmadoEl ?? hito.completadoEl)}`
+              : "Cumplido al entregarlo, sin validación"}
+        </p>
+      ) : null}
+
+      {historial.length > 0 || permisos.coordina || permisos.acompana || permisos.esAdmin ? (
+        <details className="text-xs">
+          <summary className="accion inline-flex cursor-pointer">
+            {historial.length > 0 ? `Historial y ajustes (${historial.length})` : "Ajustes del hito"}
+          </summary>
+          <div className="mt-3 flex flex-col gap-4">
+            {historial.length > 0 ? (
+              <ol className="flex flex-col gap-2">
+                {historial.map((r) => (
+                  <li key={r.id} className="border-l-2 border-l-filete pl-3">
+                    <p className="text-metadato">
+                      {TEXTO_REVISION[r.tipo]} el {fecha(r.cuando)}
+                      {/* Ella ve lo que le dicen; quién lo validó, IWL */}
+                      {r.autor && (!permisos.esFundadora || r.tipo === "entrega") ? ` · ${r.autor}` : ""}
+                    </p>
+                    {r.comentario ? <p className="whitespace-pre-line text-cuerpo">{r.comentario}</p> : null}
+                    {r.tipo === "entrega" && r.evidencias.length > 0 ? (
+                      <p className="text-metadato">
+                        Con: {r.evidencias.map((e) => e.label).join(", ")}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+
+            {permisos.acompana || (permisos.coordina && !revisa) ? <NotaHito slug={slug} id={hito.id} /> : null}
+
+            {permisos.coordina && hito.estado !== "cumplido" ? (
+              <RevisionDeHito
+                slug={slug}
+                id={hito.id}
+                requiere={hito.requiereValidacion}
+                obligatoria={economico || hito.condicionaInvertible}
+                revisorId={hito.revisorId}
+                acompanantes={contexto.acompanantes}
+              />
+            ) : null}
+
+            {permisos.esAdmin && hito.estado !== "cumplido" ? (
+              contexto.reparto.abierto ? (
+                <EfectoEconomicoHito
+                  slug={slug}
+                  id={hito.id}
+                  equityPct={hito.equityPct}
+                  financiacion={hito.financiacion}
+                  equityPactado={contexto.reparto.equityPactado}
+                  equityLibre={libre(contexto.reparto.equityPactado, contexto.reparto.equityRepartido, hito.equityPct)}
+                  financiacionPactada={contexto.reparto.financiacionPactada}
+                  financiacionLibre={libre(
+                    contexto.reparto.financiacionPactada,
+                    contexto.reparto.financiacionRepartida,
+                    hito.financiacion,
+                  )}
+                />
+              ) : (
+                <p className="text-metadato">
+                  {contexto.reparto.hayAnexo
+                    ? "El equity y la financiación de los hitos quedan fijos con el Anexo propuesto o firmado. Para cambiarlos, abre una versión nueva del Anexo."
+                    : "Para marcar un hito con equity o financiación, abre antes el Anexo de Programa."}
+                </p>
+              )
+            ) : null}
+          </div>
+        </details>
+      ) : null}
     </div>
   );
+}
+
+/** Lo que queda por repartir sin contar lo que ya tiene este hito, en céntimos para no arrastrar decimales */
+function libre(pactado: number | null, repartido: number, propio: number | null): number {
+  if (pactado === null) return 0;
+  return Math.max(0, Math.round((pactado - repartido + (propio ?? 0)) * 100) / 100);
 }
 
 function Dato({

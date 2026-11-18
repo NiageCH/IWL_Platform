@@ -290,13 +290,17 @@ export interface Aviso {
     | "cambio_via"
     | "reunion_elegida"
     | "reunion_contrapropuesta"
-    | "reunion_caducada";
+    | "reunion_caducada"
+    | "hito_entregado"
+    | "hito_sin_revisar";
   created_at: string;
   persona: string;
   candidaturaId: string | null;
   /** El identificador de la compañía, para los avisos que son de una compañía */
   companiaSlug: string | null;
   donde: string | null;
+  /** En los avisos de hitos: cuál, para nombrarlo y llevar a él */
+  hito: { id: string; titulo: string } | null;
 }
 
 /**
@@ -311,7 +315,7 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   let consulta = supabase
     .from("avisos")
     .select(
-      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug)",
+      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug), milestones(id, title)",
     )
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
@@ -331,6 +335,7 @@ async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
       candidaturaId: a.candidatura_id,
       companiaSlug: co?.slug ?? null,
       donde: c?.nombre ?? co?.name ?? null,
+      hito: a.milestones ? { id: a.milestones.id, titulo: a.milestones.title } : null,
     };
   });
 }

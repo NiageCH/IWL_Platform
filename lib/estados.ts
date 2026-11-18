@@ -69,6 +69,15 @@ export const CINCO: EstadoVisual[] = [
 /** Cuántos días antes de la fecha una cosa pasa a «Atención» */
 export const DIAS_DE_AVISO = 7;
 
+/** Cuántos días tiene quien revisa un hito entregado antes de que venza */
+export const DIAS_PARA_REVISAR = 7;
+
+function diasDesde(cuando: string, hoy: string): number {
+  const desde = Date.parse(`${cuando.slice(0, 10)}T00:00:00Z`);
+  const hasta = Date.parse(`${hoy}T00:00:00Z`);
+  return Math.floor((hasta - desde) / 86_400_000);
+}
+
 function hoyISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -96,7 +105,14 @@ function porFecha(limite: string | null | undefined, hoy: string): EstadoVisual 
  * lee campos distintos sigue pudiendo llamarla.
  */
 export interface Filas {
-  hito: { estado: string; fecha?: string | null };
+  hito: {
+    estado: string;
+    fecha?: string | null;
+    /** Cuándo lo entregó ella, para saber cuánto lleva esperando revisión */
+    entregadoEl?: string | null;
+    /** Si quien mira es quien tiene que revisarlo */
+    revisa?: boolean;
+  };
   /** También los pasos de un hito, que son tareas con otro nombre */
   tarea: { estado: string; fecha?: string | null };
   punto_dd: {
@@ -152,6 +168,15 @@ export function estadoVisual<E extends keyof Filas>(
       const f = fila as Filas["hito"];
       if (f.estado === "cumplido") return "hecho";
       if (f.estado === "retrasado") return "vencido";
+      /*
+       * Entregado es atención: la pelota está en el tejado de quien revisa.
+       * Para esa persona, a los siete días sin revisar, vencido; ella no
+       * puede hacer nada más, así que para ella sigue siendo atención.
+       */
+      if (f.estado === "entregado") {
+        if (f.revisa && f.entregadoEl && diasDesde(f.entregadoEl, hoy) > DIAS_PARA_REVISAR) return "vencido";
+        return "atencion";
+      }
       return porFecha(f.fecha, hoy) ?? (f.estado === "en_curso" ? "curso" : "pendiente");
     }
 

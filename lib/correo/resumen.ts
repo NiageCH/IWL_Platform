@@ -11,8 +11,9 @@ import { notificar } from "@/lib/correo";
  * Mi cuenta.
  *
  * Dirección ve los avisos de todos (los que no van a nadie en concreto) y
- * los suyos; el resto de IWL, solo los suyos —los de un cambio de vía, al
- * mentor principal—. Es lo mismo que ve cada cual en la cartera.
+ * los suyos; el resto de IWL y los mentores, solo los suyos —los de un
+ * cambio de vía y los hitos entregados, al mentor principal—. Es lo mismo
+ * que ve cada cual en la cartera.
  */
 export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: number }> {
   const servicio = clienteServicio();
@@ -20,12 +21,12 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
     servicio
       .from("profiles")
       .select("id, email, full_name, role")
-      .in("role", ["admin_iwl", "equipo_iwl"])
+      .in("role", ["admin_iwl", "equipo_iwl", "mentor"])
       .eq("is_active", true)
       .eq("resumen_avisos", "diario"),
     servicio
       .from("avisos")
-      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, last_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre, contacto_apellidos )")
+      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, last_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre, contacto_apellidos ), milestones ( title )")
       .is("cerrado_at", null)
       .order("created_at"),
   ]);
@@ -44,7 +45,8 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
           (a.companies as unknown as { name: string } | null)?.name ??
           (a.candidaturas as unknown as { nombre: string } | null)?.nombre ??
           null;
-        return `· ${textoAviso(a.tipo, quien ? nombrePersona(quien) : nombreCompleto(candidatura?.contacto_nombre, candidatura?.contacto_apellidos) || "Alguien", donde)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
+        const hito = (a.milestones as unknown as { title: string } | null)?.title ?? null;
+        return `· ${textoAviso(a.tipo, quien ? nombrePersona(quien) : nombreCompleto(candidatura?.contacto_nombre, candidatura?.contacto_apellidos) || "Alguien", donde, hito)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
       })
       .join("\n");
     const r = await notificar(

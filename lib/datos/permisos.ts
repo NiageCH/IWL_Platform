@@ -17,6 +17,12 @@ export interface Permisos {
   puedeEscribir: boolean;
   /** Puede validar y puntuar. Nunca la parte evaluada (§5, §11) */
   puedeValidar: boolean;
+  /** IWL o el mentor principal: el espejo de `app.coordina_company` */
+  coordina: boolean;
+  /** Mentor secundario o revisor de esta compañía: acompaña sin coordinar */
+  acompana: boolean;
+  /** Quién mira, para saber si un hito se lo han encargado a esta persona */
+  personaId: string | null;
 }
 
 export async function permisosDeCompania(companyId: string): Promise<Permisos> {
@@ -29,6 +35,9 @@ export async function permisosDeCompania(companyId: string): Promise<Permisos> {
       esFundadora: false,
       puedeEscribir: false,
       puedeValidar: false,
+      coordina: false,
+      acompana: false,
+      personaId: null,
     };
   }
 
@@ -52,5 +61,8 @@ export async function permisosDeCompania(companyId: string): Promise<Permisos> {
     esFundadora,
     puedeEscribir: iwl || esFundadora,
     puedeValidar: iwl || esRevisorAsignado,
+    coordina: iwl || papeles.has("mentor_principal"),
+    acompana: ["mentor_secundario", "revisor_niage", "mentor"].some((p) => papeles.has(p as never)),
+    personaId: persona.id,
   };
 }

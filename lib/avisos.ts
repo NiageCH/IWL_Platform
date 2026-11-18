@@ -1,8 +1,19 @@
+/** A dónde lleva un aviso de hito: a su hoja de ruta, con el hito a la vista */
+export function enlaceHito(slug: string, hitoId: string): string {
+  return `/cartera/${slug}/ruta#hito-${hitoId}`;
+}
+
 /**
  * Lo que dice cada aviso, en una frase. Lo usan la lista de avisos de la
  * cartera y el resumen diario por correo: los dos dicen lo mismo.
  */
-export function textoAviso(tipo: string, persona: string, donde?: string | null): string {
+export function textoAviso(
+  tipo: string,
+  persona: string,
+  donde?: string | null,
+  /** El hito, en los avisos de hitos */
+  hito?: string | null,
+): string {
   switch (tipo) {
     case "primer_acceso":
       return `${persona} ha entrado por primera vez`;
@@ -22,6 +33,10 @@ export function textoAviso(tipo: string, persona: string, donde?: string | null)
       return `Han pasado todas las fechas de la reunión con ${persona} sin elegir ninguna. Propón otras`;
     case "cambio_via":
       return `${donde ?? "Una compañía"} pasa de Construcción a Aceleración. Lo que estaba por construir pasa a por entregar`;
+    case "hito_entregado":
+      return `${persona} ha entregado el hito «${hito ?? "sin nombre"}». Revísalo`;
+    case "hito_sin_revisar":
+      return `El hito «${hito ?? "sin nombre"}» lleva más de 7 días entregado sin revisar`;
     default:
       return `Aviso sobre ${donde ?? "una compañía"}`;
   }

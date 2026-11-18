@@ -18,6 +18,25 @@ const LEJOS = "2026-12-15";
 const AYER = "2026-10-29";
 
 describe("hitos", () => {
+  it("entregado es atención, aunque su fecha haya pasado: espera revisión", () => {
+    expect(
+      estadoVisual("hito", { estado: "entregado", fecha: AYER, entregadoEl: AYER }, HOY),
+    ).toBe("atencion");
+  });
+
+  it("entregado hace más de 7 días: vencido para quien revisa, atención para ella", () => {
+    const hace8 = "2026-10-22";
+    expect(
+      estadoVisual("hito", { estado: "entregado", entregadoEl: hace8, revisa: true }, HOY),
+    ).toBe("vencido");
+    expect(
+      estadoVisual("hito", { estado: "entregado", entregadoEl: hace8, revisa: false }, HOY),
+    ).toBe("atencion");
+    expect(
+      estadoVisual("hito", { estado: "entregado", entregadoEl: "2026-10-23", revisa: true }, HOY),
+    ).toBe("atencion");
+  });
+
   it("cumplido es hecho, aunque la fecha haya pasado", () => {
     expect(estadoVisual("hito", { estado: "cumplido", fecha: AYER }, HOY)).toBe(
       "hecho",

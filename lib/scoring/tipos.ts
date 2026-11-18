@@ -110,7 +110,7 @@ export interface HallazgoAbierto {
 export interface HitoAnexo {
   id: string;
   titulo: string;
-  estado: "pendiente" | "en_curso" | "cumplido" | "retrasado";
+  estado: "pendiente" | "en_curso" | "entregado" | "cumplido" | "retrasado";
   /** Los hitos de producto y tracción son los que condicionan el estado invertible */
   condicionaInvertible: boolean;
 }

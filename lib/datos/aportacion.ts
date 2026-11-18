@@ -307,3 +307,51 @@ function redondear(valor: number): number {
 function numero(valor: number | string | null): number | null {
   return valor === null ? null : Number(valor);
 }
+
+/**
+ * Lo devengado y liberado por hitos validados (REVISION, 18 nov).
+ *
+ * Sale del registro, que es donde la base lo deja al validar: «Devengado
+ * X % el <fecha>, validado por <quién>». Se suma en centésimas para que
+ * 2,5 + 0,1 dé 2,6 y no 2,6000000000000001.
+ */
+export interface Devengo {
+  id: number;
+  tipo: "equity" | "financiacion";
+  titulo: string;
+  cifra: number;
+  fecha: string;
+  validadoPor: string | null;
+}
+
+export interface Devengos {
+  lineas: Devengo[];
+  equity: number;
+  financiacion: number;
+}
+
+export async function leerDevengos(companyId: string): Promise<Devengos> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("activity_log")
+    .select("id, action, detail, created_at")
+    .eq("company_id", companyId)
+    .in("action", ["equity_devengado", "financiacion_liberada"])
+    .order("created_at");
+
+  const lineas: Devengo[] = (data ?? []).map((f) => {
+    const d = (f.detail ?? {}) as { titulo?: string; pct?: number; importe?: number; fecha?: string; validado_por?: string };
+    const equity = f.action === "equity_devengado";
+    return {
+      id: f.id,
+      tipo: equity ? "equity" : "financiacion",
+      titulo: d.titulo ?? "Hito",
+      cifra: Number((equity ? d.pct : d.importe) ?? 0),
+      fecha: d.fecha ?? f.created_at,
+      validadoPor: d.validado_por ?? null,
+    };
+  });
+  const suma = (tipo: Devengo["tipo"]) =>
+    lineas.filter((l) => l.tipo === tipo).reduce((t, l) => t + Math.round(l.cifra * 100), 0) / 100;
+  return { lineas, equity: suma("equity"), financiacion: suma("financiacion") };
+}

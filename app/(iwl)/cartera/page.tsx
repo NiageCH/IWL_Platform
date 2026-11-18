@@ -27,7 +27,8 @@ import { cn, euros, numero, porcentaje } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { leerAltasEnCurso, leerAvisos, leerAvisosParaMi } from "@/lib/datos/onboarding";
 import { leerRevisionesComite } from "@/lib/datos/comite";
-import { AvisosDireccion, AvisosParaMi } from "@/components/vistas/alta";
+import { AvisosDireccion, AvisosParaMi, HitosPorRevisar } from "@/components/vistas/alta";
+import { leerHitosPorRevisar } from "@/lib/datos/ruta";
 import { describirSituacion } from "@/lib/societario";
 import { leerEnEntrada } from "@/lib/datos/entrada";
 import { EnEntrada } from "@/components/vistas/en-entrada";
@@ -112,9 +113,10 @@ export default async function Cartera() {
   const [avisos, altas, revisiones] = esDireccion
     ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
     : [[], [], []];
-  const [paraMi, enEntrada] = await Promise.all([
+  const [paraMi, enEntrada, porRevisar] = await Promise.all([
     leerAvisosParaMi(persona.id),
     esIwl(persona.role) ? leerEnEntrada() : Promise.resolve([]),
+    leerHitosPorRevisar({ id: persona.id, role: persona.role }),
   ]);
   /*
    * Lo de arriba del todo: lo que espera a alguien, y las compañías en
@@ -122,11 +124,13 @@ export default async function Cartera() {
    */
   const paraDireccion = (
     <>
-      <AvisosParaMi avisos={paraMi} />
+      {/* Un hito entregado ya está en «Hitos por revisar»; su aviso es para el correo diario */}
+      <AvisosParaMi avisos={paraMi.filter((a) => a.tipo !== "hito_entregado")} />
+      <HitosPorRevisar hitos={porRevisar} />
       {esDireccion ? (
         <AvisosDireccion
           sinApellidos={!persona.last_name?.trim()}
-          avisos={avisos}
+          avisos={avisos.filter((a) => a.tipo !== "hito_entregado")}
           altas={altas}
           revisiones={revisiones}
           paradas={enEntrada.flatMap((f) => (f.tope ? [{ slug: f.slug, nombre: f.nombre, dias: f.dias, tope: f.tope }] : []))}

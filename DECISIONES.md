@@ -1845,3 +1845,20 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Se protege solo lo que cuelga de una candidatura descartada o de una compañía archivada.** Ahí no se borra nada hasta que haya plazo de conservación, y eso irá en un proceso aparte.
 - **En las demás carpetas, un fichero sin fila que lo apunte y con más de 24 horas es una subida abandonada, y se borra.** Eso incluye las compañías activas y las candidaturas en curso. La regla del 17 nov protegía todo lo que existiera, y con ella la limpieza ya casi no limpiaba nada.
 - **Es una migración nueva** (`20261118100000`) en vez de reescribir la del 17, por si esa ya estaba en la nube.
+
+## 2026-11-18 · Hitos: ella entrega con evidencia, el mentor valida; equity y financiación por hito
+
+- **El circuito vive en la base.** `entregar_hito`, `validar_hito`, `pedir_cambios_hito` y `comentar_hito` son funciones de la base, y el disparador de `milestones` decide qué paso vale. «Entregado» solo se alcanza por «Entregar», que es quien guarda la entrega en el historial y avisa. Una salida de «entregado» solo se da por validar o pedir cambios. Un hito con efecto económico solo se cumple por «Validar», que deja lo devengado en el registro. Las funciones marcan el paso con `app.circuito_hito` dentro de su transacción.
+- **Sin evidencia no hay entrega.** Al menos una, de `<Evidencia>`: un archivo, un documento del data room o un enlace. Mientras el hito está entregado o cumplido, su evidencia no se toca, porque es lo que se revisó. Si el mentor pide cambios, el hito vuelve a «en curso» y ella puede tocarla otra vez.
+- **El historial está en `milestone_reviews`:** entrega, validación, cambios y nota. Cada fila guarda la evidencia que había en ese momento y el nombre de quien escribe, copiado. No se edita ni se borra suelto.
+- **Quién valida:**
+  - quien coordina: IWL, como hasta ahora, o el mentor principal;
+  - el mentor secundario o el revisor técnico, si quien coordina se lo encarga en ese hito (`reviewer_id`).
+  Dirección valida porque es IWL; el equipo de IWL también, como ya confirmaba hitos.
+- **«Requiere validación» va por hito**, y por defecto está a sí. Lo quita quien coordina. No se puede quitar si el hito tiene equity, financiación o «condiciona invertible»: lo impide una restricción de la tabla.
+- **El equity y la financiación los pone solo dirección**, y solo con el último Anexo en borrador. Al proponerlo quedan fijos, y para cambiarlos hay que abrir una versión nueva. La suma de lo marcado no puede pasar del equity del Anexo ni de su financiación directa (`committed_cash`). Al proponer, se vuelve a comprobar contra esa versión. La copia de cada versión del Anexo lleva sus hitos con efecto económico.
+- **Lo devengado no se reabre.** Al validar queda en el registro `equity_devengado` o `financiacion_liberada`, con la cifra, la fecha y quién validó. Aportación lo suma frente a lo pactado. Un hito marcado tampoco cambia de fecha ni se borra sin motivo (`app.motivo_hito`), y el motivo va al registro. Hoy no hay pantalla para ninguna de las dos cosas: cuando haga falta, se añade con su campo de motivo.
+- **A los 7 días sin revisar**, el hito se pinta vencido para quien revisa, y el cron diario avisa a dirección una sola vez (`hito_sin_revisar`). Para ella sigue siendo «Atención», porque ya no puede hacer nada más.
+- **Avisos:** «ha entregado el hito» llega al mentor principal y al encargado, si lo hay. Si no hay ninguno de los dos, llega a dirección. Va en el resumen diario, que ahora también se manda a los mentores. En pantalla no se repite: lo enseña «Hitos por revisar», arriba de la cartera. Se cierra solo al validar o al pedir cambios.
+- **Quién validó** lo ve IWL. Ella ve el estado, la evidencia y lo que le dicen, sin el nombre de quien lo dijo. La base no lo esconde, porque no es un secreto: es la pantalla la que no lo enseña.
+- **Los importes de financiación se leen con `importeEscrito`**, no con `numeroEscritoAMano`. Ese cambia la coma por punto y con eso «20.000» se convertía en veinte euros.
