@@ -14,8 +14,10 @@ import { limpiarFicherosSueltos } from "@/lib/limpieza";
  *   · igual pero con nombre de NDA firmado → se queda;
  *   · en la carpeta de Vega, de hace 2 días y apuntado por un documento →
  *     se queda;
- *   · en la carpeta de Vega, de hace 2 días y sin apuntar → se queda: Vega
- *     existe (REVISION, 17 nov).
+ *   · en la carpeta de Vega, que está activa, de hace 2 días y sin apuntar
+ *     → se borra: es una subida abandonada (REVISION, 18 nov);
+ *   · en la carpeta de una compañía archivada, de hace 2 días y sin apuntar
+ *     → se queda.
  * Y en el expediente de candidaturas:
  *   · de una candidatura descartada hace 30 días, sin apuntar → se queda;
  *   · de una candidatura que ya no existe, de hace 2 días → se borra.
@@ -41,7 +43,9 @@ const firmado = `${nadie}/${crypto.randomUUID()}/NDA-firmado.pdf`;
 const documentoId = crypto.randomUUID();
 const apuntado = `${COMPANIAS.vega}/financiero/${documentoId}/cuentas.pdf`;
 const deVega = `${COMPANIAS.vega}/financiero/${crypto.randomUUID()}/sin-apuntar.pdf`;
-const enDataRoom = [viejo, reciente, firmado, apuntado, deVega];
+const archivadaId = crypto.randomUUID();
+const deArchivada = `${archivadaId}/financiero/${crypto.randomUUID()}/cuentas-viejas.pdf`;
+const enDataRoom = [viejo, reciente, firmado, apuntado, deVega, deArchivada];
 
 const descartadaId = crypto.randomUUID();
 const deDescartada = `${descartadaId}/${Date.now()}-plan-de-negocio.pdf`;
@@ -74,6 +78,14 @@ beforeAll(async () => {
     descartada_at: hace30,
   });
   if (falloCandidatura) throw new Error(falloCandidatura.message);
+  const { error: falloCompania } = await servicio.from("companies").insert({
+    id: archivadaId,
+    organization_id: "00000000-0000-0000-0001-000000000001",
+    name: `Limpieza archivada ${archivadaId.slice(0, 8)}`,
+    slug: `limpieza-archivada-${archivadaId.slice(0, 8)}`,
+    archived_at: hace30,
+  });
+  if (falloCompania) throw new Error(falloCompania.message);
 
   for (const ruta of enDataRoom) await subir("data-room", ruta);
   for (const ruta of enCandidaturas) await subir("candidaturas", ruta);
@@ -94,7 +106,7 @@ beforeAll(async () => {
 
   await sql`
     update storage.objects set created_at = now() - interval '2 days'
-    where bucket_id = 'data-room' and name in ${sql([viejo, firmado, apuntado, deVega])}`;
+    where bucket_id = 'data-room' and name in ${sql([viejo, firmado, apuntado, deVega, deArchivada])}`;
   await sql`
     update storage.objects set created_at = now() - interval '2 days'
     where bucket_id = 'candidaturas' and name = ${deDesaparecida}`;
@@ -111,6 +123,7 @@ afterAll(async () => {
   await servicio.storage.from("data-room").remove(enDataRoom);
   await servicio.storage.from("candidaturas").remove(enCandidaturas);
   await servicio.from("candidaturas").delete().eq("id", descartadaId);
+  await servicio.from("companies").delete().eq("id", archivadaId);
   await sql`delete from activity_log where action = 'ficheros_sueltos_borrados' and detail::text like ${"%" + viejo + "%"}`;
   await sql.end();
 });
@@ -122,17 +135,18 @@ describe("la limpieza de ficheros sueltos", () => {
     expect(error).not.toBeNull();
   });
 
-  it("borra los sueltos de hace 2 días que no cuelgan de nadie, y solo esos, y lo deja dicho", async () => {
+  it("borra las subidas abandonadas de hace 2 días, y solo esas, y lo deja dicho", async () => {
     const resultado = await limpiarFicherosSueltos(servicio);
 
     expect(await existe("data-room", viejo)).toBe(false);
     expect(await existe("data-room", reciente)).toBe(true);
     expect(await existe("data-room", firmado)).toBe(true);
     expect(await existe("data-room", apuntado)).toBe(true);
-    expect(await existe("data-room", deVega)).toBe(true);
+    expect(await existe("data-room", deVega)).toBe(false);
+    expect(await existe("data-room", deArchivada)).toBe(true);
     expect(await existe("candidaturas", deDescartada)).toBe(true);
     expect(await existe("candidaturas", deDesaparecida)).toBe(false);
-    expect(resultado.borrados).toBeGreaterThanOrEqual(2);
+    expect(resultado.borrados).toBeGreaterThanOrEqual(3);
     expect(resultado.fallidos).toBe(0);
 
     const [registro] = await sql<{ detail: { cuantos: number; bytes: number; rutas: Array<{ bucket: string; ruta: string; bytes: number }> } }[]>`
@@ -144,8 +158,9 @@ describe("la limpieza de ficheros sueltos", () => {
     expect(registro.detail.cuantos).toBe(registro.detail.rutas.length);
     const rutas = registro.detail.rutas.map((r) => r.ruta);
     expect(rutas).toContain(deDesaparecida);
+    expect(rutas).toContain(deVega);
     expect(rutas).not.toContain(reciente);
-    expect(rutas).not.toContain(deVega);
+    expect(rutas).not.toContain(deArchivada);
     expect(rutas).not.toContain(deDescartada);
   });
 });

@@ -5,9 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  *
  * Qué es «suelto» lo decide la base (`app.ficheros_sueltos`): sin fila que
  * lo apunte, con más de 24 horas, sin pinta de documento firmado, y fuera de
- * la carpeta de cualquier candidatura o compañía que exista, sea cual sea su
- * estado —una descartada incluida—. Aquí solo se borra lo que ella devuelve, por la API
- * de Storage —con SQL no se puede—, y se deja constancia en el registro de
+ * la carpeta de una candidatura descartada o una compañía archivada. Aquí
+ * solo se borra lo que ella devuelve, por la API de Storage —con SQL no se puede—, y se deja constancia en el registro de
  * actividad: cuántos, qué rutas y cuánto ocupaban.
  *
  * La llama el cron diario (`app/api/cron/resumen-avisos`), con la clave de

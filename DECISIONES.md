@@ -1839,3 +1839,9 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Un fichero que cuelga de una candidatura o compañía que existe no se borra nunca en la limpieza, sea cual sea su estado.** «Cuelga» quiere decir que el primer tramo de la ruta es su id, que es como las construye `prepararSubida`. Antes se protegían solo las compañías archivadas. Ahora entran también las candidaturas descartadas, porque cuánto se guarda lo suyo está pendiente de protección de datos.
 - **La limpieza es para subidas a medias, no para decidir qué se conserva.** Cuando haya plazo de conservación, irá en un proceso aparte y con su constancia.
 - **Consecuencia:** en data room, logos y el expediente de candidaturas solo se limpia lo que cuelga de algo que ya no existe. Una subida abandonada de una compañía viva se queda. En CV y fotos la carpeta es la persona, así que ahí sigue valiendo «ninguna fila lo apunta».
+
+## 2026-11-18 · Las subidas a medias sí se borran; lo descartado y lo archivado, no · SUSTITUYE a la del 17 nov
+
+- **Se protege solo lo que cuelga de una candidatura descartada o de una compañía archivada.** Ahí no se borra nada hasta que haya plazo de conservación, y eso irá en un proceso aparte.
+- **En las demás carpetas, un fichero sin fila que lo apunte y con más de 24 horas es una subida abandonada, y se borra.** Eso incluye las compañías activas y las candidaturas en curso. La regla del 17 nov protegía todo lo que existiera, y con ella la limpieza ya casi no limpiaba nada.
+- **Es una migración nueva** (`20261118100000`) en vez de reescribir la del 17, por si esa ya estaba en la nube.
