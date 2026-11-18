@@ -4,8 +4,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Borra los ficheros sueltos: subidos a Storage y nunca registrados.
  *
  * Qué es «suelto» lo decide la base (`app.ficheros_sueltos`): sin fila que
- * lo apunte, con más de 24 horas, y sin pinta de documento firmado ni de
- * compañía archivada. Aquí solo se borra lo que ella devuelve, por la API
+ * lo apunte, con más de 24 horas, sin pinta de documento firmado, y fuera de
+ * la carpeta de cualquier candidatura o compañía que exista, sea cual sea su
+ * estado —una descartada incluida—. Aquí solo se borra lo que ella devuelve, por la API
  * de Storage —con SQL no se puede—, y se deja constancia en el registro de
  * actividad: cuántos, qué rutas y cuánto ocupaban.
  *

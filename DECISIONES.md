@@ -1833,3 +1833,9 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Los correos de reunión leen la reunión guardada** (`datosReunion`), no el formulario, para que digan lo mismo que la pantalla. Esos datos se guardan con el correo, así que al reintentar sale igual, con la invitación de calendario.
 - **La invitación `.ics` va solo en la confirmada.** Cambiar una reunión es proponer fechas nuevas, y hasta que ella elige no hay fecha que poner en un calendario.
 - **A IWL le llega correo** cuando ella elige fecha (la misma confirmación, con la invitación) y cuando propone otras (`reunion_contrapropuesta`, evento nuevo). Lo recibe quien va de IWL en esa reunión y, si no consta nadie, quien la propuso.
+
+## 2026-11-17 · La limpieza no toca nada de una candidatura o compañía que exista
+
+- **Un fichero que cuelga de una candidatura o compañía que existe no se borra nunca en la limpieza, sea cual sea su estado.** «Cuelga» quiere decir que el primer tramo de la ruta es su id, que es como las construye `prepararSubida`. Antes se protegían solo las compañías archivadas. Ahora entran también las candidaturas descartadas, porque cuánto se guarda lo suyo está pendiente de protección de datos.
+- **La limpieza es para subidas a medias, no para decidir qué se conserva.** Cuando haya plazo de conservación, irá en un proceso aparte y con su constancia.
+- **Consecuencia:** en data room, logos y el expediente de candidaturas solo se limpia lo que cuelga de algo que ya no existe. Una subida abandonada de una compañía viva se queda. En CV y fotos la carpeta es la persona, así que ahí sigue valiendo «ninguna fila lo apunta».
