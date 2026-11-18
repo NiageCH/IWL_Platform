@@ -9,6 +9,30 @@ como es**.
 
 ---
 
+## 2026-11-18 · Limpieza: las subidas a medias sí se borran · commit bfab377
+
+**Qué cambió**
+- Ahora la limpieza solo protege lo que cuelga de una **candidatura descartada** o de una **compañía archivada**. En las demás carpetas, un fichero que no apunta ningún documento y tiene más de 24 horas se borra, también en una compañía activa. Va en la migración `20261118100000_sueltos_a_medias_si`.
+- La prueba ahora comprueba esto:
+  - un fichero suelto en la carpeta de Vega, que está activa, se borra;
+  - uno de una compañía archivada se queda;
+  - uno de una candidatura descartada hace 30 días se queda;
+  - uno de una candidatura que ya no existe se borra.
+- La entrada de `DECISIONES.md` sustituye a la del 17 nov.
+
+**Qué decidí yo**
+- Hice una migración nueva en vez de corregir la del 17, porque `main` ya incluía esa y puede estar en la nube.
+- Una candidatura en cualquier otro estado, firmada incluida, no se protege. En una firmada sus documentos están apuntados, así que eso no cambia nada.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado** · Las tres suites en verde, dos veces seguidas: unitarias 255, acceso 241 e interfaz 420 bien y 4 saltadas, con `--workers=1`. Sin desplegar.
+
+**Siguiente** · Hitos con evidencia. Lo visual queda en pausa hasta que llegue una nueva entrada.
+
+---
+
 ## 2026-11-18 · Limpieza: los ficheros de candidaturas descartadas no se tocan · commit b766b1c
 
 **Qué cambió**
