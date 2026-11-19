@@ -9,6 +9,46 @@ como es**.
 
 ---
 
+## 2026-11-19 · Avisos: cada uno lleva al botón exacto, caduca cuando ya no toca y enlaza con el paso siguiente · commit 0b714b5
+
+**Qué cambió**
+- **Inventario** en `docs/AVISOS.md`, para que Rodrigo lo revise. Por cada tipo de aviso dice quién lo recibe, qué acción pide, a qué ancla lleva, cuándo se cierra y qué viene después.
+- **Cada aviso dice tres cosas.** Qué pasó, con el dato y la fecha: «Alba dijo su situación: sin sociedad constituida, el 10 nov». Qué te toca: «Confirmarla». Y un botón con ese verbo. Debajo, en pequeño, una línea «Viene de: … · Después: …». Lo dicen igual la cartera, el correo diario y la franja, porque los tres salen de `lib/avisos.ts`.
+- **El botón lleva al sitio exacto**: `/cartera/porongo?aviso=…#situacion`. Arriba de la página aparece una franja pegada: «Has venido a: confirmar la situación societaria de Porongo», con el dato y la acción ahí mismo, y el bloque de destino queda resaltado y a la vista. Las acciones de un clic van enteras en la franja (confirmar, cambiarla, contrafirmar el NDA, «Revisado»). Las que piden escribir o elegir llevan al formulario del bloque y ponen el cursor en él.
+- **Al hacer la acción, la franja dice qué viene después**, por ejemplo «Hecho. Siguiente: decidir la incorporación · lo hace dirección». Si te toca a ti, lleva su botón.
+- **Se cierran solos**:
+  - cuando alguien hace la acción;
+  - al descartar la candidatura o archivar la compañía;
+  - los de una reunión, cuando IWL responde, propone otras fechas, la anota o la cancela;
+  - «Otras fechas», cuando caducan sus fechas: pasa a «sin fecha».
+- **«Ha elegido fecha» deja de ser aviso.** Al día siguiente de una reunión confirmada llega «Anota la reunión», a quien la propuso y a quien fue de IWL. Lo crea el cron.
+- **«Primer acceso» deja de ser aviso.** Se ve en «Altas en curso».
+- La migración `20261118120000_avisos_con_accion` cierra los avisos abiertos que ya no tocaban y deja constancia en el registro.
+- **Pruebas:**
+  - De interfaz, por tipo: pulsar el aviso; comprobar que la franja y el botón se ven sin desplazarse; hacer la acción; comprobar que el aviso se va y que la franja dice qué sigue.
+    - Nuevas en `tests/e2e/avisos.spec.ts`: anotar la reunión (que «ha elegido fecha» ya no está y «Anótala» sí), reunión sin fecha, hito sin revisar, cambio de vía y revisión en comité.
+    - Adaptadas: NDA firmado y situación dicha (`nda.spec.ts`), comentario al NDA, comentario al Acuerdo, otras fechas y tope de entrada.
+  - De acceso, en `tests/rls/avisos.test.ts`: los cierres y el aviso de anotar la reunión.
+  - Unitarias de los recorridos y del texto de cada aviso.
+
+**Qué decidí yo**
+- **«Cambio de vía» se queda como aviso.** Lo pediste el 10 nov, y su mensaje ya decía «le llega al mentor principal». Como no hay ningún hecho que lo cierre solo, lleva un botón «Revisado». Es el único que se cierra a mano.
+- **Los formularios no se repiten en la franja.** Las acciones que piden escribir (responder, anotar, validar, proponer fechas) se hacen en el bloque resaltado; la franja lleva a él y pone el cursor. Repetirlos habría sido duplicar cada formulario.
+- **«Viene de · Después» sale de `lib/recorridos.ts`.** El recorrido de entrada se comprueba contra `pasoEntrada` en una prueba. Los del embudo, la reunión y el hito están escritos una vez allí.
+- **En la prueba de la revisión en comité, el acta nueva se pone por fuera.** Redactarla y firmarla por pantalla ya lo prueba `comite.spec.ts`. Aquí solo se comprueba que el aviso lleva al bloque y desaparece.
+- **Los hitos entregados siguen en «Hitos por revisar»** y no se repiten en «Avisos para ti». El aviso sigue existiendo para el correo diario.
+
+**Qué necesito que decidas**
+1. **Revisa la tabla de `docs/AVISOS.md`.** No doy esto por hecho hasta que la veas.
+2. ¿Quieres un aviso de «correos sin enviar» para dirección, con un botón «Reintentar»? Hoy es solo un contador.
+3. ¿«Cambio de vía» como aviso con «Revisado», o al historial?
+
+**Estado** · Las tres suites en verde, dos veces seguidas: unitarias 275, acceso 257 e interfaz 432 bien y 4 saltadas, con `--workers=1`. Sin desplegar.
+
+**Siguiente** · Sesiones y horas. Lo visual sigue en pausa.
+
+---
+
 ## 2026-11-18 · Hitos: ella entrega con evidencia, el mentor valida · commit 3576fc0
 
 **Qué cambió**
