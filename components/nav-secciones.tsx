@@ -12,6 +12,7 @@ import {
   HandCoins,
   LayoutDashboard,
   LayoutGrid,
+  Mail,
   NotebookPen,
   Route,
   Settings,
@@ -58,6 +59,7 @@ export const ICONOS = {
   personas: Users,
   evaluacion: Gauge,
   umbrales: SlidersHorizontal,
+  correos: Mail,
 } satisfies Record<NombreIcono, LucideIcon>;
 
 export type Seccion = {

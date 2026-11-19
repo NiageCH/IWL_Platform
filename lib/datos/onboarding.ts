@@ -285,7 +285,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 export type Aviso = DatosAviso;
 
 export const CAMPOS_AVISO =
-  "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug, situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social), milestones(id, title), candidatura_reuniones(elegida, franjas)";
+  "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug, situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social), milestones(id, title), candidatura_reuniones(elegida, franjas), acta_id, dd_items(id, title)";
 
 export type FilaAviso = {
   id: string;
@@ -297,6 +297,8 @@ export type FilaAviso = {
   companies: unknown;
   milestones: unknown;
   candidatura_reuniones: unknown;
+  acta_id?: string | null;
+  dd_items?: unknown;
 };
 
 export function comoAviso(a: FilaAviso): Aviso {
@@ -305,6 +307,7 @@ export function comoAviso(a: FilaAviso): Aviso {
   const co = a.companies as (Partial<DatosSocietarios> & { name: string; slug: string }) | null;
   const h = a.milestones as { id: string; title: string } | null;
   const r = a.candidatura_reuniones as { elegida: { inicio?: string } | null; franjas: unknown[] | null } | null;
+  const d = a.dd_items as { id: string; title: string } | null;
   return {
     id: a.id,
     tipo: a.tipo as Aviso["tipo"],
@@ -317,27 +320,45 @@ export function comoAviso(a: FilaAviso): Aviso {
     hito: h ? { id: h.id, titulo: h.title } : null,
     situacion: co ? describirSituacion(co) : null,
     reunion: r ? { inicio: r.elegida?.inicio ?? null, franjas: Array.isArray(r.franjas) ? r.franjas.length : 0 } : null,
+    actaId: a.acta_id ?? null,
+    punto: d ? { id: d.id, titulo: d.title } : null,
   };
+}
+
+/**
+ * «3 correos sin enviar»: el aviso es uno solo y la cuenta se hace al
+ * leerlo, así que dice siempre los que quedan.
+ */
+export async function conCuantosCorreos<T extends Aviso>(
+  avisos: T[],
+  cliente: { from: Awaited<ReturnType<typeof clienteServidor>>["from"] },
+): Promise<T[]> {
+  if (!avisos.some((a) => a.tipo === "correos_sin_enviar")) return avisos;
+  const { count } = await cliente.from("correos").select("id", { count: "exact", head: true }).eq("estado", "sin_enviar");
+  return avisos.map((a) => (a.tipo === "correos_sin_enviar" ? { ...a, cuantos: count ?? 0 } : a));
 }
 
 /**
  * Los avisos sin cerrar.
  *
  * Los de dirección no van a nadie en concreto (`para` vacío); los demás,
- * a una persona —el mentor principal, quien propuso una reunión—. RLS ya
- * da a cada uno solo lo suyo; el filtro separa las dos listas para quien
- * ve ambas.
+ * a una persona —el mentor principal, quien propuso una reunión—. Los de
+ * todo IWL (`para_iwl`) los ve dirección en su lista y el equipo en la
+ * suya. RLS ya da a cada uno solo lo suyo; el filtro separa las dos listas
+ * para quien ve ambas.
  */
-async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
+async function avisosSinCerrar(soloMios: string | null, conLosDeIwl = false): Promise<Aviso[]> {
   const supabase = await clienteServidor();
   let consulta = supabase
     .from("avisos")
     .select(CAMPOS_AVISO)
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
-  consulta = soloMios ? consulta.eq("para", soloMios) : consulta.is("para", null);
+  if (!soloMios) consulta = consulta.is("para", null);
+  else if (conLosDeIwl) consulta = consulta.or(`para.eq.${soloMios},para_iwl.is.true`);
+  else consulta = consulta.eq("para", soloMios);
   const { data } = await consulta;
-  return ((data ?? []) as unknown as FilaAviso[]).map(comoAviso);
+  return conCuantosCorreos(((data ?? []) as unknown as FilaAviso[]).map(comoAviso), supabase);
 }
 
 /**
@@ -357,14 +378,20 @@ export async function leerAviso(
   if (!data) return null;
   const fila = data as unknown as FilaAviso & { cerrado_at: string | null; cerrador: unknown };
   const quien = fila.cerrador as { full_name: string | null; last_name: string | null; email: string | null } | null;
-  return { ...comoAviso(fila), cerradoAt: fila.cerrado_at, cerradoPor: quien ? nombrePersona(quien) : null };
+  const [aviso] = await conCuantosCorreos([comoAviso(fila)], supabase);
+  return { ...aviso, cerradoAt: fila.cerrado_at, cerradoPor: quien ? nombrePersona(quien) : null };
 }
 
 /** Los de dirección. Solo los ve dirección: RLS devuelve vacío al resto */
 export const leerAvisos = cache(async (): Promise<Aviso[]> => avisosSinCerrar(null));
 
-/** Los que van a una persona concreta: la de la sesión */
-export const leerAvisosParaMi = cache(async (personaId: string): Promise<Aviso[]> => avisosSinCerrar(personaId));
+/**
+ * Los que van a una persona concreta: la de la sesión. Al equipo, también
+ * los de todo IWL; dirección ya los tiene en su lista.
+ */
+export const leerAvisosParaMi = cache(
+  async (personaId: string, conLosDeIwl = false): Promise<Aviso[]> => avisosSinCerrar(personaId, conLosDeIwl),
+);
 
 /**
  * El número de la barra lateral: avisos sin cerrar más altas detenidas.

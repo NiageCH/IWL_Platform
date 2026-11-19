@@ -2,15 +2,19 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { presentarAviso, type DatosAviso, type TipoAviso } from "@/lib/avisos";
 import { leerAviso } from "@/lib/datos/onboarding";
-import { leerEnEntrada } from "@/lib/datos/entrada";
 import { leerRevisionesComite } from "@/lib/datos/comite";
-import { traza } from "@/lib/recorridos";
+import { PASO_EMBUDO, traza } from "@/lib/recorridos";
+import { leerEnEntrada, porDecidir } from "@/lib/datos/entrada";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
 import { fecha } from "@/lib/utils";
 import type { QuienMueve } from "@/lib/entrada";
 import { ConfirmarSituacion } from "@/components/formularios/entrada";
 import { ContrafirmarNda } from "@/components/formularios/nda-iwl";
 import { CerrarAviso } from "@/components/formularios/cerrar-aviso";
+import { SiguientePaso } from "@/components/formularios/candidatura";
+import { FirmarActa } from "@/components/formularios/comite";
+import { RevisarPunto } from "@/components/formularios/diligencia";
+import { ReintentarTodos } from "@/components/formularios/correo";
 import { CambiarSituacion, Destino, IrA } from "@/components/formularios/destino-aviso";
 import { Traza } from "@/components/vistas/avisos";
 
@@ -27,8 +31,9 @@ import { Traza } from "@/components/vistas/avisos";
  * Hecha la acción, el aviso se cierra y la franja dice qué viene después y
  * quién lo hace, con su botón si le toca a quien mira.
  *
- * `aviso` es el id de un aviso guardado, o `comite` y `tope` para los que
- * se calculan y no tienen fila.
+ * `aviso` es el id de un aviso guardado, o `comite` e `incorporacion` para
+ * los que se calculan y no tienen fila (`tope`, el nombre de antes, sigue
+ * valiendo para los enlaces que ya estén en un correo).
  */
 
 export interface ContextoFranja {
@@ -55,6 +60,9 @@ const QUIEN_DESPUES: Partial<Record<TipoAviso, QuienMueve | "mentor">> = {
   hito_entregado: "ella",
   hito_sin_revisar: "ella",
   cambio_via: "ella",
+  candidatura_nueva: "iwl",
+  acta_por_firmar: "iwl",
+  documento_entregado: "ella",
 };
 
 export async function FranjaAviso({ aviso, contexto = {} }: { aviso?: string | string[]; contexto?: ContextoFranja }) {
@@ -64,7 +72,9 @@ export async function FranjaAviso({ aviso, contexto = {} }: { aviso?: string | s
   if (!persona) return null;
 
   if (clave === "comite") return <FranjaComite contexto={contexto} />;
-  if (clave === "tope") return <FranjaTope contexto={contexto} esDireccion={persona.role === "admin_iwl"} />;
+  if (clave === "incorporacion" || clave === "tope") {
+    return <FranjaIncorporacion contexto={contexto} esDireccion={persona.role === "admin_iwl"} />;
+  }
 
   const a = await leerAviso(clave);
   if (!a) return null;
@@ -146,6 +156,16 @@ async function acciones(
       ) : null;
     case "nda_firmado":
       return a.candidaturaId ? <ContrafirmarNda candidaturaId={a.candidaturaId} sinApellidos={sinApellidos} /> : null;
+    case "candidatura_nueva":
+      return a.candidaturaId ? <SiguientePaso id={a.candidaturaId} estado="presentada" /> : null;
+    case "acta_por_firmar":
+      return a.actaId && a.candidaturaId ? <FirmarActa actaId={a.actaId} candidaturaId={a.candidaturaId} /> : null;
+    case "documento_entregado": {
+      const slug = contexto.slug ?? a.companiaSlug;
+      return slug && a.punto ? <RevisarPunto slug={slug} id={a.punto.id} /> : null;
+    }
+    case "correos_sin_enviar":
+      return <ReintentarTodos cuantos={a.cuantos ?? 0} />;
     case "cambio_via":
       return (
         <>
@@ -168,10 +188,13 @@ async function siguienteTras(
   a: DatosAviso,
   despues: string | null,
 ): Promise<{ texto: string; quien: QuienMueve | "mentor"; href?: string } | null> {
-  if ((a.tipo === "situacion_dicha" || a.tipo === "anexo_comentario") && a.companiaSlug) {
+  if (
+    (a.tipo === "situacion_dicha" || a.tipo === "anexo_comentario" || a.tipo === "anexo_aceptado") &&
+    a.companiaSlug
+  ) {
     const fila = (await leerEnEntrada()).find((f) => f.slug === a.companiaSlug);
-    if (!fila) return null;
-    return { ...fila.paso, href: hrefEntrada(fila.slug, fila.paso.texto) };
+    // Firmado el Acuerdo, ya no está en entrada: no queda paso de entrada
+    if (fila) return { ...fila.paso, href: hrefEntrada(fila.slug, fila.paso.texto) };
   }
   if (!despues) return null;
   return { texto: despues, quien: QUIEN_DESPUES[a.tipo] ?? "iwl" };
@@ -188,7 +211,7 @@ async function FranjaComite({ contexto }: { contexto: ContextoFranja }) {
   if (!contexto.candidaturaId) return null;
   const pendientes = await leerRevisionesComite();
   const pendiente = pendientes.find((r) => r.candidaturaId === contexto.candidaturaId);
-  const t = traza("embudo", 1);
+  const t = traza("embudo", PASO_EMBUDO.comite);
   if (!pendiente) {
     return (
       <Marco hecho>
@@ -214,29 +237,47 @@ async function FranjaComite({ contexto }: { contexto: ContextoFranja }) {
   );
 }
 
-/** El tope de entrada en Construcción: pendiente mientras no haya decisión */
-async function FranjaTope({ contexto, esDireccion }: { contexto: ContextoFranja; esDireccion: boolean }) {
+/**
+ * Decidir la incorporación: pendiente mientras `pasoEntrada` lo diga. En
+ * Aceleración, con lo obligatorio validado; en Construcción, con la
+ * situación confirmada. Si ha pasado el tope, lo lleva dicho.
+ */
+async function FranjaIncorporacion({ contexto, esDireccion }: { contexto: ContextoFranja; esDireccion: boolean }) {
   if (!contexto.slug) return null;
-  const fila = (await leerEnEntrada()).find((f) => f.slug === contexto.slug);
+  const filas = await leerEnEntrada();
+  const fila = filas.find((f) => f.slug === contexto.slug);
+  const pendiente = porDecidir(filas).find((p) => p.slug === contexto.slug);
   const t = traza("entrada", 2);
-  if (!fila || fila.paso.texto !== "Decidir la incorporación") {
+  if (!pendiente) {
     return (
       <Marco hecho>
         <p className="text-sm text-titular">
           <strong className="font-semibold">Hecho.</strong>
           {fila ? ` Siguiente: ${fila.paso.texto.toLowerCase()} · ${QUIEN[fila.paso.quien]}` : " Ya no está en entrada."}
         </p>
+        {fila && fila.paso.quien !== "ella" && esDireccion ? (
+          <Link href={hrefEntrada(fila.slug, fila.paso.texto)} className="boton-marca self-start px-4 py-1.5 text-xs">
+            {fila.paso.texto}
+          </Link>
+        ) : null}
       </Marco>
     );
   }
   return (
     <Marco>
       <p className="text-sm text-titular">
-        <strong className="font-semibold">Has venido a:</strong> decidir la incorporación de {fila.nombre}
+        <strong className="font-semibold">Has venido a:</strong> decidir la incorporación de {pendiente.nombre}
       </p>
-      <p className="text-xs text-secundario">Lleva {fila.dias} días en entrada sin Acuerdo</p>
+      <p className="text-xs text-secundario">
+        {pendiente.paso}
+        {pendiente.tope && !pendiente.paso.includes("días") ? ` · lleva ${pendiente.dias} días en entrada` : ""}
+      </p>
       <div className="flex flex-wrap items-center gap-3">
-        {esDireccion ? <IrA ancla="incorporacion" verbo="Decidir la incorporación" /> : <span className="text-xs text-metadato">La decide dirección.</span>}
+        {esDireccion ? (
+          <IrA ancla="incorporacion" verbo="Decidir la incorporación" />
+        ) : (
+          <span className="text-xs text-metadato">La decide dirección.</span>
+        )}
       </div>
       <Traza {...t} />
       <Destino ancla="incorporacion" />

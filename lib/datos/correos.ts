@@ -27,3 +27,38 @@ export async function leerCorreos(de: { candidaturaId?: string; companyId?: stri
   const { data } = await q;
   return (data ?? []) as FilaCorreo[];
 }
+
+/** Un correo con a quién iba: candidatura, compañía o una persona */
+export interface FilaCorreoSuelta extends FilaCorreo {
+  donde: { tipo: "candidatura" | "compania"; nombre: string; href: string } | null;
+}
+
+/**
+ * Los que no salieron, de toda la plataforma, más los últimos que sí: para
+ * el bloque «Correos» de Administración, que es adonde lleva su aviso.
+ */
+export async function leerCorreosDeTodos(): Promise<{ sinEnviar: FilaCorreoSuelta[]; ultimos: FilaCorreoSuelta[] }> {
+  const supabase = await clienteServidor();
+  const campos =
+    "id, evento, destinatario, asunto, estado, error, intentos, created_at, enviado_at, candidaturas(id, nombre), companies(slug, name)";
+  const [sinEnviar, ultimos] = await Promise.all([
+    supabase.from("correos").select(campos).eq("estado", "sin_enviar").order("created_at").limit(200),
+    supabase.from("correos").select(campos).neq("estado", "sin_enviar").order("created_at", { ascending: false }).limit(20),
+  ]);
+  const comoFila = (c: Record<string, unknown>): FilaCorreoSuelta => {
+    const k = c.candidaturas as { id: string; nombre: string } | null;
+    const co = c.companies as { slug: string; name: string } | null;
+    return {
+      ...(c as unknown as FilaCorreo),
+      donde: co
+        ? { tipo: "compania", nombre: co.name, href: `/cartera/${co.slug}` }
+        : k
+          ? { tipo: "candidatura", nombre: k.nombre, href: `/embudo/${k.id}` }
+          : null,
+    };
+  };
+  return {
+    sinEnviar: (sinEnviar.data ?? []).map(comoFila),
+    ultimos: (ultimos.data ?? []).map(comoFila),
+  };
+}

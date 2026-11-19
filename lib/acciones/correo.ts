@@ -102,3 +102,32 @@ export async function reintentarCorreo(formData: FormData): Promise<Resultado> {
   // El acuse es la fila cambiada a «Enviado»
   return r.estado === "enviado" ? ok() : error(`Sigue sin salir: ${r.error ?? "sin proveedor"}.`);
 }
+
+/**
+ * Reintentar todos los que quedaron sin enviar, desde el aviso de
+ * dirección. El aviso se cierra solo cuando no queda ninguno; si alguno
+ * sigue sin salir, se dice cuántos y por qué, y el aviso sigue abierto.
+ */
+export async function reintentarCorreosSinEnviar(): Promise<Resultado> {
+  const { persona, fallo: sinPermiso } = await soloIwl();
+  if (sinPermiso) return sinPermiso;
+  if (persona!.role !== "admin_iwl") return error("Reintentarlos todos es de dirección.");
+
+  // Los que ve con su sesión: RLS decide
+  const supabase = await clienteServidor();
+  const { data: filas } = await supabase.from("correos").select("id").eq("estado", "sin_enviar").limit(200);
+  if (!filas?.length) return ok();
+
+  const fallos: string[] = [];
+  for (const f of filas) {
+    const r = await reintentar(f.id);
+    if (r.estado !== "enviado") fallos.push(r.error ?? "sin proveedor");
+  }
+  revalidatePath("/admin/correos");
+  revalidatePath("/cartera", "layout");
+  revalidatePath("/embudo", "layout");
+  if (!fallos.length) return ok();
+  return error(
+    `${fallos.length === 1 ? "Uno sigue" : `${fallos.length} siguen`} sin salir: ${[...new Set(fallos)].join("; ")}.`,
+  );
+}

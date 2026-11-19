@@ -1880,3 +1880,17 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **«Anota la reunión»** lo crea el cron el día después de una reunión confirmada sin anotar. Va a quien la propuso y a quien fue de IWL; si no consta nadie, a dirección.
 - **«Cambio de vía» se queda como aviso**, porque se pidió el 10 nov, con el botón «Revisado» para cerrarlo. Es el único que se cierra a mano, porque no hay ningún hecho que diga que se ha revisado.
 - **Los abiertos que ya no tocaban se cerraron con la migración**, y queda constancia en el registro (`avisos_cerrados_por_revision`, con el recuento por tipo).
+
+## 2026-11-19 · Los avisos que faltaban, y lo que le toca a ella
+
+- **Cinco avisos nuevos se guardan y los abre y cierra la base**, con disparadores, igual que los de ayer: candidatura nueva, acta pendiente de tu firma, propuesta de Acuerdo aceptada, documento entregado y correos sin enviar. Así llegan al correo diario y la franja puede decir «Hecho. Lo hizo …» con quién y cuándo.
+- **«Decidir la incorporación» se calcula, no se guarda.** Depende de `pasoEntrada`, que vive en `lib/entrada.ts`; repetir esa lógica en SQL sería tenerla dos veces. Absorbe el aviso del tope de Construcción: una compañía con el tope pasado y sin decisión sale una vez, con los días dichos. El enlace viejo `?aviso=tope` sigue valiendo.
+- **«Para todo IWL» es una columna, `avisos.para_iwl`**, y no una fila por persona. Lo atiende quien llegue primero y se cierra para todos a la vez. Dirección lo ve en su lista y el equipo en «Avisos para ti». Los mentores no lo ven, porque `app.is_iwl()` no los incluye.
+- **Documento entregado:** lo abre que un punto pase a «entregado» o a «en revisión». Subir el fichero lo deja en «en revisión», no en «entregado». Si quien lo mueve es de IWL, no se abre: ya lo está mirando. «Quien lo pidió» es quien creó el punto a mano. Los que vienen de la plantilla no los pidió nadie, y van a todo IWL.
+- **Pedir cambios en un punto lo devuelve a «pendiente» con la nota**, que ella ve en su línea. No había otra forma de pedir cambios en el due diligence. Se escogió la que ya entendía la base para no inventar un estado nuevo.
+- **Acta pendiente de firma:** un aviso por miembro. Al firmar se cierra el suyo y no el de los demás. Si el borrador se borra, sus avisos se cierran antes y se quedan sin acta (`on delete set null`): queda constancia de que hubo que firmarla.
+- **Correos sin enviar:** un aviso solo. Lo mantiene un disparador por sentencia sobre `correos`, que lo abre con la fecha del más antiguo y lo cierra cuando no queda ninguno. El número no se guarda: se cuenta al leer el aviso, así que siempre dice los que quedan. Lleva a **Administración → Correos**, nueva, la única pantalla donde se ven los correos que no son de ninguna candidatura ni compañía.
+- **La firma del Acuerdo lleva a Programa (`#anexo`)**, no a la ficha (`#acuerdo`), porque el botón está ahí.
+- **El recorrido del embudo empieza en «Presentarse»**, para que la candidatura nueva tenga su «Viene de · Después». Los índices que se citan fuera van con nombre (`PASO_EMBUDO`), y una prueba comprueba que siguen apuntando al paso que dicen.
+- **Lo pendiente al desplegar se abre con la migración**, con constancia en el registro (`avisos_abiertos_por_revision`).
+- **«Lo que le toca a ella» es, por ahora, inventario** (`docs/AVISOS.md`). Su lado se hará con «Tu siguiente paso», cuando se retome lo visual.

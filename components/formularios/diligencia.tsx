@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { cambiarEstadoPunto } from "@/lib/acciones/diligencia";
-import { Formulario, Seleccion } from "@/components/ui/formulario";
+import { AreaTexto, Boton, Campo, Formulario, Seleccion } from "@/components/ui/formulario";
 import type { EstadoVisual } from "@/lib/estados";
 import { cn } from "@/lib/utils";
 
@@ -65,5 +66,50 @@ export function EstadoPunto({
         </>
       )}
     </Formulario>
+  );
+}
+
+/**
+ * Revisar un documento entregado, desde la franja de su aviso: validarlo en
+ * un clic, o pedir cambios diciendo cuáles. Pedir cambios lo devuelve a
+ * «pendiente» con la nota, que ella ve en su punto.
+ */
+export function RevisarPunto({ slug, id }: { slug: string; id: string }) {
+  const [cambios, setCambios] = useState(false);
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <Formulario accion={cambiarEstadoPunto}>
+          {() => (
+            <>
+              <input type="hidden" name="slug" value={slug} />
+              <input type="hidden" name="id" value={id} />
+              <input type="hidden" name="status" value="validado" />
+              <Boton>Validar</Boton>
+            </>
+          )}
+        </Formulario>
+        {!cambios ? (
+          <button type="button" onClick={() => setCambios(true)} className="accion text-xs">
+            Pedir cambios
+          </button>
+        ) : null}
+      </div>
+      {cambios ? (
+        <Formulario accion={cambiarEstadoPunto} className="rounded-md border border-filete bg-papel p-3">
+          {(r) => (
+            <>
+              <input type="hidden" name="slug" value={slug} />
+              <input type="hidden" name="id" value={id} />
+              <input type="hidden" name="status" value="pendiente" />
+              <Campo etiqueta="Qué tiene que cambiar" error={r.ok ? undefined : r.campos?.notes}>
+                <AreaTexto name="notes" required minLength={5} rows={3} />
+              </Campo>
+              <Boton>Pedir cambios</Boton>
+            </>
+          )}
+        </Formulario>
+      ) : null}
+    </div>
   );
 }

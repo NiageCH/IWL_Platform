@@ -26,6 +26,7 @@ export const NOMBRES_SECCION = [
   "personas",
   "evaluacion",
   "umbrales",
+  "correos",
 ] as const;
 
 export type NombreIcono = (typeof NOMBRES_SECCION)[number];

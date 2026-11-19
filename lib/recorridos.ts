@@ -15,15 +15,17 @@ import { pasoEntrada, type EstadoEntrada } from "@/lib/entrada";
  * `lib/recorridos.test.ts` comprueba que las dos listas van a la par.
  */
 
-export type Recorrido = "embudo" | "entrada" | "reunion" | "hito";
+export type Recorrido = "embudo" | "entrada" | "reunion" | "hito" | "documento";
 
 interface Paso {
   hacer: string;
   hecho: string;
 }
 
-/** El embudo de una candidatura, del momento de la reunión a la entrada */
+/** El embudo de una candidatura, de que se presenta a la entrada */
 const EMBUDO: Paso[] = [
+  { hacer: "Presentarse", hecho: paso("presentada").nombre },
+  { hacer: "Revisarla", hecho: paso("en_revision").nombre },
   { hacer: "Tener la reunión", hecho: paso("reunion").nombre },
   { hacer: "Pasar por comité", hecho: paso("comite").nombre },
   { hacer: "Preseleccionarla", hecho: paso("preseleccionada").nombre },
@@ -83,12 +85,23 @@ const HITO: Paso[] = [
   { hacer: "Pasar al siguiente hito", hecho: "Cumplido" },
 ];
 
+/** Un documento del due diligence, de que se pide a validado */
+const DOCUMENTO: Paso[] = [
+  { hacer: "Entregarlo", hecho: "Entregado" },
+  { hacer: "Revisarlo", hecho: "Revisado" },
+  { hacer: "Entregar el siguiente punto", hecho: "Validado" },
+];
+
 const PASOS: Record<Recorrido, Paso[]> = {
   embudo: EMBUDO,
   entrada: ENTRADA,
   reunion: REUNION,
   hito: HITO,
+  documento: DOCUMENTO,
 };
+
+/** Dónde está cada paso del embudo que se cita fuera de aquí */
+export const PASO_EMBUDO = { revisar: 1, comite: 3, nda: 5, contrafirmar: 7 } as const;
 
 /** De dónde viene un paso (lo hecho antes) y qué va después (lo que habrá que hacer) */
 export function traza(recorrido: Recorrido, indice: number): { vieneDe: string | null; despues: string | null } {

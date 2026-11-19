@@ -159,13 +159,46 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
   });
 });
 
+/** Una compañía que espera a que dirección decida su incorporación */
+export interface PorDecidir {
+  slug: string;
+  nombre: string;
+  /** Qué pasó: por qué toca decidir ahora */
+  paso: string;
+  dias: number;
+  tope: "atencion" | "vencido" | null;
+}
+
 /**
- * Las que esperan a dirección: decidir la incorporación, o una de
- * Construcción que ha pasado el tope sin Acuerdo. Cada compañía cuenta una
- * vez. Confirmar la situación ya tiene su aviso y no se cuenta dos veces;
- * lo que espera a ella, y lo por construir, no cuenta.
+ * «Decidir la incorporación», el aviso que se calcula (REVISION, 19 nov).
+ *
+ * Toca cuando `pasoEntrada` lo dice: en Aceleración, con lo obligatorio
+ * validado; en Construcción, con la situación confirmada, sin esperar al
+ * tope. Si además ha pasado el tope, lo lleva dicho. No se guarda: sale del
+ * estado, y desaparece en cuanto hay decisión o la compañía se archiva.
+ */
+export function porDecidir(filas: FilaEntrada[]): PorDecidir[] {
+  return filas
+    .filter((f) => f.paso.texto === "Decidir la incorporación")
+    .map((f) => ({
+      slug: f.slug,
+      nombre: f.nombre,
+      dias: f.dias,
+      tope: f.tope,
+      paso:
+        f.via === "aceleracion"
+          ? `${f.nombre} tiene lo obligatorio validado (${f.obligatoriosHechos} de ${f.obligatorios})`
+          : f.tope
+            ? `${f.nombre} lleva ${f.dias} días en entrada sin Acuerdo`
+            : `${f.nombre} tiene la situación societaria confirmada`,
+    }));
+}
+
+/**
+ * Las que esperan a dirección: decidir la incorporación. Confirmar la
+ * situación y firmar el Acuerdo ya tienen su aviso y no se cuentan dos
+ * veces; lo que espera a ella, y lo por construir, no cuenta.
  */
 export const contarEntradaParaDireccion = cache(async (): Promise<number> => {
-  const filas = await leerEnEntrada();
-  return filas.filter((f) => f.paso.quien === "direccion" || f.tope).length;
+  return porDecidir(await leerEnEntrada()).length;
 });

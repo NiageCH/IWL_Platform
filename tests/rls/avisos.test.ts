@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { USUARIOS, clienteServicio, entrarComo } from "./clientes";
+import { COMPANIAS, USUARIOS, clienteServicio, entrarComo } from "./clientes";
 
 /**
  * Los avisos se cierran solos cuando dejan de tocar, y lo que viene después
@@ -181,5 +181,128 @@ describe("se cierran solos", () => {
       .update({ archived_at: new Date().toISOString(), archive_reason: "Prueba de avisos" })
       .eq("id", companiaId);
     expect(await abiertos({ company_id: companiaId })).toEqual([]);
+  });
+});
+
+describe("los que faltaban (REVISION, 19 nov)", () => {
+  const MAREA = COMPANIAS.marea;
+
+  it("una candidatura nueva va a todo IWL, no a mentores ni fundadoras; pasar a revisión la cierra", async () => {
+    const id = await candidatura("presentada");
+    const [aviso] = await abiertos({ candidatura_id: id });
+    expect(aviso).toEqual({ tipo: "candidatura_nueva", para: null });
+
+    for (const [quien, ve] of [
+      [USUARIOS.equipoIwl, 1],
+      [USUARIOS.mentorProducto, 0],
+      [USUARIOS.fundadoraMarea, 0],
+    ] as const) {
+      const cliente = await entrarComo(quien);
+      const { data } = await cliente.from("avisos").select("id").eq("candidatura_id", id);
+      expect(data ?? [], quien).toHaveLength(ve);
+    }
+
+    await servicio.from("candidaturas").update({ estado: "en_revision" }).eq("id", id);
+    expect(await abiertos({ candidatura_id: id })).toEqual([]);
+  });
+
+  it("un acta pide firma a cada miembro; firmar cierra el suyo, y borrar el borrador cierra el resto", async () => {
+    const id = await candidatura("comite");
+    const { data: acta } = await servicio
+      .from("comite_actas")
+      .insert({ candidatura_id: id, resumen: "Prueba de avisos", decision: "aplazada", revision_on: "2030-01-01" })
+      .select("id")
+      .single();
+    await servicio.from("comite_firmas").insert([
+      { acta_id: acta!.id, profile_id: adminId },
+      { acta_id: acta!.id, profile_id: equipoId },
+    ]);
+    const porFirmar = async () =>
+      (await servicio.from("avisos").select("para").eq("acta_id", acta!.id).is("cerrado_at", null)).data ?? [];
+    expect(new Set((await porFirmar()).map((a) => a.para))).toEqual(new Set([adminId, equipoId]));
+
+    // Cada uno ve el suyo, no el del otro
+    const equipo = await entrarComo(USUARIOS.equipoIwl);
+    const { data: suyos } = await equipo.from("avisos").select("para").eq("acta_id", acta!.id);
+    expect(suyos).toEqual([{ para: equipoId }]);
+
+    await servicio.rpc("firmar_acta", { p_acta: acta!.id, p_profile: adminId, p_ip: "1.2.3.4", p_ua: "prueba" });
+    expect(await porFirmar()).toEqual([{ para: equipoId }]);
+
+    // Otra acta sin firmar, que se borra: su aviso queda cerrado y sin acta
+    const { data: borrador } = await servicio
+      .from("comite_actas")
+      .insert({ candidatura_id: id, resumen: "Borrador", decision: "aplazada", revision_on: "2030-01-01" })
+      .select("id")
+      .single();
+    await servicio.from("comite_firmas").insert({ acta_id: borrador!.id, profile_id: equipoId });
+    const { data: delBorrador } = await servicio.from("avisos").select("id").eq("acta_id", borrador!.id).single();
+    await servicio.from("comite_actas").delete().eq("id", borrador!.id);
+    const { data: quedo } = await servicio.from("avisos").select("acta_id, cerrado_at").eq("id", delBorrador!.id).single();
+    expect(quedo!.acta_id).toBeNull();
+    expect(quedo!.cerrado_at).not.toBeNull();
+  });
+
+  it("un documento entregado va a quien lo pidió; si lo mueve IWL, no avisa; validarlo lo cierra", async () => {
+    const { data: area } = await servicio.from("dd_areas").select("id").eq("is_active", true).limit(1).single();
+    const { data: puntos } = await servicio
+      .from("dd_items")
+      .insert([
+        { company_id: MAREA, area_id: area!.id, title: "RLS pedido por el equipo", created_by: equipoId },
+        { company_id: MAREA, area_id: area!.id, title: "RLS que mueve IWL" },
+      ])
+      .select("id, title");
+    const porTitulo = (titulo: string) => puntos!.find((p) => p.title === titulo)!.id;
+    const [pedido, deIwl] = [porTitulo("RLS pedido por el equipo"), porTitulo("RLS que mueve IWL")];
+    try {
+      await servicio.from("dd_items").update({ status: "en_revision" }).eq("id", pedido);
+      const { data: a } = await servicio
+        .from("avisos")
+        .select("tipo, para, para_iwl")
+        .eq("dd_item_id", pedido)
+        .is("cerrado_at", null)
+        .single();
+      expect(a).toEqual({ tipo: "documento_entregado", para: equipoId, para_iwl: false });
+
+      const admin = await entrarComo(USUARIOS.admin);
+      await admin.from("dd_items").update({ status: "en_revision" }).eq("id", deIwl);
+      expect((await servicio.from("avisos").select("id").eq("dd_item_id", deIwl)).data).toEqual([]);
+
+      await admin.from("dd_items").update({ status: "validado" }).eq("id", pedido);
+      expect((await servicio.from("avisos").select("id").eq("dd_item_id", pedido).is("cerrado_at", null)).data).toEqual([]);
+    } finally {
+      await servicio.from("dd_items").delete().in("id", [pedido, deIwl]);
+    }
+  });
+
+  it("los correos sin enviar son un aviso solo, que se cierra cuando no queda ninguno", async () => {
+    const { count: antes } = await servicio.from("correos").select("id", { count: "exact", head: true }).eq("estado", "sin_enviar");
+    expect(antes, "la prueba parte sin correos sin enviar").toBe(0);
+    const { data: filas } = await servicio
+      .from("correos")
+      .insert(
+        [1, 2].map((n) => ({
+          evento: "recordatorio",
+          destinatario: `rls.correos.${n}@ejemplo.test`,
+          asunto: "Prueba",
+          estado: "sin_enviar",
+        })),
+      )
+      .select("id");
+    const ids = filas!.map((f) => f.id);
+    const abiertosDeCorreos = async () =>
+      (await servicio.from("avisos").select("id").eq("tipo", "correos_sin_enviar").is("cerrado_at", null)).data ?? [];
+    try {
+      const [aviso] = await abiertosDeCorreos();
+      expect(await abiertosDeCorreos()).toHaveLength(1);
+
+      await servicio.from("correos").update({ estado: "enviado" }).eq("id", ids[0]);
+      expect(await abiertosDeCorreos()).toHaveLength(1);
+      await servicio.from("correos").update({ estado: "enviado" }).eq("id", ids[1]);
+      expect(await abiertosDeCorreos()).toEqual([]);
+      await servicio.from("avisos").delete().eq("id", aviso.id);
+    } finally {
+      await servicio.from("correos").delete().in("id", ids);
+    }
   });
 });

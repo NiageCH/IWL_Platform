@@ -30,7 +30,7 @@ import { leerRevisionesComite } from "@/lib/datos/comite";
 import { AvisosDireccion, AvisosParaMi, HitosPorRevisar } from "@/components/vistas/alta";
 import { leerHitosPorRevisar } from "@/lib/datos/ruta";
 import { describirSituacion } from "@/lib/societario";
-import { leerEnEntrada } from "@/lib/datos/entrada";
+import { leerEnEntrada, porDecidir } from "@/lib/datos/entrada";
 import { EnEntrada } from "@/components/vistas/en-entrada";
 import { direccionBase } from "@/lib/direccion";
 
@@ -114,7 +114,7 @@ export default async function Cartera() {
     ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
     : [[], [], []];
   const [paraMi, enEntrada, porRevisar] = await Promise.all([
-    leerAvisosParaMi(persona.id),
+    leerAvisosParaMi(persona.id, !esDireccion && esIwl(persona.role)),
     esIwl(persona.role) ? leerEnEntrada() : Promise.resolve([]),
     leerHitosPorRevisar({ id: persona.id, role: persona.role }),
   ]);
@@ -132,7 +132,7 @@ export default async function Cartera() {
           avisos={avisos.filter((a) => a.tipo !== "hito_entregado")}
           altas={altas}
           revisiones={revisiones}
-          paradas={enEntrada.flatMap((f) => (f.tope ? [{ slug: f.slug, nombre: f.nombre, dias: f.dias, tope: f.tope }] : []))}
+          incorporaciones={porDecidir(enEntrada)}
         />
       ) : null}
       <EnEntrada filas={enEntrada} direccion={direccionBase()} />

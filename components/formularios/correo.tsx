@@ -1,6 +1,6 @@
 "use client";
 
-import { enviarMensajeDescarte, reintentarCorreo } from "@/lib/acciones/correo";
+import { enviarMensajeDescarte, reintentarCorreo, reintentarCorreosSinEnviar } from "@/lib/acciones/correo";
 import { Formulario } from "@/components/ui/formulario";
 
 /**
@@ -34,6 +34,19 @@ export function ReintentarCorreo({ id }: { id: string }) {
             Reintentar
           </button>
         </>
+      )}
+    </Formulario>
+  );
+}
+
+/** Todos los que no salieron, de una vez. Si alguno sigue sin salir, lo dice */
+export function ReintentarTodos({ cuantos }: { cuantos: number }) {
+  return (
+    <Formulario accion={reintentarCorreosSinEnviar}>
+      {() => (
+        <button type="submit" className="boton-marca px-4 py-1.5 text-xs">
+          {cuantos === 1 ? "Reintentar" : `Reintentar los ${cuantos}`}
+        </button>
       )}
     </Formulario>
   );

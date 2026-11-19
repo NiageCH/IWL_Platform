@@ -37,7 +37,7 @@ test("la demostración se ve en la cartera, con su distintivo", async ({ page })
   try {
     await entrarComo(page, USUARIOS.equipoIwl, "/cartera");
 
-    const fila = page.locator("li", { hasText: "Marea Clínica" }).first();
+    const fila = page.locator("li:not([data-aviso])", { hasText: "Marea Clínica" }).first();
     await expect(fila).toBeVisible();
     await expect(fila.getByText("Demostración")).toBeVisible();
   } finally {

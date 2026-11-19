@@ -1,4 +1,4 @@
-import { traza, type Recorrido } from "@/lib/recorridos";
+import { PASO_EMBUDO, traza, type Recorrido } from "@/lib/recorridos";
 import { fecha } from "@/lib/utils";
 
 /**
@@ -29,6 +29,11 @@ export type TipoAviso =
   | "reunion_anotar"
   | "hito_entregado"
   | "hito_sin_revisar"
+  | "candidatura_nueva"
+  | "acta_por_firmar"
+  | "anexo_aceptado"
+  | "documento_entregado"
+  | "correos_sin_enviar"
   // Ya no se crean (no piden nada); pueden quedar en el historial
   | "primer_acceso"
   | "reunion_elegida";
@@ -48,6 +53,12 @@ export interface DatosAviso {
   /** La situación societaria dicha, en palabras */
   situacion: string | null;
   reunion: { inicio: string | null; franjas: number } | null;
+  /** El acta de comité que falta por firmar */
+  actaId?: string | null;
+  /** El punto del due diligence entregado */
+  punto?: { id: string; titulo: string } | null;
+  /** Cuántos correos siguen sin enviar */
+  cuantos?: number;
 }
 
 export interface AvisoPresentado {
@@ -78,15 +89,19 @@ function dia(cuando: string | null | undefined): string {
 
 /** El recorrido y el paso que pide cada tipo, para «Viene de · Después» */
 const PASO_DEL_RECORRIDO: Partial<Record<TipoAviso, [Recorrido, number]>> = {
-  nda_comentario: ["embudo", 3],
-  nda_firmado: ["embudo", 5],
+  candidatura_nueva: ["embudo", PASO_EMBUDO.revisar],
+  acta_por_firmar: ["embudo", PASO_EMBUDO.comite],
+  nda_comentario: ["embudo", PASO_EMBUDO.nda],
+  nda_firmado: ["embudo", PASO_EMBUDO.contrafirmar],
   situacion_dicha: ["entrada", 1],
   anexo_comentario: ["entrada", 4],
+  anexo_aceptado: ["entrada", 5],
   reunion_contrapropuesta: ["reunion", 1],
   reunion_caducada: ["reunion", 0],
   reunion_anotar: ["reunion", 3],
   hito_entregado: ["hito", 1],
   hito_sin_revisar: ["hito", 1],
+  documento_entregado: ["documento", 1],
 };
 
 export function presentarAviso(a: DatosAviso): AvisoPresentado {
@@ -201,6 +216,61 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         ancla: `hito-${a.hito?.id ?? ""}`,
         hasVenidoA: `revisar el hito «${a.hito?.titulo ?? ""}» de ${sitio}`,
       };
+    case "candidatura_nueva":
+      return {
+        ...base,
+        paso: `${quien} presentó ${sitio} el ${dia(a.created_at)}`,
+        toca: "Revisarla",
+        verbo: "Abrir",
+        href: embudo("pasos"),
+        ancla: "pasos",
+        hasVenidoA: `revisar la candidatura de ${sitio}`,
+      };
+    case "acta_por_firmar":
+      return {
+        ...base,
+        paso: `El acta de comité de ${sitio} espera tu firma desde el ${dia(a.created_at)}`,
+        toca: "Firmarla",
+        verbo: "Firmar el acta",
+        href: embudo("comite"),
+        ancla: "comite",
+        hasVenidoA: `firmar el acta de comité de ${sitio}`,
+      };
+    case "anexo_aceptado":
+      return {
+        ...base,
+        paso: `${quien} aceptó la propuesta de Acuerdo el ${dia(a.created_at)}`,
+        toca: "Firmar el Acuerdo",
+        verbo: "Firmar",
+        href: ficha("/programa", "anexo"),
+        ancla: "anexo",
+        hasVenidoA: `firmar el Acuerdo con ${sitio}`,
+      };
+    case "documento_entregado": {
+      const titulo = a.punto?.titulo ?? "un documento";
+      const ancla = `punto-${a.punto?.id ?? ""}`;
+      return {
+        ...base,
+        paso: `${quien} entregó «${titulo}» el ${dia(a.created_at)}`,
+        toca: "Revisarlo",
+        verbo: "Revisar",
+        href: ficha("/diligencia", ancla),
+        ancla,
+        hasVenidoA: `revisar «${titulo}» de ${sitio}`,
+      };
+    }
+    case "correos_sin_enviar": {
+      const n = a.cuantos ?? 0;
+      return {
+        ...base,
+        paso: `${n === 1 ? "1 correo sin enviar" : `${n} correos sin enviar`} desde el ${dia(a.created_at)}`,
+        toca: n === 1 ? "Reintentarlo" : "Reintentarlos",
+        verbo: "Reintentar",
+        href: conAviso("/admin/correos", "correos"),
+        ancla: "correos",
+        hasVenidoA: n === 1 ? "reintentar el correo que no salió" : `reintentar los ${n} correos que no salieron`,
+      };
+    }
     case "primer_acceso":
       return {
         ...base,

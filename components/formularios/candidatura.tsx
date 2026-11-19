@@ -130,6 +130,23 @@ export function NuevaCandidatura({
   );
 }
 
+/** El siguiente paso del embudo, en un clic. También en la franja de un aviso */
+export function SiguientePaso({ id, estado }: { id: string; estado: EstadoCandidatura }) {
+  const siguiente = siguientePaso(estado);
+  if (!siguiente || siguiente === "firmada") return null;
+  return (
+    <Formulario accion={moverCandidatura}>
+      {() => (
+        <>
+          <input type="hidden" name="id" value={id} />
+          <input type="hidden" name="estado" value={siguiente} />
+          <Boton>Pasar a {nombrePaso(siguiente).toLowerCase()}</Boton>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
 /** Mover por el embudo: el siguiente paso en un clic, y el resto en la lista */
 export function MoverCandidatura({
   id,
@@ -138,21 +155,9 @@ export function MoverCandidatura({
   id: string;
   estado: EstadoCandidatura;
 }) {
-  const siguiente = siguientePaso(estado);
-
   return (
     <div className="flex flex-wrap items-end gap-4">
-      {siguiente && siguiente !== "firmada" ? (
-        <Formulario accion={moverCandidatura}>
-          {() => (
-            <>
-              <input type="hidden" name="id" value={id} />
-              <input type="hidden" name="estado" value={siguiente} />
-              <Boton>Pasar a {nombrePaso(siguiente).toLowerCase()}</Boton>
-            </>
-          )}
-        </Formulario>
-      ) : null}
+      <SiguientePaso id={id} estado={estado} />
 
       <Formulario accion={moverCandidatura} className="flex-row items-end gap-2">
         {() => (

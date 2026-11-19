@@ -2,7 +2,7 @@ import "server-only";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
 import { lineaAviso } from "@/lib/avisos";
-import { CAMPOS_AVISO, comoAviso, type FilaAviso } from "@/lib/datos/onboarding";
+import { CAMPOS_AVISO, comoAviso, conCuantosCorreos, type FilaAviso } from "@/lib/datos/onboarding";
 import { notificar } from "@/lib/correo";
 
 /**
@@ -26,7 +26,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
       .eq("resumen_avisos", "diario"),
     servicio
       .from("avisos")
-      .select(`${CAMPOS_AVISO}, para`)
+      .select(`${CAMPOS_AVISO}, para, para_iwl`)
       .is("cerrado_at", null)
       .order("created_at"),
   ]);
@@ -35,11 +35,18 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
   let sinEnviar = 0;
   for (const p of personas ?? []) {
     if (!p.email) continue;
-    const filas = (avisos ?? []) as unknown as Array<FilaAviso & { para: string | null }>;
-    const suyos = filas.filter((a) => a.para === p.id || (a.para === null && p.role === "admin_iwl"));
+    const filas = (avisos ?? []) as unknown as Array<FilaAviso & { para: string | null; para_iwl: boolean }>;
+    // Los de todo IWL, a dirección y al equipo; no a los mentores
+    const suyos = filas.filter(
+      (a) =>
+        a.para === p.id ||
+        (a.para === null && p.role === "admin_iwl") ||
+        (a.para_iwl && p.role === "equipo_iwl"),
+    );
     if (!suyos.length) continue;
     // Lo mismo que la cartera: qué pasó y qué le toca
-    const lista = suyos.map((a) => `· ${lineaAviso(comoAviso(a))}`).join("\n");
+    const dichos = await conCuantosCorreos(suyos.map(comoAviso), servicio);
+    const lista = dichos.map((a) => `· ${lineaAviso(a)}`).join("\n");
     const r = await notificar(
       { correo: p.email, nombre: p.full_name, profileId: p.id },
       "resumen_avisos",

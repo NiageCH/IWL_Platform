@@ -130,6 +130,14 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
 
     // Dirección: responde desde el aviso y firma el Acuerdo
     await entrarComo(page, USUARIOS.admin, "/cartera");
+    // Aceptada la propuesta, a dirección le toca firmarla (REVISION, 19 nov)
+    const aceptada = page.locator('li[data-aviso="anexo_aceptado"]').filter({ hasText: PERSONA });
+    await expect(aceptada).toContainText(`${PERSONA} aceptó la propuesta de Acuerdo`);
+    await expect(aceptada).toContainText("Te toca: firmar el acuerdo");
+    await expect(aceptada.getByRole("link", { name: "Firmar" })).toHaveAttribute(
+      "href",
+      new RegExp(`/cartera/${co.slug}/programa\\?aviso=[0-9a-f-]+#anexo$`),
+    );
     const aviso = page.locator('li[data-aviso="anexo_comentario"]').filter({ hasText: PERSONA });
     await expect(aviso).toContainText(`${PERSONA} comentó la propuesta de Acuerdo`);
     await aviso.getByRole("link", { name: "Responder" }).click();
@@ -157,6 +165,9 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
 
     const [despues] = await consultar<{ tramo: string; stage: string }>("companies", { id: `eq.${companiaId}` }, "tramo,stage");
     expect(despues).toEqual({ tramo: "incubacion", stage: "pre_semilla" });
+    // Firmado, el aviso de firmarlo se cierra solo
+    const porFirmar = await consultar("avisos", { company_id: `eq.${companiaId}`, tipo: "eq.anexo_aceptado", cerrado_at: "is.null" }, "id");
+    expect(porFirmar).toEqual([]);
 
     // Y empieza a facturar: dirección la pasa a Aceleración, con motivo
     await page.getByText("Pasar a Aceleración", { exact: true }).first().click();

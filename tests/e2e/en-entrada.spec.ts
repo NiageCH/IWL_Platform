@@ -91,6 +91,9 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await expect(
       bloque.locator("li").filter({ hasText: CONS }).getByText(/Decidir la incorporación · le toca a dirección/),
     ).toBeVisible();
+    // Y es un aviso de dirección, sin esperar al tope (REVISION, 19 nov)
+    const decidir = page.locator('li[data-aviso="incorporacion"]').filter({ hasText: CONS });
+    await expect(decidir).toContainText(`${CONS} tiene la situación societaria confirmada`);
 
     /*
      * El tope de Construcción: con 15 días en entrada, atención en la fila y
@@ -101,12 +104,13 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await actualizar("companies", { id: `eq.${cons.compania}` }, { created_at: hace15 });
     await page.reload();
     await expect(bloque.locator("li").filter({ hasText: CONS }).getByText("15 días sin Acuerdo")).toBeVisible();
-    const tope = page.locator('li[data-aviso="tope_entrada"]').filter({ hasText: CONS });
-    await expect(tope).toContainText(`${CONS} lleva 15 días en entrada sin Acuerdo`);
+    // Pasado el tope, el mismo aviso lo dice: uno por compañía, no dos
+    await expect(decidir).toHaveCount(1);
+    await expect(decidir).toContainText(`${CONS} lleva 15 días en entrada sin Acuerdo`);
 
     // El aviso lleva a la franja y al bloque de la decisión, a la vista
-    await tope.getByRole("link", { name: "Decidir la incorporación" }).click();
-    await expect(page).toHaveURL(/\?aviso=tope#incorporacion$/);
+    await decidir.getByRole("link", { name: "Decidir la incorporación" }).click();
+    await expect(page).toHaveURL(/\?aviso=incorporacion#incorporacion$/);
     const franja = page.getByRole("region", { name: "Has venido a" });
     await expect(franja).toContainText(`decidir la incorporación de ${CONS}`);
     await expect(franja.getByRole("button", { name: "Decidir la incorporación" })).toBeInViewport();

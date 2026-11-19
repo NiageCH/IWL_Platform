@@ -241,3 +241,177 @@ test("una candidatura aplazada vuelve a comité en su fecha; con el acta nueva, 
     await borrar("candidaturas", { id: c.id });
   }
 });
+
+/*
+ * Los que faltaban (REVISION, 19 nov). La propuesta de Acuerdo aceptada se
+ * recorre en `acuerdo.spec.ts`, y «Decidir la incorporación» en
+ * `en-entrada.spec.ts`; aquí, los demás.
+ */
+
+test("una candidatura nueva avisa a dirección y al equipo; al pasarla a revisión, se va", async ({ page, browser }) => {
+  const nombre = `Avisos Nueva ${SELLO}`;
+  const c = await insertar<{ id: string }>("candidaturas", {
+    cohort_id: COHORTE,
+    nombre,
+    contacto_nombre: "Nueva",
+    contacto_apellidos: "Prueba",
+    contacto_email: `e2e.avisos.nueva.${SELLO}@ejemplo.test`,
+    estado: "presentada",
+  });
+  const equipo = await browser.newPage();
+  try {
+    // El equipo también la ve, en sus avisos
+    await entrarComo(equipo, USUARIOS.equipoIwl, "/cartera");
+    await expect(equipo.locator('li[data-aviso="candidatura_nueva"]').filter({ hasText: nombre })).toContainText(
+      "Te toca: revisarla",
+    );
+
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    const aviso = page.locator('li[data-aviso="candidatura_nueva"]').filter({ hasText: nombre });
+    await expect(aviso).toContainText(`Nueva Prueba presentó ${nombre}`);
+    await expect(aviso).toContainText("Viene de: Presentada");
+    await aviso.getByRole("link", { name: "Abrir" }).click();
+    await expect(page).toHaveURL(new RegExp(`/embudo/${c.id}\\?aviso=[0-9a-f-]+#pasos$`));
+
+    const arriba = await franjaALaVista(page, "Pasar a en revisión");
+    await arriba.getByRole("button", { name: "Pasar a en revisión" }).click();
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: tener la reunión · lo hace IWL");
+
+    await equipo.reload();
+    await expect(equipo.locator('li[data-aviso="candidatura_nueva"]').filter({ hasText: nombre })).toHaveCount(0);
+  } finally {
+    await equipo.close();
+    await borrar("candidaturas", { id: c.id });
+  }
+});
+
+test("un acta pide la firma a cada miembro que falta; al firmar, se va el suyo y no el de los demás", async ({ page }) => {
+  const nombre = `Avisos Acta ${SELLO}`;
+  const c = await candidatura(nombre);
+  try {
+    await actualizar("candidaturas", { id: `eq.${c.id}` }, { estado: "comite" });
+    const acta = await insertar<{ id: string }>("comite_actas", {
+      candidatura_id: c.id,
+      resumen: "Aplazada hasta ver las primeras ventas.",
+      decision: "aplazada",
+      revision_on: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
+    });
+    const [admin, equipo] = [await idDe(USUARIOS.admin), await idDe(USUARIOS.equipoIwl)];
+    await insertar("comite_firmas", { acta_id: acta.id, profile_id: admin });
+    await insertar("comite_firmas", { acta_id: acta.id, profile_id: equipo });
+
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    const aviso = page.locator('li[data-aviso="acta_por_firmar"]').filter({ hasText: nombre });
+    await expect(aviso).toContainText(`El acta de comité de ${nombre} espera tu firma`);
+    await aviso.getByRole("link", { name: "Firmar el acta" }).click();
+    await expect(page).toHaveURL(new RegExp(`/embudo/${c.id}\\?aviso=[0-9a-f-]+#comite$`));
+
+    const arriba = await franjaALaVista(page, "Firmar el acta");
+    await arriba.getByRole("button", { name: "Firmar el acta", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: preseleccionarla");
+
+    const abiertos = await consultar<{ para: string }>(
+      "avisos",
+      { acta_id: `eq.${acta.id}`, cerrado_at: "is.null" },
+      "para",
+    );
+    expect(abiertos).toEqual([{ para: equipo }]);
+  } finally {
+    await borrar("candidaturas", { id: c.id });
+  }
+});
+
+test("un documento entregado pide revisarlo; validarlo o pedir cambios lo cierra", async ({ page }) => {
+  const [area] = await consultar<{ id: string }>("dd_areas", { is_active: "eq.true", order: "order_index" }, "id");
+  const titulo = `Documento de prueba ${SELLO}`;
+  const otro = `Otro documento ${SELLO}`;
+  const ids: string[] = [];
+  for (const t of [titulo, otro]) {
+    const p = await insertar<{ id: string }>("dd_items", { company_id: COMPANIAS.marea, area_id: area.id, title: t, status: "pendiente" });
+    ids.push(p.id);
+  }
+  try {
+    // Ella lo sube: el punto pasa a revisión (aquí, por fuera)
+    await actualizar("dd_items", { id: `in.(${ids.join(",")})` }, { status: "en_revision" });
+
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    const aviso = page.locator('li[data-aviso="documento_entregado"]').filter({ hasText: titulo });
+    await expect(aviso).toContainText(`entregó «${titulo}»`);
+    await expect(aviso).toContainText("Te toca: revisarlo");
+    await aviso.getByRole("link", { name: "Revisar" }).click();
+    await expect(page).toHaveURL(new RegExp(`/diligencia\\?aviso=[0-9a-f-]+#punto-${ids[0]}$`));
+
+    const arriba = await franjaALaVista(page, "Validar");
+    await expect(page.locator(`#punto-${ids[0]}.destino-aviso`)).toBeVisible();
+    await arriba.getByRole("button", { name: "Validar", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: entregar el siguiente punto · lo hace ella");
+
+    // El otro: pedir cambios, diciendo cuáles
+    await page.goto("/cartera");
+    await page.locator('li[data-aviso="documento_entregado"]').filter({ hasText: otro }).getByRole("link", { name: "Revisar" }).click();
+    const franja = await franjaALaVista(page, "Validar");
+    await franja.getByRole("button", { name: "Pedir cambios" }).click();
+    await franja.getByLabel("Qué tiene que cambiar").fill("Falta la página de firmas.");
+    await franja.getByRole("button", { name: "Pedir cambios" }).click();
+    await expect(page.getByRole("region", { name: "Hecho" })).toBeVisible();
+
+    const estados = await consultar<{ title: string; status: string; notes: string | null }>(
+      "dd_items",
+      { id: `in.(${ids.join(",")})`, order: "title" },
+      "title,status,notes",
+    );
+    expect(estados).toEqual([
+      { title: titulo, status: "validado", notes: null },
+      { title: otro, status: "pendiente", notes: "Falta la página de firmas." },
+    ]);
+    await page.goto("/cartera");
+    await expect(page.locator('li[data-aviso="documento_entregado"]').filter({ hasText: SELLO })).toHaveCount(0);
+  } finally {
+    for (const id of ids) await borrar("dd_items", { id });
+  }
+});
+
+test("los correos sin enviar son un solo aviso; al reintentarlos y salir todos, se va", async ({ page }) => {
+  const destinatarios = [1, 2].map((n) => `e2e.correos.${n}.${SELLO}@ejemplo.test`);
+  const ids: string[] = [];
+  for (const d of destinatarios) {
+    const f = await insertar<{ id: string }>("correos", {
+      evento: "recordatorio",
+      destinatario: d,
+      asunto: "Prueba de reintento",
+      datos: { nombre: "Prueba", paso: "decir su situación", enlace: "http://localhost:3100/entrar" },
+      estado: "sin_enviar",
+      error: "Sin proveedor",
+      intentos: 1,
+    });
+    ids.push(f.id);
+  }
+  let avisoId = "";
+  try {
+    const abiertos = await consultar<{ id: string }>("avisos", { tipo: "eq.correos_sin_enviar", cerrado_at: "is.null" }, "id");
+    expect(abiertos).toHaveLength(1);
+    avisoId = abiertos[0].id;
+
+    await entrarComo(page, USUARIOS.admin, "/cartera");
+    const aviso = page.locator('li[data-aviso="correos_sin_enviar"]');
+    await expect(aviso).toHaveCount(1);
+    await expect(aviso).toContainText(/\d+ correos sin enviar desde el/);
+    await aviso.getByRole("link", { name: "Reintentar" }).click();
+    await expect(page).toHaveURL(new RegExp(`/admin/correos\\?aviso=${avisoId}#correos$`));
+
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja).toBeInViewport();
+    const boton = franja.getByRole("button", { name: /^Reintentar los \d+$/ });
+    await expect(boton).toBeInViewport();
+    await expect(page.locator("#correos").getByText(destinatarios[0], { exact: false })).toBeVisible();
+    await boton.click();
+
+    // En local salen por Mailpit: no queda ninguno y el aviso se cierra solo
+    await expect(page.getByRole("region", { name: "Hecho" })).toBeVisible({ timeout: 15_000 });
+    const [cerrado] = await consultar<{ cerrado_at: string | null }>("avisos", { id: `eq.${avisoId}` }, "cerrado_at");
+    expect(cerrado.cerrado_at).not.toBeNull();
+  } finally {
+    for (const id of ids) await borrar("correos", { id });
+    if (avisoId) await borrar("avisos", { id: avisoId });
+  }
+});

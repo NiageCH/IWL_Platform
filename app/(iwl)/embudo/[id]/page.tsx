@@ -128,7 +128,7 @@ export default async function FichaCandidatura({
 
       {/* Dónde está, en el recorrido entero */}
       {estado !== "descartada" && estado !== "firmada" ? (
-        <Bloque className="mb-6">
+        <Bloque id="pasos" className="mb-6 scroll-mt-48">
           <TituloBloque
             accion={<Metadato>{paso(estado).siguiente}</Metadato>}
           >

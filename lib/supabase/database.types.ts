@@ -391,16 +391,34 @@ isOneToOne: false
                   ]
                 },"avisos": {
                   Row: {
-                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"milestone_id": string | null,"para": string | null,"profile_id": string | null,"reunion_id": string | null,"tipo": string
+                    "acta_id": string | null,"annex_id": string | null,"candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"dd_item_id": string | null,"id": string,"milestone_id": string | null,"para": string | null,"para_iwl": boolean,"profile_id": string | null,"reunion_id": string | null,"tipo": string
                   }
                   Insert: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo": string
+                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo": string
                   }
                   Update: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo"?: string
+                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "avisos_acta_id_fkey"
+      columns: ["acta_id"]
+isOneToOne: false
+      referencedRelation: "comite_actas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "annexes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["annex_id"]
+    },{
       foreignKeyName: "avisos_candidatura_id_fkey"
       columns: ["candidatura_id"]
 isOneToOne: false
@@ -460,6 +478,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "tech_score_input"
       referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "avisos_dd_item_id_fkey"
+      columns: ["dd_item_id"]
+isOneToOne: false
+      referencedRelation: "dd_items"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "avisos_milestone_id_fkey"
       columns: ["milestone_id"]

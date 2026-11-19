@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { enlaceHito } from "@/lib/avisos";
 import { FilaAviso, Traza } from "@/components/vistas/avisos";
-import { traza } from "@/lib/recorridos";
+import { PASO_EMBUDO, traza } from "@/lib/recorridos";
+import type { PorDecidir } from "@/lib/datos/entrada";
 import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
@@ -117,19 +118,19 @@ export function AvisosDireccion({
   avisos,
   altas,
   revisiones = [],
-  paradas = [],
+  incorporaciones = [],
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
   /** Candidaturas aplazadas en comité cuya fecha de revisión ha llegado */
   revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
-  /** Compañías de Construcción que han pasado el tope del tramo de entrada sin Acuerdo */
-  paradas?: { slug: string; nombre: string; dias: number; tope: "atencion" | "vencido" }[];
+  /** Compañías en entrada que esperan la decisión de incorporación */
+  incorporaciones?: PorDecidir[];
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
       <Bloque>
-        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length + paradas.length} sin ver</Metadato>}>
+        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length + incorporaciones.length} sin ver</Metadato>}>
           Avisos
         </TituloBloque>
         {revisiones.length ? (
@@ -145,22 +146,20 @@ export function AvisosDireccion({
                     Redactar el acta
                   </Link>
                 </div>
-                <Traza {...traza("embudo", 1)} />
+                <Traza {...traza("embudo", PASO_EMBUDO.comite)} />
               </li>
             ))}
           </ul>
         ) : null}
-        {paradas.length ? (
+        {incorporaciones.length ? (
           <ul className="divide-y divide-filete border-b border-filete">
-            {paradas.map((p) => (
-              <li key={p.slug} className="flex flex-col gap-1 px-4 py-3" data-aviso="tope_entrada">
+            {incorporaciones.map((p) => (
+              <li key={p.slug} className="flex flex-col gap-1 px-4 py-3" data-aviso="incorporacion">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="min-w-0 flex-1 text-sm text-titular">
-                    {p.nombre} lleva {p.dias} días en entrada sin Acuerdo
-                  </span>
-                  <Estado valor={p.tope} rotulo={p.tope === "vencido" ? "Vencido" : "Atención"} />
+                  <span className="min-w-0 flex-1 text-sm text-titular">{p.paso}</span>
+                  {p.tope ? <Estado valor={p.tope} rotulo={`${p.dias} días en entrada`} /> : null}
                   <span className="text-xs text-secundario">Te toca: decidir</span>
-                  <Link href={`/cartera/${p.slug}?aviso=tope#incorporacion`} className="accion text-xs text-acento-texto">
+                  <Link href={`/cartera/${p.slug}?aviso=incorporacion#incorporacion`} className="accion text-xs text-acento-texto">
                     Decidir la incorporación
                   </Link>
                 </div>
@@ -169,10 +168,11 @@ export function AvisosDireccion({
             ))}
           </ul>
         ) : null}
-        {avisos.length === 0 && revisiones.length === 0 && paradas.length === 0 ? (
+        {avisos.length === 0 && revisiones.length === 0 && incorporaciones.length === 0 ? (
           <SinDatos>
-            Nada pendiente. Cuando alguien firme o comente el NDA, diga su
-            situación o comente el Acuerdo, te lo dirá aquí con su botón.
+            Nada pendiente. Cuando llegue una candidatura, alguien firme o
+            comente el NDA, diga su situación, entregue un documento o acepte
+            el Acuerdo, te lo dirá aquí con su botón.
           </SinDatos>
         ) : (
           <ul className="divide-y divide-filete">

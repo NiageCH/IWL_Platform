@@ -1,7 +1,9 @@
 # Inventario de avisos
 
 REVISION, 18 nov: «cada aviso lleva al botón exacto, caduca cuando ya no toca
-y enlaza con el paso siguiente». **Pendiente de que Rodrigo lo revise.**
+y enlaza con el paso siguiente». **Revisado y aprobado por Rodrigo el 19 nov**,
+con seis avisos que faltaban, ya añadidos, y la sección «Lo que le toca a
+ella».
 
 ## Las reglas
 
@@ -40,7 +42,12 @@ acción. Si pone «— », solo lo cierra la acción.
 | **Anota la reunión** (`reunion_anotar`), **nuevo** | Quien la propuso y quien fue de IWL | «La reunión del 13 nov con Tarulo ya pasó» | Anotarla · **Anotar** | `/embudo/<id>#reunion` | Alguien la anota; la candidatura se descarta | Moverla a comité, si toca |
 | **Hito entregado** (`hito_entregado`) | Mentor principal y revisor encargado; sin ninguno, dirección | «Alba entregó el hito "20 entrevistas" el 18 nov» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Alguien lo valida o pide cambios; la compañía se archiva | Siguiente hito de la etapa |
 | **Cambio de vía** (`cambio_via`) | Mentor principal | «Siren pasó de Construcción a Aceleración el 12 nov» | Revisar lo que pasa a por entregar · **Revisar** y, en la franja, **Revisado** | `/cartera/<slug>/diligencia#puntos` | Lo marca «Revisado» quien lo revisa (no hay otro hecho que lo cierre); la compañía se archiva | Ella entrega lo que falta |
-| **Hito sin revisar** (`hito_sin_revisar`) | Dirección | «"20 entrevistas" lleva 8 días entregado sin revisar» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Igual que el anterior | Igual que el anterior |
+| **Hito sin revisar** (`hito_sin_revisar`) | Dirección, a los 7 días de entregado | «"20 entrevistas" lleva más de 7 días entregado sin revisar» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Igual que el anterior | Igual que el anterior |
+| **Candidatura nueva** (`candidatura_nueva`), **19 nov** | Dirección y equipo | «Marta presentó Tarulo el 14 nov» | Revisarla · **Abrir**; en la franja, **Pasar a en revisión** | `/embudo/<id>#pasos` | Pasa a «En revisión» o a cualquier otro paso; la candidatura se descarta | Tener la reunión |
+| **Acta pendiente de tu firma** (`acta_por_firmar`), **19 nov** | Cada miembro del comité que falta, uno por persona | «El acta de comité de Tarulo espera tu firma desde el 14 nov» | Firmarla · **Firmar el acta**; en la franja, la firma en un clic | `/embudo/<id>#comite` | Firma (se cierra el suyo, no el de los demás); sale del comité; el borrador se borra; la candidatura se descarta | Lo que decida el acta |
+| **Propuesta de Acuerdo aceptada** (`anexo_aceptado`), **19 nov** | Dirección | «Alba aceptó la propuesta de Acuerdo el 15 nov» | Firmar el Acuerdo · **Firmar** | `/cartera/<slug>/programa#anexo` | Se firma; vuelve a borrador; la compañía se archiva | Se firma y entra en incubación |
+| **Documento entregado** (`documento_entregado`), **19 nov** | Quien lo pidió (un punto que alguien de IWL añadió a mano); si nadie, dirección y equipo | «Alba entregó "Escritura de constitución" el 16 nov» | Revisarlo · **Revisar**; en la franja, **Validar** / **Pedir cambios** | `/cartera/<slug>/diligencia#punto-<id>` | Se valida, se piden cambios, se marca bloqueante o no aplica; la compañía se archiva | Ella entrega el siguiente punto |
+| **Correos sin enviar** (`correos_sin_enviar`), **19 nov** | Dirección; uno solo aunque sean varios | «3 correos sin enviar desde el 12 nov» | Reintentarlos · **Reintentar** | `/admin/correos#correos` | No queda ninguno sin enviar | — |
 
 ## Los calculados
 
@@ -50,7 +57,7 @@ acción se hace.
 | Aviso | Lo recibe | Qué te toca · botón | Lleva a | Desaparece cuando |
 |---|---|---|---|---|
 | **Revisión en comité** | Dirección | Volver a mirarla · **Redactar el acta** | `/embudo/<id>#comite` | Hay acta nueva o se descarta |
-| **Tope de entrada en Construcción** | Dirección | Decidir · **Decidir la incorporación** | `/cartera/<slug>#incorporacion` | Hay decisión o se archiva |
+| **Decidir la incorporación**, **19 nov**: en Aceleración con lo obligatorio validado; en Construcción con la situación confirmada, sin esperar al tope. Si ha pasado el tope, lo dice («lleva 15 días en entrada sin Acuerdo») y no sale un segundo aviso | Dirección | Decidir · **Decidir la incorporación** | `/cartera/<slug>#incorporacion` | Hay decisión o se archiva |
 | **Alta detenida** | Dirección | Recordárselo · **Recordar** (ahí mismo) | — | Ella da el paso |
 
 ## Los que salen de avisos
@@ -70,13 +77,44 @@ no tocan:
 Cada cierre queda en el registro como `avisos_cerrados_por_revision`, con
 cuántos de cada tipo.
 
+## Lo que quedó decidido el 19 nov
+
+- **Cambio de vía**: se queda como aviso con acción, y lo cierra «Revisado».
+- **Correos sin enviar**: aviso a dirección, uno solo, que se cierra cuando no
+  queda ninguno. Lleva a **Administración → Correos**, que no existía: hasta
+  ahora los correos solo se veían en la ficha de cada candidatura o compañía,
+  y los que no son de ninguna —el resumen diario, los de acceso— no se veían
+  en ningún sitio.
+- **Validar hitos**: dirección y el mentor principal; el técnico o el revisor,
+  solo si está encargado de ese hito.
+- **Hito sin revisar**: a los 7 días.
+
 ## Pendientes de decidir
 
-- **Correos sin enviar.** Hoy es un contador en el bloque «Correos». Podría
-  ser un aviso a dirección («3 correos sin enviar desde el 12 nov ·
-  **Reintentar**»), pero no lo he convertido sin preguntar.
-- **Cambio de vía.** Lo dejo como aviso porque el 10 nov se pidió que le
-  llegara al mentor principal. Como no hay ningún hecho que lo cierre solo,
-  lo cierra «Revisado». Si prefieres que vaya al historial, se quita.
-- **Revisión en comité.** El botón lleva al bloque del comité. Redactar el
-  acta nueva la saca de la lista.
+- **Proponerle el Acuerdo.** Decidida la incorporación, lo siguiente es que
+  IWL le proponga el Acuerdo. No tiene aviso: se ve en «En entrada», con
+  quién lo mueve. Si quieres que lo sea, sería calculado, como «Decidir la
+  incorporación».
+- **La firma del Acuerdo** está en Programa (`#anexo`), que es donde está el
+  botón, y no en la ficha (`#acuerdo`), que no lo tiene.
+
+## Lo que le toca a ella
+
+La candidata y la fundadora tienen las mismas necesidades que IWL. Esta tabla
+es la base de «Tu siguiente paso», que se hará cuando se retome lo visual:
+con las mismas reglas, la franja «Has venido a…» al llegar y el «Después» al
+terminar.
+
+**Hoy** cada una de estas acciones está en su pantalla, pero no llega como
+aviso con su franja. Las anclas que no existen todavía en su lado van en
+cursiva.
+
+| Aviso | Lo recibe | Qué pasó | Qué te toca · botón | Lleva a | Se cierra cuando | Después |
+|---|---|---|---|---|---|---|
+| **Firmar el NDA** | La candidata | «IWL te ha enviado el NDA el 12 nov» | Leerlo y firmarlo · **Firmar el NDA** | `/candidatura` (con cuenta) o su enlace privado, *`#nda`* | Lo firma; la candidatura se descarta | IWL lo contrafirma (lo hace dirección) |
+| **Elegir fecha** | La candidata | «IWL te propone 3 fechas para la reunión, el 10 nov» | Elegir una o proponer otras · **Elegir fecha** | `/candidatura` o su enlace, *`#reunion`* | Elige o propone otras; pasan todas las fechas; IWL cancela; la candidatura se descarta | Se celebra la reunión |
+| **Decir tu situación societaria** | La fundadora | «Firmasteis el NDA el 12 nov» | Decirla · **Decir mi situación** | `/proyecto`, *`#situacion`* | La dice; la compañía se archiva | IWL la confirma |
+| **Aceptar la propuesta de Acuerdo** | La fundadora | «IWL te propuso el Acuerdo el 13 nov» | Leerla y aceptarla, o comentarla · **Leer la propuesta** | `/proyecto/programa#anexo` | La acepta; IWL la devuelve a borrador; la compañía se archiva | IWL firma el Acuerdo |
+| **Rehacer un hito** | La fundadora | «Tu mentor pidió cambios en "20 entrevistas" el 18 nov: …» | Rehacerlo y volver a entregarlo · **Rehacer** | `/proyecto/ruta#hito-<id>` | Lo entrega de nuevo; la compañía se archiva | Su mentor lo revisa |
+| **Subir un documento pedido** | La fundadora | «IWL te pide "Escritura de constitución"» o «IWL pidió cambios en …: falta la página de firmas» | Subirlo · **Subir** | `/proyecto/diligencia#punto-<id>` | Lo sube (pasa a revisión); IWL lo marca «no aplica»; la compañía se archiva | IWL lo revisa |
+| **Confirmar horas**, cuando haya sesiones | La fundadora | «Sesión del 20 nov con su mentor: 2 h, con acta» | Confirmarlas o decir qué no cuadra · **Confirmar** | *`/proyecto/aportacion#sesion-<id>`* | Las confirma o las discute; la compañía se archiva | Cuentan en la Aportación |
