@@ -98,14 +98,19 @@ test("ella propone otras fechas, IWL acepta una, y se anota", async ({ page, bro
 
     // IWL: el aviso, y acepta una de las suyas
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const avisoIwl = page.locator("li").filter({ hasText: "Agustina Prueba propone otras fechas para la reunión" });
-    await expect(avisoIwl).toBeVisible();
-    await avisoIwl.getByRole("link", { name: "Ver la reunión" }).click();
-    const bloque = page.locator("section").filter({ has: page.getByRole("heading", { name: "Reuniones", exact: true }) });
+    const avisoIwl = page.locator('li[data-aviso="reunion_contrapropuesta"]').filter({ hasText: "Agustina Prueba" });
+    await expect(avisoIwl).toContainText("Agustina Prueba propone otras fechas");
+    await avisoIwl.getByRole("link", { name: "Elegir fecha" }).click();
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja.getByRole("button", { name: "Elegir fecha" })).toBeInViewport();
+    await franja.getByRole("button", { name: "Elegir fecha" }).click();
+    const bloque = page.locator("#reunion");
     await expect(bloque.getByText("Contrapropuesta")).toBeVisible();
     await expect(bloque.getByText("Su nota: Por la mañana nos va mejor.")).toBeVisible();
     await bloque.getByRole("button", { name: "Aceptar esta" }).first().click();
     await expect(bloque.getByText("Confirmada", { exact: true })).toBeVisible();
+    // Hecho: el aviso se cierra, y lo siguiente es celebrarla
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: celebrarla");
 
     // Ella: confirmada, con cuándo, cómo y el calendario
     await suya.reload();

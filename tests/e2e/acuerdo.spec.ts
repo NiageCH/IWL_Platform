@@ -130,12 +130,17 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
 
     // Dirección: responde desde el aviso y firma el Acuerdo
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const aviso = page.locator("li").filter({ hasText: `${PERSONA} ha comentado la propuesta de Acuerdo` });
+    const aviso = page.locator('li[data-aviso="anexo_comentario"]').filter({ hasText: PERSONA });
+    await expect(aviso).toContainText(`${PERSONA} comentó la propuesta de Acuerdo`);
     await aviso.getByRole("link", { name: "Responder" }).click();
-    await expect(page).toHaveURL(new RegExp(`/cartera/${co.slug}/programa`));
+    await expect(page).toHaveURL(new RegExp(`/cartera/${co.slug}/programa\\?aviso=[0-9a-f-]+#anexo$`));
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja.getByRole("button", { name: "Responder" })).toBeInViewport();
+    await franja.getByRole("button", { name: "Responder" }).click();
     await page.getByLabel("Respuesta").fill("Sí, incluyen la mentoría.");
-    await page.getByRole("button", { name: "Responder" }).click();
+    await page.locator("#anexo").getByRole("button", { name: "Responder" }).click();
     await expect(page.getByText("Sí, incluyen la mentoría.")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente:");
 
     await page.getByText("Firmar el Acuerdo y el Anexo").click();
     const firma = page.locator("form", { has: page.getByRole("button", { name: "Firmar el Acuerdo" }) });

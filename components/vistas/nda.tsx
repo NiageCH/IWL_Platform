@@ -101,7 +101,7 @@ export function BloqueNda({
   const e = ESTADO[estado];
 
   return (
-    <Bloque>
+    <Bloque id="nda" className="scroll-mt-48">
       <TituloBloque accion={<Estado valor={e.visual} rotulo={e.rotulo} />}>NDA</TituloBloque>
       <div className="flex flex-col gap-3 px-5 py-4 text-sm text-secundario">
         {estado === "sin_plantilla" ? (

@@ -67,16 +67,22 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     await expect(page.getByText("Si algo no te encaja, dínoslo. Lo vemos antes de que firme IWL.")).toBeVisible();
     await salir(page);
 
-    // Dirección: el aviso lleva a responder
+    // Dirección: el aviso lleva a la franja, y su botón al formulario de respuesta
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const aviso = page.locator("li").filter({ hasText: `${PERSONA} ha comentado el NDA` });
-    await expect(aviso).toBeVisible();
+    const aviso = page.locator('li[data-aviso="nda_comentario"]').filter({ hasText: PERSONA });
+    await expect(aviso).toContainText(`${PERSONA} comentó el NDA`);
     await aviso.getByRole("link", { name: "Responder" }).click();
-    await expect(page).toHaveURL(new RegExp(`/embudo/${c.id}`));
+    await expect(page).toHaveURL(new RegExp(`/embudo/${c.id}\\?aviso=[0-9a-f-]+#nda$`));
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja).toContainText(`responder al comentario de ${PERSONA} sobre el NDA`);
+    await expect(franja.getByRole("button", { name: "Responder" })).toBeInViewport();
+    await franja.getByRole("button", { name: "Responder" }).click();
+    await expect(page.getByLabel("Respuesta")).toBeFocused();
 
     await page.getByLabel("Respuesta").fill("Doce meses. Lo dejamos escrito en el texto.");
-    await page.getByRole("button", { name: "Responder" }).click();
+    await page.locator("#nda").getByRole("button", { name: "Responder" }).click();
     await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: que ella firme el NDA · lo hace ella");
 
     await page.getByText("Cambiar el texto solo para ella").click();
     const texto = page.getByLabel("Texto del NDA");

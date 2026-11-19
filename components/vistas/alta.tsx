@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { enlaceHito, textoAviso } from "@/lib/avisos";
+import { enlaceHito } from "@/lib/avisos";
+import { FilaAviso, Traza } from "@/components/vistas/avisos";
+import { traza } from "@/lib/recorridos";
 import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
-import { CerrarAviso } from "@/components/formularios/cerrar-aviso";
-import { ContrafirmarNda } from "@/components/formularios/nda-iwl";
 import type { AltaDe, AltaEnCurso, Aviso } from "@/lib/datos/onboarding";
 import type { HitoPorRevisar } from "@/lib/datos/ruta";
 import { estadoVisual } from "@/lib/estados";
@@ -118,7 +118,6 @@ export function AvisosDireccion({
   altas,
   revisiones = [],
   paradas = [],
-  sinApellidos = false,
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
@@ -126,8 +125,6 @@ export function AvisosDireccion({
   revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
   /** Compañías de Construcción que han pasado el tope del tramo de entrada sin Acuerdo */
   paradas?: { slug: string; nombre: string; dias: number; tope: "atencion" | "vencido" }[];
-  /** Quien mira no tiene apellidos en su perfil: no puede firmar por IWL */
-  sinApellidos?: boolean;
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
@@ -138,14 +135,17 @@ export function AvisosDireccion({
         {revisiones.length ? (
           <ul className="divide-y divide-filete border-b border-filete">
             {revisiones.map((r) => (
-              <li key={r.candidaturaId} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-                <span className="min-w-0 flex-1 text-sm text-titular">
-                  {r.nombre}: toca volver a mirarla en comité
-                </span>
-                <span className="cifra text-xs text-metadato">{fecha(r.revisionOn)}</span>
-                <Link href={`/embudo/${r.candidaturaId}`} className="enlace text-xs">
-                  Redactar el acta
-                </Link>
+              <li key={r.candidaturaId} className="flex flex-col gap-1 px-4 py-3" data-aviso="comite_revision">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="min-w-0 flex-1 text-sm text-titular">
+                    {r.nombre} quedó aplazada en comité hasta el {fecha(r.revisionOn)}
+                  </span>
+                  <span className="text-xs text-secundario">Te toca: volver a mirarla</span>
+                  <Link href={`/embudo/${r.candidaturaId}?aviso=comite#comite`} className="accion text-xs text-acento-texto">
+                    Redactar el acta
+                  </Link>
+                </div>
+                <Traza {...traza("embudo", 1)} />
               </li>
             ))}
           </ul>
@@ -153,65 +153,31 @@ export function AvisosDireccion({
         {paradas.length ? (
           <ul className="divide-y divide-filete border-b border-filete">
             {paradas.map((p) => (
-              <li key={p.slug} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-                <span className="min-w-0 flex-1 text-sm text-titular">
-                  {p.nombre} lleva {p.dias} días en entrada sin Acuerdo
-                </span>
-                <Estado valor={p.tope} rotulo={p.tope === "vencido" ? "Vencido" : "Atención"} />
-                <Link href={`/cartera/${p.slug}`} className="enlace text-xs">
-                  Decidir
-                </Link>
+              <li key={p.slug} className="flex flex-col gap-1 px-4 py-3" data-aviso="tope_entrada">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="min-w-0 flex-1 text-sm text-titular">
+                    {p.nombre} lleva {p.dias} días en entrada sin Acuerdo
+                  </span>
+                  <Estado valor={p.tope} rotulo={p.tope === "vencido" ? "Vencido" : "Atención"} />
+                  <span className="text-xs text-secundario">Te toca: decidir</span>
+                  <Link href={`/cartera/${p.slug}?aviso=tope#incorporacion`} className="accion text-xs text-acento-texto">
+                    Decidir la incorporación
+                  </Link>
+                </div>
+                <Traza {...traza("entrada", 2)} />
               </li>
             ))}
           </ul>
         ) : null}
         {avisos.length === 0 && revisiones.length === 0 && paradas.length === 0 ? (
           <SinDatos>
-            Nada nuevo. Cuando alguien entre por primera vez, comente o firme
-            el NDA, te lo dirá aquí.
+            Nada pendiente. Cuando alguien firme o comente el NDA, diga su
+            situación o comente el Acuerdo, te lo dirá aquí con su botón.
           </SinDatos>
         ) : (
           <ul className="divide-y divide-filete">
             {avisos.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-                <span className="min-w-0 flex-1 text-sm text-titular">
-                  {textoAviso(a.tipo, a.persona, a.donde, a.hito?.titulo)}
-                  {a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
-                </span>
-                <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
-                {a.candidaturaId ? (
-                  <Link href={`/embudo/${a.candidaturaId}`} className="enlace text-xs">
-                    {a.tipo === "nda_firmado"
-                      ? "Leer el NDA"
-                      : a.tipo === "nda_comentario"
-                        ? "Responder"
-                        : a.tipo.startsWith("reunion_")
-                          ? "Ver la reunión"
-                          : "Ver su alta"}
-                  </Link>
-                ) : null}
-                {a.companiaSlug && !a.candidaturaId && a.hito ? (
-                  <Link href={enlaceHito(a.companiaSlug, a.hito.id)} className="enlace text-xs">
-                    Revisar
-                  </Link>
-                ) : a.companiaSlug && !a.candidaturaId ? (
-                  <Link
-                    href={
-                      a.tipo === "anexo_comentario"
-                        ? `/cartera/${a.companiaSlug}/programa`
-                        : `/cartera/${a.companiaSlug}`
-                    }
-                    className="enlace text-xs"
-                  >
-                    {a.tipo === "anexo_comentario" ? "Responder" : "Confirmarla"}
-                  </Link>
-                ) : null}
-                {/* Firmar ahí mismo, sin ir a la ficha */}
-                {a.tipo === "nda_firmado" && a.candidaturaId ? (
-                  <ContrafirmarNda candidaturaId={a.candidaturaId} sinApellidos={sinApellidos} />
-                ) : null}
-                {a.tipo === "primer_acceso" ? <CerrarAviso id={a.id} /> : null}
-              </li>
+              <FilaAviso key={a.id} aviso={a} />
             ))}
           </ul>
         )}
@@ -249,9 +215,9 @@ export function AvisosDireccion({
 }
 
 /**
- * Los avisos que van a una persona concreta, no a dirección. Hoy, uno: al
- * mentor principal, cuando su compañía pasa de Construcción a Aceleración.
- * Se dan por vistos a mano.
+ * Los avisos que van a una persona concreta, no a dirección: al mentor
+ * principal, al cambiar la vía; a quien propuso una reunión, para anotarla.
+ * Se cierran solos cuando se hace lo que piden.
  */
 export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
   if (!avisos.length) return null;
@@ -260,24 +226,7 @@ export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
       <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>Avisos para ti</TituloBloque>
       <ul className="divide-y divide-filete">
         {avisos.map((a) => (
-          <li key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-            <span className="min-w-0 flex-1 text-sm text-titular">
-              {textoAviso(a.tipo, a.persona, a.donde, a.hito?.titulo)}
-              {a.hito && a.donde ? <span className="text-metadato"> · {a.donde}</span> : null}
-            </span>
-            <span className="cifra text-xs text-metadato">{fecha(a.created_at)}</span>
-            {a.companiaSlug && a.hito ? (
-              <Link href={enlaceHito(a.companiaSlug, a.hito.id)} className="enlace text-xs">
-                Revisar
-              </Link>
-            ) : a.companiaSlug ? (
-              <Link href={`/cartera/${a.companiaSlug}/programa`} className="enlace text-xs">
-                Ver el motivo
-              </Link>
-            ) : null}
-            {/* Uno de hito se cierra al validarlo o pedir cambios, no a mano */}
-            {a.hito ? null : <CerrarAviso id={a.id} />}
-          </li>
+          <FilaAviso key={a.id} aviso={a} />
         ))}
       </ul>
     </Bloque>

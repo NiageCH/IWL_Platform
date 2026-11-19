@@ -201,12 +201,14 @@ export async function VistaPrograma({
           ) : null}
 
           {/* El Anexo es también la propuesta de Acuerdo: proponerlo, comentarlo, aceptarlo y firmarlo */}
-          <PropuestaAcuerdo
-            anexo={anexo.data}
-            compania={compania}
-            esIwl={esIwl}
-            esFundadora={resumen.permisos.esFundadora}
-          />
+          <div id="anexo" className="scroll-mt-48">
+            <PropuestaAcuerdo
+              anexo={anexo.data}
+              compania={compania}
+              esIwl={esIwl}
+              esFundadora={resumen.permisos.esFundadora}
+            />
+          </div>
 
           <HistorialAnexo versiones={versiones.data ?? []} />
 

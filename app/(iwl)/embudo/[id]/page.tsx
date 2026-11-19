@@ -1,3 +1,4 @@
+import { FranjaAviso } from "@/components/vistas/franja-aviso";
 import Link from "next/link";
 import { nombreCompleto } from "@/lib/etiquetas";
 import { notFound, redirect } from "next/navigation";
@@ -57,12 +58,14 @@ const TIPOS_EVENTO: Record<string, string> = {
 
 export default async function FichaCandidatura({
   params,
+  searchParams,
 }: PageProps<"/embudo/[id]">) {
   const persona = await personaActual();
   if (!persona) redirect("/entrar");
   if (!capacidades(persona.role).verEmbudo) redirect("/");
 
   const { id } = await params;
+  const { aviso } = await searchParams;
   const datos = await leerCandidatura(id);
   if (!datos) notFound();
 
@@ -89,6 +92,7 @@ export default async function FichaCandidatura({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10 lg:px-10">
+      <FranjaAviso aviso={aviso} contexto={{ candidaturaId: id }} />
       <Link href="/embudo" className="enlace text-sm text-metadato">
         ← Embudo
       </Link>

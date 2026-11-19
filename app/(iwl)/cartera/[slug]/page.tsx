@@ -1,3 +1,4 @@
+import { FranjaAviso } from "@/components/vistas/franja-aviso";
 import { companiaPorSlug } from "@/lib/datos/sesion";
 import { CabeceraProyecto } from "@/components/cabecera-proyecto";
 import { leerMovimiento } from "@/lib/datos/movimiento";
@@ -11,8 +12,9 @@ import { leerEntrada } from "@/lib/datos/entrada";
 import { leerCorreos } from "@/lib/datos/correos";
 import { BloqueCorreos } from "@/components/vistas/correos";
 
-export default async function ResumenCompania({ params }: PageProps<"/cartera/[slug]">) {
+export default async function ResumenCompania({ params, searchParams }: PageProps<"/cartera/[slug]">) {
   const { slug } = await params;
+  const { aviso } = await searchParams;
   const resumen = await companiaPorSlug(slug);
   const movimiento = await leerMovimiento(resumen.compania.id);
 
@@ -33,6 +35,7 @@ export default async function ResumenCompania({ params }: PageProps<"/cartera/[s
         seccionActiva="resumen"
       />
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
+        <FranjaAviso aviso={aviso} contexto={{ companyId: resumen.compania.id, slug }} />
         {entrada ? (
           <EntradaIwl
             compania={resumen.compania}

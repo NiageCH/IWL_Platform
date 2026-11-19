@@ -391,13 +391,13 @@ isOneToOne: false
                   ]
                 },"avisos": {
                   Row: {
-                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"milestone_id": string | null,"para": string | null,"profile_id": string | null,"tipo": string
+                    "candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"id": string,"milestone_id": string | null,"para": string | null,"profile_id": string | null,"reunion_id": string | null,"tipo": string
                   }
                   Insert: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"tipo": string
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo": string
                   }
                   Update: {
-                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"tipo"?: string
+                    "candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -501,6 +501,12 @@ isOneToOne: false
       columns: ["profile_id"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_reunion_id_fkey"
+      columns: ["reunion_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_reuniones"
       referencedColumns: ["id"]
     }
                   ]
@@ -4914,6 +4920,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "avisar_reuniones_caducadas":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"avisar_reuniones_por_anotar":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "borrar_compania":

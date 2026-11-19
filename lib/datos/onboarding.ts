@@ -1,4 +1,6 @@
 import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
+import type { DatosAviso } from "@/lib/avisos";
+import { describirSituacion, type DatosSocietarios } from "@/lib/societario";
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { contarEntradaParaDireccion } from "@/lib/datos/entrada";
@@ -279,65 +281,83 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
   return salida.sort((a, b) => (b.paso.dias ?? 0) - (a.paso.dias ?? 0));
 });
 
-export interface Aviso {
+/** Un aviso tal como lo dice `lib/avisos.ts` */
+export type Aviso = DatosAviso;
+
+export const CAMPOS_AVISO =
+  "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug, situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social), milestones(id, title), candidatura_reuniones(elegida, franjas)";
+
+export type FilaAviso = {
   id: string;
-  tipo:
-    | "primer_acceso"
-    | "nda_firmado"
-    | "nda_comentario"
-    | "situacion_dicha"
-    | "anexo_comentario"
-    | "cambio_via"
-    | "reunion_elegida"
-    | "reunion_contrapropuesta"
-    | "reunion_caducada"
-    | "hito_entregado"
-    | "hito_sin_revisar";
+  tipo: string;
   created_at: string;
-  persona: string;
-  candidaturaId: string | null;
-  /** El identificador de la compañía, para los avisos que son de una compañía */
-  companiaSlug: string | null;
-  donde: string | null;
-  /** En los avisos de hitos: cuál, para nombrarlo y llevar a él */
-  hito: { id: string; titulo: string } | null;
+  candidatura_id: string | null;
+  profiles: unknown;
+  candidaturas: unknown;
+  companies: unknown;
+  milestones: unknown;
+  candidatura_reuniones: unknown;
+};
+
+export function comoAviso(a: FilaAviso): Aviso {
+  const p = a.profiles as { full_name: string | null; last_name: string | null; email: string | null } | null;
+  const c = a.candidaturas as { nombre: string; contacto_nombre: string | null; contacto_apellidos: string | null } | null;
+  const co = a.companies as (Partial<DatosSocietarios> & { name: string; slug: string }) | null;
+  const h = a.milestones as { id: string; title: string } | null;
+  const r = a.candidatura_reuniones as { elegida: { inicio?: string } | null; franjas: unknown[] | null } | null;
+  return {
+    id: a.id,
+    tipo: a.tipo as Aviso["tipo"],
+    created_at: a.created_at,
+    // Sin cuenta todavía —responde desde su enlace—, por su nombre de contacto
+    persona: p ? nombrePersona(p) : nombreCompleto(c?.contacto_nombre, c?.contacto_apellidos) || "Alguien",
+    candidaturaId: a.candidatura_id,
+    companiaSlug: co?.slug ?? null,
+    donde: c?.nombre ?? co?.name ?? null,
+    hito: h ? { id: h.id, titulo: h.title } : null,
+    situacion: co ? describirSituacion(co) : null,
+    reunion: r ? { inicio: r.elegida?.inicio ?? null, franjas: Array.isArray(r.franjas) ? r.franjas.length : 0 } : null,
+  };
 }
 
 /**
  * Los avisos sin cerrar.
  *
  * Los de dirección no van a nadie en concreto (`para` vacío); los demás,
- * a una persona —el mentor principal, al cambiar la vía—. RLS ya da a cada
- * uno solo lo suyo; el filtro separa las dos listas para quien ve ambas.
+ * a una persona —el mentor principal, quien propuso una reunión—. RLS ya
+ * da a cada uno solo lo suyo; el filtro separa las dos listas para quien
+ * ve ambas.
  */
 async function avisosSinCerrar(soloMios: string | null): Promise<Aviso[]> {
   const supabase = await clienteServidor();
   let consulta = supabase
     .from("avisos")
-    .select(
-      "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug), milestones(id, title)",
-    )
+    .select(CAMPOS_AVISO)
     .is("cerrado_at", null)
     .order("created_at", { ascending: false });
   consulta = soloMios ? consulta.eq("para", soloMios) : consulta.is("para", null);
   const { data } = await consulta;
+  return ((data ?? []) as unknown as FilaAviso[]).map(comoAviso);
+}
 
-  return (data ?? []).map((a) => {
-    const p = a.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
-    const c = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null; contacto_apellidos: string | null } | null;
-    const co = a.companies as unknown as { name: string; slug: string } | null;
-    return {
-      id: a.id,
-      tipo: a.tipo as Aviso["tipo"],
-      created_at: a.created_at,
-      // Sin cuenta todavía —responde desde su enlace—, por su nombre de contacto
-      persona: p ? nombrePersona(p) : nombreCompleto(c?.contacto_nombre, c?.contacto_apellidos) || "Alguien",
-      candidaturaId: a.candidatura_id,
-      companiaSlug: co?.slug ?? null,
-      donde: c?.nombre ?? co?.name ?? null,
-      hito: a.milestones ? { id: a.milestones.id, titulo: a.milestones.title } : null,
-    };
-  });
+/**
+ * Un aviso, abierto o cerrado, para la franja de la página a la que lleva.
+ * `null` si no existe o no es de quien mira: RLS decide.
+ */
+export async function leerAviso(
+  id: string,
+): Promise<(Aviso & { cerradoAt: string | null; cerradoPor: string | null }) | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("avisos")
+    .select(`${CAMPOS_AVISO}, cerrado_at, cerrador:profiles!avisos_cerrado_por_fkey(full_name, last_name, email)`)
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  const fila = data as unknown as FilaAviso & { cerrado_at: string | null; cerrador: unknown };
+  const quien = fila.cerrador as { full_name: string | null; last_name: string | null; email: string | null } | null;
+  return { ...comoAviso(fila), cerradoAt: fila.cerrado_at, cerradoPor: quien ? nombrePersona(quien) : null };
 }
 
 /** Los de dirección. Solo los ve dirección: RLS devuelve vacío al resto */

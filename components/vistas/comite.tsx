@@ -39,7 +39,7 @@ export function BloqueComite({
   esDireccion?: boolean;
 }) {
   return (
-    <Bloque>
+    <Bloque id="comite" className="scroll-mt-48">
       <TituloBloque accion={<Metadato>{actas.length}</Metadato>}>Comité</TituloBloque>
       {actas.length === 0 ? (
         <SinDatos>

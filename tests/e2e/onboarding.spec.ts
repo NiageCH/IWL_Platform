@@ -62,15 +62,14 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 
-    // Dirección: el aviso en su inicio, con contador en la barra
+    /*
+     * Dirección: el primer acceso ya no es un aviso —no le pide nada—
+     * (REVISION, 18 nov). Se ve en «Altas en curso» y en su recorrido.
+     */
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const aviso = page.locator("li").filter({ hasText: `${PERSONA} ha entrado por primera vez` });
-    await expect(aviso).toBeVisible();
-    await expect(page.locator("nav .cifra").first()).toBeVisible();
-
-    // Visto: desaparece, que es el acuse
-    await aviso.getByRole("button", { name: "Entendido" }).click();
-    await expect(aviso).toHaveCount(0);
+    await expect(page.locator("li").filter({ hasText: `${PERSONA} entró por primera vez` })).toHaveCount(0);
+    const altas = page.locator("section").filter({ has: page.getByRole("heading", { name: "Altas en curso" }) });
+    await expect(altas.getByText(PERSONA)).toBeVisible();
 
     // La ficha: los tres primeros hechos, y el NDA esperándola desde hoy
     await page.goto(`/embudo/${candidatura.id}`);

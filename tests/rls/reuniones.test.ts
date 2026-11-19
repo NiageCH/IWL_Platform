@@ -122,7 +122,7 @@ describe("la reunión se acuerda en la plataforma", () => {
     expect(ajena.data).toEqual([]);
   });
 
-  it("elige una franja con su testigo y queda confirmada, con su evento y su aviso", async () => {
+  it("elige una franja con su testigo y queda confirmada, con su evento y sin aviso", async () => {
     const { c, id, franjas } = await propuesta();
     const { error } = await clienteAnonimo().rpc("reunion_elegir", { p_reunion: id, p_inicio: franjas[1].inicio, p_token: c.token! });
     expect(error).toBeNull();
@@ -130,8 +130,15 @@ describe("la reunión se acuerda en la plataforma", () => {
     const { data: r } = await servicio.from("candidatura_reuniones").select("estado, elegida").eq("id", id).single();
     expect(r!.estado).toBe("confirmada");
     expect((r!.elegida as { inicio: string }).inicio).toBe(franjas[1].inicio);
+    // No pide nada a nadie: lo siguiente es anotarla, y eso se avisa al día siguiente
     const { data: avisos } = await servicio.from("avisos").select("tipo").eq("candidatura_id", c.id);
-    expect(avisos).toEqual([{ tipo: "reunion_elegida" }]);
+    expect(avisos).toEqual([]);
+    const { data: eventos } = await servicio
+      .from("candidatura_eventos")
+      .select("titulo")
+      .eq("candidatura_id", c.id)
+      .eq("tipo", "reunion");
+    expect(eventos!.map((e) => e.titulo)).toContain("Reunión confirmada: la ha elegido ella");
     // Ya confirmada, no se vuelve a elegir
     const otra = await clienteAnonimo().rpc("reunion_elegir", { p_reunion: id, p_inicio: franjas[0].inicio, p_token: c.token! });
     expect(otra.error?.message).toMatch(/ya no espera tu respuesta/);

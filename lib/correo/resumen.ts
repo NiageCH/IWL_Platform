@@ -1,8 +1,8 @@
 import "server-only";
-import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
-import { textoAviso } from "@/lib/avisos";
+import { lineaAviso } from "@/lib/avisos";
+import { CAMPOS_AVISO, comoAviso, type FilaAviso } from "@/lib/datos/onboarding";
 import { notificar } from "@/lib/correo";
 
 /**
@@ -26,7 +26,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
       .eq("resumen_avisos", "diario"),
     servicio
       .from("avisos")
-      .select("tipo, para, created_at, profiles!avisos_profile_id_fkey ( full_name, last_name, email ), companies ( name ), candidaturas ( nombre, contacto_nombre, contacto_apellidos ), milestones ( title )")
+      .select(`${CAMPOS_AVISO}, para`)
       .is("cerrado_at", null)
       .order("created_at"),
   ]);
@@ -35,20 +35,11 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
   let sinEnviar = 0;
   for (const p of personas ?? []) {
     if (!p.email) continue;
-    const suyos = (avisos ?? []).filter((a) => a.para === p.id || (a.para === null && p.role === "admin_iwl"));
+    const filas = (avisos ?? []) as unknown as Array<FilaAviso & { para: string | null }>;
+    const suyos = filas.filter((a) => a.para === p.id || (a.para === null && p.role === "admin_iwl"));
     if (!suyos.length) continue;
-    const lista = suyos
-      .map((a) => {
-        const quien = a.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
-        const candidatura = a.candidaturas as unknown as { nombre: string; contacto_nombre: string | null; contacto_apellidos: string | null } | null;
-        const donde =
-          (a.companies as unknown as { name: string } | null)?.name ??
-          (a.candidaturas as unknown as { nombre: string } | null)?.nombre ??
-          null;
-        const hito = (a.milestones as unknown as { title: string } | null)?.title ?? null;
-        return `· ${textoAviso(a.tipo, quien ? nombrePersona(quien) : nombreCompleto(candidatura?.contacto_nombre, candidatura?.contacto_apellidos) || "Alguien", donde, hito)}${donde && a.tipo !== "cambio_via" ? ` (${donde})` : ""}`;
-      })
-      .join("\n");
+    // Lo mismo que la cartera: qué pasó y qué le toca
+    const lista = suyos.map((a) => `· ${lineaAviso(comoAviso(a))}`).join("\n");
     const r = await notificar(
       { correo: p.email, nombre: p.full_name, profileId: p.id },
       "resumen_avisos",

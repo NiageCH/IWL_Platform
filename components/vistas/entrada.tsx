@@ -115,7 +115,7 @@ export function EntradaIwl({
   const via = compania.via as Via | null;
 
   return (
-    <Bloque className="mb-8">
+    <Bloque id="situacion" className="mb-8 scroll-mt-48">
       <TituloBloque accion={<Metadato>{via ? `Vía ${VIAS[via]}` : "Sin vía"}</Metadato>}>
         {decision?.decision === "no" || archivada ? "No incorporada" : "En entrada"}
       </TituloBloque>
@@ -169,7 +169,7 @@ export function EntradaIwl({
             ) : null}
           </div>
         ) : esDireccion ? (
-          <div className="-mx-5 -mb-4">
+          <div id="incorporacion" className="-mx-5 -mb-4 scroll-mt-48">
             <DecidirIncorporacion
               companyId={compania.id}
               via={via}

@@ -63,19 +63,20 @@ afterAll(async () => {
 });
 
 describe("las fechas del alta", () => {
-  it("el primer acceso lo apunta la base, y avisa a dirección una sola vez", async () => {
+  // No avisa: no pide nada a nadie (REVISION, 18 nov). Se ve en «Altas en curso»
+  it("el primer acceso lo apunta la base, una sola vez, y no es un aviso", async () => {
     const { correo, id } = await cuentaNueva();
     expect((await perfil(id)).primer_acceso_at).toBeNull();
 
     await entrar(correo);
     const primero = (await perfil(id)).primer_acceso_at;
     expect(primero).not.toBeNull();
-    expect((await avisosDe(id)).filter((a) => a.tipo === "primer_acceso")).toHaveLength(1);
+    expect(await avisosDe(id)).toEqual([]);
 
     // Volver a entrar no es la primera vez
     await entrar(correo);
     expect((await perfil(id)).primer_acceso_at).toBe(primero);
-    expect((await avisosDe(id)).filter((a) => a.tipo === "primer_acceso")).toHaveLength(1);
+    expect(await avisosDe(id)).toEqual([]);
   });
 
   it("cambiar la contraseña temporal apunta cuándo", async () => {
@@ -109,11 +110,21 @@ describe("las fechas del alta", () => {
   });
 });
 
+/** Un aviso de dirección sobre esa persona, puesto a mano: el primer acceso ya no avisa */
+async function avisoPara(profileId: string) {
+  const { data, error } = await clienteServicio()
+    .from("avisos")
+    .insert({ tipo: "nda_firmado", profile_id: profileId })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return data!;
+}
+
 describe("los avisos son de dirección", () => {
   it("el equipo de IWL no los ve, ni los cierra", async () => {
-    const { correo, id } = await cuentaNueva();
-    await entrar(correo);
-    const [aviso] = await avisosDe(id);
+    const { id } = await cuentaNueva();
+    const aviso = await avisoPara(id);
 
     const equipo = await entrarComo(USUARIOS.equipoIwl);
     const { data } = await equipo.from("avisos").select("id").eq("id", aviso.id);
@@ -130,9 +141,8 @@ describe("los avisos son de dirección", () => {
   });
 
   it("dirección los ve y los cierra", async () => {
-    const { correo, id } = await cuentaNueva();
-    await entrar(correo);
-    const [aviso] = await avisosDe(id);
+    const { id } = await cuentaNueva();
+    const aviso = await avisoPara(id);
 
     const direccion = await entrarComo(USUARIOS.admin);
     const { data } = await direccion.from("avisos").select("id").eq("id", aviso.id);

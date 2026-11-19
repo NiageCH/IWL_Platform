@@ -1,0 +1,71 @@
+import { describe, expect, it } from "vitest";
+import { pasoEntrada } from "./entrada";
+import { ESTADOS_ENTRADA, HECHOS_ENTRADA, pasosDe, traza } from "./recorridos";
+import { presentarAviso, type DatosAviso, type TipoAviso } from "./avisos";
+
+describe("los recorridos", () => {
+  it("el de entrada es el que dice pasoEntrada, paso a paso", () => {
+    expect(pasosDe("entrada").map((p) => p.hacer)).toEqual(ESTADOS_ENTRADA.map((e) => pasoEntrada(e).texto));
+    expect(HECHOS_ENTRADA).toHaveLength(ESTADOS_ENTRADA.length);
+  });
+
+  it("viene de lo hecho antes y va a lo que habrá que hacer después", () => {
+    expect(traza("entrada", 1)).toEqual({
+      vieneDe: "Situación societaria dicha",
+      despues: "Decidir la incorporación",
+    });
+    expect(traza("hito", 0).vieneDe).toBeNull();
+  });
+});
+
+const BASE: DatosAviso = {
+  id: "00000000-0000-0000-0000-0000000000aa",
+  tipo: "situacion_dicha",
+  created_at: "2026-11-10T09:00:00Z",
+  persona: "Alba Ruiz",
+  donde: "Porongo",
+  candidaturaId: "00000000-0000-0000-0000-0000000000bb",
+  companiaSlug: "porongo",
+  hito: { id: "00000000-0000-0000-0000-0000000000cc", titulo: "20 entrevistas" },
+  situacion: "Sin constituir",
+  reunion: { inicio: "2026-11-13T10:00:00Z", franjas: 3 },
+};
+
+const QUE_SIGUEN: TipoAviso[] = [
+  "nda_firmado",
+  "nda_comentario",
+  "situacion_dicha",
+  "anexo_comentario",
+  "cambio_via",
+  "reunion_contrapropuesta",
+  "reunion_caducada",
+  "reunion_anotar",
+  "hito_entregado",
+  "hito_sin_revisar",
+];
+
+describe("cada aviso", () => {
+  it.each(QUE_SIGUEN)("%s dice qué pasó, qué te toca, con un verbo, y lleva a su ancla con el aviso", (tipo) => {
+    const p = presentarAviso({ ...BASE, tipo });
+    expect(p.paso.length).toBeGreaterThan(10);
+    expect(p.toca).not.toBe("Nada");
+    expect(p.verbo).toMatch(/^[A-ZÁÉÍÓÚ]/);
+    expect(p.href).toContain(`?aviso=${BASE.id}#${p.ancla}`);
+    expect(p.hasVenidoA.length).toBeGreaterThan(5);
+  });
+
+  it("la situación dicha lleva al bloque de situación de la compañía, con el dato", () => {
+    const p = presentarAviso(BASE);
+    expect(p.paso).toBe("Alba Ruiz dijo su situación: sin constituir, el 10 nov 2026");
+    expect(p.href).toBe(`/cartera/porongo?aviso=${BASE.id}#situacion`);
+    expect(p.hasVenidoA).toBe("confirmar la situación societaria de Porongo");
+    expect(p.vieneDe).toBe("Situación societaria dicha");
+    expect(p.despues).toBe("Decidir la incorporación");
+  });
+
+  it("anotar la reunión dice qué día fue", () => {
+    const p = presentarAviso({ ...BASE, tipo: "reunion_anotar" });
+    expect(p.paso).toBe("La reunión del 13 nov 2026 con Porongo ya pasó");
+    expect(p.verbo).toBe("Anotar");
+  });
+});

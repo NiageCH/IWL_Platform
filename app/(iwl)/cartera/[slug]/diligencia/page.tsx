@@ -1,3 +1,4 @@
+import { FranjaAviso } from "@/components/vistas/franja-aviso";
 import { companiaPorSlug } from "@/lib/datos/sesion";
 import { CabeceraProyecto } from "@/components/cabecera-proyecto";
 import { leerMovimiento } from "@/lib/datos/movimiento";
@@ -14,7 +15,7 @@ export default async function Pagina({
   const movimiento = await leerMovimiento(resumen.compania.id);
 
   /* El estado por el que se filtra, cuando se pulsa una excepción de la barra */
-  const { ver } = await searchParams;
+  const { ver, aviso } = await searchParams;
 
   return (
     <>
@@ -25,6 +26,7 @@ export default async function Pagina({
         seccionActiva="diligencia"
       />
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
+        <FranjaAviso aviso={aviso} contexto={{ companyId: resumen.compania.id, slug }} />
         <VistaDiligencia resumen={resumen} ver={ver} />
       </main>
     </>

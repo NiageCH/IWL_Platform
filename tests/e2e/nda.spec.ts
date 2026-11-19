@@ -102,22 +102,38 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await page.waitForURL(/\/entrar/);
 
     /*
-     * Dirección: el aviso, y firma ahí mismo. Sin apellidos en su perfil no
-     * puede —se firma con el nombre completo—: se le dice dónde ponerlos.
+     * Dirección: el aviso lleva a la franja «Has venido a», y se firma ahí
+     * mismo. Sin apellidos en su perfil no puede —se firma con el nombre
+     * completo—: se le dice dónde ponerlos.
      */
     await actualizar("profiles", { email: `eq.${USUARIOS.admin}` }, { last_name: null });
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const aviso = page.locator("li").filter({ hasText: `${PERSONA} ha firmado el NDA` });
-    await expect(aviso).toBeVisible();
-    await expect(aviso.getByRole("button", { name: "Firmar por IWL" })).toHaveCount(0);
-    await aviso.getByRole("link", { name: "Añádelos en Mi cuenta" }).click();
+    const aviso = page.locator('li[data-aviso="nda_firmado"]').filter({ hasText: PERSONA });
+    await expect(aviso).toContainText(`${PERSONA} firmó el NDA`);
+    await expect(aviso).toContainText("Te toca: contrafirmarlo");
+    await aviso.getByRole("link", { name: "Contrafirmar" }).click();
+    await expect(page).toHaveURL(/\/embudo\/[^?]+\?aviso=[0-9a-f-]+#nda$/);
+    const destino = page.url();
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja).toBeInViewport();
+    await expect(franja).toContainText(`contrafirmar el NDA de ${NOMBRE}`);
+    await expect(franja).toContainText("Viene de: NDA firmado por ella");
+    await expect(franja.getByRole("button", { name: "Firmar por IWL" })).toHaveCount(0);
+    await franja.getByRole("link", { name: "Añádelos en Mi cuenta" }).click();
     await expect(page).toHaveURL(/\/perfil$/);
     await page.getByLabel("Apellidos").fill("de Prueba");
     await page.getByRole("button", { name: "Guardar mis datos" }).click();
     await expect(page.getByText("Guardado.")).toBeVisible();
+    await page.goto(destino);
+    // La acción, a la vista sin desplazarse, y el bloque del NDA resaltado
+    await expect(franja.getByRole("button", { name: "Firmar por IWL" })).toBeInViewport();
+    await expect(page.locator("#nda.destino-aviso")).toBeVisible();
+    await franja.getByRole("button", { name: "Firmar por IWL" }).click();
+    // Hecho, y qué viene después
+    const hecho = page.getByRole("region", { name: "Hecho" });
+    await expect(hecho).toContainText("Siguiente: que diga su situación societaria · lo hace ella", { timeout: 15_000 });
     await page.goto("/cartera");
-    await aviso.getByRole("button", { name: "Firmar por IWL" }).click();
-    await expect(aviso).toHaveCount(0, { timeout: 15_000 });
+    await expect(page.locator('li[data-aviso="nda_firmado"]').filter({ hasText: PERSONA })).toHaveCount(0);
 
     // El rastro, en la base
     const [firma] = await consultar<{
@@ -170,16 +186,26 @@ test("la candidata firma el NDA, IWL lo contrafirma, y nace su compañía en ent
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
 
-    // Dirección: el aviso lleva a confirmarla, y decide que no se incorpora
+    // Dirección: el aviso lleva a confirmarla, con el dato, y decide que no se incorpora
     await entrarComo(page, USUARIOS.admin, "/cartera");
-    const dicha = page.locator("li").filter({ hasText: `${PERSONA} ha dicho la situación societaria` });
-    await expect(dicha).toBeVisible();
-    await dicha.getByRole("link", { name: "Confirmarla" }).click();
-    await expect(page.getByRole("heading", { name: "En entrada" })).toBeVisible();
-    await page.getByRole("button", { name: "Confirmar la situación" }).click();
+    const dicha = page.locator('li[data-aviso="situacion_dicha"]').filter({ hasText: PERSONA });
+    await expect(dicha).toContainText(`${PERSONA} dijo su situación: sin sociedad constituida`);
+    await expect(dicha).toContainText("Después: Decidir la incorporación");
+    await dicha.getByRole("link", { name: "Confirmar" }).click();
+    await expect(page).toHaveURL(/\?aviso=[0-9a-f-]+#situacion$/);
+    const franjaSituacion = page.getByRole("region", { name: "Has venido a" });
+    await expect(franjaSituacion).toContainText(`confirmar la situación societaria de ${NOMBRE}`);
+    await expect(franjaSituacion.getByRole("button", { name: "Confirmar la situación" })).toBeInViewport();
+    await expect(franjaSituacion.getByRole("button", { name: "Cambiarla" })).toBeVisible();
+    await franjaSituacion.getByRole("button", { name: "Confirmar la situación" }).click();
+    const tras = page.getByRole("region", { name: "Hecho" });
+    await expect(tras).toContainText("Siguiente: decidir la incorporación · lo hace dirección");
     await expect(page.getByText("Confirmada", { exact: true })).toBeVisible();
+    // Le toca a dirección, que es quien mira: el botón del paso siguiente
+    await tras.getByRole("link", { name: "Decidir la incorporación" }).click();
+    await expect(page).toHaveURL(/#incorporacion$/);
 
-    await page.getByText("Decidir la incorporación").click();
+    await page.locator("summary", { hasText: "Decidir la incorporación" }).click();
     const decidir = page.locator("form", { has: page.getByRole("button", { name: "Guardar la decisión" }) });
     await decidir.getByLabel("Decisión").selectOption("no");
     await decidir.getByRole("textbox", { name: /^Motivo/ }).fill("El proyecto ha cambiado de foco y ya no encaja en la cohorte.");

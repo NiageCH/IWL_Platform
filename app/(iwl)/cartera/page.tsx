@@ -129,7 +129,6 @@ export default async function Cartera() {
       <HitosPorRevisar hitos={porRevisar} />
       {esDireccion ? (
         <AvisosDireccion
-          sinApellidos={!persona.last_name?.trim()}
           avisos={avisos.filter((a) => a.tipo !== "hito_entregado")}
           altas={altas}
           revisiones={revisiones}

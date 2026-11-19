@@ -152,6 +152,8 @@ export async function VistaDiligencia({
         </Bloque>
       ) : null}
 
+      {/* El ancla de «Revisar lo que pasa a por entregar», del aviso de cambio de vía */}
+      <span id="puntos" className="block scroll-mt-48" aria-hidden="true" />
       {areas.map((area) => {
         const score = scorePorArea.get(area.codigo);
         return (

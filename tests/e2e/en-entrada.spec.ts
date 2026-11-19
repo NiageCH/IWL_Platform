@@ -101,7 +101,16 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await actualizar("companies", { id: `eq.${cons.compania}` }, { created_at: hace15 });
     await page.reload();
     await expect(bloque.locator("li").filter({ hasText: CONS }).getByText("15 días sin Acuerdo")).toBeVisible();
-    await expect(page.getByText(`${CONS} lleva 15 días en entrada sin Acuerdo`)).toBeVisible();
+    const tope = page.locator('li[data-aviso="tope_entrada"]').filter({ hasText: CONS });
+    await expect(tope).toContainText(`${CONS} lleva 15 días en entrada sin Acuerdo`);
+
+    // El aviso lleva a la franja y al bloque de la decisión, a la vista
+    await tope.getByRole("link", { name: "Decidir la incorporación" }).click();
+    await expect(page).toHaveURL(/\?aviso=tope#incorporacion$/);
+    const franja = page.getByRole("region", { name: "Has venido a" });
+    await expect(franja).toContainText(`decidir la incorporación de ${CONS}`);
+    await expect(franja.getByRole("button", { name: "Decidir la incorporación" })).toBeInViewport();
+    await page.goto("/cartera");
 
     /*
      * Fuera de la cartera: ningún bloque lleva a ellas salvo «En entrada»,

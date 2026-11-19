@@ -1862,3 +1862,21 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Avisos:** «ha entregado el hito» llega al mentor principal y al encargado, si lo hay. Si no hay ninguno de los dos, llega a dirección. Va en el resumen diario, que ahora también se manda a los mentores. En pantalla no se repite: lo enseña «Hitos por revisar», arriba de la cartera. Se cierra solo al validar o al pedir cambios.
 - **Quién validó** lo ve IWL. Ella ve el estado, la evidencia y lo que le dicen, sin el nombre de quien lo dijo. La base no lo esconde, porque no es un secreto: es la pantalla la que no lo enseña.
 - **Los importes de financiación se leen con `importeEscrito`**, no con `numeroEscritoAMano`. Ese cambia la coma por punto y con eso «20.000» se convertía en veinte euros.
+
+## 2026-11-18 · Avisos: una acción, un botón al sitio exacto, y se cierran solos
+
+- **Un aviso es una acción pendiente de quien lo ve.** «Primer acceso» y «ha elegido fecha» dejan de serlo: no piden nada. El primero se ve en «Altas en curso» y el segundo en «Qué ha pasado». El inventario completo está en `docs/AVISOS.md`.
+- **Todo aviso dice lo mismo en la cartera, en el correo diario y en la franja,** porque los tres salen de `presentarAviso`, en `lib/avisos.ts`. Dice qué pasó, con el dato y la fecha, qué te toca, y el verbo del botón.
+- **El botón lleva `?aviso=<id>` y un ancla.** La página pinta arriba `<FranjaAviso>`, pegada al borde, para que se vea a la vez que el bloque resaltado.
+  - Las acciones de un clic van enteras en la franja: confirmar la situación, contrafirmar el NDA, «Revisado».
+  - Las que piden escribir o elegir son un botón que lleva al formulario del bloque y pone el cursor en él. Repetir cada formulario en la franja habría sido duplicarlos todos.
+- **El bloque se resalta desde el cliente (`<Destino>`), no con `:target`.** Next navega sin recargar y `:target` no se entera del ancla. Si el bloque está dentro de un plegable cerrado, se abre.
+- **Hecha la acción, la franja dice qué viene después y quién lo hace.** En la entrada de una compañía sale de `pasoEntrada`; en lo demás, del paso siguiente de su recorrido. Si le toca a quien mira, lleva su botón.
+- **«Viene de · Después» sale de `lib/recorridos.ts`**, no de cada aviso. El recorrido de entrada se comprueba contra `pasoEntrada` en una prueba unitaria.
+- **Cierres solos, en la base:**
+  - todo lo de una candidatura al descartarla, y todo lo de una compañía al archivarla;
+  - lo de una reunión cuando IWL responde, propone otras fechas, la anota o la cancela;
+  - «otras fechas», cuando caducan, porque se vuelven «sin fecha».
+- **«Anota la reunión»** lo crea el cron el día después de una reunión confirmada sin anotar. Va a quien la propuso y a quien fue de IWL; si no consta nadie, a dirección.
+- **«Cambio de vía» se queda como aviso**, porque se pidió el 10 nov, con el botón «Revisado» para cerrarlo. Es el único que se cierra a mano, porque no hay ningún hecho que diga que se ha revisado.
+- **Los abiertos que ya no tocaban se cerraron con la migración**, y queda constancia en el registro (`avisos_cerrados_por_revision`, con el recuento por tipo).

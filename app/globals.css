@@ -1240,3 +1240,15 @@ details[open] > .desplegable-titulo .flecha-desplegable {
   letter-spacing: 0;
   color: var(--color-metadato);
 }
+
+/*
+ * El bloque al que lleva un aviso (REVISION, 18 nov). Se resalta con el
+ * filete de acento y se deja sitio arriba para la franja «Has venido a»,
+ * que va pegada al borde. Lo pone `<Destino>`: con la navegación de Next
+ * `:target` no se entera del ancla.
+ */
+.destino-aviso {
+  scroll-margin-top: 12rem;
+  outline: 2px solid var(--color-acento);
+  outline-offset: 3px;
+}

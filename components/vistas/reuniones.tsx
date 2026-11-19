@@ -38,7 +38,7 @@ export function BloqueReuniones({
 }) {
   const enJuego = reuniones.find((r) => ["propuesta", "contrapropuesta", "confirmada"].includes(r.estado));
   return (
-    <Bloque>
+    <Bloque id="reunion" className="scroll-mt-48">
       <TituloBloque accion={<Metadato>{reuniones.length}</Metadato>}>Reuniones</TituloBloque>
       {reuniones.length === 0 ? (
         <SinDatos>
