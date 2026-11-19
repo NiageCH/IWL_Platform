@@ -9,6 +9,43 @@ como es**.
 
 ---
 
+## 2026-11-19 · Los avisos que faltaban, y lo que le toca a ella · commit 6ea0f75
+**Qué cambió**
+- Avisos nuevos, que se abren y se cierran solos:
+  - candidatura nueva, a dirección y equipo;
+  - acta pendiente de tu firma, a cada miembro que falta;
+  - propuesta de Acuerdo aceptada, a dirección;
+  - documento entregado, a quien lo pidió o, si nadie, a dirección y equipo;
+  - correos sin enviar, uno solo, a dirección.
+- «Decidir la incorporación» sale en cuanto toca, sin esperar al tope. Absorbe el aviso del tope: una compañía sale una vez.
+- La franja pone la acción ahí mismo: pasar a revisión, firmar el acta, validar o pedir cambios en un punto, reintentar los correos.
+- Nueva sección Administración → Correos: los que no salieron, de toda la plataforma, con «Reintentar».
+- El hito sin revisar avisa a los 7 días. El código ya lo hacía; el ejemplo del inventario decía 8 y se ha corregido.
+- `docs/AVISOS.md`: aprobado, con los nuevos y la sección «Lo que le toca a ella».
+- Lo que ya estaba pendiente al desplegar se abre con la migración, y queda constancia en el registro.
+
+**Qué decidí yo**
+- Los cinco nuevos se guardan en la tabla. «Decidir la incorporación» se calcula, porque depende de `pasoEntrada`.
+- «Para todo IWL» es una columna (`para_iwl`), no un aviso por persona. Lo cierra quien llegue primero, y los mentores no lo ven.
+- Documento entregado:
+  - lo abre que el punto pase a «entregado» o «en revisión», que es lo que hace la subida;
+  - si lo mueve alguien de IWL, no avisa;
+  - «quien lo pidió» es quien creó el punto a mano.
+- Pedir cambios en un punto lo devuelve a «pendiente» con la nota. No había otra forma de hacerlo.
+- Firmar el Acuerdo lleva a Programa (`#anexo`), donde está el botón, y no a `#acuerdo` de la ficha, que no lo tiene.
+- «Lo que le toca a ella» es inventario, no código. Se hará con «Tu siguiente paso» cuando se retome lo visual.
+- El documento entregado de la semilla dice «Alguien entregó…», porque se creó sin sesión. En la vida real lleva el nombre de quien lo sube.
+
+**Qué necesito que decidas**
+1. «Proponerle el Acuerdo», que va después de decidir la incorporación, no tiene aviso. ¿Lo añado, calculado?
+2. Revisa la sección «Lo que le toca a ella» de `docs/AVISOS.md`, en especial el plazo para confirmar horas, que está por fijar.
+
+**Estado** · unitarias 284; acceso 261, dos veces; interfaz 440 y 4 saltadas, dos veces. Sin desplegar. La migración nueva es `20261119100000_avisos_que_faltaban`.
+
+**Siguiente** · Sesiones y horas.
+
+---
+
 ## 2026-11-19 · Avisos: cada uno lleva al botón exacto, caduca cuando ya no toca y enlaza con el paso siguiente · commit 0b714b5
 
 **Qué cambió**
