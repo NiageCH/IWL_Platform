@@ -1,7 +1,7 @@
 import { leerSesiones, leerOpcionesSesion, type Sesion } from "@/lib/datos/sesiones";
 import { leerDocumentosElegibles } from "@/lib/datos/evidencia";
 import type { ResumenCompania } from "@/lib/datos/compania";
-import { MODALIDADES, NOMBRE_ESTADO_SESION, confirmaSolaEl, textoEvento } from "@/lib/sesiones";
+import { APARTADOS_ACTA, MODALIDADES, NOMBRE_ESTADO_SESION, confirmaSolaEl, textoEvento } from "@/lib/sesiones";
 import { estadoVisual } from "@/lib/estados";
 import { euros, fecha, numero } from "@/lib/utils";
 import { Bloque, Cifra, Etiqueta, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
@@ -71,6 +71,8 @@ export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenC
             slug={compania.slug}
             companyId={compania.id}
             hitos={opciones?.hitos ?? []}
+            materias={opciones?.materias ?? []}
+            pilares={opciones?.pilares ?? []}
             elegibles={elegibles}
             papel={{
               ella: permisos.esFundadora,
@@ -91,6 +93,8 @@ function TarjetaSesion({
   slug,
   companyId,
   hitos,
+  materias,
+  pilares,
   elegibles,
   papel,
   acompana,
@@ -99,6 +103,8 @@ function TarjetaSesion({
   slug: string;
   companyId: string;
   hitos: Array<{ id: string; titulo: string }>;
+  materias: Array<{ id: string; nombre: string }>;
+  pilares: Array<{ id: string; nombre: string }>;
   elegibles: Awaited<ReturnType<typeof leerDocumentosElegibles>>;
   papel: { ella: boolean; registra: boolean; esAdmin: boolean; habla: boolean };
   acompana: boolean;
@@ -207,6 +213,20 @@ function TarjetaSesion({
             estado={s.estado}
             lineas={s.lineas.map((l) => ({ id: l.id, persona: l.persona, horas: l.horas }))}
             papel={papel}
+            materias={materias}
+            pilares={pilares}
+            acta={{
+              tipo: s.tipo,
+              fecha: s.fecha,
+              duracionMin: s.duracionMin,
+              modalidad: s.modalidad,
+              asistentes: s.asistentesCompania,
+              titulo: s.titulo,
+              materiaId: s.materiaId,
+              pilarId: s.pilarId,
+              trabajado: s.trabajado,
+              entregable: s.entregable,
+            }}
           />
 
           <details className="border-t border-filete pt-2" open={["en_discusion", "en_direccion"].includes(s.estado)}>
@@ -218,6 +238,7 @@ function TarjetaSesion({
                   <span className="text-secundario">{textoEvento(e.tipo, e.detalle).toLowerCase()}</span>{" "}
                   <span className="cifra text-metadato">· {fecha(e.fecha)}</span>
                   {e.texto ? <p className="mt-0.5 whitespace-pre-line border-l-2 border-filete pl-2 text-cuerpo">{e.texto}</p> : null}
+                  {e.tipo === "version_acta" ? <VersionActa detalle={e.detalle} /> : null}
                 </li>
               ))}
             </ol>
@@ -226,4 +247,44 @@ function TarjetaSesion({
       </Bloque>
     </div>
   );
+}
+
+/** Una versión del acta, plegada: cada apartado con lo de antes y lo de después */
+function VersionActa({ detalle }: { detalle: Record<string, unknown> }) {
+  const antes = (detalle.antes ?? {}) as Record<string, unknown>;
+  const despues = (detalle.despues ?? {}) as Record<string, unknown>;
+  const horas = (Array.isArray(detalle.horas) ? detalle.horas : []) as Array<{ persona?: string; antes: number; despues: number }>;
+  const campos = Object.keys(despues);
+  if (!campos.length && !horas.length) return null;
+  return (
+    <details className="mt-1">
+      <summary className="cursor-pointer text-metadato">Ver qué cambió</summary>
+      <dl className="mt-1 flex flex-col gap-1.5 border-l-2 border-filete pl-2">
+        {campos.map((c) => (
+          <div key={c}>
+            <dt className="text-metadato">{APARTADOS_ACTA[c] ?? c}</dt>
+            <dd className="whitespace-pre-line text-cuerpo">
+              {valorApartado(c, antes[c])} <span className="text-metadato">→</span> {valorApartado(c, despues[c])}
+            </dd>
+          </div>
+        ))}
+        {horas.map((h, i) => (
+          <div key={i}>
+            <dt className="text-metadato">horas de {h.persona ?? "una persona"}</dt>
+            <dd className="cifra text-cuerpo">
+              {numero(Number(h.antes), 1)} h <span className="text-metadato">→</span> {numero(Number(h.despues), 1)} h
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
+function valorApartado(campo: string, v: unknown): string {
+  if (v === null || v === undefined || v === "") return "—";
+  if (campo === "held_on") return fecha(String(v));
+  if (campo === "duration_minutes") return `${v} min`;
+  if (campo === "modality") return MODALIDADES[String(v)] ?? String(v);
+  return String(v);
 }

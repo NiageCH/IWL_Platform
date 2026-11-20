@@ -1920,3 +1920,18 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Un trabajo fuera de sesión necesita un entregable**: un enlace, o una evidencia ya colgada de la sesión. Los ficheros se adjuntan después con `<Evidencia>`.
 - **Borrar una cuenta deja sus sesiones sin autor** (`on delete set null`), y el guardián lo deja pasar: es lo único que cambia en una sesión cerrada sin pasar por el circuito.
 - **`create or replace view` no conserva `security_invoker`.** Hay que volver a ponerlo después de cada recreación; sin él, una fundadora veía la dedicación de otras compañías. Lo destapó la prueba de mentoría.
+
+## 2026-11-21 · El acta deja versión, y lo que le toca a ella sin guardarse
+
+- **El acta solo se cambia con `editar_acta_sesion`**, también mientras está abierta. Antes el guardián dejaba editarla a mano por confirmar o en discusión, y eso no dejaba rastro. Ahora cada guardado anota en la historia (`version_acta`) los apartados que cambian, con el valor de antes y el de después. La materia y el pilar van por su nombre, para leer la historia sin cruzar tablas.
+- **Confirmada, el acta queda fija**: corregirla pide motivo. Si cambian las horas, vuelve a «Por confirmar», el plazo de 7 días cuenta desde ahí y le llega el aviso. En dirección o anulada no se toca. Abierta, las horas van por «Corregir las horas», que ya tenía su motivo.
+- **Correo a ella cada vez que la sesión vuelve a sus manos**: corregida, mantenida, o con el acta confirmada y las horas corregidas (`sesion_de_vuelta`). También cuando dirección la cierra (`sesion_decidida`). La cifra de antes y la nueva salen del último paso de la historia, no se recalculan.
+- **«Proponerle el Acuerdo», «Avance del mes» y «Entregar un hito» se calculan**, como «Decidir la incorporación»: salen del estado y se van cuando se hacen, sin fila en `avisos` que cerrar.
+  - El cálculo puro está en `lib/le-toca.ts`.
+  - Por ahora no van en el correo diario, que solo lee avisos guardados.
+- **El avance del mes tiene dos días**, los dos en Administración → Programa:
+  - desde cuál se pide el de ese mes (`avance_mes_dia_aviso`, 25 por defecto);
+  - cuál del mes siguiente vence (`update_mensual_dia_limite`, 10, que ya existía en la semilla y no lo usaba nadie).
+  
+  Antes del día de aviso se pide el del mes anterior, si falta. Los dos días van como mucho hasta el 28, que lo tienen todos los meses.
+- **El hito vencido le llega al mentor principal**, no a dirección. Sin mentor principal, solo lo ve ella.

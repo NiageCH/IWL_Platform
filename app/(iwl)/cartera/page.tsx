@@ -29,8 +29,9 @@ import { leerAltasEnCurso, leerAvisos, leerAvisosParaMi } from "@/lib/datos/onbo
 import { leerRevisionesComite } from "@/lib/datos/comite";
 import { AvisosDireccion, AvisosParaMi, HitosPorRevisar } from "@/components/vistas/alta";
 import { leerHitosPorRevisar } from "@/lib/datos/ruta";
+import { leerHitosVencidosDeMisCompanias } from "@/lib/datos/le-toca";
 import { describirSituacion } from "@/lib/societario";
-import { leerEnEntrada, porDecidir } from "@/lib/datos/entrada";
+import { leerEnEntrada, porDecidir, porProponer } from "@/lib/datos/entrada";
 import { EnEntrada } from "@/components/vistas/en-entrada";
 import { direccionBase } from "@/lib/direccion";
 
@@ -113,10 +114,11 @@ export default async function Cartera() {
   const [avisos, altas, revisiones] = esDireccion
     ? await Promise.all([leerAvisos(), leerAltasEnCurso(), leerRevisionesComite()])
     : [[], [], []];
-  const [paraMi, enEntrada, porRevisar] = await Promise.all([
+  const [paraMi, enEntrada, porRevisar, vencidos] = await Promise.all([
     leerAvisosParaMi(persona.id, !esDireccion && esIwl(persona.role)),
     esIwl(persona.role) ? leerEnEntrada() : Promise.resolve([]),
     leerHitosPorRevisar({ id: persona.id, role: persona.role }),
+    leerHitosVencidosDeMisCompanias(persona.id),
   ]);
   /*
    * Lo de arriba del todo: lo que espera a alguien, y las compañías en
@@ -125,7 +127,7 @@ export default async function Cartera() {
   const paraDireccion = (
     <>
       {/* Un hito entregado ya está en «Hitos por revisar»; su aviso es para el correo diario */}
-      <AvisosParaMi avisos={paraMi.filter((a) => a.tipo !== "hito_entregado")} />
+      <AvisosParaMi avisos={paraMi.filter((a) => a.tipo !== "hito_entregado")} calculados={vencidos} />
       <HitosPorRevisar hitos={porRevisar} />
       {esDireccion ? (
         <AvisosDireccion
@@ -133,6 +135,7 @@ export default async function Cartera() {
           altas={altas}
           revisiones={revisiones}
           incorporaciones={porDecidir(enEntrada)}
+          propuestas={porProponer(enEntrada)}
         />
       ) : null}
       <EnEntrada filas={enEntrada} direccion={direccionBase()} />

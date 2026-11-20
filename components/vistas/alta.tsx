@@ -3,6 +3,7 @@ import { enlaceHito } from "@/lib/avisos";
 import { FilaAviso, Traza } from "@/components/vistas/avisos";
 import { PASO_EMBUDO, traza } from "@/lib/recorridos";
 import type { PorDecidir } from "@/lib/datos/entrada";
+import type { TocaCalculado } from "@/lib/datos/le-toca";
 import { Estado, NodoEstado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
@@ -119,6 +120,7 @@ export function AvisosDireccion({
   altas,
   revisiones = [],
   incorporaciones = [],
+  propuestas = [],
 }: {
   avisos: Aviso[];
   altas: AltaEnCurso[];
@@ -126,11 +128,13 @@ export function AvisosDireccion({
   revisiones?: { candidaturaId: string; nombre: string; revisionOn: string }[];
   /** Compañías en entrada que esperan la decisión de incorporación */
   incorporaciones?: PorDecidir[];
+  /** Compañías con la incorporación decidida y sin Anexo propuesto */
+  propuestas?: Array<{ slug: string; nombre: string; paso: string }>;
 }) {
   return (
     <div className="mb-8 grid gap-6 lg:grid-cols-2">
       <Bloque>
-        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length + incorporaciones.length} sin ver</Metadato>}>
+        <TituloBloque accion={<Metadato>{avisos.length + revisiones.length + incorporaciones.length + propuestas.length} sin ver</Metadato>}>
           Avisos
         </TituloBloque>
         {revisiones.length ? (
@@ -168,7 +172,23 @@ export function AvisosDireccion({
             ))}
           </ul>
         ) : null}
-        {avisos.length === 0 && revisiones.length === 0 && incorporaciones.length === 0 ? (
+        {propuestas.length ? (
+          <ul className="divide-y divide-filete border-b border-filete">
+            {propuestas.map((p) => (
+              <li key={p.slug} className="flex flex-col gap-1 px-4 py-3" data-aviso="proponer_acuerdo">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="min-w-0 flex-1 text-sm text-titular">{p.paso}</span>
+                  <span className="text-xs text-secundario">Te toca: proponerle el Acuerdo</span>
+                  <Link href={`/cartera/${p.slug}/programa?aviso=proponer#anexo`} className="accion text-xs text-acento-texto">
+                    Proponer el Acuerdo
+                  </Link>
+                </div>
+                <Traza {...traza("entrada", 3)} />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {avisos.length === 0 && revisiones.length === 0 && incorporaciones.length === 0 && propuestas.length === 0 ? (
           <SinDatos>
             Nada pendiente. Cuando llegue una candidatura, alguien firme o
             comente el NDA, diga su situación, entregue un documento o acepte
@@ -219,12 +239,33 @@ export function AvisosDireccion({
  * principal, al cambiar la vía; a quien propuso una reunión, para anotarla.
  * Se cierran solos cuando se hace lo que piden.
  */
-export function AvisosParaMi({ avisos, titulo = "Avisos para ti" }: { avisos: Aviso[]; titulo?: string }) {
-  if (!avisos.length) return null;
+export function AvisosParaMi({
+  avisos,
+  titulo = "Avisos para ti",
+  calculados = [],
+}: {
+  avisos: Aviso[];
+  titulo?: string;
+  /** Lo que le toca y no se guarda: sale del estado y se va cuando se hace */
+  calculados?: TocaCalculado[];
+}) {
+  if (!avisos.length && !calculados.length) return null;
   return (
     <Bloque className="mb-8">
-      <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>{titulo}</TituloBloque>
+      <TituloBloque accion={<Metadato>{avisos.length + calculados.length} sin ver</Metadato>}>{titulo}</TituloBloque>
       <ul className="divide-y divide-filete">
+        {calculados.map((c) => (
+          <li key={c.clave} className="flex flex-col gap-1 px-4 py-3" data-aviso={c.tipo}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="min-w-0 flex-1 text-sm text-titular">{c.texto}</span>
+              <Estado valor={c.estado} />
+              <span className="text-xs text-secundario">{c.teToca}</span>
+              <Link href={c.href} className="accion text-xs text-acento-texto">
+                {c.verbo}
+              </Link>
+            </div>
+          </li>
+        ))}
         {avisos.map((a) => (
           <FilaAviso key={a.id} aviso={a} />
         ))}

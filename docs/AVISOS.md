@@ -3,7 +3,8 @@
 REVISION, 18 nov: «cada aviso lleva al botón exacto, caduca cuando ya no toca
 y enlaza con el paso siguiente». **Revisado y aprobado por Rodrigo el 19 nov**,
 con seis avisos que faltaban, ya añadidos, y la sección «Lo que le toca a
-ella».
+ella». **El 20 nov**, «Lo que le toca a ella» aprobada con dos filas más, y
+«Proponerle el Acuerdo» como aviso calculado.
 
 ## Las reglas
 
@@ -48,9 +49,9 @@ acción. Si pone «— », solo lo cierra la acción.
 | **Propuesta de Acuerdo aceptada** (`anexo_aceptado`), **19 nov** | Dirección | «Alba aceptó la propuesta de Acuerdo el 15 nov» | Firmar el Acuerdo · **Firmar** | `/cartera/<slug>/programa#anexo` | Se firma; vuelve a borrador; la compañía se archiva | Se firma y entra en incubación |
 | **Documento entregado** (`documento_entregado`), **19 nov** | Quien lo pidió (un punto que alguien de IWL añadió a mano); si nadie, dirección y equipo | «Alba entregó "Escritura de constitución" el 16 nov» | Revisarlo · **Revisar**; en la franja, **Validar** / **Pedir cambios** | `/cartera/<slug>/diligencia#punto-<id>` | Se valida, se piden cambios, se marca bloqueante o no aplica; la compañía se archiva | Ella entrega el siguiente punto |
 | **Correos sin enviar** (`correos_sin_enviar`), **19 nov** | Dirección; uno solo aunque sean varios | «3 correos sin enviar desde el 12 nov» | Reintentarlos · **Reintentar** | `/admin/correos#correos` | No queda ninguno sin enviar | — |
-| **Horas por confirmar** (`sesion_por_confirmar`), **20 nov** | Cada fundadora con cuenta, y por correo al registrarla | «Marta Mentora ha registrado 2 h de sesión del 12 nov» | Confirmarlas o decir qué no cuadra · **Revisar** | `/proyecto/sesiones#sesion-<id>` | Confirma, dice que no cuadra, se anula, o pasan 7 días (se confirma sola); la compañía se archiva | Cuentan para el Anexo |
+| **Horas por confirmar** (`sesion_por_confirmar`), **20 nov** | Cada fundadora con cuenta, y por correo al registrarla y cada vez que le vuelve (corregida, mantenida o con el acta confirmada corregida) | «Marta Mentora ha registrado 2 h de sesión del 12 nov» | Confirmarlas o decir qué no cuadra · **Revisar** | `/proyecto/sesiones#sesion-<id>` | Confirma, dice que no cuadra, se anula, o pasan 7 días (se confirma sola); la compañía se archiva | Cuentan para el Anexo |
 | **No cuadra** (`sesion_no_cuadra`), **20 nov** | Quien registró la sesión | «Alba dice que no cuadran las horas de "Precios", del 12 nov» | Responder: corregirlas o mantenerlas · **Responder** | `/cartera/<slug>/sesiones#sesion-<id>` | Las corrige o las mantiene (vuelve a ella), se lleva a dirección o se anula | Ella vuelve a confirmar |
-| **Horas en dirección** (`sesion_en_direccion`), **20 nov** | Dirección | «Las horas de "Precios" con Marea no cuadran y han llegado a dirección» | Decidir y cerrar · **Decidir** | `/cartera/<slug>/sesiones#sesion-<id>` | Dirección decide, o se anula | Cuentan para el Anexo |
+| **Horas en dirección** (`sesion_en_direccion`), **20 nov** | Dirección | «Las horas de "Precios" con Marea no cuadran y han llegado a dirección» | Decidir y cerrar · **Decidir** | `/cartera/<slug>/sesiones#sesion-<id>` | Dirección decide, o se anula | Cuentan para el Anexo; a ella le llega un correo con la decisión |
 
 ## Los calculados
 
@@ -61,6 +62,8 @@ acción se hace.
 |---|---|---|---|---|
 | **Revisión en comité** | Dirección | Volver a mirarla · **Redactar el acta** | `/embudo/<id>#comite` | Hay acta nueva o se descarta |
 | **Decidir la incorporación**, **19 nov**: en Aceleración con lo obligatorio validado; en Construcción con la situación confirmada, sin esperar al tope. Si ha pasado el tope, lo dice («lleva 15 días en entrada sin Acuerdo») y no sale un segundo aviso | Dirección | Decidir · **Decidir la incorporación** | `/cartera/<slug>#incorporacion` | Hay decisión o se archiva |
+| **Proponerle el Acuerdo**, **20 nov**: la incorporación es «sí» y no hay Anexo propuesto | Dirección (el botón, a cualquiera de IWL) | Proponerlo · **Proponer el Acuerdo** | `/cartera/<slug>/programa?aviso=proponer#anexo` | Se propone o se archiva |
+| **Hito vencido sin entregar**, **20 nov** | Mentor principal de la compañía | Hablar con ella · **Ver el hito** | `/cartera/<slug>/ruta#hito-<id>` | Ella lo entrega, se cumple o cambia la fecha |
 | **Alta detenida** | Dirección | Recordárselo · **Recordar** (ahí mismo) | — | Ella da el paso |
 
 ## Los que salen de avisos
@@ -92,32 +95,8 @@ cuántos de cada tipo.
   solo si está encargado de ese hito.
 - **Hito sin revisar**: a los 7 días.
 
-## Pendientes de decidir
+## Lo que quedó decidido el 20 nov
 
-- **Proponerle el Acuerdo.** Decidida la incorporación, lo siguiente es que
-  IWL le proponga el Acuerdo. No tiene aviso: se ve en «En entrada», con
-  quién lo mueve. Si quieres que lo sea, sería calculado, como «Decidir la
-  incorporación».
-- **La firma del Acuerdo** está en Programa (`#anexo`), que es donde está el
-  botón, y no en la ficha (`#acuerdo`), que no lo tiene.
-
-## Lo que le toca a ella
-
-La candidata y la fundadora tienen las mismas necesidades que IWL. Esta tabla
-es la base de «Tu siguiente paso», que se hará cuando se retome lo visual:
-con las mismas reglas, la franja «Has venido a…» al llegar y el «Después» al
-terminar.
-
-**Hoy** cada una de estas acciones está en su pantalla, pero no llega como
-aviso con su franja. Las anclas que no existen todavía en su lado van en
-cursiva.
-
-| Aviso | Lo recibe | Qué pasó | Qué te toca · botón | Lleva a | Se cierra cuando | Después |
-|---|---|---|---|---|---|---|
-| **Firmar el NDA** | La candidata | «IWL te ha enviado el NDA el 12 nov» | Leerlo y firmarlo · **Firmar el NDA** | `/candidatura` (con cuenta) o su enlace privado, *`#nda`* | Lo firma; la candidatura se descarta | IWL lo contrafirma (lo hace dirección) |
-| **Elegir fecha** | La candidata | «IWL te propone 3 fechas para la reunión, el 10 nov» | Elegir una o proponer otras · **Elegir fecha** | `/candidatura` o su enlace, *`#reunion`* | Elige o propone otras; pasan todas las fechas; IWL cancela; la candidatura se descarta | Se celebra la reunión |
-| **Decir tu situación societaria** | La fundadora | «Firmasteis el NDA el 12 nov» | Decirla · **Decir mi situación** | `/proyecto`, *`#situacion`* | La dice; la compañía se archiva | IWL la confirma |
-| **Aceptar la propuesta de Acuerdo** | La fundadora | «IWL te propuso el Acuerdo el 13 nov» | Leerla y aceptarla, o comentarla · **Leer la propuesta** | `/proyecto/programa#anexo` | La acepta; IWL la devuelve a borrador; la compañía se archiva | IWL firma el Acuerdo |
-| **Rehacer un hito** | La fundadora | «Tu mentor pidió cambios en "20 entrevistas" el 18 nov: …» | Rehacerlo y volver a entregarlo · **Rehacer** | `/proyecto/ruta#hito-<id>` | Lo entrega de nuevo; la compañía se archiva | Su mentor lo revisa |
-| **Subir un documento pedido** | La fundadora | «IWL te pide "Escritura de constitución"» o «IWL pidió cambios en …: falta la página de firmas» | Subirlo · **Subir** | `/proyecto/diligencia#punto-<id>` | Lo sube (pasa a revisión); IWL lo marca «no aplica»; la compañía se archiva | IWL lo revisa |
-| **Confirmar horas**, **hecho el 20 nov** (`sesion_por_confirmar`, arriba) | La fundadora, en su inicio («Te toca») y por correo | «Marta Mentora ha registrado 2 h de sesión del 12 nov» | Confirmarlas o decir qué no cuadra · **Revisar** | `/proyecto/sesiones#sesion-<id>` | Las confirma o dice que no cuadran; pasan 7 días; la compañía se archiva | Cuentan para el Anexo |
+- **Proponerle el Acuerdo**: aviso calculado a dirección, en «Los calculados».
+- **La firma del Acuerdo** se queda en Programa (`#anexo`), donde está el
+  botón.

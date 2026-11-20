@@ -195,10 +195,23 @@ export function porDecidir(filas: FilaEntrada[]): PorDecidir[] {
 }
 
 /**
- * Las que esperan a dirección: decidir la incorporación. Confirmar la
+ * «Proponerle el Acuerdo», el otro aviso que se calcula (REVISION, 20 nov):
+ * la incorporación está decidida y no hay Anexo propuesto. Va a dirección,
+ * y desaparece en cuanto se le propone o la compañía se archiva.
+ */
+export function porProponer(filas: FilaEntrada[]): Array<{ slug: string; nombre: string; paso: string }> {
+  return filas
+    .filter((f) => f.paso.texto === "Proponerle el Acuerdo")
+    .map((f) => ({ slug: f.slug, nombre: f.nombre, paso: `Incorporación de ${f.nombre} decidida; falta proponerle el Acuerdo` }));
+}
+
+/**
+ * Las que esperan a dirección: decidir la incorporación y proponer el
+ * Acuerdo. Confirmar la
  * situación y firmar el Acuerdo ya tienen su aviso y no se cuentan dos
  * veces; lo que espera a ella, y lo por construir, no cuenta.
  */
 export const contarEntradaParaDireccion = cache(async (): Promise<number> => {
-  return porDecidir(await leerEnEntrada()).length;
+  const filas = await leerEnEntrada();
+  return porDecidir(filas).length + porProponer(filas).length;
 });

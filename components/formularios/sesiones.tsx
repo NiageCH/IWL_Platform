@@ -9,6 +9,7 @@ import {
   confirmarSesion,
   corregirHorasSesion,
   decidirSesion,
+  editarActaSesion,
   llevarSesionADireccion,
   mantenerHorasSesion,
   noCuadraSesion,
@@ -286,18 +287,38 @@ export interface PapelEnSesion {
   habla: boolean;
 }
 
+/** Lo que se puede cambiar del acta, tal como está */
+export interface ActaEditable {
+  tipo: "sesion" | "trabajo";
+  fecha: string;
+  duracionMin: number | null;
+  modalidad: string | null;
+  asistentes: string | null;
+  titulo: string;
+  materiaId: string | null;
+  pilarId: string | null;
+  trabajado: string | null;
+  entregable: string | null;
+}
+
 export function AccionesSesion({
   slug,
   id,
   estado,
   lineas,
   papel,
+  acta,
+  materias = [],
+  pilares = [],
 }: {
   slug: string;
   id: string;
   estado: string;
   lineas: Array<{ id: string; persona: string; horas: number }>;
   papel: PapelEnSesion;
+  acta?: ActaEditable;
+  materias?: Array<{ id: string; nombre: string }>;
+  pilares?: Array<{ id: string; nombre: string }>;
 }) {
   const abierta = ["por_confirmar", "en_discusion", "en_direccion"].includes(estado);
   const puedeAnular =
@@ -329,6 +350,17 @@ export function AccionesSesion({
       ) : null}
 
       {papel.registra && ["por_confirmar", "en_discusion"].includes(estado) ? <CorregirHoras slug={slug} id={id} lineas={lineas} /> : null}
+      {papel.registra && acta && materias.length && !["en_direccion", "anulada"].includes(estado) ? (
+        <EditarActa
+          slug={slug}
+          id={id}
+          acta={acta}
+          confirmada={!["por_confirmar", "en_discusion"].includes(estado)}
+          lineas={lineas}
+          materias={materias}
+          pilares={pilares}
+        />
+      ) : null}
       {papel.registra && estado === "en_discusion" ? (
         <ConTexto
           slug={slug}
@@ -401,6 +433,138 @@ function CorregirHoras({ slug, id, lineas }: { slug: string; id: string; lineas:
           </div>
         </>
       )}
+    </Formulario>
+  );
+}
+
+/**
+ * Editar el acta (REVISION, 20 nov). Abierta, cada guardado deja versión.
+ * Confirmada, queda fija: corregirla pide motivo y, si cambian las horas,
+ * vuelve a ella para que confirme.
+ */
+function EditarActa({
+  slug,
+  id,
+  acta,
+  confirmada,
+  lineas,
+  materias,
+  pilares,
+}: {
+  slug: string;
+  id: string;
+  acta: ActaEditable;
+  confirmada: boolean;
+  lineas: Array<{ id: string; persona: string; horas: number }>;
+  materias: Array<{ id: string; nombre: string }>;
+  pilares: Array<{ id: string; nombre: string }>;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (!abierto) {
+    return (
+      <button type="button" onClick={() => setAbierto(true)} className="accion text-xs">
+        {confirmada ? "Corregir el acta" : "Editar el acta"}
+      </button>
+    );
+  }
+  return (
+    <Formulario accion={editarActaSesion} onOk={() => setAbierto(false)} className="w-full gap-3 rounded-md border border-filete bg-hundido p-3">
+      {(r) => {
+        const e = (c: string) => (r.ok ? undefined : r.campos?.[c]);
+        return (
+          <>
+            <input type="hidden" name="slug" value={slug} />
+            <input type="hidden" name="id" value={id} />
+            <input type="hidden" name="kind" value={acta.tipo} />
+            <input type="hidden" name="confirmada" value={confirmada ? "si" : "no"} />
+            <p className="text-xs text-secundario">
+              {confirmada
+                ? "Está confirmada: el cambio queda como versión nueva, con su motivo. Si cambias las horas, vuelve a ella para que confirme."
+                : "Cada guardado queda como versión en la historia: quién, cuándo y qué cambió."}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Campo etiqueta="Fecha" error={e("held_on")}>
+                <Texto type="date" name="held_on" defaultValue={acta.fecha} max={hoy} required />
+              </Campo>
+              {acta.tipo === "sesion" ? (
+                <>
+                  <Campo etiqueta="Duración, en minutos" error={e("duration_minutes")}>
+                    <Texto name="duration_minutes" inputMode="numeric" defaultValue={acta.duracionMin ? String(acta.duracionMin) : ""} />
+                  </Campo>
+                  <Campo etiqueta="Modalidad" error={e("modality")}>
+                    <Seleccion name="modality" defaultValue={acta.modalidad ?? ""}>
+                      <option value="">Sin decir</option>
+                      <option value="videollamada">Videollamada</option>
+                      <option value="presencial">Presencial</option>
+                      <option value="telefono">Teléfono</option>
+                    </Seleccion>
+                  </Campo>
+                </>
+              ) : null}
+            </div>
+            <Campo etiqueta="De qué fue, en una línea" error={e("title")}>
+              <Texto name="title" defaultValue={acta.titulo} required />
+            </Campo>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Campo etiqueta="Materia" error={e("subject_id")}>
+                <Seleccion name="subject_id" defaultValue={acta.materiaId ?? ""} required>
+                  <option value="" disabled>
+                    Elige una
+                  </option>
+                  {materias.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+              <Campo etiqueta="Pilar" ayuda="Opcional.">
+                <Seleccion name="pillar_id" defaultValue={acta.pilarId ?? ""}>
+                  <option value="">Ninguno</option>
+                  {pilares.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+            </div>
+            {acta.tipo === "sesion" ? (
+              <Campo etiqueta="Quién estuvo de su lado" ayuda="Opcional.">
+                <Texto name="attendees_company" defaultValue={acta.asistentes ?? ""} />
+              </Campo>
+            ) : null}
+            <Campo etiqueta={acta.tipo === "sesion" ? "Acta: qué se trabajó" : "Qué se hizo"} error={e("worked")}>
+              <AreaTexto name="worked" rows={4} defaultValue={acta.trabajado ?? ""} required />
+            </Campo>
+            <Campo etiqueta="Entregable, enlace" ayuda={acta.tipo === "trabajo" ? undefined : "Opcional."} error={e("deliverable_url")}>
+              <Texto name="deliverable_url" type="url" defaultValue={acta.entregable ?? ""} />
+            </Campo>
+            {confirmada
+              ? lineas.map((l) => (
+                  <div key={l.id}>
+                    <input type="hidden" name="linea" value={l.id} />
+                    <Campo etiqueta={`Horas de ${l.persona}`}>
+                      <Texto name="linea_horas" inputMode="decimal" defaultValue={String(l.horas).replace(".", ",")} required />
+                    </Campo>
+                  </div>
+                ))
+              : null}
+            {confirmada ? (
+              <Campo etiqueta="Por qué cambia el acta" error={e("texto")}>
+                <AreaTexto name="texto" rows={2} required />
+              </Campo>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-3">
+              <Boton>{confirmada ? "Guardar la corrección" : "Guardar el acta"}</Boton>
+              <button type="button" onClick={() => setAbierto(false)} className="accion text-xs">
+                Cancelar
+              </button>
+            </div>
+          </>
+        );
+      }}
     </Formulario>
   );
 }

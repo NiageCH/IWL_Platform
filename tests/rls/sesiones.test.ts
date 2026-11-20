@@ -241,3 +241,61 @@ describe("un acuerdo del acta", () => {
     expect(deElla.error).not.toBeNull();
   });
 });
+
+describe("el acta deja versión (REVISION, 20 nov)", () => {
+  it("abierta: cada guardado anota quién y qué apartado cambió; a mano no se toca", async () => {
+    const id = await nueva(1);
+    expect((await mentor.from("work_sessions").update({ worked: "Otra cosa, a mano." }).eq("id", id)).error).not.toBeNull();
+    expect((await servicio.from("work_sessions").update({ worked: "Otra cosa, a mano." }).eq("id", id)).error?.message).toMatch(/Editar el acta/);
+
+    // Ella no edita el acta
+    expect((await ella.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Lo cuento yo." } })).error?.message).toMatch(/quien registró/);
+
+    const r = await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Repasamos precios, embudo y la retención." } });
+    expect(r.error).toBeNull();
+    expect(r.data).toBe(true);
+    const v = (await historia(id)).at(-1)!;
+    expect(v.kind).toBe("version_acta");
+    expect(v.detail).toMatchObject({ campos: ["worked"], confirmada: false, reabierta: false });
+    expect((await sesion(id)).status).toBe("por_confirmar");
+
+    // Sin cambios no hay versión
+    expect((await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Repasamos precios, embudo y la retención." } })).data).toBe(false);
+    // Abierta, las horas van por «Corregir las horas»
+    const l = await linea(id);
+    const conHoras = await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: {}, p_horas: [{ linea: l.id, horas: 3 }] });
+    expect(conHoras.error?.message).toMatch(/Corregir las horas/);
+  });
+
+  it("confirmada: pide motivo; si cambian las horas vuelve a ella con aviso", async () => {
+    const id = await nueva(2);
+    await ella.rpc("confirmar_sesion", { p_sesion: id });
+    expect((await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { title: "Precios y embudo" } })).error?.message).toMatch(/di por qué/);
+
+    // Solo el texto: sigue confirmada
+    expect((await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { title: "Precios y embudo" }, p_motivo: "El título no decía de qué fue." })).error).toBeNull();
+    expect((await sesion(id)).status).toBe("confirmada");
+    expect((await historia(id)).at(-1)).toMatchObject({ kind: "version_acta", body: "El título no decía de qué fue." });
+
+    // Con horas: vuelve a «Por confirmar», con aviso a ella, y queda la cifra de antes
+    const l = await linea(id);
+    const r = await mentor.rpc("editar_acta_sesion", {
+      p_sesion: id,
+      p: {},
+      p_motivo: "Fueron 2,5 h: se alargó.",
+      p_horas: [{ linea: l.id, horas: 2.5 }],
+    });
+    expect(r.error).toBeNull();
+    expect((await sesion(id)).status).toBe("por_confirmar");
+    expect((await linea(id)).hours).toBe(2.5);
+    expect(await porConfirmarParaElla(id)).toBe(true);
+    expect((await historia(id)).at(-1)!.detail).toMatchObject({ reabierta: true, horas: [{ antes: 2, despues: 2.5 }] });
+  });
+
+  it("en dirección no se toca", async () => {
+    const id = await nueva(1);
+    await ella.rpc("sesion_no_cuadra", { p_sesion: id, p_comentario: "No fue tanto." });
+    await ella.rpc("llevar_sesion_a_direccion", { p_sesion: id, p_motivo: "No nos ponemos de acuerdo." });
+    expect((await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { title: "Otro" } })).error?.message).toMatch(/ya no está en ese punto/);
+  });
+});

@@ -113,19 +113,39 @@ export async function registrarSesion(formData: FormData): Promise<Resultado> {
   });
   if (falloBase) return traducirError(falloBase);
 
-  await avisarAEllas(String(id));
+  await escribirAEllas(String(id), { evento: "sesion_registrada" });
   refrescar(slug);
   return ok();
 }
 
-/** El correo a cada fundadora con cuenta: «… ha registrado 2 h. ¿Lo confirmas?» */
-async function avisarAEllas(sesionId: string) {
+/** Lo que lleva cada correo a ellas, además del saludo y el enlace */
+type CorreoAElla =
+  | { evento: "sesion_registrada" }
+  | { evento: "sesion_de_vuelta"; quePaso: string }
+  | { evento: "sesion_decidida" };
+
+/**
+ * El correo a cada fundadora con cuenta. Al registrarla: «… ha registrado
+ * 2 h. ¿Lo confirmas?». Cuando vuelve a sus manos o la cierra dirección
+ * (REVISION, 20 nov): la cifra de antes, la de ahora y el motivo, que salen
+ * del último paso de su historia.
+ */
+async function escribirAEllas(sesionId: string, correo: CorreoAElla) {
   const supabase = await clienteServidor();
-  const { data: s } = await supabase
-    .from("work_sessions")
-    .select("company_id, kind, held_on, title, registered_by, contribution_hours ( hours ), companies ( name )")
-    .eq("id", sesionId)
-    .single();
+  const [{ data: s }, { data: ultimo }] = await Promise.all([
+    supabase
+      .from("work_sessions")
+      .select("company_id, kind, held_on, title, registered_by, contribution_hours ( hours )")
+      .eq("id", sesionId)
+      .single(),
+    supabase
+      .from("session_events")
+      .select("kind, body, detail")
+      .eq("session_id", sesionId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
   if (!s) return;
   const { data: ellas } = await supabase
     .from("company_members")
@@ -134,25 +154,48 @@ async function avisarAEllas(sesionId: string) {
     .eq("member_role", "fundadora");
   const persona = await personaActual();
   const quien = persona ? nombreCompleto(persona.full_name, persona.last_name) || "IWL" : "IWL";
-  const horas = (s.contribution_hours ?? []).reduce((t, h) => t + Number(h.hours), 0);
+  const ahora = (s.contribution_hours ?? []).reduce((t, h) => t + Math.round(Number(h.hours) * 100), 0);
+  const antes = ahora - variacionDe(ultimo?.detail);
+  const cifra = (centesimas: number) => String(centesimas / 100).replace(".", ",");
+  const extra =
+    correo.evento === "sesion_registrada"
+      ? { horas: cifra(ahora), que: s.kind === "sesion" ? "sesión" : "trabajo" }
+      : {
+          antes: cifra(antes),
+          despues: cifra(ahora),
+          motivo: ultimo?.body ?? "",
+          ...(correo.evento === "sesion_de_vuelta" ? { que_paso: correo.quePaso } : {}),
+        };
   for (const m of ellas ?? []) {
     const p = m.profiles as unknown as { email: string | null; full_name: string | null } | null;
     if (!p?.email) continue;
     await notificar(
       { correo: p.email, nombre: p.full_name, profileId: m.profile_id },
-      "sesion_registrada",
+      correo.evento,
       {
         nombre: p.full_name,
         quien,
-        horas: String(horas).replace(".", ","),
-        que: s.kind === "sesion" ? "sesión" : "trabajo",
         fecha: textoFecha(s.held_on),
         titulo: s.title,
         enlace: `${direccionBase()}/proyecto/sesiones#sesion-${sesionId}`,
+        ...extra,
       },
       { companyId: s.company_id, autor: persona?.id },
     );
   }
+}
+
+/** Cuánto cambió el total en un paso, en centésimas: corrección, decisión o versión del acta */
+function variacionDe(detalle: unknown): number {
+  const d = (detalle ?? {}) as { antes?: unknown; despues?: unknown; cambios?: unknown; horas?: unknown };
+  const lista = Array.isArray(d.cambios) ? d.cambios : Array.isArray(d.horas) ? d.horas : [d];
+  return (lista as Array<{ antes?: unknown; despues?: unknown }>).reduce(
+    (t, c) =>
+      typeof c.antes === "number" || typeof c.despues === "number"
+        ? t + Math.round(Number(c.despues) * 100) - Math.round(Number(c.antes) * 100)
+        : t,
+    0,
+  );
 }
 
 /** Los pasos de un clic o con un comentario: todos llaman a su función */
@@ -168,6 +211,7 @@ async function paso(
   campo: "p_comentario" | "p_motivo",
   obligatorio: boolean,
   falta: string,
+  despues?: (id: string) => Promise<void>,
 ): Promise<Resultado> {
   const { datos, fallo } = validar(
     z.object({
@@ -185,6 +229,7 @@ async function paso(
     [campo]: datos.texto ?? undefined,
   } as never);
   if (falloBase) return traducirError(falloBase);
+  if (despues) await despues(datos.id);
   refrescar(datos.slug);
   // El acuse es la sesión cambiada: su estado y su historia
   return ok();
@@ -203,7 +248,9 @@ export async function comentarSesion(formData: FormData) {
 }
 
 export async function mantenerHorasSesion(formData: FormData) {
-  return paso(formData, "mantener_horas_sesion", "p_motivo", true, "Explícale por qué se mantienen.");
+  return paso(formData, "mantener_horas_sesion", "p_motivo", true, "Explícale por qué se mantienen.", (id) =>
+    escribirAEllas(id, { evento: "sesion_de_vuelta", quePaso: "mantiene las horas" }),
+  );
 }
 
 export async function llevarSesionADireccion(formData: FormData) {
@@ -236,6 +283,7 @@ export async function corregirHorasSesion(formData: FormData): Promise<Resultado
     p_motivo: datos.texto,
   });
   if (falloBase) return traducirError(falloBase);
+  await escribirAEllas(datos.id, { evento: "sesion_de_vuelta", quePaso: "ha corregido las horas" });
   refrescar(datos.slug);
   return ok();
 }
@@ -262,6 +310,79 @@ export async function decidirSesion(formData: FormData): Promise<Resultado> {
     p_horas: horas,
   });
   if (falloBase) return traducirError(falloBase);
+  await escribirAEllas(datos.id, { evento: "sesion_decidida" });
+  refrescar(datos.slug);
+  return ok();
+}
+
+/**
+ * Editar el acta (REVISION, 20 nov). Cada guardado deja versión. Abierta,
+ * sin motivo; confirmada, con motivo, y si cambian las horas vuelve a ella.
+ * Las horas solo llegan aquí con la sesión confirmada: abierta, se corrigen
+ * con «Corregir las horas».
+ */
+export async function editarActaSesion(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      slug: textoObligatorio(),
+      id: uuid,
+      confirmada: z.enum(["si", "no"]),
+      kind: z.enum(["sesion", "trabajo"]),
+      held_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pon la fecha."),
+      duration_minutes: z.coerce.number().int().min(5).max(1440).optional().or(z.literal("").transform(() => undefined)),
+      modality: z.enum(["presencial", "videollamada", "telefono"]).optional().or(z.literal("").transform(() => undefined)),
+      attendees_company: textoOpcional,
+      title: textoObligatorio(3, "Di en una línea de qué fue."),
+      subject_id: uuid,
+      pillar_id: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
+      worked: textoObligatorio(10, "Cuenta qué se trabajó: es el acta."),
+      deliverable_url: enlaceOpcional,
+      texto: textoOpcional,
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+  if (datos.confirmada === "si" && (datos.texto ?? "").trim().length < 5) {
+    return error("Está confirmada: di por qué cambia el acta.", { texto: "Escribe el motivo." });
+  }
+  if (!(await personaActual())) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const horas: Array<{ linea: string; horas: number }> = [];
+  if (datos.confirmada === "si") {
+    const lineas = formData.getAll("linea").map(String);
+    const cifras = formData.getAll("linea_horas").map(String);
+    for (let i = 0; i < lineas.length; i++) {
+      const h = horasEscritas(cifras[i] ?? "");
+      if (h === null || h <= 0 || h > 24) return error("Las horas tienen que ser un número entre 0 y 24.");
+      horas.push({ linea: lineas[i], horas: h });
+    }
+  }
+
+  const supabase = await clienteServidor();
+  const { data: antes } = await supabase.from("work_sessions").select("status").eq("id", datos.id).maybeSingle();
+  const { error: falloBase } = await supabase.rpc("editar_acta_sesion", {
+    p_sesion: datos.id,
+    p: {
+      held_on: datos.held_on,
+      duration_minutes: datos.kind === "sesion" ? (datos.duration_minutes ?? "") : "",
+      modality: datos.kind === "sesion" ? (datos.modality ?? "") : "",
+      attendees_company: datos.attendees_company ?? "",
+      title: datos.title,
+      subject_id: datos.subject_id,
+      pillar_id: datos.pillar_id ?? "",
+      worked: datos.worked,
+      deliverable_url: datos.deliverable_url ?? "",
+    },
+    p_motivo: datos.texto ?? undefined,
+    p_horas: horas,
+  });
+  if (falloBase) return traducirError(falloBase);
+
+  // Confirmada y con horas cambiadas: vuelve a ella, y se le escribe
+  const { data: despues } = await supabase.from("work_sessions").select("status").eq("id", datos.id).maybeSingle();
+  if (antes && despues && antes.status !== "por_confirmar" && despues.status === "por_confirmar") {
+    await escribirAEllas(datos.id, { evento: "sesion_de_vuelta", quePaso: "ha corregido el acta y las horas" });
+  }
   refrescar(datos.slug);
   return ok();
 }

@@ -4,7 +4,7 @@ import { presentarAviso, type DatosAviso, type TipoAviso } from "@/lib/avisos";
 import { leerAviso } from "@/lib/datos/onboarding";
 import { leerRevisionesComite } from "@/lib/datos/comite";
 import { PASO_EMBUDO, traza } from "@/lib/recorridos";
-import { leerEnEntrada, porDecidir } from "@/lib/datos/entrada";
+import { leerEnEntrada, porDecidir, porProponer } from "@/lib/datos/entrada";
 import { personaActual, esIwl } from "@/lib/supabase/servidor";
 import { fecha } from "@/lib/utils";
 import type { QuienMueve } from "@/lib/entrada";
@@ -31,7 +31,7 @@ import { Traza } from "@/components/vistas/avisos";
  * Hecha la acción, el aviso se cierra y la franja dice qué viene después y
  * quién lo hace, con su botón si le toca a quien mira.
  *
- * `aviso` es el id de un aviso guardado, o `comite` e `incorporacion` para
+ * `aviso` es el id de un aviso guardado, o `comite`, `incorporacion` y `proponer` para
  * los que se calculan y no tienen fila (`tope`, el nombre de antes, sigue
  * valiendo para los enlaces que ya estén en un correo).
  */
@@ -75,6 +75,8 @@ export async function FranjaAviso({ aviso, contexto = {} }: { aviso?: string | s
   if (clave === "incorporacion" || clave === "tope") {
     return <FranjaIncorporacion contexto={contexto} esDireccion={persona.role === "admin_iwl"} />;
   }
+  // El aviso va a dirección; el botón, a cualquiera de IWL, que es quien puede proponerlo
+  if (clave === "proponer") return <FranjaProponer contexto={contexto} puede={esIwl(persona.role)} />;
 
   const a = await leerAviso(clave);
   if (!a) return null;
@@ -281,6 +283,42 @@ async function FranjaIncorporacion({ contexto, esDireccion }: { contexto: Contex
       </div>
       <Traza {...t} />
       <Destino ancla="incorporacion" />
+    </Marco>
+  );
+}
+
+/**
+ * Proponerle el Acuerdo (REVISION, 20 nov): pendiente mientras la
+ * incorporación esté decidida y no haya Anexo propuesto. El botón está en
+ * el bloque del Anexo, en Programa.
+ */
+async function FranjaProponer({ contexto, puede }: { contexto: ContextoFranja; puede: boolean }) {
+  if (!contexto.slug) return null;
+  const filas = await leerEnEntrada();
+  const fila = filas.find((f) => f.slug === contexto.slug);
+  const pendiente = porProponer(filas).find((p) => p.slug === contexto.slug);
+  const t = traza("entrada", 3);
+  if (!pendiente) {
+    return (
+      <Marco hecho>
+        <p className="text-sm text-titular">
+          <strong className="font-semibold">Hecho.</strong>
+          {fila ? ` Siguiente: ${fila.paso.texto.toLowerCase()} · ${QUIEN[fila.paso.quien]}` : " Ya no está en entrada."}
+        </p>
+      </Marco>
+    );
+  }
+  return (
+    <Marco>
+      <p className="text-sm text-titular">
+        <strong className="font-semibold">Has venido a:</strong> proponerle el Acuerdo a {pendiente.nombre}
+      </p>
+      <p className="text-xs text-secundario">{pendiente.paso}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        {puede ? <IrA ancla="anexo" verbo="Proponer el Acuerdo" /> : <span className="text-xs text-metadato">Lo propone IWL.</span>}
+      </div>
+      <Traza {...t} />
+      <Destino ancla="anexo" />
     </Marco>
   );
 }

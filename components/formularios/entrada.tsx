@@ -7,6 +7,7 @@ import {
   decirSituacion,
   guardarHorquilla,
   guardarTarifaAnexo,
+  guardarDiasAvance,
   guardarTopeEntrada,
 } from "@/lib/acciones/entrada";
 import { BASES, baseSugerida, mensajeNoIncorporada, type BaseIncorporacion } from "@/lib/entrada";
@@ -131,6 +132,29 @@ export function TopeEntrada({ dias }: { dias: number }) {
           </Campo>
           <div>
             <Boton variante="secundario">Guardar el tope</Boton>
+          </div>
+        </>
+      )}
+    </Formulario>
+  );
+}
+
+/** Desde qué día se le pide el avance del mes, y cuándo vence */
+export function DiasAvance({ aviso, limite }: { aviso: number; limite: number }) {
+  return (
+    <Formulario accion={guardarDiasAvance} className="gap-3 px-4 py-4">
+      {(r) => (
+        <>
+          <div className="flex flex-wrap gap-4">
+            <Campo etiqueta="Se le pide desde el día" ayuda="Del mes que cuenta" error={r.ok ? undefined : r.campos?.aviso}>
+              <Texto name="aviso" inputMode="numeric" defaultValue={String(aviso)} className="w-24" />
+            </Campo>
+            <Campo etiqueta="Vence el día" ayuda="Del mes siguiente" error={r.ok ? undefined : r.campos?.limite}>
+              <Texto name="limite" inputMode="numeric" defaultValue={String(limite)} className="w-24" />
+            </Campo>
+          </div>
+          <div>
+            <Boton variante="secundario">Guardar los días del avance</Boton>
           </div>
         </>
       )}

@@ -24,6 +24,8 @@ export const EVENTOS = [
   "recordatorio",
   "resumen_avisos",
   "sesion_registrada",
+  "sesion_de_vuelta",
+  "sesion_decidida",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 
@@ -43,6 +45,8 @@ export const NOMBRE_EVENTO: Record<Evento, string> = {
   recordatorio: "Recordatorio",
   resumen_avisos: "Resumen de avisos",
   sesion_registrada: "Horas por confirmar",
+  sesion_de_vuelta: "Horas que vuelven a ella",
+  sesion_decidida: "Sesión cerrada por dirección",
 };
 
 export type DatosCorreo = Record<string, string | number | null | undefined>;
@@ -257,6 +261,32 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
       "Revisa el acta y confirma las horas, o di qué no cuadra. Si en 7 días no respondes, se dan por confirmadas.",
     ],
     boton: { texto: "Revisar y confirmar", url: s(d.enlace) },
+  }),
+  // Vuelve a sus manos: corregida, mantenida, o con el acta cambiada después de confirmada
+  sesion_de_vuelta: (d) => ({
+    asunto: `${s(d.quien)} ${s(d.que_paso)} · ¿Lo confirmas?`,
+    parrafos: [
+      saludo(d),
+      `${s(d.quien)} ${s(d.que_paso)} de la sesión del ${s(d.fecha)}: «${s(d.titulo)}».`,
+      s(d.antes) === s(d.despues)
+        ? `Las horas siguen en ${s(d.despues)} h.`
+        : `Antes: ${s(d.antes)} h. Ahora: ${s(d.despues)} h.`,
+      `Por qué: ${s(d.motivo)}`,
+      "Revísala y confirma las horas, o di qué no cuadra. Si en 7 días no respondes, se dan por confirmadas.",
+    ],
+    boton: { texto: "Revisar", url: s(d.enlace) },
+  }),
+  sesion_decidida: (d) => ({
+    asunto: `Dirección ha cerrado «${s(d.titulo)}»`,
+    parrafos: [
+      saludo(d),
+      `Dirección ha decidido sobre las horas de la sesión del ${s(d.fecha)}: «${s(d.titulo)}».`,
+      s(d.antes) === s(d.despues)
+        ? `Las horas se quedan en ${s(d.despues)} h.`
+        : `Antes: ${s(d.antes)} h. Ahora: ${s(d.despues)} h.`,
+      `Por qué: ${s(d.motivo)}`,
+    ],
+    boton: { texto: "Revisar", url: s(d.enlace) },
   }),
   acuerdo_propuesto: (d) => ({
     asunto: `Tu propuesta de Acuerdo · ${s(d.startup)}`,

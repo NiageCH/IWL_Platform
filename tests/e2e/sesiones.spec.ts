@@ -48,7 +48,11 @@ test.afterAll(async () => {
   for (const titulo of titulos) {
     const correos = await consultar<{ id: string }>(
       "correos",
-      { evento: "eq.sesion_registrada", company_id: `eq.${COMPANIAS.marea}`, "datos->>titulo": `eq.${titulo}` },
+      {
+        evento: "in.(sesion_registrada,sesion_de_vuelta,sesion_decidida)",
+        company_id: `eq.${COMPANIAS.marea}`,
+        "datos->>titulo": `eq.${titulo}`,
+      },
       "id",
     );
     for (const c of correos) await borrar("correos", { id: c.id });
@@ -124,4 +128,28 @@ test("si no cuadra, al mentor le llega el aviso; corrige con motivo y vuelve a e
   await tarjeta.getByText(/^Historia/).click();
   await expect(tarjeta).toContainText("corrigió las horas de");
   await expect(tarjeta).toContainText("de 2 h a 1 h");
+
+  // Y a ella le llega el correo con la cifra de antes, la nueva y el motivo (REVISION, 20 nov)
+  const deVuelta = await consultar<{ datos: Record<string, string> }>(
+    "correos",
+    { evento: "eq.sesion_de_vuelta", "datos->>titulo": `eq.${titulo}` },
+    "datos",
+  );
+  expect(deVuelta.length).toBeGreaterThan(0);
+  expect(deVuelta[0].datos).toMatchObject({ antes: "2", despues: "1", motivo: "Tiene razón: acabamos antes." });
+});
+
+test("el acta se edita y cada guardado queda como versión en la historia", async ({ page }) => {
+  const titulo = tituloDe("Retención");
+  await entrarComo(page, MENTOR, "/cartera/marea-clinica/sesiones");
+  const id = await registrar(page, titulo, "1");
+  const tarjeta = page.locator(`#sesion-${id}`);
+  await tarjeta.getByRole("button", { name: "Editar el acta" }).click();
+  await tarjeta.getByLabel("Acta: qué se trabajó").fill("Repasamos los precios, el embudo y la retención a 8 semanas.");
+  await tarjeta.getByRole("button", { name: "Guardar el acta" }).click();
+  await expect(tarjeta).toContainText("la retención a 8 semanas");
+  await tarjeta.getByText(/^Historia/).click();
+  await expect(tarjeta).toContainText("editó el acta: qué se trabajó");
+  await tarjeta.getByText("Ver qué cambió").click();
+  await expect(tarjeta.getByText(/el embudo de ventas del trimestre\.\s*→/)).toBeVisible();
 });

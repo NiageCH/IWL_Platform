@@ -67,6 +67,19 @@ export function confirmaSolaEl(pendienteDesde: string): Date {
   return new Date(new Date(pendienteDesde).getTime() + DIAS_PARA_CONFIRMAR * 86_400_000);
 }
 
+/** Cómo se llama cada apartado del acta en su historia de versiones */
+export const APARTADOS_ACTA: Record<string, string> = {
+  held_on: "fecha",
+  duration_minutes: "duración",
+  modality: "modalidad",
+  attendees_company: "quién estuvo",
+  title: "título",
+  subject_id: "materia",
+  pillar_id: "pilar",
+  worked: "qué se trabajó",
+  deliverable_url: "entregable",
+};
+
 /** Lo que dice cada paso de su historia */
 export function textoEvento(tipo: string, detalle: Record<string, unknown>): string {
   const n = (v: unknown) => String(v).replace(".", ",");
@@ -95,6 +108,14 @@ export function textoEvento(tipo: string, detalle: Record<string, unknown>): str
       return "Confirmada (antes del 13 nov)";
     case "acta":
       return "Cambió el acta";
+    case "version_acta": {
+      const campos = Array.isArray(detalle.campos) ? (detalle.campos as string[]) : [];
+      const horas = Array.isArray(detalle.horas) ? detalle.horas.length : 0;
+      const partes = campos.map((c) => APARTADOS_ACTA[c] ?? c);
+      if (horas) partes.push("las horas");
+      const que = partes.length ? `: ${partes.join(", ")}` : "";
+      return `${detalle.confirmada ? "Corrigió el acta confirmada" : "Editó el acta"}${que}${detalle.reabierta ? ". Vuelve a esperar su confirmación" : ""}`;
+    }
     default:
       return tipo;
   }

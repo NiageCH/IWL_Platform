@@ -45,7 +45,9 @@ export interface Sesion {
   asistentesCompania: string | null;
   titulo: string;
   materia: string | null;
+  materiaId: string | null;
   pilar: string | null;
+  pilarId: string | null;
   trabajado: string | null;
   entregable: string | null;
   estado: EstadoSesion;
@@ -66,7 +68,7 @@ export async function leerSesiones(companyId: string): Promise<{ sesiones: Sesio
     .from("work_sessions")
     .select(
       `id, kind, held_on, duration_minutes, modality, attendees_company, title, worked, deliverable_url,
-       status, pending_since, registered_by, closed_at, migrated, created_at,
+       status, pending_since, registered_by, closed_at, migrated, created_at, subject_id, pillar_id,
        contribution_subjects ( name ), pillars ( name ),
        registrador:profiles!work_sessions_registered_by_fkey ( full_name, last_name, email ),
        contribution_hours ( id, person_name, profile_id, profile_code, hours, applied_rate ),
@@ -99,7 +101,9 @@ export async function leerSesiones(companyId: string): Promise<{ sesiones: Sesio
       asistentesCompania: f.attendees_company,
       titulo: f.title,
       materia: f.contribution_subjects?.name ?? null,
+      materiaId: f.subject_id,
       pilar: f.pillars?.name ?? null,
+      pilarId: f.pillar_id,
       trabajado: f.worked,
       entregable: f.deliverable_url,
       estado: f.status as EstadoSesion,

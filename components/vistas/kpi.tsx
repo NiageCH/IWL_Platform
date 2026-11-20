@@ -96,6 +96,7 @@ export async function VistaKpi({
     const mesInicial = new Date().toISOString().slice(0, 7);
 
     return (
+      <div id="avance" className="scroll-mt-48">
       <Bloque>
         <TituloBloque accion={<Metadato>Primer mes</Metadato>}>
           Cargar los KPI del mes
@@ -114,6 +115,7 @@ export async function VistaKpi({
           />
         ) : null}
       </Bloque>
+      </div>
     );
   }
 
@@ -356,7 +358,8 @@ export async function VistaKpi({
       ) : null}
 
       {permisos.puedeEscribir ? (
-        <>
+        // `#avance`: aquí lleva «Carga el avance de …» de su inicio
+        <div id="avance" className="flex scroll-mt-48 flex-col gap-6">
           <Bloque>
             <TituloBloque accion={<Metadato>Se carga una vez</Metadato>}>
               Cargar los KPI del mes
@@ -381,7 +384,7 @@ export async function VistaKpi({
               puedeRevisar={permisos.esIwl}
             />
           </Bloque>
-        </>
+        </div>
       ) : null}
 
       <Bloque>

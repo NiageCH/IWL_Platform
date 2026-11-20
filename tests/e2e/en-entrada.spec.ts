@@ -114,6 +114,25 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     const franja = page.getByRole("region", { name: "Has venido a" });
     await expect(franja).toContainText(`decidir la incorporación de ${CONS}`);
     await expect(franja.getByRole("button", { name: "Decidir la incorporación" })).toBeInViewport();
+
+    /*
+     * Decidida, le toca proponerle el Acuerdo (REVISION, 20 nov): otro aviso
+     * que se calcula, y que lleva al bloque del Anexo, en Programa. La
+     * decisión se pone por fuera; se va con la compañía al acabar.
+     */
+    await insertar("decisiones_incorporacion", {
+      company_id: cons.compania,
+      decision: "si",
+      base: "estrategica",
+      motivo: "Prueba de interfaz",
+    });
+    await page.goto("/cartera");
+    await expect(page.locator('li[data-aviso="incorporacion"]').filter({ hasText: CONS })).toHaveCount(0);
+    const proponer = page.locator('li[data-aviso="proponer_acuerdo"]').filter({ hasText: CONS });
+    await expect(proponer).toContainText(`Incorporación de ${CONS} decidida; falta proponerle el Acuerdo`);
+    await proponer.getByRole("link", { name: "Proponer el Acuerdo" }).click();
+    await expect(page).toHaveURL(new RegExp(`/cartera/${cons.slug}/programa\\?aviso=proponer#anexo$`));
+    await expect(page.getByRole("region", { name: "Has venido a" })).toContainText(`proponerle el Acuerdo a ${CONS}`);
     await page.goto("/cartera");
 
     /*

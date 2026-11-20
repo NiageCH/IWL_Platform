@@ -1,7 +1,7 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
-import { HorquillaEquity, TarifaAnexo, TopeEntrada } from "@/components/formularios/entrada";
+import { DiasAvance, HorquillaEquity, TarifaAnexo, TopeEntrada } from "@/components/formularios/entrada";
 import { tarifaAnexo } from "@/lib/anexo";
 import { problemaParaEnviar } from "@/lib/nda-texto";
 import { faltanMarcas } from "@/lib/nda-formato";
@@ -197,6 +197,21 @@ export default async function AdminPrograma() {
           tiene sus avisos.
         </p>
         <TopeEntrada dias={typeof ajuste("entrada_tope_construccion_dias") === "number" ? (ajuste("entrada_tope_construccion_dias") as number) : 14} />
+      </Bloque>
+
+      <Bloque>
+        <TituloBloque accion={<Metadato>Lo que le toca a ella</Metadato>}>
+          Avance del mes
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Desde ese día, en su inicio sale «Carga el avance de noviembre ·
+          Cargar» hasta que lo entregue. Pasado el día de vencimiento del mes
+          siguiente, sale vencido.
+        </p>
+        <DiasAvance
+          aviso={Number((ajuste("avance_mes_dia_aviso") as { dia?: number } | undefined)?.dia ?? 25)}
+          limite={Number((ajuste("update_mensual_dia_limite") as { dia?: number } | undefined)?.dia ?? 10)}
+        />
       </Bloque>
 
       <Bloque>

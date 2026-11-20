@@ -5274,6 +5274,9 @@ isOneToOne: false
 "decidir_sesion":
 { Args: { "p_horas"?: Json,"p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
+"editar_acta_sesion":
+{ Args: { "p": Json,"p_horas"?: Json,"p_motivo"?: string,"p_sesion": string }; Returns: boolean
+                           },
 "entregar_hito":
 { Args: { "p_hito": string,"p_nota"?: string }; Returns: string
                            },

@@ -148,6 +148,27 @@ export async function guardarTopeEntrada(formData: FormData): Promise<Resultado>
   );
 }
 
+/**
+ * El avance del mes (REVISION, 20 nov): desde qué día se le pide el de ese
+ * mes, y qué día del mes siguiente vence. Hasta el 28, que todos los meses
+ * lo tienen.
+ */
+export async function guardarDiasAvance(formData: FormData): Promise<Resultado> {
+  const dia = (falta: string) => z.coerce.number().int("Un día del mes, en número.").min(1, falta).max(28, "Como mucho el 28, que lo tienen todos los meses.");
+  const { datos, fallo } = validar(
+    z.object({ aviso: dia("Del 1 al 28."), limite: dia("Del 1 al 28.") }),
+    formData,
+  );
+  if (fallo) return fallo;
+  const primero = await guardarAjuste("avance_mes_dia_aviso", { dia: datos.aviso }, "");
+  if (!primero.ok) return primero;
+  return guardarAjuste(
+    "update_mensual_dia_limite",
+    { dia: datos.limite },
+    `Guardado. Desde el día ${datos.aviso} se le pide el avance del mes; vence el ${datos.limite} del mes siguiente.`,
+  );
+}
+
 /** La tarifa con que se valoran las horas del Anexo. Vacía, el valor va a mano */
 export async function guardarTarifaAnexo(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
