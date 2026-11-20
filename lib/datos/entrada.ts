@@ -1,4 +1,6 @@
 import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { estadoTope, pasoEntrada, type BaseIncorporacion, type DecisionIncorporacion } from "@/lib/entrada";
@@ -80,8 +82,18 @@ export interface FilaEntrada {
  * fundadora, y la cartera de una fundadora no pasa por aquí. Las
  * archivadas —«No incorporada»— no están: ya no esperan nada.
  */
-export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
-  const supabase = await clienteServidor();
+export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> =>
+  leerEnEntradaCon(await clienteServidor(), { logos: true }),
+);
+
+/**
+ * Lo mismo con el cliente que se le pase: el resumen diario la lee con la
+ * clave de servicio, sin persona detrás, y no necesita logos.
+ */
+export async function leerEnEntradaCon(
+  supabase: SupabaseClient<Database>,
+  { logos: conLogos }: { logos: boolean },
+): Promise<FilaEntrada[]> {
   const { data: companias } = await supabase
     .from("companies")
     .select("id, name, slug, logo_path, via, created_at, sector, one_liner, situacion_societaria, situacion_confirmada_at")
@@ -114,7 +126,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
         .not("celebrada_on", "is", null)
     : { data: [] as { candidatura_id: string }[] };
 
-  const logos = await firmarLogos(companias.map((c) => c.logo_path));
+  const logos = conLogos ? await firmarLogos(companias.map((c) => c.logo_path)) : new Map<string, string>();
   const hoy = Date.now();
   return companias.map((c) => {
     const suyos = (puntos.data ?? []).filter((p) => p.company_id === c.id && p.status !== "no_aplica");
@@ -157,7 +169,7 @@ export const leerEnEntrada = cache(async (): Promise<FilaEntrada[]> => {
         : null,
     };
   });
-});
+}
 
 /** Una compañía que espera a que dirección decida su incorporación */
 export interface PorDecidir {

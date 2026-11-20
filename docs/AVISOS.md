@@ -58,6 +58,13 @@ acción. Si pone «— », solo lo cierra la acción.
 No se guardan: salen cada vez del estado, así que desaparecen solos cuando la
 acción se hace.
 
+**En el resumen diario, 21 nov**: van el día que aparecen y el día que pasan
+a vencidos, no cada mañana. Lo que ya se contó a cada cual queda en
+`digest_computed_notices`. Van «Decidir la incorporación» y «Proponerle el
+Acuerdo» a dirección, el hito vencido al mentor principal, y el avance del mes
+y los hitos que vencen a ella, que por eso también recibe el resumen. La
+revisión en comité y el alta detenida no van.
+
 | Aviso | Lo recibe | Qué te toca · botón | Lleva a | Desaparece cuando |
 |---|---|---|---|---|
 | **Revisión en comité** | Dirección | Volver a mirarla · **Redactar el acta** | `/embudo/<id>#comite` | Hay acta nueva o se descarta |

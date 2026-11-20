@@ -11,8 +11,7 @@ Si entras en el programa, desde aquí mismo seguirás tu proyecto.
 Respondes a lo que IWL te pide para avanzar. Todo está en [tu candidatura](/candidatura).
 
 - **Cuando IWL te proponga una reunión**: elige una fecha o propón otras.
-- **Cuando te envíe el NDA**: léelo y fírmalo.
-- **Cuando te pida documentos**: súbelos.
+- **Cuando te envíe el NDA**: léelo y fírmalo. Si algo no te encaja, escríbelo debajo del NDA y te respondemos.
 
 Cada vez que haya algo nuevo te llega un correo con el enlace.
 
@@ -29,13 +28,15 @@ Cada vez que haya algo nuevo te llega un correo con el enlace.
 2. Pulsa **Elegir esta** en la que te vaya bien. Te llega la invitación por correo.
 3. Si ninguna te va, abre **Ninguna me va**, propón dos o tres y pulsa **Proponer estas fechas**.
 
+### Comentar el NDA antes de firmarlo
+
+1. Lee el NDA en tu candidatura.
+2. Si algo no te encaja, escríbelo en **Comentar el NDA**, debajo del texto, y pulsa **Enviar el comentario**.
+3. IWL te responde ahí. Si cambia el texto, lo verás antes de firmar.
+
 ### Firmar el NDA
 
 1. Lee el NDA en tu candidatura.
-2. Escribe tu nombre y apellidos, como en tu documento, y elige cómo firmas.
-3. Pulsa **Firmar el NDA**. Después lo contrafirma IWL.
-
-### Subir un documento
-
-1. En tu candidatura, busca lo que se pide.
-2. Elige el fichero y pulsa **Subir**.
+2. Escribe tu nombre y apellidos, como en tu documento.
+3. Si te lo pide, en **Firmas** di si firmas **como persona física** o **en nombre de una sociedad constituida**, y rellena sus datos.
+4. Pulsa **Firmar el NDA**. Después lo contrafirma IWL.

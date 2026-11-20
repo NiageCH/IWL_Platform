@@ -37,6 +37,33 @@ test("la primera vez se abre sola, y luego está en el menú", async ({ page }) 
   }
 });
 
+/**
+ * La primera entrada por el enlace de un aviso va a lo suyo, con una
+ * línea arriba que lleva a la guía (REVISION, 21 nov). Cerrada, no vuelve,
+ * y cuenta como vista: a `/` ya no la lleva a la guía.
+ */
+test("entrando por un aviso, una línea lleva a la guía y se cierra", async ({ page }) => {
+  const correo = `e2e.guia.aviso.${Date.now()}.${test.info().project.name}@ejemplo.test`;
+  try {
+    const id = await crearCuenta(correo);
+    await actualizar("profiles", { id: `eq.${id}` }, { role: "mentor", full_name: "Mentora de prueba" });
+    await entrarComo(page, correo, "/cartera", { guiaVista: false });
+    await expect(page).toHaveURL(/\/cartera$/);
+    const linea = page.locator("[data-primera-vez]");
+    await expect(linea.getByText("¿Es tu primera vez? Tu guía te explica cómo funciona.")).toBeVisible();
+    await expect(linea.getByRole("link", { name: "Abrir la guía" })).toHaveAttribute("href", "/guia");
+
+    await linea.getByRole("button", { name: "Cerrar el aviso de la guía" }).click();
+    await expect(linea).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator("[data-primera-vez]")).toHaveCount(0);
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/cartera$/);
+  } finally {
+    await borrarCuenta(correo);
+  }
+});
+
 test("cada rol lee la suya", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/guia");
   await expect(page.getByRole("heading", { name: "Tu guía · Dirección IWL" })).toBeVisible();

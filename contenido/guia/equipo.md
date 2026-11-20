@@ -15,12 +15,12 @@ Mueves el día a día del programa: candidaturas, reuniones, documentos y seguim
 - **Cuando una compañía entregue un documento**: valídalo o pide cambios.
 - **Después de cada sesión con una compañía**: regístrala con su acta y tus horas.
 
-Lo que decide dirección —la incorporación, las firmas, las sesiones en discusión— no te toca, pero lo ves.
+Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas y las sesiones en discusión.
 
 ## De qué dependes y quién depende de ti
 
 - **Las candidatas dependen de ti** para avanzar: una candidatura nueva espera a que alguien la pase a revisión, y una reunión celebrada, a que alguien la anote.
-- **Las compañías en entrada dependen de ti** para validar su due diligence: hasta que lo obligatorio esté validado, dirección no puede decidir.
+- **Las compañías que entran en Aceleración dependen de ti** para validar su due diligence: hasta que lo obligatorio esté validado, dirección no puede decidir. En Construcción no hay due diligence de entrada.
 - **Dependes de dirección** para las decisiones y las firmas.
 
 ## Cómo se hace

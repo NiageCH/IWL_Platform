@@ -69,12 +69,13 @@ export default async function Perfil() {
           </div>
         </Bloque>
 
-        {esIwl(persona.role) ? (
+        {esIwl(persona.role) || persona.role === "mentor" || persona.role === "fundadora" ? (
           <Bloque className="mb-6">
             <TituloBloque>Resumen de avisos por correo</TituloBloque>
             <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
-              Un correo al día con los avisos que tengas abiertos —quién ha
-              firmado, comentado o entrado—, en vez de uno por aviso.
+              Un correo al día, cuando hay algo: los avisos que tengas abiertos
+              y lo que te toca desde ayer, como un hito que vence o el avance
+              del mes. En vez de un correo por aviso.
             </p>
             <div className="px-4 py-4">
               <ResumenAvisos actual={(preferencias?.resumen_avisos as "diario" | "nunca") ?? "diario"} />

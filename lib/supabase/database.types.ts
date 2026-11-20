@@ -2462,6 +2462,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"digest_computed_notices": {
+                  Row: {
+                    "notice_key": string,"profile_id": string,"sent_at": string,"state": string
+                  }
+                  Insert: {
+                    "notice_key": string,"profile_id": string,"sent_at"?: string,"state": string
+                  }
+                  Update: {
+                    "notice_key"?: string,"profile_id"?: string,"sent_at"?: string,"state"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "digest_computed_notices_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "digest_computed_notices_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "digest_computed_notices_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"document_access_log": {
                   Row: {
                     "action": string,"company_id": string,"created_at": string,"document_id": string,"id": number,"profile_id": string | null

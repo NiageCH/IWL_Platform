@@ -306,16 +306,27 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
     parrafos: s(d.cuerpo).split(/\n\s*\n/),
     boton: s(d.enlace) ? { texto: "Entrar en la plataforma", url: s(d.enlace) } : undefined,
   }),
-  resumen_avisos: (d) => ({
-    asunto: `${s(d.cuantos)} ${Number(d.cuantos) === 1 ? "aviso abierto" : "avisos abiertos"} en la plataforma`,
-    parrafos: [
-      saludo(d),
-      `Tienes ${s(d.cuantos)} ${Number(d.cuantos) === 1 ? "aviso abierto" : "avisos abiertos"}:`,
-      s(d.lista),
-      "Este resumen llega una vez al día mientras tengas alguno. Puedes dejar de recibirlo en Mi cuenta.",
-    ],
-    boton: { texto: "Ver los avisos", url: s(d.enlace) },
-  }),
+  /*
+   * Dos listas: los avisos abiertos, que se repiten mientras sigan abiertos,
+   * y lo calculado que aparece o vence hoy, que sale una sola vez
+   * (REVISION, 21 nov). Cualquiera de las dos puede venir vacía.
+   */
+  resumen_avisos: (d) => {
+    const abiertos = Number(d.cuantos) || 0;
+    const nuevos = Number(d.nuevos) || 0;
+    const deAbiertos = `${abiertos} ${abiertos === 1 ? "aviso abierto" : "avisos abiertos"}`;
+    const deNuevos = `${nuevos} ${nuevos === 1 ? "cosa nueva que te toca" : "cosas nuevas que te tocan"}`;
+    return {
+      asunto: abiertos ? `${deAbiertos} en la plataforma` : `${deNuevos} en la plataforma`,
+      parrafos: [
+        saludo(d),
+        ...(abiertos ? [`Tienes ${deAbiertos}:`, s(d.lista)] : []),
+        ...(nuevos ? [abiertos ? "Y desde ayer:" : "Desde ayer:", s(d.lista_nuevos)] : []),
+        "Este resumen llega una vez al día cuando hay algo. Puedes dejar de recibirlo en Mi cuenta.",
+      ],
+      boton: { texto: "Ver lo que te toca", url: s(d.enlace) },
+    };
+  },
 };
 
 const escapar = (t: string) =>

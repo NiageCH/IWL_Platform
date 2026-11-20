@@ -2,8 +2,8 @@
 
 ## Qué es la plataforma
 
-Es donde Inception Woman Lab sigue tu proyecto desde que firmas el Acuerdo hasta que te gradúas.
-Tú ves tu compañía; IWL ve todas, con los mismos datos que tú.
+Es donde Inception Woman Lab sigue tu proyecto desde que firmáis el NDA hasta que te gradúas.
+Tú ves tu compañía. IWL ve tu compañía con lo mismo que tú, más sus notas de trabajo.
 Todo se mide contra la etapa en la que estás, no contra un ideal.
 
 ## Tu papel
@@ -15,17 +15,26 @@ Llevas tu proyecto y cuentas cómo va. Lo que te toca está siempre arriba en tu
 - **Cuando acabes un hito**: entrégalo con su evidencia, en **Hoja de ruta**.
 - **Cada mes**: carga el avance del mes y los KPI en **KPI y updates**. Desde el día que fija IWL te sale en **Te toca** hasta que lo entregues.
 - **Cuando IWL te pida un documento**: súbelo en **Due diligence general**.
+- **Cuando quieras hablar con tu mentor**: **Tu equipo IWL** está en tu **Resumen**, con el correo de cada persona para escribirle.
 
 Todo está en [Mi compañía](/proyecto), en sus pestañas: **Resumen**, **Hoja de ruta**, **Programa y Anexo**, **Aportación de IWL**, **Sesiones**, **Due diligence técnico**, **Due diligence general**, **Business plan** y **KPI y updates**.
 
 ## De qué dependes y quién depende de ti
 
 - **Dependes de tu mentor** para tener hoja de ruta: si no la planifica, no verás hitos que entregar. Si llevas tiempo sin hitos, díselo.
-- **Tu mentor depende de ti** para revisar: hasta que entregas un hito con su evidencia, no lo puede validar, y lo que ese hito libere —equity o financiación— espera.
+- **Tu mentor depende de ti** para revisar: hasta que entregas un hito con su evidencia, no lo puede validar, y lo que ese hito libere, sea equity o financiación, espera.
 - **IWL depende de tu avance del mes**: si no lo cargas, tu mentor y dirección ven tu compañía en blanco, y los informes salen sin datos de ese mes.
 - **Las horas de IWL cuentan cuando tú las confirmas**: el compromiso del Anexo se mide con las confirmadas. Si algo no cuadra, dilo; si no dices nada, a los 7 días cuentan igual.
 
 ## Cómo se hace
+
+### Decir tu situación societaria
+
+Es lo primero que te pide la plataforma después del NDA.
+
+1. Entra en [Mi compañía](/proyecto). Arriba verás **¿Desde dónde partís?**
+2. En **Situación societaria**, elige si ya tenéis sociedad, si está en constitución o si todavía no la hay. No hace falta tener sociedad para empezar.
+3. Rellena lo que te pida según lo que elijas y pulsa **Guardar la situación**. IWL la confirma contigo.
 
 ### Confirmar las horas de una sesión
 

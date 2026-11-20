@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { BarraLateral } from "@/components/barra-lateral";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Marco } from "@/components/marco";
+import { PrimeraVez } from "@/components/vistas/primera-vez";
+import { personaActual } from "@/lib/supabase/servidor";
 
 /*
  * La consola de IWL: columna oscura a la izquierda, trabajo sobre papel.
@@ -18,7 +20,8 @@ import { Marco } from "@/components/marco";
  * manda la barra compacta de arriba. Son las dos caras del mismo menú, no
  * dos menús: las dos salen de la misma lista.
  */
-export default function LayoutIwl({ children }: { children: ReactNode }) {
+export default async function LayoutIwl({ children }: { children: ReactNode }) {
+  const persona = await personaActual();
   return (
     <Marco tema="claro">
       <div className="flex min-h-screen w-full">
@@ -28,6 +31,7 @@ export default function LayoutIwl({ children }: { children: ReactNode }) {
           <div className="md:hidden">
             <BarraSuperior />
           </div>
+          <PrimeraVez vista={!persona || Boolean(persona.guia_vista_at)} />
           {children}
         </div>
       </div>

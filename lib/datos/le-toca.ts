@@ -1,4 +1,6 @@
 import { cache } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { avancePendiente, hitoQueVence, nombreMes } from "@/lib/le-toca";
 import { fecha } from "@/lib/utils";
@@ -25,21 +27,32 @@ function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function diaDe(clave: string, porDefecto: number): Promise<number> {
-  const supabase = await clienteServidor();
+/**
+ * Con sesión, desde una pantalla; con la clave de servicio, desde el
+ * resumen diario, que no tiene persona detrás. Por eso cada lectura
+ * admite el cliente.
+ */
+type Cliente = SupabaseClient<Database>;
+
+async function diaDe(supabase: Cliente, clave: string, porDefecto: number): Promise<number> {
   const { data } = await supabase.from("platform_settings").select("value").eq("key", clave).maybeSingle();
   const dia = Number((data?.value as { dia?: unknown } | null)?.dia);
   return Number.isInteger(dia) && dia >= 1 && dia <= 28 ? dia : porDefecto;
 }
 
-export const leerDiasAvance = cache(async () => {
-  const [aviso, limite] = await Promise.all([diaDe("avance_mes_dia_aviso", 25), diaDe("update_mensual_dia_limite", 10)]);
+async function diasAvanceCon(supabase: Cliente) {
+  const [aviso, limite] = await Promise.all([
+    diaDe(supabase, "avance_mes_dia_aviso", 25),
+    diaDe(supabase, "update_mensual_dia_limite", 10),
+  ]);
   return { aviso, limite };
-});
+}
+
+export const leerDiasAvance = cache(async () => diasAvanceCon(await clienteServidor()));
 
 /** Lo de ella: solo con el Acuerdo firmado, que es cuando hay programa */
-export async function leerLoQueLeToca(companyId: string): Promise<TocaCalculado[]> {
-  const supabase = await clienteServidor();
+export async function leerLoQueLeToca(companyId: string, cliente?: Cliente): Promise<TocaCalculado[]> {
+  const supabase = cliente ?? (await clienteServidor());
   const hoy = hoyISO();
   const [{ data: anexo }, { data: updates }, { data: hitos }, dias] = await Promise.all([
     supabase
@@ -57,7 +70,7 @@ export async function leerLoQueLeToca(companyId: string): Promise<TocaCalculado[
       .eq("company_id", companyId)
       .not("due_date", "is", null)
       .order("due_date"),
-    leerDiasAvance(),
+    cliente ? diasAvanceCon(cliente) : leerDiasAvance(),
   ]);
   if (!anexo?.signed_on) return [];
 
@@ -101,8 +114,11 @@ export async function leerLoQueLeToca(companyId: string): Promise<TocaCalculado[
  * Los hitos vencidos sin entregar de las compañías que coordina quien
  * mira como mentor principal. RLS ya le da solo las suyas.
  */
-export async function leerHitosVencidosDeMisCompanias(personaId: string): Promise<TocaCalculado[]> {
-  const supabase = await clienteServidor();
+export async function leerHitosVencidosDeMisCompanias(
+  personaId: string,
+  cliente?: Cliente,
+): Promise<TocaCalculado[]> {
+  const supabase = cliente ?? (await clienteServidor());
   const hoy = hoyISO();
   const { data: suyas } = await supabase
     .from("company_members")

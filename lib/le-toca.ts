@@ -67,3 +67,16 @@ export function hitoQueVence(
   const dias = (Date.parse(`${h.fecha}T00:00:00Z`) - Date.parse(`${hoy}T00:00:00Z`)) / 86_400_000;
   return dias <= DIAS_DE_AVISO ? "atencion" : null;
 }
+
+/**
+ * De lo calculado, lo que el resumen diario todavía no ha contado: lo que
+ * aparece y lo que pasa a vencido (REVISION, 21 nov: «no todos los
+ * pendientes cada mañana»). `contados` lleva `clave|estado`. Un hito que
+ * salió en atención vuelve a salir al vencer; nunca dos veces igual.
+ */
+export function nuevosParaResumen<T extends { clave: string; estado: "atencion" | "vencido" }>(
+  calculados: T[],
+  contados: Set<string>,
+): T[] {
+  return calculados.filter((c) => !contados.has(`${c.clave}|${c.estado}`));
+}

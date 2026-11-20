@@ -41,3 +41,40 @@ describe("la guía vista", () => {
     expect(luego!.guia_vista_at).toBe(suya!.guia_vista_at);
   });
 });
+
+/**
+ * Lo que el resumen diario ya contó (REVISION, 21 nov): solo el cron, con
+ * la clave de servicio. Ni ella ni dirección lo leen ni lo escriben.
+ */
+describe("lo calculado ya contado en el resumen", () => {
+  it("nadie con sesión lo lee ni lo escribe", async () => {
+    const clave = `rls-prueba-${Date.now()}`;
+    await servicio.from("digest_computed_notices").insert({ profile_id: ellaId, notice_key: clave, state: "atencion" });
+    try {
+      const direccion = await entrarComo(USUARIOS.admin);
+      for (const quien of [ella, direccion]) {
+        const { data } = await quien.from("digest_computed_notices").select("notice_key").eq("notice_key", clave);
+        expect(data ?? []).toEqual([]);
+        const { error } = await quien
+          .from("digest_computed_notices")
+          .insert({ profile_id: ellaId, notice_key: `${clave}-b`, state: "vencido" });
+        expect(error).not.toBeNull();
+      }
+    } finally {
+      await servicio.from("digest_computed_notices").delete().like("notice_key", `${clave}%`);
+    }
+  });
+});
+
+describe("la preferencia del resumen", () => {
+  it("una fundadora cambia la suya", async () => {
+    const { data: antes } = await servicio.from("profiles").select("resumen_avisos").eq("id", ellaId).single();
+    try {
+      expect((await ella.from("profiles").update({ resumen_avisos: "nunca" }).eq("id", ellaId)).error).toBeNull();
+      const { data } = await servicio.from("profiles").select("resumen_avisos").eq("id", ellaId).single();
+      expect(data!.resumen_avisos).toBe("nunca");
+    } finally {
+      await servicio.from("profiles").update({ resumen_avisos: antes!.resumen_avisos }).eq("id", ellaId);
+    }
+  });
+});

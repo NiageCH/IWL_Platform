@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { BarraLateral } from "@/components/barra-lateral";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Marco } from "@/components/marco";
+import { PrimeraVez } from "@/components/vistas/primera-vez";
 import { personaActual } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
 
@@ -50,6 +51,7 @@ export default async function LayoutProyecto({
           <div className="md:hidden">
             <BarraSuperior />
           </div>
+          <PrimeraVez vista={Boolean(persona.guia_vista_at)} />
           {children}
         </div>
       </div>

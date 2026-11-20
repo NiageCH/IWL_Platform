@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avancePendiente, hitoQueVence, nombreMes } from "./le-toca";
+import { avancePendiente, hitoQueVence, nombreMes, nuevosParaResumen } from "./le-toca";
 
 describe("el avance del mes", () => {
   const base = { diaAviso: 25, diaLimite: 10, cargados: new Set<string>(), desde: "2026-09-15" };
@@ -46,5 +46,20 @@ describe("un hito que vence", () => {
   it("entregado o cumplido, nada", () => {
     expect(hitoQueVence({ estado: "entregado", fecha: "2026-11-19" }, hoy)).toBeNull();
     expect(hitoQueVence({ estado: "cumplido", fecha: "2026-11-19" }, hoy)).toBeNull();
+  });
+});
+
+describe("lo calculado en el resumen diario", () => {
+  const a = { clave: "hito-1", estado: "atencion" as const };
+  const v = { clave: "hito-1", estado: "vencido" as const };
+
+  it("sale el día que aparece y no al siguiente", () => {
+    expect(nuevosParaResumen([a], new Set())).toEqual([a]);
+    expect(nuevosParaResumen([a], new Set(["hito-1|atencion"]))).toEqual([]);
+  });
+
+  it("vuelve a salir al pasar a vencido, una vez", () => {
+    expect(nuevosParaResumen([v], new Set(["hito-1|atencion"]))).toEqual([v]);
+    expect(nuevosParaResumen([v], new Set(["hito-1|atencion", "hito-1|vencido"]))).toEqual([]);
   });
 });

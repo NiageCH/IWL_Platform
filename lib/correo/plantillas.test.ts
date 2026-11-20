@@ -52,6 +52,16 @@ describe("las plantillas", () => {
     expect(escribirCorreo("resumen_avisos", { cuantos: 1, lista: "· a", enlace: "e" }).asunto).toBe("1 aviso abierto en la plataforma");
     expect(escribirCorreo("resumen_avisos", { cuantos: 3, lista: "· a", enlace: "e" }).asunto).toBe("3 avisos abiertos en la plataforma");
   });
+
+  it("lo calculado va aparte, y solo, si no hay avisos abiertos (REVISION, 21 nov)", () => {
+    const solo = escribirCorreo("resumen_avisos", { cuantos: 0, nuevos: 2, lista_nuevos: "· x\n· y", enlace: "e" });
+    expect(solo.asunto).toBe("2 cosas nuevas que te tocan en la plataforma");
+    expect(solo.texto).toContain("Desde ayer:");
+    expect(solo.texto).not.toContain("avisos abiertos");
+    const los2 = escribirCorreo("resumen_avisos", { cuantos: 1, lista: "· a", nuevos: 1, lista_nuevos: "· x", enlace: "e" });
+    expect(los2.asunto).toBe("1 aviso abierto en la plataforma");
+    expect(los2.texto).toContain("Y desde ayer:");
+  });
 });
 
 describe("los correos de reunión (REVISION, 13 nov)", () => {

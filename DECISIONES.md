@@ -1945,3 +1945,15 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Se abre sola al llegar a `/` sin haberla visto** (`profiles.guia_vista_at`). Quien entra por el enlace de un aviso va a lo suyo, y la guía le espera para la siguiente vez que entre sin destino. Verla la marca, con una función que solo toca esa columna de la propia persona.
 - **Lo que ya tiene cuenta también la verá una vez**: la migración no marca a nadie como visto.
 - **Las pruebas de interfaz la dan por vista al entrar** (`entrarComo`), porque no prueban eso; lo prueba `guia.spec.ts`, con una cuenta suya.
+
+## 2026-11-21 · Lo calculado en el resumen diario, una vez; y la guía desde un aviso
+
+- **El resumen diario cuenta lo calculado sin repetirlo** (REVISION, 21 nov). Lo guardado sigue saliendo cada mañana mientras esté abierto; lo calculado sale el día que aparece y el día que pasa a vencido. Así lo calculado no se convierte en ruido.
+  - Lo que se contó queda en `digest_computed_notices`, con persona, clave y estado. Solo lo lee y lo escribe el cron, con la clave de servicio: RLS sin políticas.
+  - Se anota solo si el correo salió. Si falla, al día siguiente se vuelve a intentar.
+  - No se calcula «aparece hoy» con fechas. Se compara con lo ya contado, que no depende de que el cron corra todos los días ni de cuándo cambió cada cosa.
+  - El primer día tras desplegar salen todos los calculados abiertos, una vez: para el resumen, aparecen ese día.
+- **Las fundadoras reciben el resumen**, por el avance del mes y los hitos que vencen. Ella, los mentores y el equipo tienen la preferencia en Mi cuenta; antes los mentores lo recibían sin poder quitarlo.
+- **Las lecturas de lo calculado admiten el cliente.** Con sesión desde la pantalla; con la clave de servicio desde el cron, que no tiene persona detrás. Es el mismo código, así que el correo y la pantalla dicen lo mismo.
+- **La primera entrada por un aviso lleva una línea a la guía.** «¿Es tu primera vez? Tu guía te explica cómo funciona · Abrir la guía», arriba, mientras no la haya abierto. **Cerrarla cuenta como guía vista**: quien la cierra ya sabe dónde está, y llevarla a la guía en la entrada siguiente sería insistir.
+
