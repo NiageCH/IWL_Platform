@@ -65,7 +65,8 @@ export async function congelarLineaBase(formData: FormData): Promise<Resultado> 
     supabase
       .from("contribution_hours")
       .select("hours")
-      .eq("company_id", resumen.compania.id),
+      .eq("company_id", resumen.compania.id)
+      .neq("session_status", "anulada"),
   ]);
 
   /*

@@ -149,6 +149,8 @@ export interface Filas {
   compania: { estados: EstadoVisual[] };
   /** Una reunión con una candidata; `caducada` si todas sus franjas han pasado sin elegir */
   reunion: { estado: string; caducada?: boolean };
+  /** Una sesión con sus horas: por confirmar, en discusión, confirmada o anulada */
+  sesion: { estado: string };
 }
 
 /**
@@ -293,6 +295,15 @@ export function estadoVisual<E extends keyof Filas>(
       // Ella ha propuesto otras: le toca a IWL
       if (f.estado === "contrapropuesta") return "atencion";
       if (f.estado === "confirmada") return "curso";
+      return "pendiente";
+    }
+
+    case "sesion": {
+      const f = fila as Filas["sesion"];
+      if (f.estado === "anulada") return "no_aplica";
+      if (f.estado.startsWith("confirmada")) return "hecho";
+      // No cuadra: alguien tiene que responder
+      if (f.estado === "en_discusion" || f.estado === "en_direccion") return "atencion";
       return "pendiente";
     }
   }

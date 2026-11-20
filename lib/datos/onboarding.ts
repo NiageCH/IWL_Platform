@@ -285,7 +285,7 @@ export const leerAltasEnCurso = cache(async (): Promise<AltaEnCurso[]> => {
 export type Aviso = DatosAviso;
 
 export const CAMPOS_AVISO =
-  "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug, situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social), milestones(id, title), candidatura_reuniones(elegida, franjas), acta_id, dd_items(id, title)";
+  "id, tipo, created_at, candidatura_id, profiles!avisos_profile_id_fkey(full_name, last_name, email), candidaturas(nombre, contacto_nombre, contacto_apellidos), companies(name, slug, situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social), milestones(id, title), candidatura_reuniones(elegida, franjas), acta_id, dd_items(id, title), work_sessions(id, held_on, kind, title, contribution_hours(hours))";
 
 export type FilaAviso = {
   id: string;
@@ -299,6 +299,7 @@ export type FilaAviso = {
   candidatura_reuniones: unknown;
   acta_id?: string | null;
   dd_items?: unknown;
+  work_sessions?: unknown;
 };
 
 export function comoAviso(a: FilaAviso): Aviso {
@@ -308,6 +309,9 @@ export function comoAviso(a: FilaAviso): Aviso {
   const h = a.milestones as { id: string; title: string } | null;
   const r = a.candidatura_reuniones as { elegida: { inicio?: string } | null; franjas: unknown[] | null } | null;
   const d = a.dd_items as { id: string; title: string } | null;
+  const ses = a.work_sessions as
+    | { id: string; held_on: string; kind: "sesion" | "trabajo"; title: string; contribution_hours: { hours: number }[] | null }
+    | null;
   return {
     id: a.id,
     tipo: a.tipo as Aviso["tipo"],
@@ -322,6 +326,15 @@ export function comoAviso(a: FilaAviso): Aviso {
     reunion: r ? { inicio: r.elegida?.inicio ?? null, franjas: Array.isArray(r.franjas) ? r.franjas.length : 0 } : null,
     actaId: a.acta_id ?? null,
     punto: d ? { id: d.id, titulo: d.title } : null,
+    sesion: ses
+      ? {
+          id: ses.id,
+          fecha: ses.held_on,
+          tipo: ses.kind,
+          titulo: ses.title,
+          horas: (ses.contribution_hours ?? []).reduce((t, h) => t + Math.round(Number(h.hours) * 100), 0) / 100,
+        }
+      : null,
   };
 }
 

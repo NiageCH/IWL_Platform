@@ -1,4 +1,5 @@
 import {
+  CalendarCheck,
   Cpu,
   FileSignature,
   FolderCheck,
@@ -54,6 +55,7 @@ export function CabeceraProyecto({
     { codigo: "ruta", nombre: "Hoja de ruta", href: `${base}/ruta`, Icono: Route },
     { codigo: "programa", nombre: "Programa y Anexo", href: `${base}/programa`, Icono: FileSignature },
     { codigo: "aportacion", nombre: "Aportación de IWL", href: `${base}/aportacion`, Icono: HandCoins },
+    { codigo: "sesiones", nombre: "Sesiones", href: `${base}/sesiones`, Icono: CalendarCheck },
     { codigo: "tecnico", nombre: "Due diligence técnico", href: `${base}/tecnico`, Icono: Cpu },
     { codigo: "diligencia", nombre: "Due diligence general", href: `${base}/diligencia`, Icono: FolderCheck },
     { codigo: "plan", nombre: "Business plan", href: `${base}/plan`, Icono: NotebookPen },

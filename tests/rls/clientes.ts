@@ -77,3 +77,59 @@ export function clienteServicio(): SupabaseClient {
 export function claveConfigurada(): boolean {
   return ANON_KEY.length > 0 && SERVICE_KEY.length > 0;
 }
+
+/**
+ * Registrar una sesión con unas horas, como lo hace la pantalla: por
+ * `registrar_sesion`, que es el único camino. Devuelve el id o el error.
+ */
+export async function registrarSesion(
+  cliente: SupabaseClient,
+  s: { company: string; fecha: string; profile: string; horas: number; perfil?: string; titulo?: string },
+): Promise<{ id: string | null; error: { message: string } | null }> {
+  const servicio = clienteServicio();
+  const { data: materia } = await servicio.from("contribution_subjects").select("id").limit(1).single();
+  const { data, error } = await cliente.rpc("registrar_sesion", {
+    p: {
+      company_id: s.company,
+      kind: "sesion",
+      held_on: s.fecha,
+      duration_minutes: 60,
+      modality: "videollamada",
+      title: s.titulo ?? "Sesión de prueba",
+      subject_id: materia!.id,
+      worked: "Lo que se trabajó en la sesión de prueba.",
+      horas: [{ profile_id: s.profile, profile_code: s.perfil ?? "senior", hours: s.horas }],
+    },
+  });
+  return { id: (data as string | null) ?? null, error };
+}
+
+/**
+ * Quitar las sesiones que creó una prueba, con sus horas, su historia y
+ * sus avisos.
+ *
+ * Una sesión no se borra —se anula con motivo— y eso vale también con la
+ * clave de servicio. Para dejar la base como estaba, la prueba la quita
+ * por debajo de los disparadores, y así se ve.
+ */
+export async function quitarSesiones(ids: Array<string | null | undefined>): Promise<void> {
+  const limpios = ids.filter((i): i is string => Boolean(i));
+  if (!limpios.length) return;
+  const { default: postgres } = await import("postgres");
+  const sql = postgres(process.env.SUPABASE_DB_URL || "postgresql://postgres:postgres@127.0.0.1:54322/postgres", {
+    max: 1,
+    onnotice: () => {},
+  });
+  try {
+    await sql.begin(async (tx) => {
+      await tx`set local session_replication_role = replica`;
+      await tx`delete from avisos where work_session_id = any(${limpios}::uuid[])`;
+      await tx`delete from session_events where session_id = any(${limpios}::uuid[])`;
+      await tx`delete from session_agreements where session_id = any(${limpios}::uuid[])`;
+      await tx`delete from contribution_hours where work_session_id = any(${limpios}::uuid[])`;
+      await tx`delete from work_sessions where id = any(${limpios}::uuid[])`;
+    });
+  } finally {
+    await sql.end();
+  }
+}

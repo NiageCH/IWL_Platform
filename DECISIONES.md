@@ -1894,3 +1894,29 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **El recorrido del embudo empieza en «Presentarse»**, para que la candidatura nueva tenga su «Viene de · Después». Los índices que se citan fuera van con nombre (`PASO_EMBUDO`), y una prueba comprueba que siguen apuntando al paso que dicen.
 - **Lo pendiente al desplegar se abre con la migración**, con constancia en el registro (`avisos_abiertos_por_revision`).
 - **«Lo que le toca a ella» es, por ahora, inventario** (`docs/AVISOS.md`). Su lado se hará con «Tu siguiente paso», cuando se retome lo visual.
+
+## 2026-11-20 · Sesiones con acta, y horas que confirma ella · SUSTITUYE a «las horas no necesitan confirmación»
+
+- **Toda hora de IWL cuelga de una sesión o de un trabajo fuera de sesión** (`work_sessions`), con su acta o su entregable. Se registran en la pestaña **Sesiones** de la compañía, la misma para IWL y para ella, y ya no hay registro rápido de horas sueltas. La base rechaza una hora sin sesión que llegue desde la aplicación.
+- **Se llama `work_sessions` y no `sessions`** porque `contribution_hours.session_id` ya existía y apunta a las sesiones del due diligence técnico. La columna nueva es `work_session_id`.
+- **El circuito vive en la base**, en funciones que guardan la historia y mueven el estado: `registrar_sesion`, `confirmar_sesion`, `sesion_no_cuadra`, `comentar_sesion`, `corregir_horas_sesion`, `mantener_horas_sesion`, `llevar_sesion_a_direccion`, `decidir_sesion`, `anular_sesion` y `confirmar_sesiones_por_plazo`, que llama el cron.
+  - El estado de una sesión, sus horas y su historia no se tocan por fuera, ni con la clave de servicio. Las funciones encienden `app.circuito_sesion` en su transacción, y el guardián solo deja pasar con esa marca.
+- **`registrar_sesion` corre con los permisos de quien registra** (`security invoker`): las políticas de cada tabla siguen mandando —un mentor que no coordina solo imputa sus horas— y o queda todo o no queda nada.
+- **Quién hace qué:**
+  - registra quien acompaña la compañía;
+  - confirma o dice que no cuadra cualquier fundadora con cuenta;
+  - corrige o mantiene quien la registró, o quien coordina;
+  - la llevan a dirección ella o quien la registró;
+  - decide dirección;
+  - anula quien la registró o quien coordina mientras está abierta, y dirección cuando ya está confirmada o en dirección.
+- **Corregir o mantener devuelve la sesión a «por confirmar»** y el plazo de 7 días vuelve a contar desde ahí: ella tiene que ver la cifra nueva. Cada corrección deja la cifra de antes y el motivo.
+- **Lo que cuenta para el Anexo son las confirmadas**: por ella, por plazo, por dirección o de antes del 13 nov. `commitment_counter.delivered_hours` pasa a ser eso; lo por confirmar y lo discutido van aparte (`pending_hours`, `disputed_hours`).
+  - Lo anulado no cuenta en ningún sitio. Las vistas que suman horas (`contribution_hours_valued`, `mentoria_dedicacion`, `admin_personas`, `admin_companias`) se recrearon desde su última definición para quitarlo.
+  - Cada línea lleva copiado el estado de su sesión (`session_status`), para sumar sin cruzar tablas. Lo mantiene un disparador.
+- **Lo de antes pasa a «Confirmada (antes del 13 nov)»**, sin acta, una sesión por línea. Las objeciones a horas pasan al hilo de su sesión; si estaban abiertas, la sesión queda en discusión.
+  - Ya no se pueden abrir objeciones a horas: la restricción es `not valid`, para no romper las que había.
+  - La caja y las introducciones siguen con objeciones.
+- **La semilla y los scripts**, que corren sin nadie detrás, todavía insertan horas sueltas. Esas se envuelven solas en una sesión «Confirmada (antes del 13 nov)», que es lo que son.
+- **Un trabajo fuera de sesión necesita un entregable**: un enlace, o una evidencia ya colgada de la sesión. Los ficheros se adjuntan después con `<Evidencia>`.
+- **Borrar una cuenta deja sus sesiones sin autor** (`on delete set null`), y el guardián lo deja pasar: es lo único que cambia en una sesión cerrada sin pasar por el circuito.
+- **`create or replace view` no conserva `security_invoker`.** Hay que volver a ponerlo después de cada recreación; sin él, una fundadora veía la dedicación de otras compañías. Lo destapó la prueba de mentoría.

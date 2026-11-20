@@ -1,4 +1,5 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
+import type { EstadoSesion } from "@/lib/sesiones";
 
 /**
  * Extracto de aportación de IWL a una compañía.
@@ -11,7 +12,10 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 export interface Compromiso {
   annexId: string | null;
   horasComprometidas: number | null;
+  /** Las confirmadas: por ella, por plazo, por dirección o de antes del 13 nov */
   horasEntregadas: number;
+  horasPorConfirmar: number;
+  horasEnDiscusion: number;
   horasPct: number | null;
   valorAplicado: number;
   valorMercado: number;
@@ -45,6 +49,8 @@ export async function leerCompromiso(companyId: string): Promise<Compromiso | nu
     annexId: data.annex_id,
     horasComprometidas: numero(data.committed_hours),
     horasEntregadas: Number(data.delivered_hours ?? 0),
+    horasPorConfirmar: Number(data.pending_hours ?? 0),
+    horasEnDiscusion: Number(data.disputed_hours ?? 0),
     horasPct: numero(data.hours_pct),
     valorAplicado,
     valorMercado,
@@ -72,6 +78,8 @@ export interface LineaHoras {
   valorMercado: number;
   descuento: number;
   objetada: boolean;
+  estado: EstadoSesion | null;
+  sesionId: string | null;
 }
 
 export interface ResumenMateria {
@@ -174,6 +182,8 @@ export async function leerExtracto(companyId: string): Promise<Extracto> {
     valorMercado: Number(h.market_value),
     descuento: Number(h.discount_value),
     objetada: Boolean(h.objected),
+    estado: (h.session_status as EstadoSesion | null) ?? null,
+    sesionId: h.work_session_id ?? null,
   }));
 
   // Agregados por materia y por persona, que es como se lee el extracto

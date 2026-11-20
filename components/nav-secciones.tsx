@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Building2,
+  CalendarCheck,
   Cpu,
   Filter,
   FolderCheck,
@@ -60,6 +61,7 @@ export const ICONOS = {
   evaluacion: Gauge,
   umbrales: SlidersHorizontal,
   correos: Mail,
+  sesiones: CalendarCheck,
 } satisfies Record<NombreIcono, LucideIcon>;
 
 export type Seccion = {

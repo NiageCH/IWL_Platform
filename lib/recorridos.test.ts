@@ -32,6 +32,7 @@ const BASE: DatosAviso = {
   actaId: "00000000-0000-0000-0000-0000000000dd",
   punto: { id: "00000000-0000-0000-0000-0000000000ee", titulo: "Escritura de constitución" },
   cuantos: 3,
+  sesion: { id: "00000000-0000-0000-0000-0000000000ff", fecha: "2026-11-12", tipo: "sesion", titulo: "Precios", horas: 2.5 },
 };
 
 const QUE_SIGUEN: TipoAviso[] = [
@@ -50,6 +51,9 @@ const QUE_SIGUEN: TipoAviso[] = [
   "anexo_aceptado",
   "documento_entregado",
   "correos_sin_enviar",
+  "sesion_por_confirmar",
+  "sesion_no_cuadra",
+  "sesion_en_direccion",
 ];
 
 describe("cada aviso", () => {
@@ -104,5 +108,14 @@ describe("cada aviso", () => {
     expect(pasosDe("embudo")[PASO_EMBUDO.nda].hacer).toBe("Enviarle el NDA");
     expect(pasosDe("embudo")[PASO_EMBUDO.contrafirmar].hacer).toBe("Contrafirmar el NDA");
     expect(pasosDe("embudo")[PASO_EMBUDO.revisar].hacer).toBe("Revisarla");
+  });
+
+  it("las horas por confirmar le llevan a ella a su sesión, con las horas dichas", () => {
+    const p = presentarAviso({ ...BASE, tipo: "sesion_por_confirmar", persona: "Marta Mentora" });
+    expect(p.paso).toBe("Marta Mentora ha registrado 2,5 h de sesión del 12 nov 2026");
+    expect(p.href).toBe(`/proyecto/sesiones?aviso=${BASE.id}#sesion-${BASE.sesion!.id}`);
+    expect(presentarAviso({ ...BASE, tipo: "sesion_no_cuadra" }).href).toBe(
+      `/cartera/porongo/sesiones?aviso=${BASE.id}#sesion-${BASE.sesion!.id}`,
+    );
   });
 });

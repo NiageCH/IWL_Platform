@@ -391,13 +391,13 @@ isOneToOne: false
                   ]
                 },"avisos": {
                   Row: {
-                    "acta_id": string | null,"annex_id": string | null,"candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"dd_item_id": string | null,"id": string,"milestone_id": string | null,"para": string | null,"para_iwl": boolean,"profile_id": string | null,"reunion_id": string | null,"tipo": string
+                    "acta_id": string | null,"annex_id": string | null,"candidatura_id": string | null,"cerrado_at": string | null,"cerrado_por": string | null,"company_id": string | null,"created_at": string,"dd_item_id": string | null,"id": string,"milestone_id": string | null,"para": string | null,"para_iwl": boolean,"profile_id": string | null,"reunion_id": string | null,"tipo": string,"work_session_id": string | null
                   }
                   Insert: {
-                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo": string
+                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo": string,"work_session_id"?: string | null
                   }
                   Update: {
-                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo"?: string
+                    "acta_id"?: string | null,"annex_id"?: string | null,"candidatura_id"?: string | null,"cerrado_at"?: string | null,"cerrado_por"?: string | null,"company_id"?: string | null,"created_at"?: string,"dd_item_id"?: string | null,"id"?: string,"milestone_id"?: string | null,"para"?: string | null,"para_iwl"?: boolean,"profile_id"?: string | null,"reunion_id"?: string | null,"tipo"?: string,"work_session_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -531,6 +531,12 @@ isOneToOne: false
       columns: ["reunion_id"]
 isOneToOne: false
       referencedRelation: "candidatura_reuniones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "avisos_work_session_id_fkey"
+      columns: ["work_session_id"]
+isOneToOne: false
+      referencedRelation: "work_sessions"
       referencedColumns: ["id"]
     }
                   ]
@@ -1812,13 +1818,13 @@ isOneToOne: false
                   ]
                 },"contribution_hours": {
                   Row: {
-                    "annex_id": string | null,"applied_rate": number,"company_id": string,"created_at": string,"created_by": string | null,"deliverable_id": string | null,"description": string,"hours": number,"id": string,"market_rate": number,"person_name": string,"profile_code": string,"profile_id": string | null,"rate_card_id": string | null,"session_id": string | null,"stage_id": string | null,"subject_id": string,"task_id": string | null,"updated_at": string,"worked_on": string
+                    "annex_id": string | null,"applied_rate": number,"company_id": string,"created_at": string,"created_by": string | null,"deliverable_id": string | null,"description": string,"hours": number,"id": string,"market_rate": number,"person_name": string,"profile_code": string,"profile_id": string | null,"rate_card_id": string | null,"session_id": string | null,"session_status": Database["public"]['Enums']["estado_sesion"] | null,"stage_id": string | null,"subject_id": string,"task_id": string | null,"updated_at": string,"work_session_id": string | null,"worked_on": string
                   }
                   Insert: {
-                    "annex_id"?: string | null,"applied_rate": number,"company_id": string,"created_at"?: string,"created_by"?: string | null,"deliverable_id"?: string | null,"description": string,"hours": number,"id"?: string,"market_rate": number,"person_name": string,"profile_code": string,"profile_id"?: string | null,"rate_card_id"?: string | null,"session_id"?: string | null,"stage_id"?: string | null,"subject_id": string,"task_id"?: string | null,"updated_at"?: string,"worked_on": string
+                    "annex_id"?: string | null,"applied_rate": number,"company_id": string,"created_at"?: string,"created_by"?: string | null,"deliverable_id"?: string | null,"description": string,"hours": number,"id"?: string,"market_rate": number,"person_name": string,"profile_code": string,"profile_id"?: string | null,"rate_card_id"?: string | null,"session_id"?: string | null,"session_status"?: Database["public"]['Enums']["estado_sesion"] | null,"stage_id"?: string | null,"subject_id": string,"task_id"?: string | null,"updated_at"?: string,"work_session_id"?: string | null,"worked_on": string
                   }
                   Update: {
-                    "annex_id"?: string | null,"applied_rate"?: number,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"deliverable_id"?: string | null,"description"?: string,"hours"?: number,"id"?: string,"market_rate"?: number,"person_name"?: string,"profile_code"?: string,"profile_id"?: string | null,"rate_card_id"?: string | null,"session_id"?: string | null,"stage_id"?: string | null,"subject_id"?: string,"task_id"?: string | null,"updated_at"?: string,"worked_on"?: string
+                    "annex_id"?: string | null,"applied_rate"?: number,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"deliverable_id"?: string | null,"description"?: string,"hours"?: number,"id"?: string,"market_rate"?: number,"person_name"?: string,"profile_code"?: string,"profile_id"?: string | null,"rate_card_id"?: string | null,"session_id"?: string | null,"session_status"?: Database["public"]['Enums']["estado_sesion"] | null,"stage_id"?: string | null,"subject_id"?: string,"task_id"?: string | null,"updated_at"?: string,"work_session_id"?: string | null,"worked_on"?: string
                   }
                   Relationships: [
                     {
@@ -1928,6 +1934,12 @@ isOneToOne: false
       columns: ["task_id"]
 isOneToOne: false
       referencedRelation: "tasks"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "contribution_hours_work_session_id_fkey"
+      columns: ["work_session_id"]
+isOneToOne: false
+      referencedRelation: "work_sessions"
       referencedColumns: ["id"]
     }
                   ]
@@ -3943,6 +3955,158 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"session_agreements": {
+                  Row: {
+                    "body": string,"company_id": string,"created_at": string,"created_by": string | null,"due_on": string | null,"id": string,"milestone_id": string | null,"owner_id": string | null,"owner_name": string | null,"session_id": string,"task_id": string | null
+                  }
+                  Insert: {
+                    "body": string,"company_id": string,"created_at"?: string,"created_by"?: string | null,"due_on"?: string | null,"id"?: string,"milestone_id"?: string | null,"owner_id"?: string | null,"owner_name"?: string | null,"session_id": string,"task_id"?: string | null
+                  }
+                  Update: {
+                    "body"?: string,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"due_on"?: string | null,"id"?: string,"milestone_id"?: string | null,"owner_id"?: string | null,"owner_name"?: string | null,"session_id"?: string,"task_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "session_agreements_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "session_agreements_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "session_agreements_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_milestone_id_fkey"
+      columns: ["milestone_id"]
+isOneToOne: false
+      referencedRelation: "milestones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "work_sessions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_agreements_task_id_fkey"
+      columns: ["task_id"]
+isOneToOne: false
+      referencedRelation: "tasks"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"session_events": {
+                  Row: {
+                    "author_id": string | null,"author_name": string | null,"body": string | null,"company_id": string,"created_at": string,"detail": NonNullable<Json>,"id": string,"kind": string,"session_id": string
+                  }
+                  Insert: {
+                    "author_id"?: string | null,"author_name"?: string | null,"body"?: string | null,"company_id": string,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: string,"kind": string,"session_id": string
+                  }
+                  Update: {
+                    "author_id"?: string | null,"author_name"?: string | null,"body"?: string | null,"company_id"?: string,"created_at"?: string,"detail"?: NonNullable<Json>,"id"?: string,"kind"?: string,"session_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "session_events_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_events_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_events_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_events_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_events_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "session_events_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "session_events_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "session_events_session_id_fkey"
+      columns: ["session_id"]
+isOneToOne: false
+      referencedRelation: "work_sessions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"tasks": {
                   Row: {
                     "company_id": string,"completed_by": string | null,"completed_on": string | null,"created_at": string,"created_by": string | null,"description": string | null,"due_date": string | null,"estimated_hours": number | null,"id": string,"milestone_id": string | null,"owner_id": string | null,"pillar_id": string | null,"priority": Database["public"]['Enums']["prioridad_tarea"],"side": Database["public"]['Enums']["lado_avance"],"source_entity": string | null,"source_id": string | null,"stage_id": string | null,"status": Database["public"]['Enums']["estado_tarea"],"title": string,"updated_at": string
@@ -4543,6 +4707,103 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"work_sessions": {
+                  Row: {
+                    "annex_id": string | null,"attendees_company": string | null,"closed_at": string | null,"closed_by": string | null,"company_id": string,"created_at": string,"deliverable_url": string | null,"duration_minutes": number | null,"held_on": string,"id": string,"kind": string,"migrated": boolean,"modality": string | null,"pending_since": string,"pillar_id": string | null,"registered_by": string | null,"status": Database["public"]['Enums']["estado_sesion"],"subject_id": string | null,"title": string,"updated_at": string,"worked": string | null
+                  }
+                  Insert: {
+                    "annex_id"?: string | null,"attendees_company"?: string | null,"closed_at"?: string | null,"closed_by"?: string | null,"company_id": string,"created_at"?: string,"deliverable_url"?: string | null,"duration_minutes"?: number | null,"held_on": string,"id"?: string,"kind": string,"migrated"?: boolean,"modality"?: string | null,"pending_since"?: string,"pillar_id"?: string | null,"registered_by"?: string | null,"status"?: Database["public"]['Enums']["estado_sesion"],"subject_id"?: string | null,"title": string,"updated_at"?: string,"worked"?: string | null
+                  }
+                  Update: {
+                    "annex_id"?: string | null,"attendees_company"?: string | null,"closed_at"?: string | null,"closed_by"?: string | null,"company_id"?: string,"created_at"?: string,"deliverable_url"?: string | null,"duration_minutes"?: number | null,"held_on"?: string,"id"?: string,"kind"?: string,"migrated"?: boolean,"modality"?: string | null,"pending_since"?: string,"pillar_id"?: string | null,"registered_by"?: string | null,"status"?: Database["public"]['Enums']["estado_sesion"],"subject_id"?: string | null,"title"?: string,"updated_at"?: string,"worked"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_sessions_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "annexes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_annex_id_fkey"
+      columns: ["annex_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["annex_id"]
+    },{
+      foreignKeyName: "work_sessions_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_closed_by_fkey"
+      columns: ["closed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "work_sessions_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "work_sessions_pillar_id_fkey"
+      columns: ["pillar_id"]
+isOneToOne: false
+      referencedRelation: "pillars"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_registered_by_fkey"
+      columns: ["registered_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_registered_by_fkey"
+      columns: ["registered_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_registered_by_fkey"
+      columns: ["registered_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_sessions_subject_id_fkey"
+      columns: ["subject_id"]
+isOneToOne: false
+      referencedRelation: "contribution_subjects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -4605,14 +4866,14 @@ isOneToOne: false
                   ]
                 },"commitment_counter": {
                   Row: {
-                    "annex_id": string | null,"cash_pct": number | null,"committed_cash": number | null,"committed_hours": number | null,"company_id": string | null,"deliverables_count": number | null,"delivered_hours": number | null,"delivered_hours_value": number | null,"delivered_market_value": number | null,"disbursed_cash": number | null,"equity_pct": number | null,"hours_pct": number | null,"introductions_closed": number | null,"introductions_made": number | null,"justified_cash": number | null
+                    "annex_id": string | null,"cash_pct": number | null,"committed_cash": number | null,"committed_hours": number | null,"company_id": string | null,"deliverables_count": number | null,"delivered_hours": number | null,"delivered_hours_value": number | null,"delivered_market_value": number | null,"disbursed_cash": number | null,"disputed_hours": number | null,"equity_pct": number | null,"hours_pct": number | null,"introductions_closed": number | null,"introductions_made": number | null,"justified_cash": number | null,"pending_hours": number | null
                   }
                   Relationships: [
                     
                   ]
                 },"contribution_hours_valued": {
                   Row: {
-                    "applied_rate": number | null,"applied_value": number | null,"company_id": string | null,"description": string | null,"discount_value": number | null,"hours": number | null,"id": string | null,"market_rate": number | null,"market_value": number | null,"objected": boolean | null,"person_name": string | null,"profile_code": string | null,"subject_code": string | null,"subject_name": string | null,"worked_on": string | null
+                    "applied_rate": number | null,"applied_value": number | null,"company_id": string | null,"description": string | null,"discount_value": number | null,"hours": number | null,"id": string | null,"market_rate": number | null,"market_value": number | null,"objected": boolean | null,"person_name": string | null,"profile_code": string | null,"session_status": Database["public"]['Enums']["estado_sesion"] | null,"subject_code": string | null,"subject_name": string | null,"work_session_id": string | null,"worked_on": string | null
                   }
                   Relationships: [
                     {
@@ -4639,6 +4900,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "tech_score_input"
       referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "contribution_hours_work_session_id_fkey"
+      columns: ["work_session_id"]
+isOneToOne: false
+      referencedRelation: "work_sessions"
+      referencedColumns: ["id"]
     }
                   ]
                 },"contribution_items_summary": {
@@ -4934,6 +5201,9 @@ isOneToOne: false
 "anadir_enlace_con_token":
 { Args: { "p_titulo": string,"p_token": string,"p_url": string }; Returns: undefined
                            },
+"anular_sesion":
+{ Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
+                           },
 "apuntar_documento_nda":
 { Args: { "p_candidatura": string,"p_documento": string }; Returns: undefined
                            },
@@ -4958,11 +5228,20 @@ isOneToOne: false
 "comentar_hito":
 { Args: { "p_hito": string,"p_nota": string }; Returns: undefined
                            },
+"comentar_sesion":
+{ Args: { "p_comentario": string,"p_sesion": string }; Returns: undefined
+                           },
 "compania_tiene_actividad":
 { Args: { "target_company": string }; Returns: boolean
                            },
 "completar_candidatura":
 { Args: { "p_contacto_cargo"?: string,"p_contacto_telefono"?: string,"p_equipo_personas"?: number,"p_estado_declarado"?: Database["public"]['Enums']["estado_entrada"],"p_liderazgo_femenino_pct"?: number,"p_one_liner"?: string,"p_pais"?: string,"p_sector"?: string,"p_token": string,"p_website"?: string }; Returns: undefined
+                           },
+"confirmar_sesion":
+{ Args: { "p_comentario"?: string,"p_sesion": string }; Returns: undefined
+                           },
+"confirmar_sesiones_por_plazo":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "contenido_compania":
 { Args: { "target_company": string }; Returns: Json
@@ -4974,6 +5253,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "cierra": string,"nombre": string,"texto": string
             }[]
+                           },
+"corregir_horas_sesion":
+{ Args: { "p_horas": number,"p_linea": string,"p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
 "crear_compania":
 { Args: { "p_cohort_id"?: string,"p_entry_state"?: Database["public"]['Enums']["estado_entrada"],"p_female_leadership_pct"?: number,"p_founded_on"?: string,"p_name": string,"p_one_liner"?: string,"p_phase_code": string,"p_roadmap_start"?: string,"p_roadmap_template"?: string,"p_sector"?: string,"p_slug": string,"p_stage": Database["public"]['Enums']["company_stage"],"p_tech_profile": Database["public"]['Enums']["company_tech_profile"],"p_website"?: string }; Returns: string
@@ -4988,6 +5270,9 @@ isOneToOne: false
 { Args: { "p_candidatura": string }; Returns: {
               "contraparte_nombre": string,"lugar": string,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"],"startup": string
             }[]
+                           },
+"decidir_sesion":
+{ Args: { "p_horas"?: Json,"p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
 "entregar_hito":
 { Args: { "p_hito": string,"p_nota"?: string }; Returns: string
@@ -5014,6 +5299,12 @@ isOneToOne: false
                            },
 "instanciar_hoja_de_ruta":
 { Args: { "inicio"?: string,"target_annex"?: string,"target_company": string,"template": string }; Returns: number
+                           },
+"llevar_sesion_a_direccion":
+{ Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
+                           },
+"mantener_horas_sesion":
+{ Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
 "mi_candidatura":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -5055,6 +5346,9 @@ isOneToOne: false
 "registrar_nda_externo":
 { Args: { "p_candidatura": string,"p_documento": string,"p_firmado_on": string,"p_profile": string,"p_url": string }; Returns: undefined
                            },
+"registrar_sesion":
+{ Args: { "p": Json }; Returns: string
+                           },
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined
                            },
@@ -5069,6 +5363,9 @@ isOneToOne: false
               "cancelada_motivo": string,"direccion": string,"elegida": Json,"enlace": string,"estado": string,"formato": string,"franjas": Json,"id": string,"nota": string,"nota_candidata": string,"personas_iwl": (string)[],"propuesta_de": string
             }[]
                            },
+"sesion_no_cuadra":
+{ Args: { "p_comentario": string,"p_sesion": string }; Returns: undefined
+                           },
 "testigo_de_candidatura":
 { Args: { "p_id": string }; Returns: string
                            },
@@ -5082,7 +5379,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"propuesto"|"comentado"|"aceptado"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"prototipo"|"mvp"|"primeros_clientes"|"facturacion","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"entregado"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion","via_entrada": "aceleracion"|"construccion"
+            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"propuesto"|"comentado"|"aceptado"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"prototipo"|"mvp"|"primeros_clientes"|"facturacion","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"entregado"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_sesion": "por_confirmar"|"en_discusion"|"en_direccion"|"confirmada"|"confirmada_plazo"|"confirmada_direccion"|"confirmada_previa"|"anulada","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion","via_entrada": "aceleracion"|"construccion"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -5202,7 +5499,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "propuesto", "comentado", "aceptado", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "entregado", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"],"via_entrada": ["aceleracion", "construccion"]
+            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "propuesto", "comentado", "aceptado", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "entregado", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_sesion": ["por_confirmar", "en_discusion", "en_direccion", "confirmada", "confirmada_plazo", "confirmada_direccion", "confirmada_previa", "anulada"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"],"via_entrada": ["aceleracion", "construccion"]
           }
         }
 } as const

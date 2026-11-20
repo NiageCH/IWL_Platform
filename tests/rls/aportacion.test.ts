@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { COMPANIAS, USUARIOS, clienteServicio, entrarComo } from "./clientes";
+import { COMPANIAS, USUARIOS, clienteServicio, entrarComo, quitarSesiones, registrarSesion } from "./clientes";
 
 /**
  * Registro de aportación y línea base.
@@ -75,37 +75,30 @@ async function prepararAportacion(companyId: string) {
 }
 
 describe("horas de aportación", () => {
-  it("las registra IWL, no la compañía", async () => {
-    const { anexoId, materiaId } = await prepararAportacion(COMPANIAS.marea);
-    const socio = await tarifaDe("socio");
+  it("las registra IWL, en una sesión; no la compañía, y no sueltas", async () => {
+    await prepararAportacion(COMPANIAS.marea);
+    const ella = (await fundadoraMarea.auth.getUser()).data.user!.id;
+    const equipo = (await equipoIwl.auth.getUser()).data.user!.id;
 
-    const deLaFundadora = await fundadoraMarea.from("contribution_hours").insert({
-      company_id: COMPANIAS.marea,
-      annex_id: anexoId,
-      worked_on: "2026-09-01",
-      person_name: "Yo misma",
-      profile_code: "socio",
-      subject_id: materiaId,
-      description: "Horas que me apunto yo",
-      hours: 8,
-      applied_rate: socio.aplicada,
-      market_rate: socio.mercado,
-    });
-
+    const deLaFundadora = await registrarSesion(fundadoraMarea, { company: COMPANIAS.marea, fecha: "2026-09-01", profile: ella, horas: 8 });
     expect(deLaFundadora.error).not.toBeNull();
 
-    const deIwl = await equipoIwl.from("contribution_hours").insert({
+    // Sueltas, sin su sesión, no: ni siquiera IWL
+    const { data: materia } = await servicio.from("contribution_subjects").select("id").limit(1).single();
+    const suelta = await equipoIwl.from("contribution_hours").insert({
       company_id: COMPANIAS.marea,
-      annex_id: anexoId,
       worked_on: "2026-09-01",
       person_name: "Programa IWL",
       profile_code: "operacion",
-      subject_id: materiaId,
-      description: "Sesión de seguimiento mensual",
+      subject_id: materia!.id,
+      description: "Horas sin sesión",
       hours: 2,
     });
+    expect(suelta.error?.message).toMatch(/con su sesión/);
 
+    const deIwl = await registrarSesion(equipoIwl, { company: COMPANIAS.marea, fecha: "2026-09-01", profile: equipo, horas: 2, perfil: "operacion" });
     expect(deIwl.error).toBeNull();
+    await quitarSesiones([deIwl.id]);
   });
 
   /**
@@ -128,7 +121,7 @@ describe("horas de aportación", () => {
         description: "Línea para comprobar que la tarifa queda congelada",
         hours: 10,
       })
-      .select("applied_rate, market_rate")
+      .select("applied_rate, market_rate, work_session_id")
       .single();
 
     const tarifa = await tarifaDe("senior");
@@ -152,10 +145,8 @@ describe("horas de aportación", () => {
       .from("rate_cards")
       .update({ applied_rate: tarifa.aplicada })
       .eq("id", tarifa.id);
-    await servicio
-      .from("contribution_hours")
-      .delete()
-      .eq("person_name", "Prueba de tarifa");
+    // Sin nadie detrás, la línea suelta se envolvió en una sesión: se quita con ella
+    await quitarSesiones([antes!.work_session_id]);
   });
 
   /**
@@ -200,55 +191,53 @@ describe("horas de aportación", () => {
 });
 
 describe("objeciones", () => {
-  it("la compañía objeta una hora y IWL la resuelve", async () => {
-    const { data: hora } = await servicio
-      .from("contribution_hours")
-      .select("id")
-      .eq("company_id", COMPANIAS.marea)
-      .limit(1)
-      .single();
-
-    const { data: perfil } = await servicio
-      .from("profiles")
-      .select("id")
-      .eq("email", USUARIOS.fundadoraMarea)
-      .single();
-
+  it("las horas ya no se objetan: se dice «No cuadra» en su sesión", async () => {
+    const { data: hora } = await servicio.from("contribution_hours").select("id").eq("company_id", COMPANIAS.marea).limit(1).single();
+    const ella = (await fundadoraMarea.auth.getUser()).data.user!.id;
     const alta = await fundadoraMarea.from("objections").insert({
       company_id: COMPANIAS.marea,
       entity: "contribution_hours",
       entity_id: hora!.id,
       reason: "Esa sesión duró una hora, no dos.",
-      raised_by: perfil!.id,
+      raised_by: ella,
     });
+    expect(alta.error?.message).toMatch(/objections_horas_en_sesion/);
+  });
 
+  it("la compañía objeta una introducción y IWL la resuelve", async () => {
+    const ella = (await fundadoraMarea.auth.getUser()).data.user!.id;
+    const alta = await fundadoraMarea
+      .from("objections")
+      .insert({
+        company_id: COMPANIAS.marea,
+        entity: "introductions",
+        entity_id: crypto.randomUUID(),
+        reason: "Esa presentación la hicimos nosotras.",
+        raised_by: ella,
+      })
+      .select("id")
+      .single();
     expect(alta.error).toBeNull();
+    const objecion = alta.data!;
 
     // Resolverla es de IWL
-    const { data: objecion } = await servicio
-      .from("objections")
-      .select("id")
-      .eq("entity_id", hora!.id)
-      .limit(1)
-      .single();
-
     const porLaFundadora = await fundadoraMarea
       .from("objections")
       .update({ status: "aceptada" })
-      .eq("id", objecion!.id)
+      .eq("id", objecion.id)
       .select();
 
     expect(porLaFundadora.data ?? []).toEqual([]);
 
     const porIwl = await equipoIwl
       .from("objections")
-      .update({ status: "aceptada", resolution: "Corregido a una hora." })
-      .eq("id", objecion!.id)
+      .update({ status: "aceptada", resolution: "Corregido." })
+      .eq("id", objecion.id)
       .select();
 
     expect(porIwl.data).toHaveLength(1);
 
-    await servicio.from("objections").delete().eq("id", objecion!.id);
+    await servicio.from("objections").delete().eq("id", objecion.id);
   });
 });
 

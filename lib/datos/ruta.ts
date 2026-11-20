@@ -165,7 +165,9 @@ export async function leerHojaDeRuta(
       .from("contribution_hours")
       .select("stage_id, hours")
       .eq("company_id", companyId)
-      .not("stage_id", "is", null),
+      .not("stage_id", "is", null)
+      // Lo anulado no es horas imputadas (REVISION, 13 nov)
+      .neq("session_status", "anulada"),
   ]);
 
   const imputadas = new Map<string, number>();

@@ -46,6 +46,7 @@ const ENTIDADES = [
   "tech_score",
   "tech_question",
   "progress_entry",
+  "session",
 ] as const;
 
 const esquema = z.object({

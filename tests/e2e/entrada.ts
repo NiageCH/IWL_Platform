@@ -537,3 +537,30 @@ export async function correosRecibidos(
   }
   return [];
 }
+
+/**
+ * Quitar las sesiones que creó una prueba, con sus horas, su historia y
+ * sus avisos. Una sesión no se borra —se anula con motivo—, ni con la
+ * clave de servicio: para dejar la base como estaba, se quita por debajo
+ * de los disparadores, y así se ve.
+ */
+export async function quitarSesiones(ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  const { default: postgres } = await import("postgres");
+  const sql = postgres(process.env.SUPABASE_DB_URL || "postgresql://postgres:postgres@127.0.0.1:54322/postgres", {
+    max: 1,
+    onnotice: () => {},
+  });
+  try {
+    await sql.begin(async (tx) => {
+      await tx`set local session_replication_role = replica`;
+      await tx`delete from avisos where work_session_id = any(${ids}::uuid[])`;
+      await tx`delete from session_events where session_id = any(${ids}::uuid[])`;
+      await tx`delete from session_agreements where session_id = any(${ids}::uuid[])`;
+      await tx`delete from contribution_hours where work_session_id = any(${ids}::uuid[])`;
+      await tx`delete from work_sessions where id = any(${ids}::uuid[])`;
+    });
+  } finally {
+    await sql.end();
+  }
+}

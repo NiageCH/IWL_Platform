@@ -4,7 +4,8 @@ import { leerAportacionExtra, nombreTipo } from "@/lib/datos/aportacion-extra";
 import { leerHojaDeRuta, leerRepartoAnexo, type RepartoAnexo } from "@/lib/datos/ruta";
 import { NuevaAportacion } from "@/components/formularios/ruta";
 import { EnlacesInforme } from "@/components/informe/enlace";
-import { RegistroRapidoHoras } from "@/components/formularios/programa";
+import Link from "next/link";
+import { NOMBRE_ESTADO_SESION } from "@/lib/sesiones";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { estadoEquity } from "@/lib/entrada";
 import {
@@ -57,7 +58,6 @@ export async function VistaAportacion({
   const { compromiso } = extracto;
   const { permisos, compania } = resumen;
 
-  // El catálogo para el registro rápido. Solo lo necesita quien imputa horas
   const supabase = await clienteServidor();
 
   // Si el equity comprometido ya se materializó, y cuándo
@@ -65,23 +65,7 @@ export async function VistaAportacion({
     ? await supabase.from("annexes").select("equity_materializado_on").eq("id", compromiso.annexId).maybeSingle()
     : { data: null };
   const equity = estadoEquity(compania.situacion_societaria, anexoEquity?.equity_materializado_on);
-  const [materias, perfiles] = permisos.esIwl
-    ? await Promise.all([
-        supabase
-          .from("contribution_subjects")
-          .select("id, name")
-          .eq("is_active", true)
-          .order("order_index"),
-        supabase
-          .from("rate_cards")
-          .select("profile_code, profile_name")
-          .is("valid_to", null)
-          .order("applied_rate", { ascending: false }),
-      ])
-    : [{ data: [] }, { data: [] }];
-
-  // La última línea imputada, para no reescribir persona y perfil cada vez
-  const ultima = extracto.horas[0];
+  const sesiones = `${permisos.esFundadora && !permisos.esIwl ? "/proyecto" : `/cartera/${compania.slug}`}/sesiones`;
 
   /*
    * Sin Anexo firmado hay aportación, lo que no hay es compromiso.
@@ -126,13 +110,21 @@ export async function VistaAportacion({
         <div className="grid gap-6 px-4 py-4 sm:grid-cols-2 lg:grid-cols-4">
           <Cifra
             destacada
-            etiqueta="Horas entregadas"
+            etiqueta="Horas confirmadas"
             valor={numero(compromiso.horasEntregadas, 0)}
             referencia={`de ${numero(compromiso.horasComprometidas, 0)} h`}
             nota={
-              compromiso.horasPct === null
-                ? "Sin horas comprometidas"
-                : `${porcentaje(compromiso.horasPct, 1)} del compromiso`
+              <>
+                {compromiso.horasPct === null
+                  ? "Sin horas comprometidas"
+                  : `${porcentaje(compromiso.horasPct, 1)} del compromiso`}
+                {compromiso.horasPorConfirmar || compromiso.horasEnDiscusion ? (
+                  <span className="block">
+                    Además, {numero(compromiso.horasPorConfirmar, 1)} h por confirmar y{" "}
+                    {numero(compromiso.horasEnDiscusion, 1)} h en discusión
+                  </span>
+                ) : null}
+              </>
             }
           />
           <Cifra
@@ -157,7 +149,7 @@ export async function VistaAportacion({
 
         <div className="border-t border-filete px-4 py-3">
           <Barra
-            etiqueta="Horas"
+            etiqueta="Horas confirmadas"
             entregado={compromiso.horasEntregadas}
             comprometido={compromiso.horasComprometidas}
             formato={(v) => `${numero(v, 0)} h`}
@@ -461,40 +453,29 @@ export async function VistaAportacion({
           Sin Acuerdo no se trabaja (REVISION, 10 nov): en entrada no se
           imputan horas, y lo impide también la base.
         */}
-        {permisos.esIwl && compania.tramo === "entrada" ? (
-          <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
-            Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma.
-          </p>
-        ) : permisos.esIwl ? (
-          <RegistroRapidoHoras
-            slug={compania.slug}
-            companyId={compania.id}
-            annexId={compromiso?.annexId ?? null}
-            materias={(materias.data ?? []).map((m) => ({ id: m.id, nombre: m.name }))}
-            perfiles={[
-              ...new Map(
-                (perfiles.data ?? []).map((p) => [
-                  p.profile_code,
-                  { codigo: p.profile_code, nombre: p.profile_name },
-                ]),
-              ).values(),
-            ]}
-            ultimaPersona={ultima?.persona ?? ""}
-            ultimoPerfil={ultima?.perfil ?? "senior"}
-          />
-        ) : null}
-
+        {/*
+          Las horas se registran en Sesiones, con su acta, y ella las
+          confirma (REVISION, 13 nov). Aquí se leen.
+        */}
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Las horas se registran en{" "}
+          <Link href={sesiones} className="enlace text-acento-texto">
+            Sesiones
+          </Link>
+          , con su acta, y la compañía las confirma. Para el Anexo cuentan las confirmadas.
+        </p>
         {extracto.horas.length === 0 ? (
           <SinDatos>Todavía no hay horas imputadas.</SinDatos>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] text-sm">
+            <table className="w-full min-w-[960px] text-sm">
               <thead>
                 <tr className="border-b border-filete text-left">
                   <th className="px-4 py-2 font-medium text-metadato">Fecha</th>
                   <th className="px-4 py-2 font-medium text-metadato">Persona</th>
                   <th className="px-4 py-2 font-medium text-metadato">Materia</th>
                   <th className="px-4 py-2 font-medium text-metadato">Trabajo</th>
+                  <th className="px-4 py-2 font-medium text-metadato">Estado</th>
                   <th className="px-4 py-2 text-right font-medium text-metadato">Horas</th>
                   <th className="px-4 py-2 text-right font-medium text-metadato">Valor</th>
                   <th className="px-4 py-2 text-right font-medium text-metadato">
@@ -508,12 +489,22 @@ export async function VistaAportacion({
                     <td className="cifra px-4 py-2.5 text-secundario">{fecha(h.fecha)}</td>
                     <td className="px-4 py-2.5 text-titular">
                       {h.persona}
-                      {h.objetada ? (
-                        <span className="ml-2 text-xs text-aviso">Objetada</span>
-                      ) : null}
                     </td>
                     <td className="px-4 py-2.5 text-secundario">{h.materia}</td>
-                    <td className="px-4 py-2.5 text-secundario">{h.descripcion}</td>
+                    <td className="px-4 py-2.5 text-secundario">
+                      {h.sesionId ? (
+                        <Link href={`${sesiones}#sesion-${h.sesionId}`} className="enlace">
+                          {h.descripcion}
+                        </Link>
+                      ) : (
+                        h.descripcion
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {h.estado ? (
+                        <Estado valor={estadoVisual("sesion", { estado: h.estado })} rotulo={NOMBRE_ESTADO_SESION[h.estado]} />
+                      ) : null}
+                    </td>
                     <td className="cifra px-4 py-2.5 text-right text-titular">
                       {numero(h.horas, 1)}
                     </td>

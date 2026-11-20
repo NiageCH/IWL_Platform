@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { USUARIOS, clienteServicio, entrarComo } from "./clientes";
+import { USUARIOS, clienteServicio, entrarComo, registrarSesion } from "./clientes";
 
 /**
  * Construcción: no se trabaja sin Acuerdo, y entrar antes cuesta más equity.
@@ -111,7 +111,8 @@ describe("las horas", () => {
 
   it("en entrada no se imputan, ni con la clave de servicio", async () => {
     const equipo = await entrarComo(USUARIOS.equipoIwl);
-    const { error } = await equipo.from("contribution_hours").insert(await linea("2026-11-05"));
+    const yo = (await equipo.auth.getUser()).data.user!.id;
+    const { error } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-05", profile: yo, horas: 2 });
     expect(error?.message).toMatch(/cuentan desde la firma/);
     const { error: servicio } = await clienteServicio().from("contribution_hours").insert(await linea("2026-11-05"));
     expect(servicio?.message).toMatch(/cuentan desde la firma/);
@@ -197,19 +198,11 @@ describe("las horas, después de firmar", () => {
     await servicio.from("companies").update({ tramo: "incubacion", stage: "pre_semilla", tech_profile: "software" }).eq("id", compania);
     await servicio.from("candidaturas").update({ acuerdo_firmado_on: "2026-11-10" }).eq("id", candidatura);
 
-    const { data: materia } = await servicio.from("contribution_subjects").select("id").limit(1).single();
-    const base = {
-      company_id: compania,
-      person_name: "Mentora de Prueba",
-      profile_code: "senior",
-      subject_id: materia!.id,
-      description: "Sesión de trabajo",
-      hours: 2,
-    };
     const equipo = await entrarComo(USUARIOS.equipoIwl);
-    const { error: antes } = await equipo.from("contribution_hours").insert({ ...base, worked_on: "2026-11-09" });
+    const yo = (await equipo.auth.getUser()).data.user!.id;
+    const { error: antes } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-09", profile: yo, horas: 2 });
     expect(antes?.message).toMatch(/anterior/);
-    const { error: despues } = await equipo.from("contribution_hours").insert({ ...base, worked_on: "2026-11-10" });
+    const { error: despues } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-10", profile: yo, horas: 2 });
     expect(despues).toBeNull();
   });
 });

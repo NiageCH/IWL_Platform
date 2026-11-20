@@ -120,7 +120,9 @@ export async function InformeAportacion({
             {
               etiqueta: "Horas de IWL",
               valor: numero(horasTotales, 1),
-              nota: `${extracto.horas.length} ${extracto.horas.length === 1 ? "línea" : "líneas"} imputadas`,
+              nota: compromiso
+                ? `${numero(compromiso.horasEntregadas, 1)} confirmadas · ${numero(compromiso.horasPorConfirmar, 1)} por confirmar · ${numero(compromiso.horasEnDiscusion, 1)} en discusión`
+                : `${extracto.horas.length} ${extracto.horas.length === 1 ? "línea" : "líneas"} imputadas`,
             },
             {
               etiqueta: "Valor a mercado",
@@ -142,7 +144,7 @@ export async function InformeAportacion({
 
         {compromiso?.annexId ? (
           <Tabla
-            cabeceras={["Compromiso del Anexo", "Acordado", "Entregado", "Cumplimiento"]}
+            cabeceras={["Compromiso del Anexo", "Acordado", "Entregado y confirmado", "Cumplimiento"]}
             alineadas={[1, 2, 3]}
           >
             <tr>
@@ -376,7 +378,7 @@ export async function InformeAportacion({
 
       <Pie
         generadoPor={generadoPor}
-        nota="Las horas se valoran a la tarifa vigente el día en que se imputaron. La compañía puede objetar cualquier línea por escrito dentro de los quince días siguientes a su registro."
+        nota="Las horas se valoran a la tarifa vigente el día en que se imputaron. Cada sesión la confirma la compañía; si no responde en 7 días, se confirma sola. Para el compromiso del Anexo solo cuentan las confirmadas."
       />
     </article>
   );

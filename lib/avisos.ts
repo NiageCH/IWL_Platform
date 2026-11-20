@@ -34,6 +34,9 @@ export type TipoAviso =
   | "anexo_aceptado"
   | "documento_entregado"
   | "correos_sin_enviar"
+  | "sesion_por_confirmar"
+  | "sesion_no_cuadra"
+  | "sesion_en_direccion"
   // Ya no se crean (no piden nada); pueden quedar en el historial
   | "primer_acceso"
   | "reunion_elegida";
@@ -59,6 +62,8 @@ export interface DatosAviso {
   punto?: { id: string; titulo: string } | null;
   /** Cuántos correos siguen sin enviar */
   cuantos?: number;
+  /** La sesión de la que hablan sus horas */
+  sesion?: { id: string; fecha: string; tipo: "sesion" | "trabajo"; titulo: string; horas: number } | null;
 }
 
 export interface AvisoPresentado {
@@ -81,6 +86,10 @@ export interface AvisoPresentado {
 /** A dónde lleva un aviso de hito: a su hoja de ruta, con el hito a la vista */
 export function enlaceHito(slug: string, hitoId: string, avisoId?: string): string {
   return `/cartera/${slug}/ruta${avisoId ? `?aviso=${avisoId}` : ""}#hito-${hitoId}`;
+}
+
+function horasDichas(h: number | null | undefined): string {
+  return `${String(h ?? 0).replace(".", ",")} h`;
 }
 
 function dia(cuando: string | null | undefined): string {
@@ -269,6 +278,45 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         href: conAviso("/admin/correos", "correos"),
         ancla: "correos",
         hasVenidoA: n === 1 ? "reintentar el correo que no salió" : `reintentar los ${n} correos que no salieron`,
+      };
+    }
+    case "sesion_por_confirmar": {
+      const ses = a.sesion;
+      const ancla = `sesion-${ses?.id ?? ""}`;
+      return {
+        ...base,
+        paso: `${quien} ha registrado ${horasDichas(ses?.horas)} de ${ses?.tipo === "trabajo" ? "trabajo" : "sesión"} del ${dia(ses?.fecha)}`,
+        toca: "Confirmarlas o decir qué no cuadra",
+        verbo: "Revisar",
+        href: conAviso("/proyecto/sesiones", ancla),
+        ancla,
+        hasVenidoA: `confirmar las horas de «${ses?.titulo ?? "la sesión"}»`,
+      };
+    }
+    case "sesion_no_cuadra": {
+      const ses = a.sesion;
+      const ancla = `sesion-${ses?.id ?? ""}`;
+      return {
+        ...base,
+        paso: `${quien} dice que no cuadran las horas de «${ses?.titulo ?? "una sesión"}», del ${dia(ses?.fecha)}`,
+        toca: "Responder: corregirlas o mantenerlas",
+        verbo: "Responder",
+        href: ficha("/sesiones", ancla),
+        ancla,
+        hasVenidoA: `responder sobre las horas de «${ses?.titulo ?? "la sesión"}» con ${sitio}`,
+      };
+    }
+    case "sesion_en_direccion": {
+      const ses = a.sesion;
+      const ancla = `sesion-${ses?.id ?? ""}`;
+      return {
+        ...base,
+        paso: `Las horas de «${ses?.titulo ?? "una sesión"}» con ${sitio} no cuadran y han llegado a dirección`,
+        toca: "Decidir y cerrar",
+        verbo: "Decidir",
+        href: ficha("/sesiones", ancla),
+        ancla,
+        hasVenidoA: `decidir las horas de «${ses?.titulo ?? "la sesión"}» con ${sitio}`,
       };
     }
     case "primer_acceso":

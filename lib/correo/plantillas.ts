@@ -23,6 +23,7 @@ export const EVENTOS = [
   "descarte",
   "recordatorio",
   "resumen_avisos",
+  "sesion_registrada",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 
@@ -41,6 +42,7 @@ export const NOMBRE_EVENTO: Record<Evento, string> = {
   descarte: "Mensaje de descarte",
   recordatorio: "Recordatorio",
   resumen_avisos: "Resumen de avisos",
+  sesion_registrada: "Horas por confirmar",
 };
 
 export type DatosCorreo = Record<string, string | number | null | undefined>;
@@ -246,6 +248,15 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
     asunto: `Te hemos respondido · ${s(d.sobre)}`,
     parrafos: [saludo(d), `Hemos respondido a tu comentario sobre ${s(d.sobre)}:`, s(d.respuesta)],
     boton: { texto: "Verlo en la plataforma", url: s(d.enlace) },
+  }),
+  sesion_registrada: (d) => ({
+    asunto: `${s(d.quien)} ha registrado ${s(d.horas)} h · ¿Lo confirmas?`,
+    parrafos: [
+      saludo(d),
+      `${s(d.quien)} ha registrado ${s(d.horas)} h de ${s(d.que)} del ${s(d.fecha)}: «${s(d.titulo)}».`,
+      "Revisa el acta y confirma las horas, o di qué no cuadra. Si en 7 días no respondes, se dan por confirmadas.",
+    ],
+    boton: { texto: "Revisar y confirmar", url: s(d.enlace) },
   }),
   acuerdo_propuesto: (d) => ({
     asunto: `Tu propuesta de Acuerdo · ${s(d.startup)}`,

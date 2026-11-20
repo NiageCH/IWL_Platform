@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { COMPANIAS, USUARIOS, clienteServicio, entrarComo } from "./clientes";
+import { COMPANIAS, USUARIOS, clienteServicio, entrarComo, quitarSesiones, registrarSesion } from "./clientes";
 
 /**
  * Mentoría.
@@ -260,54 +260,28 @@ describe("lo que no puede ningún mentor", () => {
 describe("horas y tareas", () => {
   it("un mentor imputa sus propias horas donde solo apoya", async () => {
     const yo = (await producto.auth.getUser()).data.user!.id;
-
-    const { data: materia } = await servicio
-      .from("contribution_subjects")
-      .select("id")
-      .limit(1)
-      .single();
-
-    const { data, error } = await producto
-      .from("contribution_hours")
-      .insert({
-        company_id: COMPANIAS.raiz,
-        profile_id: yo,
-        person_name: "Mentoría producto",
-        profile_code: "ingenieria",
-        subject_id: materia!.id,
-        description: "Sesión de producto en el proyecto donde apoya.",
-        hours: 3,
-        worked_on: "2026-09-20",
-      })
-      .select();
-
+    const { id, error } = await registrarSesion(producto, {
+      company: COMPANIAS.raiz,
+      fecha: "2026-09-20",
+      profile: yo,
+      horas: 3,
+      perfil: "ingenieria",
+    });
     expect(error).toBeNull();
-    expect(data).toHaveLength(1);
-
-    await servicio.from("contribution_hours").delete().eq("id", data![0].id);
+    await quitarSesiones([id]);
   });
 
   it("pero no a nombre de otra persona", async () => {
     const otra = (await comercial.auth.getUser()).data.user!.id;
-
-    const { data: materia } = await servicio
-      .from("contribution_subjects")
-      .select("id")
-      .limit(1)
-      .single();
-
-    const { error } = await producto.from("contribution_hours").insert({
-      company_id: COMPANIAS.raiz,
-      profile_id: otra,
-      person_name: "Mentoría comercial",
-      profile_code: "socio",
-      subject_id: materia!.id,
-      description: "Horas que no son suyas.",
-      hours: 2,
-      worked_on: "2026-09-20",
+    const { id, error } = await registrarSesion(producto, {
+      company: COMPANIAS.raiz,
+      fecha: "2026-09-20",
+      profile: otra,
+      horas: 2,
+      perfil: "socio",
     });
-
     expect(error).not.toBeNull();
+    await quitarSesiones([id]);
   });
 
   it("cierra la tarea que tiene asignada", async () => {

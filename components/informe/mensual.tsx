@@ -180,7 +180,7 @@ export async function InformeMensual({
             {
               etiqueta: "Horas de IWL",
               valor: numero(mes.horas, 1),
-              nota: `${euros(mes.valorHoras)} a tarifa de programa`,
+              nota: `${numero(mes.horasPorEstado.confirmadas, 1)} confirmadas · ${numero(mes.horasPorEstado.porConfirmar, 1)} por confirmar · ${numero(mes.horasPorEstado.enDiscusion, 1)} en discusión · ${euros(mes.valorHoras)} a tarifa de programa`,
             },
           ]}
         />

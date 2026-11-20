@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
   const { data: sinRevisar } = await clienteServicio().rpc("avisar_hitos_sin_revisar");
   // Y las reuniones confirmadas de ayer o antes sin anotar, a quien la propuso y a quien fue
   const { data: porAnotar } = await clienteServicio().rpc("avisar_reuniones_por_anotar");
+  // Horas sin respuesta en 7 días: se confirman solas (REVISION, 13 nov)
+  const { data: porPlazo } = await clienteServicio().rpc("confirmar_sesiones_por_plazo");
   const resultado = await enviarResumenes();
 
   /*
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest) {
     reunionesCaducadas: caducadas ?? 0,
     hitosSinRevisar: sinRevisar ?? 0,
     reunionesPorAnotar: porAnotar ?? 0,
+    sesionesPorPlazo: porPlazo ?? 0,
     ficherosSueltos: limpieza,
   });
 }

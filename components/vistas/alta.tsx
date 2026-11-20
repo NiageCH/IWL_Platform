@@ -219,11 +219,11 @@ export function AvisosDireccion({
  * principal, al cambiar la vía; a quien propuso una reunión, para anotarla.
  * Se cierran solos cuando se hace lo que piden.
  */
-export function AvisosParaMi({ avisos }: { avisos: Aviso[] }) {
+export function AvisosParaMi({ avisos, titulo = "Avisos para ti" }: { avisos: Aviso[]; titulo?: string }) {
   if (!avisos.length) return null;
   return (
     <Bloque className="mb-8">
-      <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>Avisos para ti</TituloBloque>
+      <TituloBloque accion={<Metadato>{avisos.length} sin ver</Metadato>}>{titulo}</TituloBloque>
       <ul className="divide-y divide-filete">
         {avisos.map((a) => (
           <FilaAviso key={a.id} aviso={a} />

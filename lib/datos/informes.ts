@@ -1,4 +1,5 @@
 import { nombreCompleto } from "@/lib/etiquetas";
+import { sumarPorEstado, type EstadoSesion, type RecuentoHoras } from "@/lib/sesiones";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -232,6 +233,7 @@ export interface DatosMensuales {
     condiciona: boolean;
   }[];
   horas: number;
+  horasPorEstado: RecuentoHoras;
   valorHoras: number;
   items: { titulo: string; tipo: string; coste: number | null }[];
 }
@@ -332,7 +334,7 @@ export async function leerMes(
       .order("due_date", { nullsFirst: false }),
     supabase
       .from("contribution_hours_valued")
-      .select("hours, applied_value")
+      .select("hours, applied_value, session_status")
       .eq("company_id", companyId)
       .gte("worked_on", periodo)
       .lte("worked_on", fin),
@@ -388,6 +390,10 @@ export async function leerMes(
       condiciona: h.gates_investable,
     })),
     horas: (horas ?? []).reduce((t, h) => t + Number(h.hours ?? 0), 0),
+    // Confirmadas, por confirmar y en discusión, por separado (REVISION, 13 nov)
+    horasPorEstado: sumarPorEstado(
+      (horas ?? []).map((h) => ({ estado: (h.session_status ?? "confirmada_previa") as EstadoSesion, horas: Number(h.hours ?? 0) })),
+    ),
     valorHoras: (horas ?? []).reduce((t, h) => t + Number(h.applied_value ?? 0), 0),
     items: (items ?? []).map((i) => ({
       titulo: i.title,

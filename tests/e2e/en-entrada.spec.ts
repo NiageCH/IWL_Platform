@@ -80,8 +80,8 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await expect(filaCons.getByText("Diagnóstico:")).toBeVisible();
     await expect(filaCons.getByText(/Due diligence:/)).toHaveCount(0);
 
-    // Sin Acuerdo no se trabaja: no hay dónde imputar horas, y se dice por qué
-    await page.goto(`/cartera/${cons.slug}/aportacion`);
+    // Sin Acuerdo no se trabaja: no hay dónde imputar horas, y se dice por qué donde se imputan
+    await page.goto(`/cartera/${cons.slug}/sesiones`);
     await expect(page.getByText(/Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma/)).toBeVisible();
     await page.goto("/cartera");
 
