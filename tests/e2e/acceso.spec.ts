@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrarCuenta, consultar, entrarComo } from "./entrada";
+import { USUARIOS, borrarCuenta, consultar, darGuiaPorVista, entrarComo } from "./entrada";
 
 /**
  * Entrada con contraseña.
@@ -16,6 +16,8 @@ import { USUARIOS, borrarCuenta, consultar, entrarComo } from "./entrada";
 const CLAVE = "iwl-local-2026";
 
 test("se entra con correo y contraseña", async ({ page }) => {
+  // La guía de la primera vez la prueba `guia.spec.ts`
+  await darGuiaPorVista(USUARIOS.fundadoraMarea);
   await page.goto("/entrar");
 
   await page.getByLabel("Correo").fill(USUARIOS.fundadoraMarea);

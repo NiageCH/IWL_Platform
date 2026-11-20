@@ -52,6 +52,14 @@ export function menuDe(rol: string | undefined | null): EntradaMenu[] {
    * entonces, la ruta vieja sigue existiendo y solo se cae del menú.
    */
 
+  /*
+   * La guía, para todos los roles, con el contenido del suyo (REVISION,
+   * 13 nov). Sin rol conocido no hay guía que enseñar.
+   */
+  if (Object.values(c).some(Boolean)) {
+    entradas.push({ href: "/guia", nombre: "Guía", icono: "guia" });
+  }
+
   if (c.configurarPrograma) {
     entradas.push({
       href: "/admin",

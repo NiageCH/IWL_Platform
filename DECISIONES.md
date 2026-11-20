@@ -1935,3 +1935,13 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
   
   Antes del día de aviso se pide el del mes anterior, si falta. Los dos días van como mucho hasta el 28, que lo tienen todos los meses.
 - **El hito vencido le llega al mentor principal**, no a dirección. Sin mentor principal, solo lo ve ella.
+
+## 2026-11-21 · La guía de cada rol, en Markdown, y abierta sola la primera vez
+
+- **El texto vive en `contenido/guia/<rol>.md`**, uno por rol: dirección, equipo, mentor, revisor, fundadora, lector y candidata. Se corrige sin tocar código. Cada uno tiene los mismos cuatro apartados (qué es la plataforma, tu papel, de qué dependes y quién depende de ti, cómo se hace), y una prueba lo comprueba, igual que comprueba que haya un fichero por rol y que los enlaces internos lleven a páginas que existen.
+- **Se lee un Markdown corto, sin librería** (`lib/guia.ts`): títulos, párrafos, listas, negrita, código y enlaces. Es todo lo que la guía necesita, y se pinta con componentes nuestros, no con HTML a pelo.
+- **En Vercel el fichero viaja por `outputFileTracingIncludes`**, como las fuentes del PDF: se lee del disco en ejecución y el rastreo no lo ve.
+- **`/guia` es de primer nivel, como `/perfil`**, con la barra superior: sirve igual para todos los roles, la candidata incluida, sin duplicar la página en cada grupo de rutas.
+- **Se abre sola al llegar a `/` sin haberla visto** (`profiles.guia_vista_at`). Quien entra por el enlace de un aviso va a lo suyo, y la guía le espera para la siguiente vez que entre sin destino. Verla la marca, con una función que solo toca esa columna de la propia persona.
+- **Lo que ya tiene cuenta también la verá una vez**: la migración no marca a nadie como visto.
+- **Las pruebas de interfaz la dan por vista al entrar** (`entrarComo`), porque no prueban eso; lo prueba `guia.spec.ts`, con una cuenta suya.

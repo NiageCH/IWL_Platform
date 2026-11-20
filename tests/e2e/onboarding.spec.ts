@@ -6,6 +6,7 @@ import {
   borrarCuenta,
   consultar,
   correosRecibidos,
+  darGuiaPorVista,
   entrarComo,
   insertar,
 } from "./entrada";
@@ -51,6 +52,7 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     // Ella entra y cambia la contraseña
     await page.getByRole("button", { name: "Salir" }).first().click();
     await page.waitForURL(/\/entrar/);
+    await darGuiaPorVista(CORREO);
     await page.locator('input[type="email"]').fill(CORREO);
     await page.locator('input[type="password"]').fill(clave!);
     await page.getByRole("button", { name: "Entrar", exact: true }).click();

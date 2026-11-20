@@ -6,6 +6,7 @@ import {
   borrarCuenta,
   correosRecibidos,
   consultar,
+  darGuiaPorVista,
   entrarComo,
   insertar,
   quitarFicheros,
@@ -29,6 +30,7 @@ const PERSONA = `Firmante Prueba ${SELLO}`;
 const CORREO = `e2e.nda.${SELLO}@ejemplo.test`;
 
 async function entrarComoElla(page: import("@playwright/test").Page, clave: string) {
+  await darGuiaPorVista(CORREO);
   await page.goto("/entrar");
   await page.locator('input[type="email"]').fill(CORREO);
   await page.locator('input[type="password"]').fill(clave);

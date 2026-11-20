@@ -27,8 +27,24 @@ function supabase() {
   return cache;
 }
 
-export async function entrarComo(page: Page, email: string, destino = "/") {
+/**
+ * La guía, por vista: lo que hace `entrarComo` antes de entrar, para las
+ * pruebas que entran por el formulario. Solo si no estaba marcada.
+ */
+export async function darGuiaPorVista(email: string): Promise<void> {
+  await actualizar("profiles", { email: `eq.${email}`, guia_vista_at: "is.null" }, { guia_vista_at: new Date().toISOString() });
+}
+
+export async function entrarComo(page: Page, email: string, destino = "/", { guiaVista = true } = {}) {
   const { url, clave } = supabase();
+
+  /*
+   * La guía se abre sola la primera vez que alguien llega a `/` (REVISION,
+   * 13 nov). Las pruebas no prueban eso —lo prueba `guia.spec.ts`, con
+   * una cuenta suya—, así que la dan por vista antes de entrar. Es lo que
+   * habría pasado tras la primera visita, y no cambia nada más del perfil.
+   */
+  if (guiaVista) await darGuiaPorVista(email);
 
   const respuesta = await fetch(`${url}/auth/v1/admin/generate_link`, {
     method: "POST",

@@ -3673,13 +3673,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "archived_at": string | null,"bio": string | null,"contrasena_cambiada_at": string | null,"created_at": string,"cv_path": string | null,"email": string,"expertise": (string)[],"full_name": string | null,"id": string,"is_active": boolean,"job_title": string | null,"last_name": string | null,"linkedin_url": string | null,"organization_id": string | null,"photo_path": string | null,"primer_acceso_at": string | null,"resumen_avisos": string,"role": Database["public"]['Enums']["app_role"],"updated_at": string
+                    "archived_at": string | null,"bio": string | null,"contrasena_cambiada_at": string | null,"created_at": string,"cv_path": string | null,"email": string,"expertise": (string)[],"full_name": string | null,"guia_vista_at": string | null,"id": string,"is_active": boolean,"job_title": string | null,"last_name": string | null,"linkedin_url": string | null,"organization_id": string | null,"photo_path": string | null,"primer_acceso_at": string | null,"resumen_avisos": string,"role": Database["public"]['Enums']["app_role"],"updated_at": string
                   }
                   Insert: {
-                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email": string,"expertise"?: (string)[],"full_name"?: string | null,"id": string,"is_active"?: boolean,"job_title"?: string | null,"last_name"?: string | null,"linkedin_url"?: string | null,"organization_id"?: string | null,"photo_path"?: string | null,"primer_acceso_at"?: string | null,"resumen_avisos"?: string,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
+                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email": string,"expertise"?: (string)[],"full_name"?: string | null,"guia_vista_at"?: string | null,"id": string,"is_active"?: boolean,"job_title"?: string | null,"last_name"?: string | null,"linkedin_url"?: string | null,"organization_id"?: string | null,"photo_path"?: string | null,"primer_acceso_at"?: string | null,"resumen_avisos"?: string,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
                   }
                   Update: {
-                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email"?: string,"expertise"?: (string)[],"full_name"?: string | null,"id"?: string,"is_active"?: boolean,"job_title"?: string | null,"last_name"?: string | null,"linkedin_url"?: string | null,"organization_id"?: string | null,"photo_path"?: string | null,"primer_acceso_at"?: string | null,"resumen_avisos"?: string,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
+                    "archived_at"?: string | null,"bio"?: string | null,"contrasena_cambiada_at"?: string | null,"created_at"?: string,"cv_path"?: string | null,"email"?: string,"expertise"?: (string)[],"full_name"?: string | null,"guia_vista_at"?: string | null,"id"?: string,"is_active"?: boolean,"job_title"?: string | null,"last_name"?: string | null,"linkedin_url"?: string | null,"organization_id"?: string | null,"photo_path"?: string | null,"primer_acceso_at"?: string | null,"resumen_avisos"?: string,"role"?: Database["public"]['Enums']["app_role"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -5308,6 +5308,9 @@ isOneToOne: false
                            },
 "mantener_horas_sesion":
 { Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
+                           },
+"marcar_guia_vista":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "mi_candidatura":
 { Args: Record<PropertyKey, never>; Returns: {

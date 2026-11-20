@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Users,
   type LucideIcon,
+  BookOpen,
 } from "lucide-react";
 import type { NombreIcono } from "@/lib/secciones";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,7 @@ export const ICONOS = {
   umbrales: SlidersHorizontal,
   correos: Mail,
   sesiones: CalendarCheck,
+  guia: BookOpen,
 } satisfies Record<NombreIcono, LucideIcon>;
 
 export type Seccion = {

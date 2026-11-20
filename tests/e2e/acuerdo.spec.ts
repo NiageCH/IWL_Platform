@@ -5,6 +5,7 @@ import {
   borrarCuenta,
   consultar,
   correosRecibidos,
+  darGuiaPorVista,
   entrarComo,
   insertar,
   llamar,
@@ -105,6 +106,7 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     await page.waitForURL(/\/entrar/);
 
     // Ella entra con la contraseña que se le dio, la cambia y cae en su compañía
+    await darGuiaPorVista(CORREO);
     await page.goto("/entrar");
     await page.locator('input[type="email"]').fill(CORREO);
     await page.locator('input[type="password"]').fill(temporal);

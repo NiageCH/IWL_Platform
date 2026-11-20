@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { USUARIOS, borrar, borrarCuenta, consultar, entrarComo, insertar } from "./entrada";
+import { USUARIOS, borrar, borrarCuenta, consultar, darGuiaPorVista, entrarComo, insertar } from "./entrada";
 
 /**
  * Comentar el NDA y cambiarlo solo para ella, de punta a punta, con una
@@ -17,6 +17,7 @@ const CORREO = `e2e.nda.comenta.${SELLO}@ejemplo.test`;
 const CLAVE = "la-de-comentar-2026";
 
 async function entrarComoElla(page: Page, clave: string) {
+  await darGuiaPorVista(CORREO);
   await page.goto("/entrar");
   await page.locator('input[type="email"]').fill(CORREO);
   await page.locator('input[type="password"]').fill(clave);

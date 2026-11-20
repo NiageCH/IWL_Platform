@@ -6,6 +6,7 @@ import {
   borrarCuenta,
   consultar,
   correosRecibidos,
+  darGuiaPorVista,
   entrarComo,
   insertar,
 } from "./entrada";
@@ -217,6 +218,7 @@ test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía
   await page.getByRole("button", { name: "Salir" }).first().click();
   await page.waitForURL(/\/entrar/);
 
+  await darGuiaPorVista(c.correo);
   await page.locator('input[type="email"]').fill(c.correo);
   await page.locator('input[type="password"]').fill(clave!);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
