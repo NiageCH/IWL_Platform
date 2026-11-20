@@ -9,6 +9,44 @@ como es**.
 
 ---
 
+## 2026-11-21 · Sesiones aprobadas: versiones del acta, correos de vuelta y lo que le toca a ella · commit 06f8e66
+**Qué cambió**
+- Correo a ella cuando la sesión vuelve a sus manos (corregida, mantenida, o con el acta confirmada y las horas cambiadas) y cuando dirección la cierra. Lleva la cifra de antes, la nueva, el motivo y «Revisar».
+- «Editar el acta», para quien registró la sesión o quien coordina:
+  - abierta, cada guardado deja una versión plegada en la historia, con los apartados que cambian, antes y después;
+  - confirmada, el botón es «Corregir el acta» y pide motivo; si cambian las horas, vuelve a «Por confirmar» con aviso a ella;
+  - en dirección o anulada, no se toca.
+- La base ya no deja cambiar el acta por otro camino, ni con la clave de servicio.
+- «Proponerle el Acuerdo»: aviso calculado a dirección, con su franja en `programa#anexo`.
+- En su «Te toca»:
+  - «Carga el avance de noviembre · Cargar», desde el día que fija Programa;
+  - «"…" vence el 27 nov · Entregar», siete días antes del hito; vencido, sale también al mentor principal.
+- Administración → Programa: un bloque «Avance del mes», con desde qué día se le pide y qué día vence.
+- `docs/AVISOS.md` y `DECISIONES.md`, al día.
+
+**Qué decidí yo**
+- Mantener las horas también le escribe a ella: la sesión vuelve a sus manos igual que con una corrección.
+- El avance del mes tiene dos días:
+  - el de aviso, nuevo, que por defecto es el 25;
+  - el de vencimiento, que ya estaba en la semilla (el 10 del mes siguiente) y no lo usaba nada.
+- Antes del día de aviso se le pide el del mes anterior, si falta. Cuenta desde el mes en que se firmó el Acuerdo.
+- «Cargado» quiere decir el update del mes entregado o revisado. Un borrador no cuenta.
+- Hitos: sale el que no está entregado ni cumplido. El vencido va al mentor principal; sin mentor principal, solo lo ve ella.
+- Abierta la sesión, las horas se siguen corrigiendo con «Corregir las horas»; «Editar el acta» solo cambia el texto.
+- Del lado de ella no hay franja «Has venido a» todavía: llega con lo visual o con «Por hacer». Los enlaces llevan al bloque con su ancla.
+- Los avisos calculados no van en el correo diario, que solo lee los guardados.
+- Hay tres entradas del 20 nov y una del menú. El orden queda: guía → menú lateral → hoja de ruta.
+
+**Qué necesito que decidas**
+1. ¿Los avisos calculados (avance, hitos que vencen, proponer el Acuerdo) deberían ir también en el correo diario?
+2. ¿Te valen el 25 y el 10 como días del avance?
+
+**Estado** · unitarias 303; acceso 275, dos veces; interfaz 448 y 4 saltadas, dos veces. Sin desplegar. La migración nueva es `20261121100000_sesiones_aprobadas`.
+
+**Siguiente** · La guía de cada rol.
+
+---
+
 ## 2026-11-20 · Sesiones con acta y horas que confirma ella · commit ec86d46
 **Qué cambió**
 - Pestaña «Sesiones» en cada compañía, igual para IWL y para ella.
