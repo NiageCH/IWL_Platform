@@ -9,6 +9,44 @@ como es**.
 
 ---
 
+## 2026-11-20 · Sesiones con acta y horas que confirma ella · commit ec86d46
+**Qué cambió**
+- Pestaña «Sesiones» en cada compañía, igual para IWL y para ella.
+- Quien acompaña la compañía registra:
+  - una sesión: fecha, duración, modalidad, quién estuvo de su lado, materia, pilar, acta, acuerdos y las horas de cada persona de IWL con su perfil;
+  - o un trabajo fuera de sesión, que pide un entregable.
+- Cada acuerdo pasa a tarea o se enlaza a un hito con un clic. Los adjuntos van con `<Evidencia>`.
+- El circuito:
+  - al registrar, a ella le llega un correo y un aviso en el nuevo bloque «Te toca» de su inicio;
+  - ella confirma, con comentario opcional, o dice «No cuadra», con comentario obligatorio, y avisa a quien la registró;
+  - quien la registró corrige con motivo, y queda la cifra de antes, o mantiene las horas;
+  - cualquiera de los dos la lleva a dirección, que decide y cierra;
+  - a los 7 días sin respuesta se confirma por plazo, desde el cron diario.
+- Nada se borra: se anula con motivo, y cada paso queda en la historia. La base lo impide también con la clave de servicio.
+- El compromiso del Anexo se mide solo con lo confirmado. Aportación y los informes separan confirmadas, por confirmar y en discusión, y lo anulado no cuenta en ningún sitio.
+- Las horas de antes pasan a «Confirmada (antes del 13 nov)», cada línea en su sesión. Sus objeciones pasan al hilo.
+- Se quita el registro rápido de horas sueltas de Aportación, que ahora lleva a Sesiones.
+
+**Qué decidí yo**
+- La tabla es `work_sessions` y la columna `work_session_id`, porque `contribution_hours.session_id` ya apunta al due diligence técnico.
+- El aviso «por confirmar» va a cada fundadora con cuenta, y confirma cualquiera de ellas.
+- Horas insertadas sin sesión de usuario (semilla, scripts) se envuelven en una sesión «confirmada previa»; con sesión de usuario se rechazan.
+- El correo a ella sale solo al registrar, no en cada paso del hilo. Los demás pasos van por aviso.
+- El entregable de un trabajo es un enlace al registrar; los ficheros se añaden después con Evidencia.
+- Editar el acta mientras está abierta no deja rastro en la historia; los acuerdos sí.
+- La semilla no trae sesiones de demostración: solo las que salen de las horas que ya tenía.
+
+**Qué necesito que decidas**
+1. ¿El correo debería salir también cuando la sesión vuelve a ella tras una corrección?
+2. ¿Quieres que las ediciones del acta queden en la historia?
+3. Siguen abiertas las dos del 19 nov: el aviso «Proponerle el Acuerdo» y revisar «Lo que le toca a ella».
+
+**Estado** · unitarias 293; acceso 272, dos veces; interfaz 444 y 4 saltadas, dos veces. Sin desplegar. La migración nueva es `20261120100000_sesiones_y_horas`.
+
+**Siguiente** · La guía de cada rol, «Qué te toca».
+
+---
+
 ## 2026-11-19 · Los avisos que faltaban, y lo que le toca a ella · commit 6ea0f75
 **Qué cambió**
 - Avisos nuevos, que se abren y se cierran solos:
