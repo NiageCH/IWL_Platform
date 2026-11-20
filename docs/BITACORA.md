@@ -9,6 +9,33 @@ como es**.
 
 ---
 
+## 2026-11-21 · La guía de cada rol · commit 54504be
+**Qué cambió**
+- Siete guías, en `contenido/guia/`: dirección, equipo, mentor, Ingeniería Niage, fundadora, acceso de lectura y candidatura.
+- Cada una lleva qué es la plataforma, tu papel, de qué dependes y quién depende de ti, y los pasos de cada tarea habitual, con el nombre exacto de los botones.
+- «Guía» en el menú para todos los roles, en `/guia`.
+- La primera vez que alguien llega a su inicio, se le abre sola, con «Ir a lo mío». Al verla queda apuntado (`profiles.guia_vista_at`).
+- Pruebas: un fichero por rol, los cuatro apartados en cada uno y los enlaces internos a páginas que existen. También la primera entrada, de punta a punta.
+
+**Qué decidí yo**
+- Los botones se comprobaron contra el código. Tres pasos estaban mal en el primer borrador y se corrigieron: entregar un hito (primero **Entregar**, la evidencia va dentro), revisar un hito (el enlace es **Revisar**) y el aviso de firmar el Acuerdo (**Firmar**).
+- Se abre al llegar a `/` sin destino. Quien entra por el enlace de un aviso va a lo suyo, y la guía le espera a la siguiente entrada.
+- La gente que ya tiene cuenta también la verá una vez: la migración no marca a nadie.
+- `/guia` es de primer nivel, como «Mi cuenta», con la barra superior, para que valga igual para todos los roles, la candidata incluida.
+- El Markdown se lee con un lector propio y corto, sin librería nueva.
+- «Qué te toca» arriba en cada inicio (punto 1 del encargo) no se toca aquí. La fundadora ya lo tiene en «Te toca»; mentor y dirección, en los avisos de la Cartera. Se unifica en «Por hacer», que es lo siguiente.
+- Las pruebas que no prueban la guía la dan por vista antes de entrar, también las que entran por el formulario.
+
+**Qué necesito que decidas**
+1. Revisad los siete textos de `contenido/guia/` antes del despliegue, como quedó dicho.
+2. ¿La guía se tiene que abrir también cuando alguien entra por primera vez desde el enlace de un aviso, o así vale?
+
+**Estado** · unitarias 308; acceso 276, dos veces; interfaz 452 y 4 saltadas, dos veces seguidas. Una pasada anterior tuvo un fallo en Safari, en `embudo.spec.ts`: «Firmar y crear la compañía» tardó más de 15 s, ajeno a este cambio. Sin desplegar. Migración nueva: `20261121110000_guia_vista`.
+
+**Siguiente** · El menú lateral, empezando por «Por hacer».
+
+---
+
 ## 2026-11-21 · Sesiones aprobadas: versiones del acta, correos de vuelta y lo que le toca a ella · commit 06f8e66
 **Qué cambió**
 - Correo a ella cuando la sesión vuelve a sus manos (corregida, mantenida, o con el acta confirmada y las horas cambiadas) y cuando dirección la cierra. Lleva la cifra de antes, la nueva, el motivo y «Revisar».
