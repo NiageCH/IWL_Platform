@@ -9,6 +9,44 @@ como es**.
 
 ---
 
+## 2026-11-21 · La guía revisada, y lo calculado en el resumen diario · commit 7750d12
+
+**Qué cambió**
+- Las correcciones de la revisión en la guía:
+  - sin rayas;
+  - `fundadora.md`: «desde que firmáis el NDA», IWL ve «lo mismo que tú, más sus notas de trabajo», «Decir tu situación societaria» como primer «Cómo se hace» y «Tu equipo IWL» en «Tu papel»;
+  - `candidata.md`: fuera los documentos; dentro comentar el NDA antes de firmarlo y elegir si firma como persona física o en nombre de una sociedad;
+  - `equipo.md`: el due diligence de entrada, solo en Aceleración.
+- La primera entrada por un aviso enseña arriba «¿Es tu primera vez? Tu guía te explica cómo funciona · Abrir la guía», con «Cerrar». Sale en la consola de IWL, en Mi compañía y en la candidatura, mientras la guía no esté vista.
+- El resumen diario cuenta lo calculado solo el día que aparece y el día que pasa a vencido:
+  - a dirección, decidir la incorporación y proponer el Acuerdo;
+  - al mentor principal, el hito vencido;
+  - a ella, el avance del mes y los hitos que vencen.
+
+  Lo ya contado queda en `digest_computed_notices`, que solo toca el cron. El correo separa «Tienes N avisos abiertos» de «Desde ayer».
+- Las fundadoras reciben el resumen. Ella y los mentores tienen la preferencia en Mi cuenta.
+
+**Qué decidí yo**
+- Cerrar la línea cuenta como guía vista: después, entrar por `/` ya no la lleva a la guía. Pediste que la línea no volviera a salir. Que además la mandara a la guía la vez siguiente me pareció insistir.
+- «Aparece hoy» no se calcula con fechas: sale lo que todavía no se le contó. No depende de que el cron corra todos los días. El primer día tras desplegar saldrán una vez todos los calculados que ya estén abiertos.
+- Un calculado solo se anota como contado si el correo salió; si falla, se repite al día siguiente.
+- Decidir la incorporación pasa a «vencido» cuando pasa el tope de entrada, así que sale una segunda vez ese día.
+- La revisión en comité y el alta detenida, que también se calculan, no van al resumen. Las ve dirección en su inicio.
+- Los mentores recibían el resumen sin poder quitarlo: ahora tienen la preferencia.
+
+**Qué necesito que decidas**
+1. ¿Te vale que cerrar la línea dé la guía por vista?
+
+**Estado**
+- Unit 311, RLS 278 ×2, e2e 454 ×2 (4 saltadas), sin fallos.
+- Migración nueva: `20261121120000_resumen_calculados`. Con ella, las pendientes de desplegar son nueve.
+- **Para no olvidarlo**: al hacer el menú lateral («Mis proyectos»), cambiar en `mentor.md` «Tu inicio es la Cartera». Al hacer el asistente de la hoja de ruta, cambiar «Planificar la hoja de ruta».
+
+**Siguiente**
+El despliegue, que haces tú. Luego, el menú lateral, empezando por «Por hacer».
+
+---
+
 ## 2026-11-21 · La guía de cada rol · commit 54504be
 **Qué cambió**
 - Siete guías, en `contenido/guia/`: dirección, equipo, mentor, Ingeniería Niage, fundadora, acceso de lectura y candidatura.
