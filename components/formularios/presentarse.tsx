@@ -4,6 +4,7 @@ import { useState } from "react";
 import { aceptarNda } from "@/lib/acciones/presentarse";
 import { Boton, Campo, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 import { TextoNda } from "@/components/vistas/texto-nda";
+import { CORREO_DUDAS_NDA } from "@/lib/contacto";
 import { camposQuePide, completarNda, huecos, type CampoDeElla } from "@/lib/nda-texto";
 
 const CAMPOS: Record<CampoDeElla, { etiqueta: string; ayuda?: string; autoComplete?: string }> = {
@@ -158,6 +159,13 @@ export function FormularioPresentarse({
             </div>
           </div>
 
+          <p className="text-sm text-cuerpo">
+            ¿Alguna duda sobre el NDA? Escríbenos a{" "}
+            <a href={`mailto:${CORREO_DUDAS_NDA}`} className="enlace text-acento-texto">
+              {CORREO_DUDAS_NDA}
+            </a>{" "}
+            antes de aceptarlo.
+          </p>
           <label className="flex items-start gap-3 text-sm text-titular">
             <input type="checkbox" name="acepto" value="si" required className="mt-1 size-4" />
             <span>

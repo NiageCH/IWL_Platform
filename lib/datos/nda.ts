@@ -1,5 +1,4 @@
 import { problemaParaEnviar } from "@/lib/nda-texto";
-import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
 /**
@@ -51,37 +50,6 @@ export async function leerPlantillaDe(candidaturaId: string): Promise<PlantillaN
   return data;
 }
 
-export interface ComentarioNda {
-  id: string;
-  texto: string;
-  created_at: string;
-  version: number | null;
-  respuesta: string | null;
-  respondido_at: string | null;
-  respondidoPor: string | null;
-}
-
-export async function leerComentariosNda(candidaturaId: string): Promise<ComentarioNda[]> {
-  const supabase = await clienteServidor();
-  const { data } = await supabase
-    .from("nda_comentarios")
-    .select("id, texto, created_at, respuesta, respondido_at, nda_plantillas(version), profiles!nda_comentarios_respondido_por_fkey(full_name, last_name)")
-    .eq("candidatura_id", candidaturaId)
-    .order("created_at");
-  return (data ?? []).map((c) => ({
-    id: c.id,
-    texto: c.texto,
-    created_at: c.created_at,
-    version: (c.nda_plantillas as unknown as { version: number } | null)?.version ?? null,
-    respuesta: c.respuesta,
-    respondido_at: c.respondido_at,
-    respondidoPor: (() => {
-      const p = c.profiles as unknown as { full_name: string | null; last_name: string | null } | null;
-      return p ? nombreCompleto(p.full_name, p.last_name) || null : null;
-    })(),
-  }));
-}
-
 export interface BaseNda {
   startup: string;
   contraparte_nombre: string;
@@ -91,17 +59,16 @@ export interface BaseNda {
 
 export async function leerNda(candidaturaId: string) {
   const supabase = await clienteServidor();
-  const [{ data: estado }, plantilla, { data: firma }, comentarios, { data: base }] = await Promise.all([
+  const [{ data: estado }, plantilla, { data: firma }, { data: base }] = await Promise.all([
     supabase.rpc("estado_nda", { p_candidatura: candidaturaId }),
     leerPlantillaDe(candidaturaId),
     supabase
       .from("nda_firmas")
       .select(
-        "firmante_nombre, firmado_at, contrafirmante_nombre, contrafirmado_at, texto_version, texto_hash, externo, evidencia_url, documento_id",
+        "modo, firmante_nombre, firmado_at, contrafirmante_nombre, contrafirmado_at, texto_version, texto_hash, externo, evidencia_url, documento_id",
       )
       .eq("candidatura_id", candidaturaId)
       .maybeSingle(),
-    leerComentariosNda(candidaturaId),
     // Lo que completa el texto sin que lo rellene ella, para la vista previa
     supabase.rpc("datos_nda", { p_candidatura: candidaturaId }).maybeSingle(),
   ]);
@@ -110,7 +77,6 @@ export async function leerNda(candidaturaId: string) {
     estado: (estado ?? "no_aplica") as EstadoNda,
     plantilla,
     firma,
-    comentarios,
     base: (base as BaseNda | null) ?? null,
     /** Por qué no se puede enviar: sin plantilla, o con huecos. Nulo si se puede */
     problema: plantilla ? problemaParaEnviar(plantilla.texto) : "Falta cargar la plantilla del NDA.",

@@ -58,6 +58,8 @@ async function aceptarNda(page: Page, startup: string, correo: string) {
   await page.locator('input[name="domicilio"]').fill("Calle de Prueba 1, Málaga");
   // El texto se completa mientras escribe: lo que lee es lo que acepta
   await expect(page.getByRole("region", { name: /Texto del NDA/ }).or(page.getByLabel(/Texto del NDA/))).toContainText(startup);
+  // Dudas, antes de aceptarlo: el NDA no se comenta en la plataforma
+  await expect(page.getByRole("link", { name: "iwl@inceptionwlab.es" })).toHaveAttribute("href", "mailto:iwl@inceptionwlab.es");
   await page.getByLabel("He leído el NDA y lo acepto.").check();
   await page.getByRole("button", { name: "Aceptar el NDA y seguir" }).click();
   await expect(page).toHaveURL(/\/candidatura\/[A-Za-z0-9_-]+$/, { timeout: 15_000 });
@@ -230,7 +232,13 @@ test("un sector de fuera va a revisión manual, y el equipo la decide", async ({
       await expect(page.locator('[data-filtro="revision_manual"]')).toBeVisible({ timeout: 15_000 });
 
       const [c] = await consultar<{ id: string }>("candidaturas", { contacto_email: `eq.${correo}` }, "id");
-      await entrarComo(page, USUARIOS.equipoIwl, `/embudo/${c.id}`);
+      // En la lista del embudo, lo que escribió en «¿Cuál?» y que espera revisión
+      await entrarComo(page, USUARIOS.equipoIwl, "/embudo");
+      const fila = page.locator("li").filter({ hasText: startup });
+      await expect(fila.getByText("Otro: FinTech")).toBeAttached();
+      await expect(fila.getByText("Revisión manual")).toBeVisible();
+
+      await page.goto(`/embudo/${c.id}`);
       const filtro = page.locator("#filtro");
       await expect(filtro.getByText("Otro: FinTech")).toBeVisible();
       await filtro.getByText("Decidir la revisión manual").click();

@@ -148,7 +148,7 @@ describe("se cierran solos", () => {
     const id = await candidatura("nda");
     await servicio.from("avisos").insert([
       { tipo: "nda_firmado", candidatura_id: id },
-      { tipo: "nda_comentario", candidatura_id: id },
+      { tipo: "acta_por_firmar", candidatura_id: id },
     ]);
     expect(await abiertos({ candidatura_id: id })).toHaveLength(2);
 

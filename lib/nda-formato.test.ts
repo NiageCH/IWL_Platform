@@ -169,3 +169,12 @@ describe("una plantilla sin marcas no se guarda como si las tuviera", () => {
     expect(interpretarNda(completarNda(windows, PERSONA))).toEqual(interpretarNda(completarNda(PLANTILLA, PERSONA)));
   });
 });
+
+describe("una plantilla sin bloques de firma (REVISION, 22 nov)", () => {
+  it("vale: el NDA se acepta con la casilla y la aceptación va en el registro del PDF", () => {
+    const texto = "# Acuerdo de confidencialidad\n\n## 01 Objeto\n\nTexto.\n\n### ACEPTACIÓN\n\nLo acepta con la casilla electrónica.";
+    expect(faltanMarcas(texto)).toBeNull();
+    expect(erroresFormato(texto)).toEqual([]);
+    expect(interpretarNda(texto).some((p) => p.tipo === "firmas")).toBe(false);
+  });
+});

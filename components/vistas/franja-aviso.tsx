@@ -54,7 +54,6 @@ const QUIEN: Record<QuienMueve | "mentor", string> = {
 /** Quién mueve el paso de después, en los que no salen de `pasoEntrada` */
 const QUIEN_DESPUES: Partial<Record<TipoAviso, QuienMueve | "mentor">> = {
   nda_firmado: "ella",
-  nda_comentario: "ella",
   reunion_contrapropuesta: "iwl",
   reunion_caducada: "ella",
   reunion_anotar: "iwl",

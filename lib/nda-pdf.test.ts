@@ -118,6 +118,22 @@ describe("el NDA aceptado con la casilla (REVISION, 22 nov)", () => {
     expect(rastro).toContain("Fecha de efecto, la de la aceptación: 09/11/2026");
   });
 
+  it("dice el documento de quien acepta, y por qué sociedad si es el caso", () => {
+    const conDocumento = lineasRastro({ ...ACEPTADO, identidad: { documento: "00000000T", sociedad: "Prueba SL", nif: "B00000000" } }).join("\n");
+    expect(conDocumento).toContain("Documento de identidad: 00000000T");
+    expect(conDocumento).toContain("En nombre de: Prueba SL (NIF B00000000)");
+  });
+
+  it("vale con una plantilla sin bloques de firma: la aceptación va en el registro", async () => {
+    const sinFirmas = {
+      ...ACEPTADO,
+      texto: "# Acuerdo de confidencialidad\n\n## 01 Objeto\n\nTexto de prueba.\n\n### ACEPTACIÓN\n\nLo acepta con la casilla electrónica.",
+    };
+    const pdf = await PDFDocument.load(await generarPdfNda(sinFirmas));
+    expect(pdf.getPageCount()).toBeGreaterThan(0);
+    expect(lineasRastro(sinFirmas).join("\n")).toContain("Aceptación de la candidata, con casilla electrónica");
+  });
+
   it("y se genera", async () => {
     const pdf = await PDFDocument.load(await generarPdfNda(ACEPTADO));
     expect(pdf.getPageCount()).toBeGreaterThan(0);

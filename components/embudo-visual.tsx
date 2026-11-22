@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
+import type { Filtro } from "@/lib/candidatura-nueva";
+import { EstadoFiltro } from "@/components/vistas/filtro";
 
 /**
  * El recorrido del embudo, como un embudo.
@@ -81,6 +83,7 @@ export function FilaCandidatura({
   paso,
   tono,
   demo = false,
+  filtro = null,
   children,
 }: {
   id: string;
@@ -90,6 +93,8 @@ export function FilaCandidatura({
   tono: string;
   /** De demostración: se ve, pero no cuenta */
   demo?: boolean;
+  /** Si el filtro no la ha dejado pasar todavía, en qué quedó (REVISION, 22 nov) */
+  filtro?: Filtro | null;
   /** El chip con las iniciales o el logo */
   children: React.ReactNode;
 }) {
@@ -106,7 +111,7 @@ export function FilaCandidatura({
       <span className="hidden shrink-0 truncate text-xs text-metadato sm:block sm:max-w-[10rem]">
         {sector ?? "Sin sector"}
       </span>
-      <span className={cn("pastilla shrink-0", tono)}>{paso}</span>
+      {filtro ? <EstadoFiltro filtro={filtro} /> : <span className={cn("pastilla shrink-0", tono)}>{paso}</span>}
       <span aria-hidden="true" className="flecha cifra shrink-0 text-acento-texto">
         →
       </span>

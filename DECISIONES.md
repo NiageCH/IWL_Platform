@@ -2019,3 +2019,10 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **El alta paso a paso tiene el orden nuevo** cuando el NDA se aceptó con la casilla: NDA, comité, cuenta, primer acceso, contraseña, due diligence y Acuerdo.
 - **`<Formulario>` repone, tras un error, cada campo repetido con su valor.** Antes, varias filas con el mismo nombre (los socios) se quedaban todas con el último valor escrito.
 
+## 2026-11-22 · El filtro mira el sector al final; el NDA sin firmas ni comentarios
+
+- **«Otro» no se salta las demás reglas** (REVISION, 22 nov). El filtro mira primero el capital, después el estadio con su prueba o su recomendación, y solo al final el sector: con todo lo demás bien, un sector de fuera va a revisión manual. Antes salía en revisión manual nada más ver «Otro», y una idea sin recomendación o un MVP sin prueba quedaban en revisión cuando no tenían que pasar.
+- **Una idea confirmada sigue el resto del filtro.** Si su sector es «Otro», va a revisión manual, no a «pasa».
+- **Una plantilla del NDA sin bloques `::: firma` es válida**; nunca se exigieron. Con la casilla, el PDF lleva en el registro de la aceptación el nombre, el documento (y la sociedad, si acepta por una), la fecha y la hora, la versión y el hash. Una plantilla que sí los tenga, como la versión 6, se sigue pintando igual.
+- **Fuera los comentarios del NDA.** Con la casilla, el NDA es estándar y no se negocia. Encima de la casilla, una línea con el correo para dudas (`CORREO_DUDAS_NDA`). Se van la tabla `nda_comentarios`, sus disparadores, el aviso `nda_comentario`, la respuesta y la «versión propia» de una candidatura, que nacía de responder a un comentario. Las versiones propias que haya se quedan, porque una firma apunta a la suya.
+

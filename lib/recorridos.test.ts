@@ -37,7 +37,6 @@ const BASE: DatosAviso = {
 
 const QUE_SIGUEN: TipoAviso[] = [
   "nda_firmado",
-  "nda_comentario",
   "situacion_dicha",
   "anexo_comentario",
   "cambio_estadio",

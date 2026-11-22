@@ -12,3 +12,9 @@
  */
 export const CORREO_CONTACTO =
   process.env.NEXT_PUBLIC_CORREO_CONTACTO ?? "hola@inceptionwomanlab.es";
+
+/**
+ * A quien escribe con una duda sobre el NDA antes de aceptarlo (REVISION,
+ * 22 nov): el NDA es estándar y no se comenta en la plataforma.
+ */
+export const CORREO_DUDAS_NDA = "iwl@inceptionwlab.es";

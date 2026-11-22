@@ -248,3 +248,72 @@ describe("enviar la candidatura y el filtro", () => {
     expect(Object.keys(data![0]).sort()).toEqual(["id", "nombre"]);
   });
 });
+
+/**
+ * «Otro» no se salta las demás reglas (REVISION, 22 nov). Primero el
+ * capital, el estadio y la prueba o la recomendación; solo con todo eso
+ * bien, un sector de fuera va a revisión manual. Las dos primeras se miran
+ * en la función pura, por SQL directo: enviar ya pide la prueba y la
+ * recomendación antes de llegar al filtro.
+ */
+describe("«Otro» no se salta las demás reglas", () => {
+  async function filtro(estadio: string, prueba: boolean, recomendada: boolean) {
+    const { default: postgres } = await import("postgres");
+    const sql = postgres(process.env.SUPABASE_DB_URL || "postgresql://postgres:postgres@127.0.0.1:54322/postgres", {
+      max: 1,
+      onnotice: () => {},
+    });
+    try {
+      const [fila] = await sql`
+        select filtro from app.filtro_candidatura(
+          'Otro', ${estadio}::estado_entrada, '[{"nombre":"Ana","pct":100,"mujer":true}]'::jsonb,
+          ${prueba ? "00000000-0000-0000-0000-000000000001" : null}::uuid,
+          ${recomendada ? "00000000-0000-0000-0000-000000000002" : null}::uuid)`;
+      return fila.filtro as string;
+    } finally {
+      await sql.end();
+    }
+  }
+
+  it("una idea de «Otro» sin recomendación no pasa", async () => {
+    expect(await filtro("idea", false, false)).toBe("no_pasa");
+  });
+
+  it("un MVP de «Otro» sin prueba no pasa", async () => {
+    expect(await filtro("mvp_sin_piloto", false, false)).toBe("no_pasa");
+    expect(await filtro("mvp_sin_piloto", true, false)).toBe("revision_manual");
+  });
+
+  it("una idea de «Otro» espera la recomendación, y confirmada va a revisión manual, no a «pasa»", async () => {
+    const { data: equipoPerfil } = await servicio.from("profiles").select("id").eq("email", USUARIOS.equipoIwl).single();
+    const { data } = await aceptar(`rls.idea.otro.${SELLO}@ejemplo.test`);
+    const { data: r } = await enviar(data!.token, {
+      p_estadio: "idea",
+      p_sector: "Otro",
+      p_sector_otro: "FinTech",
+      p_recomendada: equipoPerfil!.id,
+    });
+    expect(r!.filtro).toBe("espera_recomendacion");
+
+    const equipo = await entrarComo(USUARIOS.equipoIwl);
+    const { data: tras, error } = await equipo.rpc("responder_recomendacion", {
+      p_candidatura: data!.candidatura_id,
+      p_confirma: true,
+    });
+    expect(error).toBeNull();
+    expect(tras).toBe("revision_manual");
+    const { data: c } = await servicio
+      .from("candidaturas")
+      .select("filtro, recomendacion")
+      .eq("id", data!.candidatura_id)
+      .single();
+    expect(c).toEqual({ filtro: "revision_manual", recomendacion: "confirmada" });
+    // Y llega a IWL para revisarla a mano
+    const { data: avisos } = await servicio
+      .from("avisos")
+      .select("tipo")
+      .eq("candidatura_id", data!.candidatura_id)
+      .is("cerrado_at", null);
+    expect(avisos!.map((a) => a.tipo)).toEqual(["candidatura_nueva"]);
+  });
+});

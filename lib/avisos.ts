@@ -20,7 +20,6 @@ import { fecha } from "@/lib/utils";
 
 export type TipoAviso =
   | "nda_firmado"
-  | "nda_comentario"
   | "situacion_dicha"
   | "anexo_comentario"
   | "cambio_estadio"
@@ -135,16 +134,6 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         href: embudo("nda"),
         ancla: "nda",
         hasVenidoA: `contrafirmar el NDA de ${sitio}`,
-      };
-    case "nda_comentario":
-      return {
-        ...base,
-        paso: `${quien} comentó el NDA el ${dia(a.created_at)}`,
-        toca: "Responderle",
-        verbo: "Responder",
-        href: embudo("nda"),
-        ancla: "nda",
-        hasVenidoA: `responder al comentario de ${quien} sobre el NDA`,
       };
     case "situacion_dicha":
       return {

@@ -7,8 +7,7 @@ import {
   RegenerarPdfNda,
   RegistrarNdaExterno,
 } from "@/components/formularios/nda-iwl";
-import { NdaPropio, ResponderComentarioNda } from "@/components/formularios/comentar-nda";
-import type { ComentarioNda, EstadoNda } from "@/lib/datos/nda";
+import type { EstadoNda } from "@/lib/datos/nda";
 import type { EstadoVisual } from "@/lib/estados";
 import { fecha } from "@/lib/utils";
 
@@ -26,48 +25,6 @@ const ESTADO: Record<EstadoNda, { visual: EstadoVisual; rotulo: string }> = {
  * dirección puede hacer en cada uno. Contrafirmar y registrar uno de fuera
  * son de dirección; la base lo vuelve a comprobar.
  */
-/**
- * Lo que ella ha comentado del NDA y lo que se le ha respondido. Lo ven
- * las dos partes; responder es de IWL, y solo se le pasa a esa pantalla.
- */
-export function ComentariosNda({
-  comentarios,
-  candidaturaId,
-  responder = false,
-}: {
-  comentarios: ComentarioNda[];
-  candidaturaId: string;
-  responder?: boolean;
-}) {
-  if (!comentarios.length) return null;
-  return (
-    <ul className="flex flex-col gap-3">
-      {comentarios.map((c) => (
-        <li key={c.id} className="flex flex-col gap-1.5 rounded-lg border border-filete px-4 py-3 text-sm">
-          <p className="text-xs text-metadato">
-            Comentario del {fecha(c.created_at)}
-            {c.version ? ` · sobre la versión ${c.version}` : ""}
-          </p>
-          <p className="whitespace-pre-wrap text-titular [overflow-wrap:anywhere]">{c.texto}</p>
-          {c.respuesta ? (
-            <div className="border-l-2 border-filete pl-3">
-              <p className="text-xs text-metadato">
-                Respuesta de {c.respondidoPor ?? "Inception Woman Lab"}
-                {c.respondido_at ? ` el ${fecha(c.respondido_at)}` : ""}
-              </p>
-              <p className="whitespace-pre-wrap text-secundario [overflow-wrap:anywhere]">{c.respuesta}</p>
-            </div>
-          ) : responder ? (
-            <ResponderComentarioNda id={c.id} candidaturaId={candidaturaId} />
-          ) : (
-            <p className="text-xs text-metadato">Sin responder todavía</p>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function BloqueNda({
   candidaturaId,
   nda,
@@ -80,8 +37,9 @@ export function BloqueNda({
     /** Por qué no se puede enviar, con el mismo texto que Programa */
     problema: string | null;
     plantilla: { version: number; texto: string; candidatura_id: string | null } | null;
-    comentarios: ComentarioNda[];
     firma: {
+      /** Firma: el de antes del 22 nov. Casilla: aceptado al presentarse */
+      modo?: string | null;
       firmante_nombre: string | null;
       firmado_at: string | null;
       contrafirmante_nombre: string | null;
@@ -96,9 +54,9 @@ export function BloqueNda({
   /** Quien mira no tiene apellidos en su perfil: no puede firmar por IWL */
   sinApellidos?: boolean;
 }) {
-  const { estado, firma, plantilla, comentarios, problema } = nda;
-  const abierto = estado === "por_firmar" || estado === "esperando_iwl";
-  const e = ESTADO[estado];
+  const { estado, firma, plantilla, problema } = nda;
+  const casilla = firma?.modo === "casilla";
+  const e = casilla ? { visual: "hecho" as const, rotulo: "Aceptado" } : ESTADO[estado];
 
   return (
     <Bloque id="nda" className="scroll-mt-48">
@@ -124,13 +82,17 @@ export function BloqueNda({
           <p>
             Lo verá nada más entrar, en la versión {plantilla?.version}
             {plantilla?.candidatura_id ? ", que es solo suya" : ""}, encima de
-            su candidatura. Puede comentarlo antes de firmar.
+            su candidatura.
           </p>
         ) : null}
-        <ComentariosNda comentarios={comentarios} candidaturaId={candidaturaId} responder={abierto} />
         {firma?.firmado_at ? (
           <p>
-            {firma.externo ? "Firmado fuera de la plataforma" : `Firmado por ${firma.firmante_nombre}`} el{" "}
+            {firma.externo
+              ? "Firmado fuera de la plataforma"
+              : casilla
+                ? `Aceptado con la casilla por ${firma.firmante_nombre}, al presentarse,`
+                : `Firmado por ${firma.firmante_nombre}`}{" "}
+            el{" "}
             {fecha(firma.firmado_at)}
             {firma.texto_version ? <Metadato> · versión {firma.texto_version}</Metadato> : null}
           </p>
@@ -151,13 +113,6 @@ export function BloqueNda({
           ) : null}
         </div>
       </div>
-      {esDireccion && abierto && plantilla ? (
-        <NdaPropio
-          candidaturaId={candidaturaId}
-          texto={plantilla.texto}
-          firmadoPorElla={estado === "esperando_iwl"}
-        />
-      ) : null}
       {esDireccion && estado !== "firmado" && estado !== "no_aplica" ? (
         <RegistrarNdaExterno candidaturaId={candidaturaId} />
       ) : null}

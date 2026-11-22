@@ -217,6 +217,14 @@ async function guardarPdfAceptado(candidaturaId: string): Promise<void> {
       navegador: firma.firmado_ua,
     },
     iwl: null,
+    identidad: (() => {
+      const datos = (firma.datos ?? {}) as { documento?: string; denominacion?: string; nif?: string; es_sociedad?: boolean };
+      return {
+        documento: datos.documento || null,
+        sociedad: datos.es_sociedad ? datos.denominacion || null : null,
+        nif: datos.es_sociedad ? datos.nif || null : null,
+      };
+    })(),
     generado: new Date().toISOString(),
   });
   const ruta = `${candidaturaId}/${Date.now()}-NDA-aceptado.pdf`;

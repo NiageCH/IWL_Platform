@@ -11,8 +11,6 @@ import { SalaDeDatosCandidata } from "@/components/formularios/sala-candidata";
 import { FirmarNdaCandidata } from "@/components/formularios/firmar-nda";
 import { leerNda } from "@/lib/datos/nda";
 import { AbrirNda } from "@/components/formularios/abrir-nda";
-import { ComentarNda } from "@/components/formularios/comentar-nda";
-import { ComentariosNda } from "@/components/vistas/nda";
 import { TarjetaReunion } from "@/components/vistas/reunion-candidata";
 import { leerReunionDeElla } from "@/lib/datos/reuniones";
 
@@ -86,10 +84,6 @@ export default async function MiCandidatura() {
                   texto={nda.plantilla.texto}
                   base={nda.base}
                 />
-                <div className="mt-8 flex flex-col gap-4 border-t border-filete pt-6">
-                  <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
-                  <ComentarNda />
-                </div>
               </>
             ) : (
               <p className="text-sm text-secundario">
@@ -120,8 +114,6 @@ export default async function MiCandidatura() {
               Has firmado el NDA. Falta la firma de Inception Woman Lab; en
               cuanto firme, al entrar irás a tu compañía en la plataforma.
             </p>
-            <ComentariosNda comentarios={nda.comentarios} candidaturaId={vista.id} />
-            <ComentarNda firmadoPorElla />
           </div>
         ) : null}
         {nda.estado === "firmado" && vista.puede_subir && entregados === 0 ? (

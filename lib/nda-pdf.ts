@@ -33,6 +33,11 @@ export interface DatosNda {
    * primer paso desde el 22 nov: una sola aceptación, la de ella.
    */
   iwl?: FirmaNda | null;
+  /**
+   * Lo que identifica a quien acepta con la casilla, para el registro: su
+   * documento y, si acepta por una sociedad, cuál (REVISION, 22 nov).
+   */
+  identidad?: { documento?: string | null; sociedad?: string | null; nif?: string | null } | null;
   /** ISO, cuándo se genera el documento */
   generado: string;
 }
@@ -78,6 +83,12 @@ function registroAceptado(d: DatosNda): DatoRegistro[] {
       etiqueta: "Fecha de efecto, la de la aceptación",
       valor: `${hora(d.ella.cuando, "Europe/Madrid")} (Madrid)`,
     },
+    ...(d.identidad?.documento
+      ? [{ tipo: "dato" as const, etiqueta: "Documento de identidad", valor: d.identidad.documento }]
+      : []),
+    ...(d.identidad?.sociedad
+      ? [{ tipo: "dato" as const, etiqueta: "En nombre de", valor: d.identidad.nif ? `${d.identidad.sociedad} (NIF ${d.identidad.nif})` : d.identidad.sociedad }]
+      : []),
     { tipo: "firmante", rotulo: "Aceptación de la candidata, con casilla electrónica", firma: d.ella },
     {
       tipo: "dato",

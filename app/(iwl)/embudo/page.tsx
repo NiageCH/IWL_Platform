@@ -188,6 +188,7 @@ export default async function Embudo() {
                 paso={nombrePaso(c.estado ?? "presentada")}
                 tono={tonoPaso(c.estado ?? "presentada")}
                 demo={c.is_demo ?? false}
+                filtro={c.estado === "presentada" && c.filtro && c.filtro !== "pasa" ? c.filtro : null}
               >
                 <ChipCompania nombre={c.nombre ?? ""} />
               </FilaCandidatura>

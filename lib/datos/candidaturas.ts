@@ -19,7 +19,23 @@ export async function leerEmbudo() {
     .select("*")
     .order("updated_at", { ascending: false });
 
-  const filas = candidaturas ?? [];
+  /*
+   * Lo del filtro (REVISION, 22 nov) no está en la vista: el «¿Cuál?» de
+   * un sector de fuera y en qué quedó el filtro, para la lista.
+   */
+  const ids = (candidaturas ?? []).map((c) => c.id!).filter(Boolean);
+  const { data: filtros } = ids.length
+    ? await supabase.from("candidaturas").select("id, sector_otro, filtro").in("id", ids)
+    : { data: [] as { id: string; sector_otro: string | null; filtro: string | null }[] };
+  const deFiltro = new Map((filtros ?? []).map((f) => [f.id, f]));
+  const filas = (candidaturas ?? []).map((c) => {
+    const f = deFiltro.get(c.id!);
+    return {
+      ...c,
+      sector: c.sector === "Otro" && f?.sector_otro ? `Otro: ${f.sector_otro}` : c.sector,
+      filtro: (f?.filtro ?? null) as Filtro | null,
+    };
+  });
 
   /*
    * Las de demostración se ven pero no cuentan, igual que Marea en la
