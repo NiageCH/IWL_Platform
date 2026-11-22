@@ -9,6 +9,34 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modelo nuevo, bloque 7: actas, solo el mentor · commit 35fd6b1
+
+**Qué cambió**
+- El acta de una sesión la levanta, la edita y le corrige las horas **solo un mentor de la compañía**, principal o secundario. Lo impone la base, no solo la pantalla.
+- El equipo de IWL y dirección ya no levantan actas. Dirección sigue decidiendo las sesiones que le llegan.
+- Un **trabajo fuera de sesión** no es un acta: lo apunta quien acompaña a la compañía (Niage, por ejemplo), con su entregable, y solo lo corrige quien lo apuntó.
+- En la pantalla de sesiones, quien no es mentor solo ve «Trabajo fuera de sesión».
+- Las guías de mentor y equipo lo dicen.
+
+**Qué decidí yo**
+- **Uno de los dos mentores puede editar el acta del otro**: «el mentor de la compañía» son los dos.
+- **El equipo de IWL sigue pudiendo apuntar su trabajo fuera de sesión.** No es un acta, y quitárselo dejaría sin registrar las horas de quien trabaja fuera de sesión.
+- **Anular no cambia.** Una sesión abierta la anula quien la registró o quien coordina; una confirmada, dirección. En pantalla, el botón de anular una sesión abierta solo le sale a quien la lleva.
+- No cambia nada de lo que hace ella: comentar, confirmar, los 7 días, las versiones y llevarla a dirección.
+
+**Qué necesito que decidas**
+1. ¿El equipo de IWL puede seguir apuntando trabajo fuera de sesión, o eso también es solo del mentor?
+
+**Estado**
+- Unit 327, RLS 287 ×2, e2e 456 ×2 (4 saltadas), sin fallos.
+- Migración nueva: `20261122140000_actas_solo_mentor`.
+- Nada desplegado.
+
+**Siguiente**
+Bloque 6: equity desde la firma, sin la marca «Devenga equity» en los hitos.
+
+---
+
 ## 2026-11-22 · Modelo nuevo, bloque 4: diagnóstico y due diligence · commit 63cbc46
 
 **Qué cambió**
