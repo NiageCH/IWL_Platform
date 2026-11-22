@@ -65,7 +65,7 @@ async function avisarla(
   evento: Evento,
   datos: Record<string, string | null | undefined>,
   autor?: string | null,
-): Promise<"enviado" | "sin_enviar" | null> {
+): Promise<"enviado" | "sin_enviar" | "retenido" | null> {
   const { data: c } = await clienteServicio()
     .from("candidaturas")
     .select("nombre, contacto_nombre, contacto_email, token, token_anulado_at, profile_id")

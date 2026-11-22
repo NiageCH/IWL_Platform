@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { clienteNavegador } from "@/lib/supabase/navegador";
+import { pedirEnlaceContrasena } from "@/lib/acciones/contrasena";
 import { CampoContrasena } from "@/components/ui/campo-contrasena";
 
 /**
@@ -9,7 +10,8 @@ import { CampoContrasena } from "@/components/ui/campo-contrasena";
  *
  * Con contraseña, que es lo que pone la dirección de IWL al dar de alta a
  * alguien. Quien la ha olvidado pide un enlace para elegir otra
- * (`resetPasswordForEmail`), que aterriza en `/cambiar-contrasena`.
+ * (`pedirEnlaceContrasena`, que respeta el modo pruebas), que aterriza en
+ * `/cambiar-contrasena`.
  *
  * No hay enlace para entrar sin contraseña: lo hubo, y con la recuperación
  * eran dos correos de acceso parecidos para la misma persona (REVISION,
@@ -100,17 +102,10 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
     evento.preventDefault();
     setEstado("enviando");
 
-    const supabase = clienteNavegador();
-    const destino = new URL("/auth/confirmar", window.location.origin);
-    destino.searchParams.set("siguiente", "/cambiar-contrasena?recuperar=1");
-
-    const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), {
-      redirectTo: destino.toString(),
-    });
-
-    if (error && !/not found|signup|not allowed/i.test(error.message)) {
+    const { ok } = await pedirEnlaceContrasena(correo.trim());
+    if (!ok) {
       setEstado("error");
-      setMensaje(traducir(error.message));
+      setMensaje("Escribe un correo válido.");
       return;
     }
 
@@ -126,8 +121,7 @@ export function FormularioEntrada({ siguiente }: { siguiente?: string }) {
           hemos mandado un enlace para elegir tu nueva contraseña.
         </p>
         <p className="mt-2 text-sm text-secundario">
-          Ábrelo desde este mismo navegador. Caduca en una hora y vale para un
-          solo uso. Si no llega en unos minutos, mira en el correo no deseado.
+          Caduca en una hora y vale para un solo uso. Si no llega en unos minutos, mira en el correo no deseado.
         </p>
 
         {esLocal() ? (

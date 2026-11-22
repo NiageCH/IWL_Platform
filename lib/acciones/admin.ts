@@ -1590,7 +1590,11 @@ export async function guardarResumenAvisos(formData: FormData): Promise<Resultad
   if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
 
   const supabase = await clienteServidor();
-  const { error: falloBase } = await supabase.from("profiles").update(datos).eq("id", persona.id);
+  // Elegirlo a mano es lo que cuenta en modo pruebas; el «diario» de serie no
+  const { error: falloBase } = await supabase
+    .from("profiles")
+    .update({ ...datos, resumen_elegido_at: datos.resumen_avisos === "diario" ? new Date().toISOString() : null })
+    .eq("id", persona.id);
   if (falloBase) return traducirError(falloBase);
 
   revalidatePath("/perfil");

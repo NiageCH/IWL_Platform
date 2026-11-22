@@ -3,7 +3,7 @@ import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
 import { lineaAviso } from "@/lib/avisos";
 import { CAMPOS_AVISO, comoAviso, conCuantosCorreos, type FilaAviso } from "@/lib/datos/onboarding";
-import { notificar } from "@/lib/correo";
+import { leerModoPruebas, notificar } from "@/lib/correo";
 import { leerEnEntradaCon, porDecidir, porProponer } from "@/lib/datos/entrada";
 import { leerHitosVencidosDeMisCompanias, leerLoQueLeToca } from "@/lib/datos/le-toca";
 import { nuevosParaResumen } from "@/lib/le-toca";
@@ -33,10 +33,16 @@ interface Calculado {
  */
 export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: number }> {
   const servicio = clienteServicio();
-  const [{ data: personas }, { data: avisos }, { data: fundadoras }, { data: contadas }, enEntrada] = await Promise.all([
+  /*
+   * En modo pruebas, el resumen solo a quien lo eligió a mano en Mi cuenta
+   * (REVISION, 21 nov). El «diario» por defecto no cuenta: así no le llega
+   * al equipo real un resumen de compañías de prueba.
+   */
+  const modo = await leerModoPruebas();
+  const [{ data: todas }, { data: avisos }, { data: fundadoras }, { data: contadas }, enEntrada] = await Promise.all([
     servicio
       .from("profiles")
-      .select("id, email, full_name, role")
+      .select("id, email, full_name, role, resumen_elegido_at")
       .in("role", ["admin_iwl", "equipo_iwl", "mentor", "fundadora"])
       .eq("is_active", true)
       .eq("resumen_avisos", "diario"),
@@ -50,6 +56,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
     leerEnEntradaCon(servicio, { logos: false }),
   ]);
 
+  const personas = (todas ?? []).filter((p) => !modo.activo || p.resumen_elegido_at);
   const enlaceDe = (ruta: string) => `${direccionBase()}${ruta}`;
   const deDireccion: Calculado[] = [
     ...porDecidir(enEntrada).map((d) => ({
@@ -66,7 +73,7 @@ export async function enviarResumenes(): Promise<{ enviados: number; sinEnviar: 
 
   let enviados = 0;
   let sinEnviar = 0;
-  for (const p of personas ?? []) {
+  for (const p of personas) {
     if (!p.email) continue;
     const filas = (avisos ?? []) as unknown as Array<FilaAviso & { para: string | null; para_iwl: boolean }>;
     // Los de todo IWL, a dirección y al equipo; no a los mentores

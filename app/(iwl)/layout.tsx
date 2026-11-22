@@ -3,6 +3,7 @@ import { BarraLateral } from "@/components/barra-lateral";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Marco } from "@/components/marco";
 import { PrimeraVez } from "@/components/vistas/primera-vez";
+import { FranjaModoPruebas } from "@/components/vistas/franja-modo-pruebas";
 import { personaActual } from "@/lib/supabase/servidor";
 
 /*
@@ -31,6 +32,7 @@ export default async function LayoutIwl({ children }: { children: ReactNode }) {
           <div className="md:hidden">
             <BarraSuperior />
           </div>
+          <FranjaModoPruebas rol={persona?.role} />
           <PrimeraVez vista={!persona || Boolean(persona.guia_vista_at)} />
           {children}
         </div>

@@ -3,6 +3,7 @@ import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
 import { escribirCorreo, type DatosCorreo, type Evento } from "@/lib/correo/plantillas";
 import { proveedor } from "@/lib/correo/proveedores";
+import { leerAjusteModoPruebas, seRetiene, type ModoPruebas } from "@/lib/correo/modo-pruebas";
 
 export { NOMBRE_EVENTO, type Evento } from "@/lib/correo/plantillas";
 
@@ -32,8 +33,21 @@ export interface Contexto {
 
 export interface ResultadoCorreo {
   id: string | null;
-  estado: "enviado" | "sin_enviar";
+  /** Retenido: el modo pruebas no lo deja salir a esa dirección */
+  estado: "enviado" | "sin_enviar" | "retenido";
   error?: string;
+}
+
+export const MOTIVO_RETENIDO = "Retenido: modo pruebas";
+
+/** El modo pruebas, como esté ahora. Se lee en cada envío: cambia sin desplegar */
+export async function leerModoPruebas(): Promise<ModoPruebas> {
+  const { data } = await clienteServicio()
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "correo_modo_pruebas")
+    .maybeSingle();
+  return leerAjusteModoPruebas(data?.value);
 }
 
 /**
@@ -41,11 +55,13 @@ export interface ResultadoCorreo {
  * fijar la contraseña. Se genera en cada intento, nuevo.
  */
 async function preparar(evento: Evento, datos: DatosCorreo, para: Destinatario): Promise<DatosCorreo> {
-  if (evento !== "nda_enviado" && evento !== "acceso_dado") return datos;
+  if (evento !== "nda_enviado" && evento !== "acceso_dado" && evento !== "recuperar_contrasena") return datos;
+  // Quien la olvidó ve «Elige tu nueva contraseña»; quien estrena cuenta, la de siempre
+  const siguiente = evento === "recuperar_contrasena" ? "/cambiar-contrasena?recuperar=1" : "/cambiar-contrasena";
   const { data, error } = await clienteServicio().auth.admin.generateLink({
     type: "recovery",
     email: para.correo,
-    options: { redirectTo: `${direccionBase()}/auth/confirmar?siguiente=/cambiar-contrasena` },
+    options: { redirectTo: `${direccionBase()}/auth/confirmar?siguiente=${encodeURIComponent(siguiente)}` },
   });
   if (error || !data.properties?.action_link) {
     throw new Error(`no se ha podido preparar su enlace de acceso: ${error?.message ?? "sin enlace"}`);
@@ -61,6 +77,14 @@ async function entregar(
   intentos: number,
 ): Promise<ResultadoCorreo> {
   const servicio = clienteServicio();
+  /*
+   * Antes que nada, el modo pruebas: un retenido no llega al proveedor, ni
+   * siquiera se le prepara el enlace de acceso, que crearía uno de verdad.
+   */
+  if (seRetiene(para.correo, await leerModoPruebas())) {
+    await servicio.from("correos").update({ estado: "retenido", error: MOTIVO_RETENIDO, intentos }).eq("id", filaId);
+    return { id: filaId, estado: "retenido", error: MOTIVO_RETENIDO };
+  }
   const quien = proveedor();
   if (!quien) {
     const error = "No hay proveedor de correo configurado.";
@@ -125,6 +149,8 @@ export async function reintentar(id: string): Promise<ResultadoCorreo> {
   const { data: fila } = await clienteServicio().from("correos").select("*").eq("id", id).maybeSingle();
   if (!fila) return { id, estado: "sin_enviar", error: "Ese correo ya no está." };
   if (fila.estado === "enviado") return { id, estado: "enviado" };
+  // Uno retenido no sale nunca, ni al quitar el modo pruebas: era de una prueba
+  if (fila.estado === "retenido") return { id, estado: "retenido", error: MOTIVO_RETENIDO };
   return entregar(
     id,
     fila.evento as Evento,

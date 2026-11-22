@@ -4,6 +4,7 @@ import { BarraSuperior } from "@/components/barra-superior";
 import { CambiarContrasena, MisDatos, ResumenAvisos } from "@/components/formularios/perfil";
 import { MiFoto } from "@/components/formularios/foto";
 import { firmarFotos } from "@/lib/datos/logos";
+import { leerModoPruebasPantalla } from "@/lib/datos/modo-pruebas";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 
@@ -24,9 +25,10 @@ export default async function Perfil() {
   if (!persona) redirect("/entrar?siguiente=/perfil");
   const { data: preferencias } = await (await clienteServidor())
     .from("profiles")
-    .select("resumen_avisos, linkedin_url")
+    .select("resumen_avisos, linkedin_url, resumen_elegido_at")
     .eq("id", persona.id)
     .single();
+  const modo = await leerModoPruebasPantalla();
   const foto = persona.photo_path
     ? (await firmarFotos([persona.photo_path])).get(persona.photo_path)
     : null;
@@ -77,6 +79,13 @@ export default async function Perfil() {
               y lo que te toca desde ayer, como un hito que vence o el avance
               del mes. En vez de un correo por aviso.
             </p>
+            {modo.activo && !preferencias?.resumen_elegido_at ? (
+              <p className="border-b border-filete px-4 py-3 text-sm text-cuerpo" data-modo-pruebas-resumen>
+                La plataforma está en modo pruebas: el resumen no le llega a
+                nadie que no lo haya elegido aquí. Si quieres probarlo, elige
+                «Cada mañana» y guarda.
+              </p>
+            ) : null}
             <div className="px-4 py-4">
               <ResumenAvisos actual={(preferencias?.resumen_avisos as "diario" | "nunca") ?? "diario"} />
             </div>

@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 import { borrarCuenta, correosRecibidos, crearCuenta } from "./entrada";
 
 /**
- * «¿Has olvidado tu contraseña?», de punta a punta: el correo de Supabase
- * Auth, en español y con la plantilla de IWL, y el enlace que aterriza en
+ * «¿Has olvidado tu contraseña?», de punta a punta: el correo, que sale por
+ * la plataforma con el texto de la plantilla de IWL, y el enlace que aterriza en
  * «Elige tu nueva contraseña». Con una cuenta recién creada, sin marca de
  * contraseña temporal: la de quien ya entraba y la ha olvidado.
  */
@@ -29,9 +29,20 @@ test("quien olvida su contraseña pide un enlace, elige otra y entra con ella", 
   expect(correo.asunto).toBe("Elige tu nueva contraseña de la plataforma de IWL");
   expect(correo.html).toContain("INCEPTION WOMAN LAB");
   expect(correo.html).toContain("Elegir mi contraseña");
-  const enlace = correo.html.match(/href="([^"]+)"/)![1].replace(/&amp;/g, "&");
+  const enlace = new URL(correo.html.match(/href="([^"]+)"/)![1].replace(/&amp;/g, "&"));
 
-  await page.goto(enlace);
+  /*
+   * El enlace lo compone ahora la plataforma (sale por `notificar`, por el
+   * modo pruebas), así que vuelve a la dirección pública, no al servidor de
+   * las pruebas. Se le cambia el destino conservando a dónde lleva, y el
+   * primer salto se da desde aquí, como en `entrarComo`.
+   */
+  const vuelta = new URL(enlace.searchParams.get("redirect_to")!);
+  expect(vuelta.searchParams.get("siguiente")).toBe("/cambiar-contrasena?recuperar=1");
+  const base = process.env.BASE_URL ?? "http://localhost:3100";
+  enlace.searchParams.set("redirect_to", `${base}${vuelta.pathname}${vuelta.search}`);
+  const salto = await fetch(enlace.toString(), { redirect: "manual" });
+  await page.goto(salto.headers.get("location")!);
   await expect(page.getByRole("heading", { name: "Elige tu nueva contraseña" })).toBeVisible();
   await page.getByLabel("Nueva contraseña", { exact: true }).fill(NUEVA);
   await page.getByLabel("Otra vez", { exact: true }).fill(NUEVA);

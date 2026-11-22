@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
-import { error, ok, validar, type Resultado } from "@/lib/acciones/resultado";
+import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
+import { dominiosDeTexto } from "@/lib/correo/modo-pruebas";
 import { notificar, reintentar } from "@/lib/correo";
 import { fecha } from "@/lib/utils";
 
@@ -130,4 +131,63 @@ export async function reintentarCorreosSinEnviar(): Promise<Resultado> {
   return error(
     `${fallos.length === 1 ? "Uno sigue" : `${fallos.length} siguen`} sin salir: ${[...new Set(fallos)].join("; ")}.`,
   );
+}
+
+/*
+ * El modo pruebas (REVISION, 21 nov). Quién puede tocarlo lo dice la base:
+ * `platform_settings` solo la escribe dirección, y quitarlo solo se puede
+ * con `quitar_modo_pruebas`, que pide la frase y deja quién y cuándo.
+ */
+
+async function leerAjusteCrudo() {
+  const supabase = await clienteServidor();
+  const { data } = await supabase.from("platform_settings").select("value").eq("key", "correo_modo_pruebas").maybeSingle();
+  return { supabase, valor: (data?.value ?? {}) as Record<string, unknown> };
+}
+
+function refrescarModo() {
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
+}
+
+export async function guardarDominiosModoPruebas(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ dominios: z.string() }), formData);
+  if (fallo) return fallo;
+  const dominios = dominiosDeTexto(datos.dominios);
+  if (!dominios.length) return error("Deja al menos un dominio: si no, no saldría ningún correo.", { dominios: "Al menos uno." });
+  const malo = dominios.find((d) => !/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d));
+  if (malo) return error(`«${malo}» no parece un dominio. Escríbelo como niage.es.`, { dominios: "Revisa los dominios." });
+
+  const { supabase, valor } = await leerAjusteCrudo();
+  const { error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: { ...valor, dominios } })
+    .eq("key", "correo_modo_pruebas");
+  if (falloBase) return traducirError(falloBase);
+  refrescarModo();
+  return ok(`Guardado. En modo pruebas, los correos salen solo a ${dominios.map((d) => `@${d}`).join(", ")}.`);
+}
+
+export async function quitarModoPruebas(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ confirmacion: z.string() }), formData);
+  if (fallo) return fallo;
+  if (datos.confirmacion.trim() !== "ACTIVAR CORREOS") {
+    return error("Para quitarlo, escribe ACTIVAR CORREOS tal cual.", { confirmacion: "Tal cual, en mayúsculas." });
+  }
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("quitar_modo_pruebas", { p_confirmacion: datos.confirmacion });
+  if (falloBase) return traducirError(falloBase);
+  refrescarModo();
+  return ok();
+}
+
+export async function volverAModoPruebas(): Promise<Resultado> {
+  const { supabase, valor } = await leerAjusteCrudo();
+  const { error: falloBase } = await supabase
+    .from("platform_settings")
+    .update({ value: { ...valor, activo: true } })
+    .eq("key", "correo_modo_pruebas");
+  if (falloBase) return traducirError(falloBase);
+  refrescarModo();
+  return ok();
 }

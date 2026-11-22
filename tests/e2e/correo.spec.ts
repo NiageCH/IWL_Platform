@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { USUARIOS, borrar, borrarCuenta, consultar, correosRecibidos, entrarComo, insertar } from "./entrada";
+import {
+  USUARIOS,
+  actualizar,
+  borrar,
+  borrarCuenta,
+  consultar,
+  correosRecibidos,
+  crearCuenta,
+  entrarComo,
+  insertar,
+} from "./entrada";
 
 /**
  * El correo de la plataforma, por lo que no cubre ningún flujo: un envío
@@ -100,4 +110,80 @@ test("darle cuenta para el due diligence le manda el enlace para elegir contrase
     await borrar("candidaturas", { id: c.id });
     if (cand?.profile_id) await borrarCuenta(correo);
   }
+});
+
+/**
+ * El modo pruebas (REVISION, 21 nov). En local está apagado, para que las
+ * demás pruebas lean sus correos; aquí se enciende y se deja como estaba,
+ * por fuera del camino que se prueba.
+ */
+async function conModoPruebas<T>(hacer: () => Promise<T>): Promise<T> {
+  const [antes] = await consultar<{ value: unknown }>("platform_settings", { key: "eq.correo_modo_pruebas" }, "value");
+  await actualizar(
+    "platform_settings",
+    { key: "eq.correo_modo_pruebas" },
+    { value: { activo: true, dominios: ["inceptionwlab.es", "niage.es"] } },
+  );
+  try {
+    return await hacer();
+  } finally {
+    await actualizar("platform_settings", { key: "eq.correo_modo_pruebas" }, { value: antes.value });
+  }
+}
+
+test("en modo pruebas, un correo de fuera queda retenido y se lee en Correos", async ({ page }) => {
+  const correo = `e2e.retenido.${Date.now()}.${test.info().project.name}@ejemplo.test`;
+  await conModoPruebas(async () => {
+    try {
+      await crearCuenta(correo);
+
+      // «¿Has olvidado tu contraseña?» también respeta la lista
+      await page.goto("/entrar");
+      await page.getByRole("button", { name: "¿Has olvidado tu contraseña?" }).click();
+      await page.getByLabel("Correo").fill(correo);
+      await page.getByRole("button", { name: "Enviarme el enlace" }).click();
+      await expect(page.getByText(/Si hay una cuenta con .* te hemos mandado un enlace/)).toBeVisible();
+      await expect
+        .poll(async () => (await consultar<{ estado: string }>("correos", { destinatario: `eq.${correo}` }, "estado"))[0]?.estado)
+        .toBe("retenido");
+      expect(await correosRecibidos(correo)).toEqual([]);
+
+      // Dirección ve la franja y el retenido, y lo lee como si hubiera llegado
+      await entrarComo(page, USUARIOS.admin, "/admin/correos");
+      await expect(page.locator("[data-modo-pruebas]")).toContainText(
+        "Modo pruebas: los correos solo salen a @inceptionwlab.es y @niage.es.",
+      );
+      const fila = page.getByRole("list", { name: "Retenidos" }).getByRole("listitem").filter({ hasText: correo });
+      await expect(fila.getByText("Retenido: modo pruebas")).toBeVisible();
+      await fila.getByText("Ver el correo").click();
+      await expect(fila.getByText("Elige tu nueva contraseña de la plataforma de IWL")).toBeVisible();
+      await expect(fila.getByText(/Has pedido poner una contraseña nueva/)).toBeVisible();
+      await expect(fila.getByRole("button", { name: "Reintentar" })).toHaveCount(0);
+    } finally {
+      await borrar("correos", { destinatario: correo });
+      await borrarCuenta(correo);
+    }
+  });
+});
+
+test("quitar el modo pruebas pide escribir ACTIVAR CORREOS", async ({ page }) => {
+  await conModoPruebas(async () => {
+    await entrarComo(page, USUARIOS.admin, "/admin/programa");
+    const bloque = page.locator("#modo-pruebas");
+    await bloque.getByText("Quitar el modo pruebas").first().click();
+    await bloque.getByLabel(/Escribe ACTIVAR CORREOS/).fill("activar");
+    await bloque.getByRole("button", { name: "Quitar el modo pruebas" }).click();
+    await expect(bloque.getByText("Para quitarlo, escribe ACTIVAR CORREOS tal cual.")).toBeVisible();
+
+    await bloque.getByLabel(/Escribe ACTIVAR CORREOS/).fill("ACTIVAR CORREOS");
+    await bloque.getByRole("button", { name: "Quitar el modo pruebas" }).click();
+    await expect(bloque.getByText(/Los correos salen a todo el mundo\. Lo quitó/)).toBeVisible();
+    await expect(page.locator("[data-modo-pruebas]")).toHaveCount(0);
+
+    await bloque.getByRole("button", { name: "Volver al modo pruebas" }).click();
+    await expect(bloque.getByRole("button", { name: "Guardar los dominios" })).toBeVisible();
+  });
+  // Lo que dejó en el registro, fuera
+  const [admin] = await consultar<{ id: string }>("profiles", { email: `eq.${USUARIOS.admin}` }, "id");
+  await borrar("activity_log", { action: "modo_pruebas_quitado", actor_id: admin.id });
 });

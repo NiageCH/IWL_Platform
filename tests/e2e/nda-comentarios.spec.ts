@@ -82,7 +82,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
 
     await page.getByLabel("Respuesta").fill("Doce meses. Lo dejamos escrito en el texto.");
     await page.locator("#nda").getByRole("button", { name: "Responder" }).click();
-    await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.")).toBeVisible();
+    await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.", { exact: true })).toBeVisible();
     await expect(page.getByRole("region", { name: "Hecho" })).toContainText("Siguiente: que ella firme el NDA · lo hace ella");
 
     await page.getByText("Cambiar el texto solo para ella").click();
@@ -98,7 +98,7 @@ test("ella comenta el NDA, IWL responde y le cambia el texto, y su firma se anul
     // Ella: la respuesta, y el NDA nuevo para firmar
     await entrarComoElla(page, CLAVE);
     await expect(page.getByRole("heading", { name: "Firma el NDA" })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.")).toBeVisible();
+    await expect(page.getByText("Doce meses. Lo dejamos escrito en el texto.", { exact: true })).toBeVisible();
     await expect(page.getByText(/La obligación de no competencia dura doce meses\./)).toBeVisible();
   } finally {
     await borrar("candidaturas", { id: c.id });

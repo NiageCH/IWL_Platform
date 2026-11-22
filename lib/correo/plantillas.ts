@@ -26,6 +26,7 @@ export const EVENTOS = [
   "sesion_registrada",
   "sesion_de_vuelta",
   "sesion_decidida",
+  "recuperar_contrasena",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 
@@ -47,6 +48,7 @@ export const NOMBRE_EVENTO: Record<Evento, string> = {
   sesion_registrada: "Horas por confirmar",
   sesion_de_vuelta: "Horas que vuelven a ella",
   sesion_decidida: "Sesión cerrada por dirección",
+  recuperar_contrasena: "Contraseña olvidada",
 };
 
 export type DatosCorreo = Record<string, string | number | null | undefined>;
@@ -247,6 +249,19 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
       `Entra con este enlace y elige tu contraseña. Tu usuario es ${s(d.correo)}. El enlace vale una vez; si caduca, pídelo en la entrada, en «¿Has olvidado tu contraseña?».`,
     ],
     boton: { texto: "Entrar y elegir mi contraseña", url: s(d.enlace) },
+  }),
+  /*
+   * La de Supabase Auth, con su texto (`supabase/templates/recovery.html`):
+   * ahora sale por la plataforma para respetar el modo pruebas.
+   */
+  recuperar_contrasena: (d) => ({
+    asunto: "Elige tu nueva contraseña de la plataforma de IWL",
+    parrafos: [
+      "Hola:",
+      "Has pedido poner una contraseña nueva en la plataforma de IWL. Con este enlace eliges la que quieras. Caduca en una hora y vale para un solo uso.",
+      "Si no lo has pedido tú, ignora este correo: tu contraseña sigue siendo la misma.",
+    ],
+    boton: { texto: "Elegir mi contraseña", url: s(d.enlace) },
   }),
   respuesta_comentario: (d) => ({
     asunto: `Te hemos respondido · ${s(d.sobre)}`,

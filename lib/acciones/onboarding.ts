@@ -68,7 +68,7 @@ export async function registrarRecordatorio(formData: FormData): Promise<Resulta
     return error("Recordar un paso es del equipo de IWL.");
   }
 
-  let estado: "enviado" | "sin_enviar" | null = null;
+  let estado: "enviado" | "sin_enviar" | "retenido" | null = null;
   if (datos.canal === "correo") {
     const { data: ella } = await clienteServicio()
       .from("profiles")
@@ -97,6 +97,9 @@ export async function registrarRecordatorio(formData: FormData): Promise<Resulta
   });
 
   if (falloBase) return traducirError(falloBase);
+  if (estado === "retenido") {
+    return error("El correo no ha salido: el modo pruebas no deja escribir a esa dirección. Lo ves en Administración → Correos.");
+  }
   if (estado === "sin_enviar") {
     return error("El correo no ha salido: queda «sin enviar» para reintentarlo. Si corre prisa, mándaselo por WhatsApp.");
   }

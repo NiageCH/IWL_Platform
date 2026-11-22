@@ -858,3 +858,11 @@ insert into cohorts (
   'Cohorte 2026', '2026-03-01', '2027-03-01', 2
 )
 on conflict (id) do nothing;
+
+-- En local, el modo pruebas del correo apagado: las pruebas de interfaz leen
+-- los correos en la bandeja local y van a @ejemplo.test. En producción nace
+-- activo, por la migración (REVISION, 21 nov). Lo prueba `correo.spec.ts`,
+-- que lo enciende y lo deja como estaba.
+update platform_settings
+   set value = value || '{"activo": false}'::jsonb
+ where key = 'correo_modo_pruebas';

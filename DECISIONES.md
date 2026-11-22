@@ -1957,3 +1957,14 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Las lecturas de lo calculado admiten el cliente.** Con sesión desde la pantalla; con la clave de servicio desde el cron, que no tiene persona detrás. Es el mismo código, así que el correo y la pantalla dicen lo mismo.
 - **La primera entrada por un aviso lleva una línea a la guía.** «¿Es tu primera vez? Tu guía te explica cómo funciona · Abrir la guía», arriba, mientras no la haya abierto. **Cerrarla cuenta como guía vista**: quien la cierra ya sabe dónde está, y llevarla a la guía en la entrada siguiente sería insistir.
 
+## 2026-11-22 · Modo pruebas del correo
+
+- **Mientras haya datos de prueba en producción, nadie de fuera de IWL recibe un correo** (REVISION, 21 nov). Con el modo pruebas activo, un correo a un dominio que no esté en la lista (por defecto `inceptionwlab.es` y `niage.es`) no llega al proveedor: queda **retenido**, con su contenido, y se lee en Administración → Correos con «Ver el correo».
+- **Se decide al enviar, no al apuntar**: `entregar` lee el ajuste cada vez, así que cambia sin desplegar. Un retenido no se reintenta, ni al quitar el modo pruebas: era de una prueba. Ni siquiera se le prepara el enlace de acceso, que generaría uno de verdad.
+- **Nace activo en la migración y la semilla local lo apaga.** La migración es lo que llega a producción. Las pruebas de interfaz leen sus correos en la bandeja local, a `@ejemplo.test`; `correo.spec.ts` lo enciende y lo deja como estaba. Sin fila, se lee como activo: mejor retener de más.
+- **Quitarlo solo con `quitar_modo_pruebas`**, de dirección y con la frase `ACTIVAR CORREOS`. Deja quién y cuándo en el ajuste y en `activity_log`. Un disparador impide apagarlo con un `update` desde una sesión; sin sesión (semilla, clave de servicio) no aplica, porque es un guardián de autorización. Volver a ponerlo y cambiar los dominios sí se hacen a mano: no dañan a nadie.
+- **«¿Has olvidado tu contraseña?» sale ahora por la plataforma.** Antes lo mandaba Supabase Auth desde el navegador, por fuera de `notificar`, y no había forma de que respetara la lista. Ahora el enlace se genera con la clave de servicio (como el del NDA) y el texto es el mismo de `supabase/templates/recovery.html`. Contesta igual exista la cuenta o no, y hay un correo por minuto y cuenta como mucho, que es lo que limitaba Supabase.
+- **En modo pruebas, el resumen diario solo a quien lo eligió a mano** (`profiles.resumen_elegido_at`). El «Cada mañana» de serie no cuenta como haberlo elegido.
+- **La franja de modo pruebas es solo de dirección**, en la consola de IWL. Al equipo no le cambia nada de lo que hace.
+- **La lista de lo que se hace el día de la primera startup real** vive en `docs/SALIDA.md`. No existía; se crea con el paso de quitar el modo pruebas.
+

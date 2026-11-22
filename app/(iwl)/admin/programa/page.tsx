@@ -1,6 +1,8 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { FormularioUmbralesAlta } from "@/components/formularios/umbrales-alta";
 import { LugarNda, MarcadoresNda, PlantillaNda } from "@/components/formularios/nda-iwl";
+import { ModoPruebasCorreo } from "@/components/formularios/correo";
+import { leerModoPruebasPantalla } from "@/lib/datos/modo-pruebas";
 import { DiasAvance, HorquillaEquity, TarifaAnexo, TopeEntrada } from "@/components/formularios/entrada";
 import { tarifaAnexo } from "@/lib/anexo";
 import { problemaParaEnviar } from "@/lib/nda-texto";
@@ -88,8 +90,32 @@ export default async function AdminPrograma() {
     vencido_dias?: number;
   };
 
+  const modo = await leerModoPruebasPantalla();
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Arriba: es lo que más daño hace si se toca sin querer */}
+      <Bloque id="modo-pruebas" className="scroll-mt-48">
+        <TituloBloque accion={<Metadato>{modo.activo ? "Activo" : "Quitado"}</Metadato>}>
+          Modo pruebas del correo
+        </TituloBloque>
+        <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
+          Mientras haya datos de prueba, nadie de fuera de IWL debe recibir un
+          correo de la plataforma. En modo pruebas, un correo a otro dominio no
+          sale: queda «Retenido» en Correos, donde se puede leer como si hubiera
+          llegado. El resumen diario solo le llega a quien lo elija en Mi cuenta.
+        </p>
+        <ModoPruebasCorreo
+          activo={modo.activo}
+          dominios={modo.dominios}
+          quitado={
+            modo.quitadoAt
+              ? `Lo quitó ${modo.quitadoPorNombre ?? "alguien de dirección"} el ${fecha(modo.quitadoAt)}`
+              : null
+          }
+        />
+      </Bloque>
+
       <Bloque elevacion={2}>
         <TituloBloque accion={<Metadato>Qué hace falta para estar listo</Metadato>}>
           Umbrales del estado invertible
