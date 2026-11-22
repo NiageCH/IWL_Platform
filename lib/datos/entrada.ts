@@ -4,7 +4,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { estadoTope, pasoEntrada, type BaseIncorporacion, type DecisionIncorporacion } from "@/lib/entrada";
-import type { Via } from "@/lib/comite";
+import { revisionDe, type Estadio } from "@/lib/estadios";
 import { firmarLogos } from "@/lib/datos/logos";
 
 export interface DecisionLeida {
@@ -61,17 +61,17 @@ export interface FilaEntrada {
   nombre: string;
   slug: string;
   logo: string | null;
-  via: Via | null;
+  estadio: Estadio | null;
   dias: number;
   paso: ReturnType<typeof pasoEntrada>;
   obligatoriosHechos: number;
   obligatorios: number;
-  /** El diagnóstico de Construcción: reunión celebrada, ficha completa, situación confirmada */
+  /** El diagnóstico (idea): reunión celebrada, ficha completa, situación confirmada */
   diagnostico: { reunion: boolean; ficha: boolean; situacion: boolean };
   candidaturaId: string | null;
   /** A quién recordar: la fundadora con cuenta, si la hay */
   fundadora: { id: string; nombre: string; correo: string | null } | null;
-  /** En Construcción, si ha pasado el tope del tramo de entrada */
+  /** En idea, si ha pasado el tope del tramo de entrada */
   tope: "atencion" | "vencido" | null;
 }
 
@@ -96,7 +96,7 @@ export async function leerEnEntradaCon(
 ): Promise<FilaEntrada[]> {
   const { data: companias } = await supabase
     .from("companies")
-    .select("id, name, slug, logo_path, via, created_at, sector, one_liner, situacion_societaria, situacion_confirmada_at")
+    .select("id, name, slug, logo_path, entry_state, created_at, sector, one_liner, situacion_societaria, situacion_confirmada_at")
     .eq("tramo", "entrada")
     .is("archived_at", null)
     .order("created_at");
@@ -113,7 +113,7 @@ export async function leerEnEntradaCon(
       .select("company_id, profile_id, profiles ( full_name, last_name, email )")
       .in("company_id", ids)
       .eq("member_role", "fundadora"),
-    supabase.from("platform_settings").select("value").eq("key", "entrada_tope_construccion_dias").maybeSingle(),
+    supabase.from("platform_settings").select("value").eq("key", "entrada_tope_diagnostico_dias").maybeSingle(),
   ]);
   const tope = typeof ajuste.data?.value === "number" ? ajuste.data.value : 14;
 
@@ -136,7 +136,7 @@ export async function leerEnEntradaCon(
     const candidatura = (candidaturas.data ?? []).find((x) => x.company_id === c.id) ?? null;
     const m = (miembros.data ?? []).find((x) => x.company_id === c.id);
     const perfil = m?.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
-    const via = c.via as Via | null;
+    const estadio = c.entry_state as Estadio | null;
     const dias = Math.max(0, Math.floor((hoy - new Date(c.created_at).getTime()) / 86_400_000));
 
     return {
@@ -144,11 +144,11 @@ export async function leerEnEntradaCon(
       nombre: c.name,
       slug: c.slug,
       logo: c.logo_path ? (logos.get(c.logo_path) ?? null) : null,
-      via,
+      estadio,
       dias,
-      tope: estadoTope(via, dias, tope),
+      tope: estadoTope(estadio, dias, tope),
       paso: pasoEntrada({
-        via,
+        estadio,
         situacionDicha: Boolean(c.situacion_societaria),
         situacionConfirmada: Boolean(c.situacion_confirmada_at),
         obligatoriosHechos: hechos,
@@ -198,7 +198,7 @@ export function porDecidir(filas: FilaEntrada[]): PorDecidir[] {
       dias: f.dias,
       tope: f.tope,
       paso:
-        f.via === "aceleracion"
+        revisionDe(f.estadio) === "due_diligence"
           ? `${f.nombre} tiene lo obligatorio validado (${f.obligatoriosHechos} de ${f.obligatorios})`
           : f.tope
             ? `${f.nombre} lleva ${f.dias} días en entrada sin Acuerdo`

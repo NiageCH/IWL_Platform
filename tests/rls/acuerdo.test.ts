@@ -90,7 +90,7 @@ beforeAll(async () => {
       contacto_nombre: "Fundadora de Prueba",
       contacto_email: CORREO,
       estado: "preseleccionada",
-      via: "aceleracion",
+      estado_verificado: "facturando",
       situacion_societaria: "sin_constituir",
     })
     .select("id")
@@ -105,7 +105,7 @@ beforeAll(async () => {
       contacto_nombre: "Otra de Prueba",
       contacto_email: `rls.acuerdo.cons.${SELLO}@ejemplo.test`,
       estado: "preseleccionada",
-      via: "construccion",
+      estado_verificado: "idea",
       situacion_societaria: "sin_constituir",
     })
     .select("id")
@@ -251,7 +251,7 @@ describe("comentarlo y aceptarlo", () => {
 });
 
 describe("firmar el Acuerdo", () => {
-  it("en Aceleración, no sin lo obligatorio del due diligence validado", async () => {
+  it("con due diligence (facturando), no sin lo obligatorio validado", async () => {
     const { error } = await firmar(acel);
     expect(error?.message).toMatch(/obligatorio del due diligence.*Faltan \d+/);
   });
@@ -338,7 +338,7 @@ describe("firmar el Acuerdo", () => {
     expect((await proponer(anexoCons, firmantes)).error).toBeNull();
   });
 
-  it("en Construcción, se firma sin nada validado, cuando ella lo acepta con su cuenta", async () => {
+  it("en idea, con diagnóstico, se firma sin nada validado, cuando ella lo acepta con su cuenta", async () => {
     const segunda = createClient(URL, ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
     expect(
       (await segunda.auth.signInWithPassword({ email: `rls.acuerdo.cons.${SELLO}@ejemplo.test`, password: CLAVE })).error,
@@ -376,7 +376,7 @@ describe("ningún Anexo se firma sin su aceptación", () => {
   });
 });
 
-describe("pasar de Construcción a Aceleración", () => {
+describe("cambiar el estadio", () => {
   let mentorId = "";
 
   beforeAll(async () => {
@@ -388,18 +388,26 @@ describe("pasar de Construcción a Aceleración", () => {
 
   it("no con un update directo, ni el equipo, ni sin motivo", async () => {
     const admin = await entrarComo(USUARIOS.admin);
-    const { error: directo } = await admin.from("companies").update({ via: "aceleracion" }).eq("id", cons);
+    const { error: directo } = await admin.from("companies").update({ entry_state: "facturando" }).eq("id", cons);
     expect(directo?.message).toMatch(/pide el motivo/);
 
     const equipo = await entrarComo(USUARIOS.equipoIwl);
-    expect((await equipo.rpc("pasar_a_aceleracion", { p_company: cons, p_motivo: "Ya factura cada mes." })).error).not.toBeNull();
+    expect(
+      (await equipo.rpc("cambiar_estadio", { p_company: cons, p_estadio: "facturando", p_motivo: "Ya factura cada mes." })).error,
+    ).not.toBeNull();
 
-    expect((await admin.rpc("pasar_a_aceleracion", { p_company: cons, p_motivo: "Factura" })).error?.message).toMatch(/motivo/);
+    expect(
+      (await admin.rpc("cambiar_estadio", { p_company: cons, p_estadio: "facturando", p_motivo: "Factura" })).error?.message,
+    ).toMatch(/motivo/);
   });
 
   it("con motivo: lo por construir pasa a por entregar, queda en el registro y avisa al mentor principal", async () => {
     const admin = await entrarComo(USUARIOS.admin);
-    const { error } = await admin.rpc("pasar_a_aceleracion", { p_company: cons, p_motivo: "Ya factura cada mes desde octubre." });
+    const { error } = await admin.rpc("cambiar_estadio", {
+      p_company: cons,
+      p_estadio: "facturando",
+      p_motivo: "Ya factura cada mes desde octubre.",
+    });
     expect(error).toBeNull();
 
     const servicio = clienteServicio();
@@ -410,13 +418,13 @@ describe("pasar de Construcción a Aceleración", () => {
       .from("activity_log")
       .select("detail")
       .eq("company_id", cons)
-      .eq("action", "cambio_via")
+      .eq("action", "cambio_estadio")
       .single();
-    expect((registro!.detail as { motivo: string }).motivo).toBe("Ya factura cada mes desde octubre.");
+    expect(registro!.detail).toMatchObject({ de: "idea", a: "facturando", motivo: "Ya factura cada mes desde octubre." });
 
     const mentor = await entrarComo(USUARIOS.mentorProducto);
     const { data: suyos } = await mentor.from("avisos").select("id, tipo").eq("company_id", cons);
-    expect(suyos!.map((a) => a.tipo)).toEqual(["cambio_via"]);
+    expect(suyos!.map((a) => a.tipo)).toEqual(["cambio_estadio"]);
 
     // Lo da por visto él mismo
     const { data: cerrado } = await mentor
@@ -431,9 +439,15 @@ describe("pasar de Construcción a Aceleración", () => {
     expect((await otro.from("avisos").select("id").eq("company_id", cons)).data).toEqual([]);
   });
 
-  it("y de Aceleración no se vuelve", async () => {
+  it("y no baja", async () => {
     const admin = await entrarComo(USUARIOS.admin);
-    const { error } = await admin.from("companies").update({ via: "construccion" }).eq("id", cons);
-    expect(error?.message).toMatch(/no se vuelve/);
+    const { error } = await admin.rpc("cambiar_estadio", {
+      p_company: cons,
+      p_estadio: "mvp_sin_piloto",
+      p_motivo: "Volver atrás no se puede.",
+    });
+    expect(error?.message).toMatch(/hacia arriba/);
+    const { error: directo } = await admin.from("companies").update({ entry_state: "idea" }).eq("id", cons);
+    expect(directo?.message).toMatch(/no baja|no vuelve/);
   });
 });

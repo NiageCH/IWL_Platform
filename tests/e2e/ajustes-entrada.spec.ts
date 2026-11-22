@@ -9,7 +9,7 @@ import { USUARIOS, actualizar, consultar, entrarComo } from "./entrada";
  * por fuera del camino que se prueba, para que otra prueba no los herede.
  */
 
-const CLAVES = ["entrada_tope_construccion_dias", "equity_horquilla", "nda_lugar"];
+const CLAVES = ["entrada_tope_diagnostico_dias", "equity_horquilla", "nda_lugar"];
 
 test("dirección fija el tope, la horquilla y el lugar del NDA", async ({ page }) => {
   const antes = await consultar<{ key: string; value: unknown }>(
@@ -27,12 +27,12 @@ test("dirección fija el tope, la horquilla y el lugar del NDA", async ({ page }
     await expect(page.getByText(/avisará a los 21 días en entrada sin Acuerdo/)).toBeVisible();
 
     const horquilla = page.locator("form", { has: page.getByRole("button", { name: "Guardar la horquilla" }) });
-    const construccion = horquilla.locator("fieldset", { hasText: "Construcción" });
-    await construccion.getByLabel("Desde (%)").fill("12");
-    await construccion.getByLabel("Hasta (%)").fill("8");
+    const idea = horquilla.locator("fieldset", { hasText: "Idea" });
+    await idea.getByLabel("Desde (%)").fill("12");
+    await idea.getByLabel("Hasta (%)").fill("8");
     await horquilla.getByRole("button", { name: "Guardar la horquilla" }).click();
     await expect(horquilla.getByText("El máximo no puede ser menor que el mínimo.")).toBeVisible();
-    await construccion.getByLabel("Hasta (%)").fill("15 %");
+    await idea.getByLabel("Hasta (%)").fill("15 %");
     await horquilla.getByRole("button", { name: "Guardar la horquilla" }).click();
     await expect(page.getByText(/Guardada\. Al proponer un Anexo se enseña como referencia/)).toBeVisible();
 
@@ -47,10 +47,12 @@ test("dirección fija el tope, la horquilla y el lugar del NDA", async ({ page }
       "key,value",
     );
     const valor = (k: string) => despues.find((d) => d.key === k)?.value;
-    expect(valor("entrada_tope_construccion_dias")).toBe(21);
+    expect(valor("entrada_tope_diagnostico_dias")).toBe(21);
     expect(valor("equity_horquilla")).toEqual({
-      aceleracion: { min: null, max: null },
-      construccion: { min: 12, max: 15 },
+      idea: { min: 12, max: 15 },
+      mvp_sin_piloto: { min: null, max: null },
+      mvp_con_piloto: { min: null, max: null },
+      facturando: { min: null, max: null },
     });
     expect(valor("nda_lugar")).toBe("Sevilla");
   } finally {

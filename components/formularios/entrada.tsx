@@ -12,7 +12,7 @@ import {
 } from "@/lib/acciones/entrada";
 import { BASES, baseSugerida, mensajeNoIncorporada, type BaseIncorporacion } from "@/lib/entrada";
 import { cifraEquity } from "@/lib/utils";
-import type { Via } from "@/lib/comite";
+import { ESTADIOS, ORDEN_ESTADIOS, type Estadio } from "@/lib/estadios";
 import { CamposSituacion } from "@/components/formularios/situacion";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 
@@ -49,17 +49,17 @@ export function ConfirmarSituacion({ companyId }: { companyId: string }) {
 }
 
 /**
- * Decidir la incorporación. La base sale propuesta por la vía; el «no»
+ * Decidir la incorporación. La base sale propuesta por el estadio; el «no»
  * pide además el mensaje para ella, ya redactado y para editar.
  */
 export function DecidirIncorporacion({
   companyId,
-  via,
+  estadio,
   contacto,
   startup,
 }: {
   companyId: string;
-  via: Via | null;
+  estadio: Estadio | null;
   contacto: string;
   startup: string;
 }) {
@@ -89,7 +89,7 @@ export function DecidirIncorporacion({
                 </Seleccion>
               </Campo>
               <Campo etiqueta="En qué se basa" obligatorio error={r.ok ? undefined : r.campos?.base}>
-                <Seleccion name="base" defaultValue={baseSugerida(via)} required>
+                <Seleccion name="base" defaultValue={baseSugerida(estadio)} required>
                   {(Object.keys(BASES) as BaseIncorporacion[]).map((b) => (
                     <option key={b} value={b}>
                       {BASES[b]}
@@ -121,7 +121,7 @@ export function DecidirIncorporacion({
   );
 }
 
-/** El tope del tramo de entrada en Construcción, en días */
+/** El tope de la entrada con diagnóstico (idea), en días */
 export function TopeEntrada({ dias }: { dias: number }) {
   return (
     <Formulario accion={guardarTopeEntrada} className="gap-3 px-4 py-4">
@@ -189,28 +189,26 @@ export function TarifaAnexo({ eurosHora }: { eurosHora: number | null }) {
   );
 }
 
-type Horquillas = Record<"aceleracion" | "construccion", { min: number | null; max: number | null }>;
+type Horquillas = Record<Estadio, { min: number | null; max: number | null }>;
 
-/** La horquilla de equity de cada vía. Vacía, no se comprueba nada */
+/** La horquilla de equity de cada estadio. Vacía, no se comprueba nada */
 export function HorquillaEquity({ horquillas }: { horquillas: Partial<Horquillas> }) {
-  const valor = (via: "aceleracion" | "construccion", lado: "min" | "max") => {
-    const v = horquillas[via]?.[lado];
+  const valor = (estadio: Estadio, lado: "min" | "max") => {
+    const v = horquillas[estadio]?.[lado];
     return typeof v === "number" ? cifraEquity(v) : "";
   };
   return (
     <Formulario accion={guardarHorquilla} className="gap-4 px-4 py-4">
       {(r) => (
         <>
-          {(["aceleracion", "construccion"] as const).map((via) => (
-            <fieldset key={via} className="grid grid-cols-2 gap-3 sm:max-w-md">
-              <legend className="mb-1 text-sm font-medium text-titular">
-                {via === "aceleracion" ? "Aceleración" : "Construcción"}
-              </legend>
-              <Campo etiqueta="Desde (%)" error={r.ok ? undefined : r.campos?.[`${via}_min`]}>
-                <Texto name={`${via}_min`} inputMode="decimal" defaultValue={valor(via, "min")} />
+          {ORDEN_ESTADIOS.map((e) => (
+            <fieldset key={e} className="grid grid-cols-2 gap-3 sm:max-w-md">
+              <legend className="mb-1 text-sm font-medium text-titular">{ESTADIOS[e]}</legend>
+              <Campo etiqueta="Desde (%)" error={r.ok ? undefined : r.campos?.[`${e}_min`]}>
+                <Texto name={`${e}_min`} inputMode="decimal" defaultValue={valor(e, "min")} />
               </Campo>
-              <Campo etiqueta="Hasta (%)" error={r.ok ? undefined : r.campos?.[`${via}_max`]}>
-                <Texto name={`${via}_max`} inputMode="decimal" defaultValue={valor(via, "max")} />
+              <Campo etiqueta="Hasta (%)" error={r.ok ? undefined : r.campos?.[`${e}_max`]}>
+                <Texto name={`${e}_max`} inputMode="decimal" defaultValue={valor(e, "max")} />
               </Campo>
             </fieldset>
           ))}

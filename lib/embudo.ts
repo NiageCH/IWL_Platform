@@ -56,7 +56,7 @@ export const PASOS = [
      */
     codigo: "entrada",
     nombre: "En entrada",
-    descripcion: "Ya es compañía. Due diligence o diagnóstico, según la vía.",
+    descripcion: "Ya es compañía. Diagnóstico en idea; due diligence en el resto.",
     siguiente: "Decidir la incorporación",
   },
   {

@@ -7,7 +7,8 @@ import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { createHash } from "node:crypto";
-import { contenidoActa, viaPropuesta, type Decision, type Via } from "@/lib/comite";
+import { contenidoActa, type Decision } from "@/lib/comite";
+import { ORDEN_ESTADIOS, type Estadio } from "@/lib/estadios";
 import { generarPdfActa } from "@/lib/acta-pdf";
 
 /**
@@ -42,19 +43,19 @@ const esquemaActa = z
     fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "¿Qué día se reunió?"),
     resumen: z.string().trim().min(10, "Resume qué se valoró: es lo que firma cada miembro."),
     decision: z.enum(["preseleccionada", "descartada", "aplazada"], { message: "¿Qué se decidió?" }),
-    via: z
-      .union([z.enum(["aceleracion", "construccion"]), z.literal(""), z.null()])
+    estadio: z
+      .union([z.enum(ORDEN_ESTADIOS as [Estadio, ...Estadio[]]), z.literal(""), z.null()])
       .optional()
       .transform((v) => (v ? v : null)),
-    via_motivo: texto,
+    estadio_motivo: texto,
     motivo: texto,
     revision_on: texto,
     puede_volver: z.string().optional(),
     mensaje: texto,
   })
   .superRefine((d, ctx) => {
-    if (d.decision === "preseleccionada" && !d.via) {
-      ctx.addIssue({ code: "custom", path: ["via"], message: "¿Por qué vía entra?" });
+    if (d.decision === "preseleccionada" && !d.estadio) {
+      ctx.addIssue({ code: "custom", path: ["estadio"], message: "¿En qué estadio entra?" });
     }
     if (d.decision === "aplazada" && !d.revision_on) {
       ctx.addIssue({ code: "custom", path: ["revision_on"], message: "¿Cuándo se vuelve a mirar? Ese día te avisa." });
@@ -77,18 +78,18 @@ export async function redactarActa(formData: FormData): Promise<Resultado> {
 
   const supabase = await clienteServidor();
 
-  // La vía propuesta sale de la base, no del formulario
+  // El estadio que declaró ella sale de la base, no del formulario
   const { data: c } = await supabase
     .from("candidaturas")
     .select("estado_verificado, estado_declarado")
     .eq("id", datos.candidatura_id)
     .maybeSingle();
   if (!c) return error("Esa candidatura ya no está.");
-  const propuesta = viaPropuesta(c.estado_verificado ?? c.estado_declarado);
+  const propuesto = (c.estado_declarado ?? c.estado_verificado) as Estadio | null;
 
-  if (datos.decision === "preseleccionada" && propuesta && datos.via !== propuesta && !datos.via_motivo) {
-    return error("Cambiar la vía que sale de su estado de entrada pide decir por qué.", {
-      via_motivo: "¿Por qué otra vía?",
+  if (datos.decision === "preseleccionada" && propuesto && datos.estadio !== propuesto && !datos.estadio_motivo) {
+    return error("Cambiar el estadio que declaró ella pide decir por qué.", {
+      estadio_motivo: "¿Por qué otro estadio?",
     });
   }
 
@@ -99,9 +100,9 @@ export async function redactarActa(formData: FormData): Promise<Resultado> {
       fecha: datos.fecha,
       resumen: datos.resumen,
       decision: datos.decision,
-      via: datos.decision === "preseleccionada" ? datos.via : null,
-      via_propuesta: propuesta,
-      via_motivo: datos.via_motivo,
+      estadio: datos.decision === "preseleccionada" ? datos.estadio : null,
+      estadio_propuesto: propuesto,
+      estadio_motivo: datos.estadio_motivo,
       motivo: datos.motivo,
       revision_on: datos.decision === "aplazada" ? datos.revision_on : null,
       puede_volver: datos.decision === "descartada" ? datos.puede_volver === "si" : null,
@@ -215,9 +216,9 @@ async function guardarPdfActa(actaId: string, autor: string, regenerar = false):
     fecha: acta.fecha,
     resumen: acta.resumen,
     decision: acta.decision as Decision,
-    via: acta.via as Via | null,
-    viaPropuesta: acta.via_propuesta as Via | null,
-    viaMotivo: acta.via_motivo,
+    estadio: acta.estadio as Estadio | null,
+    estadioPropuesto: acta.estadio_propuesto as Estadio | null,
+    estadioMotivo: acta.estadio_motivo,
     motivo: acta.motivo,
     revisionOn: acta.revision_on,
     puedeVolver: acta.puede_volver,

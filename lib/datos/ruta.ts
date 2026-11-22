@@ -1,3 +1,4 @@
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import { nombreCompleto } from "@/lib/etiquetas";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { Database } from "@/lib/supabase/database.types";
@@ -15,17 +16,12 @@ export type EstadoEntrada = Database["public"]["Enums"]["estado_entrada"];
 export type EstadoEtapa = Database["public"]["Enums"]["estado_etapa"];
 export type EstadoHito = Database["public"]["Enums"]["estado_hito"];
 
-export const ESTADOS_ENTRADA: { valor: EstadoEntrada; nombre: string; ayuda: string }[] = [
-  { valor: "idea", nombre: "Idea", ayuda: "Tesis y equipo, sin construir." },
-  { valor: "prototipo", nombre: "Prototipo", ayuda: "Algo que se enseña, todavía no se usa." },
-  { valor: "mvp", nombre: "MVP", ayuda: "En manos de usuarios reales." },
-  {
-    valor: "primeros_clientes",
-    nombre: "Primeros clientes",
-    ayuda: "Alguien paga, sin recurrencia demostrada.",
-  },
-  { valor: "facturacion", nombre: "Facturación", ayuda: "Ingreso recurrente." },
-];
+/** Los estadios, con lo que tiene que enseñar cada uno (REVISION, 22 nov) */
+export const ESTADOS_ENTRADA: { valor: EstadoEntrada; nombre: string; ayuda: string }[] = ORDEN_ESTADIOS.map((e) => ({
+  valor: e,
+  nombre: ESTADIOS[e],
+  ayuda: `${DESCRIPCION_ESTADIO[e]}.`,
+}));
 
 export const ESTADOS_ETAPA: Record<EstadoEtapa, string> = {
   planificada: "Planificada",

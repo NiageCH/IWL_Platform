@@ -38,7 +38,7 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     contacto_nombre: PERSONA,
     contacto_email: CORREO,
     estado: "preseleccionada",
-    via: "construccion",
+    estado_verificado: "idea",
     situacion_societaria: "sin_constituir",
   });
   let companiaId: string | null = null;
@@ -65,7 +65,7 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
 
     // Dirección: abre el Anexo, lo rellena y se lo propone
     await entrarComo(page, USUARIOS.admin, `/cartera/${co.slug}/programa`);
-    await expect(page.getByText(/Vía de entrada\s*Construcción/)).toBeVisible();
+    await expect(page.getByText(/Estadio\s*Idea · Incubación/)).toBeVisible();
     await page.getByRole("button", { name: "Abrir el Anexo" }).click();
     const anexo = page.locator("form", { has: page.locator('input[name="duration_months"]') });
     await anexo.locator('input[name="duration_months"]').fill("12");
@@ -171,12 +171,14 @@ test("se propone el Anexo, ella lo comenta y lo acepta, y el Acuerdo la pasa a i
     const porFirmar = await consultar("avisos", { company_id: `eq.${companiaId}`, tipo: "eq.anexo_aceptado", cerrado_at: "is.null" }, "id");
     expect(porFirmar).toEqual([]);
 
-    // Y empieza a facturar: dirección la pasa a Aceleración, con motivo
-    await page.getByText("Pasar a Aceleración", { exact: true }).first().click();
-    const via = page.locator("form", { has: page.getByRole("button", { name: "Pasar a Aceleración" }) });
-    await via.getByRole("textbox", { name: /^Motivo/ }).fill("Factura cada mes desde octubre.");
-    await via.getByRole("button", { name: "Pasar a Aceleración" }).click();
-    await expect(page.getByText(/Pasó de Construcción a Aceleración el .*: Factura cada mes desde octubre\./)).toBeVisible();
+    // Y avanza: dirección le cambia el estadio, hacia arriba y con motivo
+    await page.getByText("Cambiar el estadio", { exact: true }).first().click();
+    const estadio = page.locator("form", { has: page.getByRole("button", { name: "Cambiar el estadio" }) });
+    await estadio.getByLabel("Pasa a").selectOption("facturando");
+    await estadio.getByRole("textbox", { name: /^Motivo/ }).fill("Factura cada mes desde octubre.");
+    await estadio.getByRole("button", { name: "Cambiar el estadio" }).click();
+    await expect(page.getByText(/Pasó de Idea a Facturando el .*: Factura cada mes desde octubre\./)).toBeVisible();
+    await expect(page.getByText(/Estadio\s*Facturando · Aceleración/)).toBeVisible();
   } finally {
     // La candidatura antes: firmada, no se queda sin compañía ni un momento
     await borrar("candidaturas", { id: candidatura.id });

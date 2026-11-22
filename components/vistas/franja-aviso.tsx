@@ -59,7 +59,7 @@ const QUIEN_DESPUES: Partial<Record<TipoAviso, QuienMueve | "mentor">> = {
   reunion_anotar: "iwl",
   hito_entregado: "ella",
   hito_sin_revisar: "ella",
-  cambio_via: "ella",
+  cambio_estadio: "ella",
   candidatura_nueva: "iwl",
   acta_por_firmar: "iwl",
   documento_entregado: "ella",
@@ -168,7 +168,7 @@ async function acciones(
     }
     case "correos_sin_enviar":
       return <ReintentarTodos cuantos={a.cuantos ?? 0} />;
-    case "cambio_via":
+    case "cambio_estadio":
       return (
         <>
           <IrA ancla={ancla} verbo={verbo} />
@@ -240,9 +240,9 @@ async function FranjaComite({ contexto }: { contexto: ContextoFranja }) {
 }
 
 /**
- * Decidir la incorporación: pendiente mientras `pasoEntrada` lo diga. En
- * Aceleración, con lo obligatorio validado; en Construcción, con la
- * situación confirmada. Si ha pasado el tope, lo lleva dicho.
+ * Decidir la incorporación: pendiente mientras `pasoEntrada` lo diga. Con
+ * due diligence, con lo obligatorio validado; en idea, con la situación
+ * confirmada. Si ha pasado el tope, lo lleva dicho.
  */
 async function FranjaIncorporacion({ contexto, esDireccion }: { contexto: ContextoFranja; esDireccion: boolean }) {
   if (!contexto.slug) return null;

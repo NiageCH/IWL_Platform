@@ -12,15 +12,15 @@ import {
 } from "./entrada";
 
 describe("la compañía en entrada", () => {
-  it("la base sugerida sale de la vía; sin vía, estratégica", () => {
-    expect(baseSugerida("aceleracion")).toBe("due_diligence");
-    expect(baseSugerida("construccion")).toBe("estrategica");
+  it("la base sugerida sale del estadio; sin estadio, estratégica", () => {
+    expect(baseSugerida("facturando")).toBe("due_diligence");
+    expect(baseSugerida("idea")).toBe("estrategica");
     expect(baseSugerida(null)).toBe("estrategica");
   });
 
-  it("el siguiente paso dice qué hacer en cada vía", () => {
-    expect(siguientePasoEntrada("aceleracion")).toMatch(/due diligence/);
-    expect(siguientePasoEntrada("construccion")).toMatch(/no tienes que entregar nada/);
+  it("el siguiente paso dice qué hacer en cada revisión", () => {
+    expect(siguientePasoEntrada("facturando")).toMatch(/due diligence/);
+    expect(siguientePasoEntrada("idea")).toMatch(/no tienes que entregar nada/);
   });
 
   it("el mensaje de no incorporarla le habla por su nombre y deja hueco para el motivo", () => {
@@ -34,7 +34,7 @@ describe("la compañía en entrada", () => {
 
 describe("el paso de una compañía en entrada", () => {
   const base = {
-    via: "aceleracion" as const,
+    estadio: "facturando" as const,
     situacionDicha: true,
     situacionConfirmada: true,
     obligatoriosHechos: 3,
@@ -50,8 +50,8 @@ describe("el paso de una compañía en entrada", () => {
     expect(pasoEntrada({ ...base, obligatoriosHechos: 10 })).toEqual({ texto: "Decidir la incorporación", quien: "direccion" });
   });
 
-  it("en Construcción no espera al due diligence", () => {
-    expect(pasoEntrada({ ...base, via: "construccion" })).toEqual({ texto: "Decidir la incorporación", quien: "direccion" });
+  it("en idea, con diagnóstico, no espera al due diligence", () => {
+    expect(pasoEntrada({ ...base, estadio: "idea" })).toEqual({ texto: "Decidir la incorporación", quien: "direccion" });
   });
 
   it("después de decidir, el Acuerdo: proponer, esperar su aceptación y firmar", () => {
@@ -63,10 +63,10 @@ describe("el paso de una compañía en entrada", () => {
   });
 });
 
-describe("Construcción: no se trabaja sin Acuerdo", () => {
+describe("Sin Acuerdo no se trabaja", () => {
   it("la horquilla vacía no se comprueba; fuera de ella, sí", () => {
-    expect(horquillaDe({}, "construccion")).toBeNull();
-    const h = horquillaDe({ construccion: { min: 8, max: 12 } }, "construccion");
+    expect(horquillaDe({}, "idea")).toBeNull();
+    const h = horquillaDe({ idea: { min: 8, max: 12 } }, "idea");
     expect(h).toEqual({ min: 8, max: 12 });
     expect(fueraDeHorquilla(10, h)).toBe(false);
     expect(fueraDeHorquilla(5, h)).toBe(true);
@@ -83,10 +83,10 @@ describe("Construcción: no se trabaja sin Acuerdo", () => {
     expect(estadoEquity("constituida", null)).toBeNull();
   });
 
-  it("el tope: atención al llegar, vencido a la semana, y solo en Construcción", () => {
-    expect(estadoTope("construccion", 13, 14)).toBeNull();
-    expect(estadoTope("construccion", 14, 14)).toBe("atencion");
-    expect(estadoTope("construccion", 21, 14)).toBe("vencido");
-    expect(estadoTope("aceleracion", 40, 14)).toBeNull();
+  it("el tope: atención al llegar, vencido a la semana, y solo con diagnóstico (idea)", () => {
+    expect(estadoTope("idea", 13, 14)).toBeNull();
+    expect(estadoTope("idea", 14, 14)).toBe("atencion");
+    expect(estadoTope("idea", 21, 14)).toBe("vencido");
+    expect(estadoTope("facturando", 40, 14)).toBeNull();
   });
 });

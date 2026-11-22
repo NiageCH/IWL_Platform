@@ -35,7 +35,7 @@ async function candidatura(estado = "reunion") {
       contacto_nombre: "Prueba",
       contacto_email: `rls.avisos.${sufijo}@ejemplo.test`,
       estado,
-      estado_declarado: "mvp",
+      estado_declarado: "mvp_sin_piloto",
     })
     .select("id")
     .single();

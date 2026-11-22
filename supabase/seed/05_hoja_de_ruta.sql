@@ -9,8 +9,8 @@
 -- invitación a diseñarla. Un proyecto recién entrado no tiene plan todavía.
 -- =============================================================================
 
-update companies set entry_state = 'mvp'               where slug = 'marea-clinica';
-update companies set entry_state = 'facturacion'       where slug = 'raiz-sensorica';
+update companies set entry_state = 'mvp_sin_piloto'               where slug = 'marea-clinica';
+update companies set entry_state = 'facturando'       where slug = 'raiz-sensorica';
 update companies set entry_state = 'idea'              where slug = 'vega-predictiva';
 
 select app.copiar_hoja_de_ruta(

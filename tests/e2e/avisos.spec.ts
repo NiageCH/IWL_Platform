@@ -184,18 +184,18 @@ test("un hito sin revisar lleva a dirección a su hito; al validarlo, se va", as
   }
 });
 
-test("el cambio de vía pide al mentor revisar lo que pasa a por entregar; «Revisado» lo cierra", async ({ page }) => {
+test("el cambio de estadio pide al mentor revisar lo que pasa a por entregar; «Revisado» lo cierra", async ({ page }) => {
   const mentor = await idDe(MENTOR_MAREA);
   const aviso = await insertar<{ id: string }>("avisos", {
-    tipo: "cambio_via",
+    tipo: "cambio_estadio",
     company_id: COMPANIAS.marea,
     para: mentor,
     profile_id: await idDe(USUARIOS.admin),
   });
   try {
     await entrarComo(page, MENTOR_MAREA, "/cartera");
-    const fila = page.locator('li[data-aviso="cambio_via"]');
-    await expect(fila).toContainText("pasó de Construcción a Aceleración");
+    const fila = page.locator('li[data-aviso="cambio_estadio"]');
+    await expect(fila).toContainText("cambió de estadio");
     await fila.getByRole("link", { name: "Revisar" }).click();
     await expect(page).toHaveURL(/\/diligencia\?aviso=[0-9a-f-]+#puntos$/);
 
@@ -204,7 +204,7 @@ test("el cambio de vía pide al mentor revisar lo que pasa a por entregar; «Rev
     await arriba.getByRole("button", { name: "Revisado" }).click();
     await expect(page.getByRole("region", { name: "Hecho" })).toBeVisible();
     await page.goto("/cartera");
-    await expect(page.locator('li[data-aviso="cambio_via"]')).toHaveCount(0);
+    await expect(page.locator('li[data-aviso="cambio_estadio"]')).toHaveCount(0);
   } finally {
     await borrar("avisos", { id: aviso.id });
   }

@@ -36,11 +36,11 @@ const EMBUDO: Paso[] = [
 ];
 
 /**
- * La entrada de una compañía: un estado por paso, en la vía de
- * Construcción, que no pasa por el recuento de obligatorios.
+ * La entrada de una compañía: un estado por paso, en idea, que va con
+ * diagnóstico y no pasa por el recuento de obligatorios.
  */
 const BASE: EstadoEntrada = {
-  via: "construccion",
+  estadio: "idea",
   situacionDicha: false,
   situacionConfirmada: false,
   obligatoriosHechos: 0,

@@ -270,7 +270,7 @@ test("quien se presenta por el formulario recibe su enlace", async ({
   await page
     .locator('textarea[name="one_liner"]')
     .fill("Hacemos seguimiento de cultivos.");
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
   await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
 
   await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
@@ -355,7 +355,7 @@ test("a quien da de alta IWL se le pide que se presente, no se le dan las gracia
   await ficha
     .locator('textarea[name="one_liner"]')
     .fill("Hacemos sensores para invernaderos.");
-  await ficha.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await ficha.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
   await ficha.getByRole("button", { name: "Guardar" }).click();
 
   await expect(page.getByText("Guardado. Gracias.")).toBeVisible();
@@ -389,7 +389,7 @@ test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
   await page.goto("/presentarse");
   await page.locator('input[name="nombre"]').fill("Escrito A Mano");
   await page.locator('textarea[name="one_liner"]').fill("Sensores agrícolas.");
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
   await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await page.locator('input[name="contacto_email"]').fill(correo);
@@ -414,7 +414,7 @@ test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
     .locator('textarea[name="one_liner"]')
     .fill("Una frase que costó escribir.");
   // Obligatorio desde que se quitó «prefiero no decirlo»
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp");
+  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
   await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
   await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
   await page

@@ -1,5 +1,6 @@
 "use client";
 
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import { useState } from "react";
 import { presentarse } from "@/lib/acciones/presentarse";
 import {
@@ -11,13 +12,7 @@ import {
   Texto,
 } from "@/components/ui/formulario";
 
-const ESTADOS = [
-  { codigo: "idea", nombre: "Idea: todavía no hay producto" },
-  { codigo: "prototipo", nombre: "Prototipo: algo que se puede enseñar" },
-  { codigo: "mvp", nombre: "MVP: funciona y alguien lo usa" },
-  { codigo: "primeros_clientes", nombre: "Primeros clientes" },
-  { codigo: "facturacion", nombre: "Facturación: ya cobramos" },
-];
+const ESTADOS = ORDEN_ESTADIOS.map((e) => ({ codigo: e, nombre: `${ESTADIOS[e]}: ${DESCRIPCION_ESTADIO[e].toLowerCase()}` }));
 
 /**
  * El formulario de candidatura.

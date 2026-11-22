@@ -1,4 +1,4 @@
-import type { Via } from "@/lib/comite";
+import { revisionDe, type Estadio } from "@/lib/estadios";
 import { equity } from "@/lib/utils";
 
 /**
@@ -15,17 +15,17 @@ export const BASES: Record<BaseIncorporacion, string> = {
 };
 
 /**
- * La base normal de cada vía: en Aceleración se decide con el due
- * diligence; en Construcción no lo hay todavía, así que es estratégica.
- * Las dos valen en cualquier vía, con su motivo.
+ * La base normal de cada estadio: con due diligence se decide con él; en
+ * idea, que va con diagnóstico, es estratégica. Las dos valen en cualquier
+ * estadio, con su motivo.
  */
-export function baseSugerida(via: Via | null | undefined): BaseIncorporacion {
-  return via === "aceleracion" ? "due_diligence" : "estrategica";
+export function baseSugerida(estadio: Estadio | null | undefined): BaseIncorporacion {
+  return revisionDe(estadio) === "due_diligence" ? "due_diligence" : "estrategica";
 }
 
-/** El siguiente paso, en palabras de ella, según la vía */
-export function siguientePasoEntrada(via: Via | null | undefined): string {
-  return via === "aceleracion"
+/** El siguiente paso, en palabras de ella, según su revisión de entrada */
+export function siguientePasoEntrada(estadio: Estadio | null | undefined): string {
+  return revisionDe(estadio) === "due_diligence"
     ? "Ahora, el due diligence: en «Due diligence» tienes lo que te pedimos. Con lo obligatorio validado, IWL decide la incorporación y te propone el Acuerdo."
     : "Ahora, un diagnóstico corto con IWL: una reunión, tu ficha y tu situación societaria. Lo documental se construye con nosotras dentro del programa; no tienes que entregar nada para entrar.";
 }
@@ -45,7 +45,7 @@ export function mensajeNoIncorporada(contacto: string, startup: string): string 
 
 /** Lo que hace falta saber de una compañía en entrada para decir su paso */
 export interface EstadoEntrada {
-  via: Via | null;
+  estadio: Estadio | null;
   situacionDicha: boolean;
   situacionConfirmada: boolean;
   /** Puntos obligatorios del due diligence: validados (o que no aplican) y total */
@@ -61,7 +61,7 @@ export type QuienMueve = "ella" | "iwl" | "direccion";
 /**
  * El paso en que está una compañía en entrada, y a quién le toca moverlo.
  *
- * En el orden del recorrido: situación, due diligence (solo Aceleración),
+ * En el orden del recorrido: situación, due diligence (no en idea),
  * decisión, propuesta, aceptación y firma. La lista «En entrada» enseña
  * esto en cada fila, y el contador de dirección cuenta las que esperan a
  * dirección.
@@ -71,7 +71,7 @@ export function pasoEntrada(e: EstadoEntrada): { texto: string; quien: QuienMuev
   if (!e.situacionConfirmada) return { texto: "Confirmar su situación societaria", quien: "iwl" };
 
   if (!e.decision) {
-    if (e.via === "aceleracion" && e.obligatoriosHechos < e.obligatorios) {
+    if (revisionDe(e.estadio) === "due_diligence" && e.obligatoriosHechos < e.obligatorios) {
       return { texto: `Due diligence: ${e.obligatoriosHechos} de ${e.obligatorios} obligatorios`, quien: "ella" };
     }
     return { texto: "Decidir la incorporación", quien: "direccion" };
@@ -85,16 +85,16 @@ export function pasoEntrada(e: EstadoEntrada): { texto: string; quien: QuienMuev
   return { texto: "Acuerdo firmado", quien: "iwl" };
 }
 
-/** La horquilla de equity de una vía: vacía, no se comprueba */
+/** La horquilla de equity de un estadio: vacía, no se comprueba */
 export interface Horquilla {
   min: number | null;
   max: number | null;
 }
 
-/** Lee la horquilla de una vía del ajuste `equity_horquilla`, sin suponer nada */
-export function horquillaDe(ajuste: unknown, via: Via | null | undefined): Horquilla | null {
-  if (!via || !ajuste || typeof ajuste !== "object") return null;
-  const h = (ajuste as Record<string, { min?: unknown; max?: unknown } | undefined>)[via];
+/** Lee la horquilla de un estadio del ajuste `equity_horquilla`, sin suponer nada */
+export function horquillaDe(ajuste: unknown, estadio: Estadio | null | undefined): Horquilla | null {
+  if (!estadio || !ajuste || typeof ajuste !== "object") return null;
+  const h = (ajuste as Record<string, { min?: unknown; max?: unknown } | undefined>)[estadio];
   const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
   const min = num(h?.min);
   const max = num(h?.max);
@@ -126,15 +126,16 @@ export function estadoEquity(
 }
 
 /**
- * El tope del tramo de entrada en Construcción: al llegar, atención; a la
- * semana, vencido. En Aceleración no hay tope: el due diligence ya avisa.
+ * El tope del tramo de entrada con diagnóstico (idea): al llegar, atención;
+ * a la semana, vencido. Con due diligence no hay tope: el due diligence ya
+ * avisa.
  */
 export function estadoTope(
-  via: Via | null | undefined,
+  estadio: Estadio | null | undefined,
   dias: number,
   tope: number,
 ): "atencion" | "vencido" | null {
-  if (via !== "construccion" || tope <= 0) return null;
+  if (revisionDe(estadio) !== "diagnostico" || tope <= 0) return null;
   if (dias >= tope + 7) return "vencido";
   if (dias >= tope) return "atencion";
   return null;

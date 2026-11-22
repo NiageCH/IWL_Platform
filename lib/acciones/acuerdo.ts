@@ -1,5 +1,6 @@
 "use server";
 
+import { ORDEN_ESTADIOS_TUPLA } from "@/lib/estadios";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
@@ -277,11 +278,17 @@ export async function firmarAcuerdo(formData: FormData): Promise<Resultado> {
   return ok();
 }
 
-export async function pasarAAceleracion(formData: FormData): Promise<Resultado> {
+/**
+ * Cambiar el estadio (REVISION, 22 nov): sustituye a «Pasar a
+ * Aceleración». Dirección, con motivo, y solo hacia arriba; lo comprueba la
+ * base. Al salir de idea, lo que estaba por construir pasa a por entregar.
+ */
+export async function cambiarEstadio(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
     z.object({
       company_id: uuid,
       slug,
+      estadio: z.enum(ORDEN_ESTADIOS_TUPLA, { message: "¿A qué estadio pasa?" }),
       motivo: z.string().trim().min(10, "Escribe el motivo: queda en el registro y le llega al mentor principal."),
     }),
     formData,
@@ -290,11 +297,12 @@ export async function pasarAAceleracion(formData: FormData): Promise<Resultado> 
 
   const persona = await personaActual();
   if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
-  if (persona.role !== "admin_iwl") return error("La vía la cambia la dirección de IWL.");
+  if (persona.role !== "admin_iwl") return error("El estadio lo cambia la dirección de IWL.");
 
   const supabase = await clienteServidor();
-  const { error: falloBase } = await supabase.rpc("pasar_a_aceleracion", {
+  const { error: falloBase } = await supabase.rpc("cambiar_estadio", {
     p_company: datos.company_id,
+    p_estadio: datos.estadio,
     p_motivo: datos.motivo,
   });
   if (falloBase) return traducirError(falloBase);

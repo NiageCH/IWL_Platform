@@ -1,5 +1,6 @@
 "use server";
 
+import { ORDEN_ESTADIOS_TUPLA } from "@/lib/estadios";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor } from "@/lib/supabase/servidor";
@@ -250,13 +251,7 @@ export async function moverHito(formData: FormData): Promise<Resultado> {
 // de un proyecto: las políticas exigen `app.is_admin()`.
 // -----------------------------------------------------------------------------
 
-const ESTADOS_ENTRADA = [
-  "idea",
-  "prototipo",
-  "mvp",
-  "primeros_clientes",
-  "facturacion",
-] as const;
+const ESTADOS_ENTRADA = ORDEN_ESTADIOS_TUPLA;
 
 function refrescarPlantillas() {
   revalidatePath("/admin/rutas");

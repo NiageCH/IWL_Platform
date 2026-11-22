@@ -1,5 +1,6 @@
 "use server";
 
+import { ORDEN_ESTADIOS_TUPLA } from "@/lib/estadios";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
@@ -49,13 +50,7 @@ const PERFILES = ["software", "software_ia", "hardware"] as const;
  * Son independientes —se puede facturar sin haber levantado nada— y es este
  * el que decide qué hoja de ruta le corresponde.
  */
-const ESTADOS_ENTRADA_VALIDOS = [
-  "idea",
-  "prototipo",
-  "mvp",
-  "primeros_clientes",
-  "facturacion",
-] as const;
+const ESTADOS_ENTRADA_VALIDOS = ORDEN_ESTADIOS_TUPLA;
 
 const esquemaCompania = z.object({
   name: textoObligatorio(2, "¿Cómo se llama la compañía?"),

@@ -52,7 +52,7 @@ async function companiaNueva(sello: number) {
     contacto_nombre: `Contacto ${nombre}`,
     contacto_email: correo,
     estado: "preseleccionada",
-    via: "aceleracion",
+    estado_verificado: "facturando",
     situacion_societaria: "sin_constituir",
   });
   await llamar("registrar_nda_externo", {
@@ -238,7 +238,7 @@ test("IWL anota una reunión con 5 MB adjuntos, y dirección registra un NDA fir
     contacto_nombre: "Contacto reunión",
     contacto_email: `e2e.reunion.${sello}@ejemplo.test`,
     estado: "preseleccionada",
-    via: "aceleracion",
+    estado_verificado: "facturando",
     situacion_societaria: "sin_constituir",
   });
   try {

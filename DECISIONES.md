@@ -1968,3 +1968,16 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La franja de modo pruebas es solo de dirección**, en la consola de IWL. Al equipo no le cambia nada de lo que hace.
 - **La lista de lo que se hace el día de la primera startup real** vive en `docs/SALIDA.md`. No existía; se crea con el paso de quitar el modo pruebas.
 
+## 2026-11-22 · Estadios en lugar de vías · SUSTITUYE a «Construcción y Aceleración»
+
+- **Cuatro estadios: idea, MVP sin piloto, MVP con piloto y facturando** (REVISION, 22 nov). Desaparecen las vías. Del estadio sale lo que decidían ellas, en un solo sitio, `lib/estadios.ts`:
+  - el programa de la Fase 3: Incubación para idea y MVP sin piloto; Aceleración para MVP con piloto y facturando;
+  - la revisión de entrada: diagnóstico solo en idea, due diligence en el resto.
+- **Se reaprovecha `estado_entrada`**, que ya existía con cinco valores, y sus columnas: el estado declarado y el verificado de la candidatura, el de la compañía (`entry_state`) y el de las plantillas de hoja de ruta. Dos conceptos parecidos (el estado y la vía) eran el origen de la confusión; ahora hay uno. Como Postgres no deja quitar valores de un enum, la migración crea un tipo nuevo con el mismo nombre. Las funciones que lo tenían en la firma se recrean desde su definición vigente, con sus permisos exactos.
+- **Lo que había, a la nueva escala**: la vía manda donde la hay (Construcción → MVP sin piloto, Aceleración → facturando, como pidió la revisión). Donde solo había estado: idea y prototipo → idea, MVP → MVP sin piloto, primeros clientes → MVP con piloto, facturación → facturando.
+- **El acta confirma o cambia el estadio que declaró ella**: `estadio`, `estadio_propuesto` y `estadio_motivo`, con las mismas reglas que tenía la vía. Preseleccionar exige estadio, y cambiar el declarado exige motivo. Al cerrarse el acta, el estadio pasa a `estado_verificado` de la candidatura, y de ahí a la compañía.
+- **«Pasar a Aceleración» pasa a «Cambiar el estadio»**: dirección, con motivo, y solo hacia arriba. Lo garantiza la base: un `update` directo sin motivo no pasa, y bajar tampoco. Al salir de idea, lo que estaba por construir pasa a por entregar, igual que antes al pasar a Aceleración. El aviso al mentor principal es `cambio_estadio`.
+- **Lo que era «de Construcción» es ahora «de diagnóstico» (idea)**: el tope de días en entrada (`entrada_tope_diagnostico_dias`), que el checklist y el business plan nazcan por construir y que el Acuerdo se firme sin due diligence validado. Lo que era «de Aceleración» es de todos los demás estadios.
+- **La horquilla de equity va por estadio**, cuatro y no dos. Estaba vacía, así que no había nada que traducir; los números los fija Luciana.
+- **El contenido de un acta firmada cambió de forma** («Estadio:» en lugar de «Vía:»). El hash de un acta firmada antes de esto no coincidirá al regenerar su PDF. Son datos de prueba.
+

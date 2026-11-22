@@ -216,19 +216,19 @@ select
 from (values
   ('00000000-0000-0000-0005-000000000001', 'Brota Analítica', 'Agrotecnología',
    'Predicción de cosecha con sensores de suelo.', 'https://brota.test',
-   'Fundadora Brota', 'hola@brota.test', 'presentada', 'prototipo', 'Formulario'),
+   'Fundadora Brota', 'hola@brota.test', 'presentada', 'idea', 'Formulario'),
   ('00000000-0000-0000-0005-000000000002', 'Cauce Salud', 'Salud digital',
    'Seguimiento de pacientes crónicos desde casa.', 'https://cauce.test',
-   'Fundadora Cauce', 'hola@cauce.test', 'en_revision', 'mvp', 'Recomendación'),
+   'Fundadora Cauce', 'hola@cauce.test', 'en_revision', 'mvp_sin_piloto', 'Recomendación'),
   ('00000000-0000-0000-0005-000000000003', 'Duna Logística', 'Logística',
    'Reparto de última milla en zonas rurales.', null,
    'Fundadora Duna', 'hola@duna.test', 'reunion', 'idea', 'Evento'),
   ('00000000-0000-0000-0005-000000000004', 'Ámbar Educación', 'Educación',
    'Formación profesional con realidad aumentada.', null,
-   'Fundadora Ámbar', 'hola@ambar.test', 'comite', 'mvp', 'Formulario'),
+   'Fundadora Ámbar', 'hola@ambar.test', 'comite', 'mvp_sin_piloto', 'Formulario'),
   ('00000000-0000-0000-0005-000000000005', 'Risco Energía', 'Energía',
    'Autoconsumo compartido para comunidades de vecinos.', null,
-   'Fundadora Risco', 'hola@risco.test', 'nda', 'primeros_clientes', 'Formulario')
+   'Fundadora Risco', 'hola@risco.test', 'nda', 'mvp_con_piloto', 'Formulario')
 ) as v(id, nombre, sector, one_liner, website, contacto, email, estado, declarado, origen)
 on conflict (id) do nothing;
 

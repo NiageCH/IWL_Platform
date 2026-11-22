@@ -1,44 +1,20 @@
 /**
- * El acta de comité: la vía que se propone, el mensaje de un descarte y lo
+ * El acta de comité: el estadio que confirma, el mensaje de un descarte y lo
  * que firman sus miembros. El PDF, en `lib/acta-pdf.ts`.
  *
  * Cálculo puro: sin base de datos, para usarlo igual en el formulario, en
  * la acción y en el PDF, y probarlo solo.
  */
 
-export type Via = "aceleracion" | "construccion";
-export type Decision = "preseleccionada" | "descartada" | "aplazada";
+import type { Estadio } from "@/lib/estadios";
 
-export const VIAS: Record<Via, string> = {
-  aceleracion: "Aceleración",
-  construccion: "Construcción",
-};
+export type Decision = "preseleccionada" | "descartada" | "aplazada";
 
 export const DECISIONES: Record<Decision, string> = {
   preseleccionada: "Preseleccionada",
   descartada: "Descartada",
   aplazada: "Aplazada",
 };
-
-/**
- * La vía que sale del estado de entrada. Quien ya factura o tiene clientes
- * entra a acelerar, con due diligence; en idea, prototipo o MVP, lo
- * documental se construye dentro del programa. El comité la puede cambiar,
- * con motivo. Sin estado de entrada no se propone ninguna: se elige.
- */
-export function viaPropuesta(estadoEntrada: string | null | undefined): Via | null {
-  switch (estadoEntrada) {
-    case "idea":
-    case "prototipo":
-    case "mvp":
-      return "construccion";
-    case "primeros_clientes":
-    case "facturacion":
-      return "aceleracion";
-    default:
-      return null;
-  }
-}
 
 /**
  * El mensaje de un descarte, en la voz de IWL: claro, con el motivo si es
@@ -74,9 +50,11 @@ export interface ContenidoActa {
   fecha: string;
   resumen: string;
   decision: Decision;
-  via: Via | null;
-  viaPropuesta: Via | null;
-  viaMotivo: string | null;
+  /** El que confirma o fija el comité */
+  estadio: Estadio | null;
+  /** El que declaró ella */
+  estadioPropuesto: Estadio | null;
+  estadioMotivo: string | null;
   motivo: string | null;
   revisionOn: string | null;
   puedeVolver: boolean | null;
@@ -90,9 +68,9 @@ export function contenidoActa(c: ContenidoActa): string {
     `Candidatura: ${c.candidaturaId}`,
     `Fecha: ${c.fecha}`,
     `Decisión: ${c.decision}`,
-    `Vía: ${c.via ?? ""}`,
-    `Vía propuesta: ${c.viaPropuesta ?? ""}`,
-    `Motivo del cambio de vía: ${c.viaMotivo ?? ""}`,
+    `Estadio: ${c.estadio ?? ""}`,
+    `Estadio declarado: ${c.estadioPropuesto ?? ""}`,
+    `Motivo del cambio de estadio: ${c.estadioMotivo ?? ""}`,
     `Motivo: ${c.motivo ?? ""}`,
     `Revisión: ${c.revisionOn ?? ""}`,
     `Puede volver a presentarse: ${c.puedeVolver === null ? "" : c.puedeVolver ? "sí" : "no"}`,

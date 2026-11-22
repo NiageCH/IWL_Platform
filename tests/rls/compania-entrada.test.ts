@@ -51,8 +51,9 @@ beforeAll(async () => {
       contacto_nombre: "Fundadora de Prueba",
       contacto_email: CORREO,
       estado: "preseleccionada",
-      via: "construccion",
-      estado_declarado: "mvp",
+      // El comité la confirmó en idea: va con diagnóstico
+      estado_verificado: "idea",
+      estado_declarado: "mvp_sin_piloto",
       sector: "Salud",
     })
     .select("id")
@@ -67,7 +68,7 @@ beforeAll(async () => {
       contacto_nombre: "Otra de Prueba",
       contacto_email: `rls.acel.${SELLO}@ejemplo.test`,
       estado: "preseleccionada",
-      via: "aceleracion",
+      estado_verificado: "facturando",
     })
     .select("id")
     .single();
@@ -131,10 +132,10 @@ describe("al contrafirmar el NDA", () => {
 
     const { data: co } = await servicio
       .from("companies")
-      .select("name, slug, tramo, via, stage, sector, entry_state")
+      .select("name, slug, tramo, stage, sector, entry_state")
       .eq("id", companiaC)
       .single();
-    expect(co).toMatchObject({ name: NOMBRE, tramo: "entrada", via: "construccion", stage: null, sector: "Salud", entry_state: "mvp" });
+    expect(co).toMatchObject({ name: NOMBRE, tramo: "entrada", stage: null, sector: "Salud", entry_state: "idea" });
     // El identificador sale del nombre, sin tildes ni eñes
     expect(co!.slug).toBe(`na-entrada-${SELLO}`);
 
@@ -155,7 +156,7 @@ describe("al contrafirmar el NDA", () => {
     expect(eventos).toHaveLength(1);
   });
 
-  it("en Construcción, el checklist y el business plan nacen por construir, sin KPI ni hoja de ruta", async () => {
+  it("en idea, el checklist y el business plan nacen por construir, sin KPI ni hoja de ruta", async () => {
     const servicio = clienteServicio();
     const { data: puntos } = await servicio.from("dd_items").select("status").eq("company_id", companiaC);
     expect(puntos!.length).toBeGreaterThan(0);
@@ -169,7 +170,7 @@ describe("al contrafirmar el NDA", () => {
     expect(kpis ?? []).toEqual([]);
   });
 
-  it("en Aceleración, con el NDA firmado fuera y sin cuenta, nace por entregar y sin nadie dentro", async () => {
+  it("facturando, con el NDA firmado fuera y sin cuenta, nace por entregar y sin nadie dentro", async () => {
     const admin = await entrarComo(USUARIOS.admin);
     const { error } = await clienteServicio().rpc("registrar_nda_externo", {
       p_candidatura: aceleracion,

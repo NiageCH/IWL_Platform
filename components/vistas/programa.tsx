@@ -9,7 +9,7 @@ import {
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { AbrirAnexo, EditarAnexo } from "@/components/formularios/programa";
-import { BloqueVia, ESTADOS_ANEXO, PropuestaAcuerdo } from "@/components/vistas/acuerdo";
+import { BloqueEstadio, ESTADOS_ANEXO, PropuestaAcuerdo } from "@/components/vistas/acuerdo";
 import { equity, euros, fecha, numero } from "@/lib/utils";
 import { tarifaAnexo } from "@/lib/anexo";
 
@@ -108,7 +108,7 @@ export async function VistaPrograma({
             );
           })}
         </ol>
-        <BloqueVia compania={compania} esAdmin={resumen.permisos.esAdmin} />
+        <BloqueEstadio compania={compania} esAdmin={resumen.permisos.esAdmin} />
       </Bloque>
 
       {anexo.data ? (

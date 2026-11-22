@@ -1,5 +1,6 @@
 "use server";
 
+import { ORDEN_ESTADIOS } from "@/lib/estadios";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, esIwl, personaActual } from "@/lib/supabase/servidor";
@@ -142,9 +143,9 @@ export async function guardarTopeEntrada(formData: FormData): Promise<Resultado>
   );
   if (fallo) return fallo;
   return guardarAjuste(
-    "entrada_tope_construccion_dias",
+    "entrada_tope_diagnostico_dias",
     datos.dias,
-    `Guardado. Una compañía de Construcción avisará a los ${datos.dias} días en entrada sin Acuerdo, y estará vencida a la semana.`,
+    `Guardado. Una compañía en idea avisará a los ${datos.dias} días en entrada sin Acuerdo, y estará vencida a la semana.`,
   );
 }
 
@@ -202,18 +203,13 @@ const porcentaje = z
 export async function guardarHorquilla(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
     z
-      .object({
-        aceleracion_min: porcentaje,
-        aceleracion_max: porcentaje,
-        construccion_min: porcentaje,
-        construccion_max: porcentaje,
-      })
+      .object(Object.fromEntries(ORDEN_ESTADIOS.flatMap((e) => [[`${e}_min`, porcentaje], [`${e}_max`, porcentaje]])))
       .superRefine((d, ctx) => {
-        for (const via of ["aceleracion", "construccion"] as const) {
-          const min = d[`${via}_min`];
-          const max = d[`${via}_max`];
+        for (const e of ORDEN_ESTADIOS) {
+          const min = d[`${e}_min`] as number | null;
+          const max = d[`${e}_max`] as number | null;
           if (min !== null && max !== null && min > max) {
-            ctx.addIssue({ code: "custom", path: [`${via}_max`], message: "El máximo no puede ser menor que el mínimo." });
+            ctx.addIssue({ code: "custom", path: [`${e}_max`], message: "El máximo no puede ser menor que el mínimo." });
           }
         }
       }),
@@ -222,10 +218,9 @@ export async function guardarHorquilla(formData: FormData): Promise<Resultado> {
   if (fallo) return fallo;
   return guardarAjuste(
     "equity_horquilla",
-    {
-      aceleracion: { min: datos.aceleracion_min, max: datos.aceleracion_max },
-      construccion: { min: datos.construccion_min, max: datos.construccion_max },
-    },
+    Object.fromEntries(
+      ORDEN_ESTADIOS.map((e) => [e, { min: datos[`${e}_min`] as number | null, max: datos[`${e}_max`] as number | null }]),
+    ),
     "Guardada. Al proponer un Anexo se enseña como referencia, y salirse pide el motivo.",
   );
 }

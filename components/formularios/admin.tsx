@@ -1,5 +1,6 @@
 "use client";
 
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import { CamposSituacion } from "@/components/formularios/situacion";
 import { useState, useTransition } from "react";
 import Link from "next/link";
@@ -45,13 +46,7 @@ const ETAPAS = [
   { valor: "serie_a", texto: "Serie A" },
 ];
 
-const ESTADOS_ENTRADA = [
-  { valor: "idea", texto: "Idea" },
-  { valor: "prototipo", texto: "Prototipo" },
-  { valor: "mvp", texto: "MVP" },
-  { valor: "primeros_clientes", texto: "Primeros clientes" },
-  { valor: "facturacion", texto: "Facturación" },
-];
+const ESTADOS_ENTRADA = ORDEN_ESTADIOS.map((e) => ({ valor: e, texto: ESTADIOS[e] }));
 
 const PERFILES = [
   { valor: "software", texto: "Software" },

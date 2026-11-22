@@ -6,7 +6,7 @@ import {
   DarAccesoFundadora,
   FirmarAnexoAceptado,
   FirmarAcuerdoCompania,
-  PasarAAceleracion,
+  CambiarEstadio,
   ProponerAnexo,
   ResponderComentarioAnexo,
   VolverABorrador,
@@ -15,7 +15,7 @@ import { Metadato } from "@/components/ui/primitivas";
 import type { Situacion } from "@/lib/societario";
 import { fecha } from "@/lib/utils";
 import { horquillaDe } from "@/lib/entrada";
-import type { Via } from "@/lib/comite";
+import { ESTADIOS, estadioYPrograma, estadiosPorEncima, type Estadio } from "@/lib/estadios";
 
 /** Cómo se llama cada estado del Anexo, para quien lo lee */
 export const ESTADOS_ANEXO: Record<string, string> = {
@@ -46,7 +46,7 @@ interface Compania {
   id: string;
   slug: string;
   tramo: string;
-  via: string | null;
+  entry_state: string | null;
   situacion_societaria: string | null;
 }
 
@@ -122,7 +122,7 @@ export async function PropuestaAcuerdo({
 
       {anexo.equity_fuera_motivo && anexo.status !== "borrador" ? (
         <p className="text-sm text-secundario">
-          <span className="text-metadato">El equity se sale de la horquilla de su vía: </span>
+          <span className="text-metadato">El equity se sale de la horquilla de su estadio: </span>
           {anexo.equity_fuera_motivo}
         </p>
       ) : null}
@@ -193,8 +193,8 @@ export async function PropuestaAcuerdo({
             slug={compania.slug}
             situacion={(compania.situacion_societaria as Situacion | null) ?? null}
             fundadoras={nombreCompleto(candidatura.data?.contacto_nombre, candidatura.data?.contacto_apellidos)}
-            horquilla={horquillaDe(horquillas.data?.value, compania.via as Via | null)}
-            via={compania.via}
+            horquilla={horquillaDe(horquillas.data?.value, compania.entry_state as Estadio | null)}
+            estadio={compania.entry_state as Estadio | null}
             equity={anexo.equity_pct === null ? null : Number(anexo.equity_pct)}
             fechaHito={hito.data?.due_date ?? null}
           />
@@ -220,43 +220,47 @@ export async function PropuestaAcuerdo({
 }
 
 /**
- * La vía de entrada, con el último cambio y su motivo, y pasar de
- * Construcción a Aceleración (solo dirección). El motivo sale del registro,
- * que es donde lo deja la base.
+ * El estadio, con su programa, el último cambio y su motivo, y cambiarlo
+ * hacia arriba (solo dirección). El motivo sale del registro, que es donde
+ * lo deja la base.
  */
-export async function BloqueVia({
+export async function BloqueEstadio({
   compania,
   esAdmin,
 }: {
   compania: Compania;
   esAdmin: boolean;
 }) {
-  if (!compania.via) return null;
+  const estadio = compania.entry_state as Estadio | null;
+  if (!estadio) return null;
   const supabase = await clienteServidor();
   const { data: cambio } = await supabase
     .from("activity_log")
     .select("created_at, detail")
     .eq("company_id", compania.id)
-    .eq("action", "cambio_via")
+    .eq("action", "cambio_estadio")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const motivo = (cambio?.detail as { motivo?: string } | null)?.motivo;
+  const detalle = cambio?.detail as { motivo?: string; de?: Estadio | null } | null;
+  const motivo = detalle?.motivo;
+  const porEncima = estadiosPorEncima(estadio);
 
   return (
     <div className="flex flex-col gap-2 border-t border-filete px-4 py-3">
       <p className="text-sm">
-        <span className="text-metadato">Vía de entrada </span>
-        <span className="text-titular">{compania.via === "aceleracion" ? "Aceleración" : "Construcción"}</span>
+        <span className="text-metadato">Estadio </span>
+        <span className="text-titular">{estadioYPrograma(estadio)}</span>
       </p>
       {cambio && motivo ? (
         <p className="text-sm text-secundario">
-          Pasó de Construcción a Aceleración el {fecha(cambio.created_at)}: {motivo}
+          {detalle?.de ? `Pasó de ${ESTADIOS[detalle.de]} a ${ESTADIOS[estadio]}` : `Pasó a ${ESTADIOS[estadio]}`} el{" "}
+          {fecha(cambio.created_at)}: {motivo}
         </p>
       ) : null}
-      {esAdmin && compania.via === "construccion" ? (
+      {esAdmin && porEncima.length ? (
         <div className="-mx-4 -mb-3">
-          <PasarAAceleracion companyId={compania.id} slug={compania.slug} />
+          <CambiarEstadio companyId={compania.id} slug={compania.slug} opciones={porEncima} />
         </div>
       ) : null}
     </div>

@@ -1,16 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contenidoActa, mensajeDescarte, viaPropuesta } from "./comite";
-
-describe("la vía que se propone", () => {
-  it("idea, prototipo y MVP construyen; con clientes o facturación, aceleran", () => {
-    for (const e of ["idea", "prototipo", "mvp"]) expect(viaPropuesta(e)).toBe("construccion");
-    for (const e of ["primeros_clientes", "facturacion"]) expect(viaPropuesta(e)).toBe("aceleracion");
-  });
-
-  it("sin estado de entrada no se propone ninguna: se elige", () => {
-    expect(viaPropuesta(null)).toBeNull();
-  });
-});
+import { contenidoActa, mensajeDescarte } from "./comite";
 
 describe("lo firmado de un acta", () => {
   const BASE = {
@@ -19,9 +8,9 @@ describe("lo firmado de un acta", () => {
     fecha: "2026-11-20",
     resumen: "Equipo sólido.",
     decision: "descartada" as const,
-    via: null,
-    viaPropuesta: null,
-    viaMotivo: null,
+    estadio: null,
+    estadioPropuesto: null,
+    estadioMotivo: null,
     motivo: "Fuera del foco.",
     revisionOn: null,
     puedeVolver: true,

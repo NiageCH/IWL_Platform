@@ -213,16 +213,16 @@ export default async function AdminPrograma() {
 
       <Bloque>
         <TituloBloque accion={<Metadato>No se trabaja sin Acuerdo</Metadato>}>
-          Entrada en Construcción
+          Entrada con diagnóstico
         </TituloBloque>
         <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
-          En Construcción, el tramo de entrada es un diagnóstico corto para
-          decidir, no para construir. Al llegar a estos días sin Acuerdo, la
-          compañía sale en atención en «En entrada» y en tus avisos; a la
-          semana, vencida. En Aceleración no hay tope: el due diligence ya
+          En idea, la entrada es un diagnóstico corto para decidir, no para
+          construir. Al llegar a estos días sin Acuerdo, la compañía sale en
+          atención en «En entrada» y en tus avisos; a la semana, vencida. Con
+          due diligence (MVP y facturando) no hay tope: el due diligence ya
           tiene sus avisos.
         </p>
-        <TopeEntrada dias={typeof ajuste("entrada_tope_construccion_dias") === "number" ? (ajuste("entrada_tope_construccion_dias") as number) : 14} />
+        <TopeEntrada dias={typeof ajuste("entrada_tope_diagnostico_dias") === "number" ? (ajuste("entrada_tope_diagnostico_dias") as number) : 14} />
       </Bloque>
 
       <Bloque>
@@ -242,11 +242,11 @@ export default async function AdminPrograma() {
 
       <Bloque>
         <TituloBloque accion={<Metadato>La fija Luciana</Metadato>}>
-          Horquilla de equity por vía
+          Horquilla de equity por estadio
         </TituloBloque>
         <p className="border-b border-filete px-4 py-3 text-sm text-secundario">
-          Entrar antes cuesta más equity: la horquilla de Construcción es más
-          alta que la de Aceleración. Al proponer un Anexo se enseña como
+          Entrar antes cuesta más equity: la horquilla de idea es más alta que
+          la de facturando. Al proponer un Anexo se enseña como
           referencia, y salirse de ella pide el motivo, que queda en el
           registro. Vacía, no se comprueba nada.
         </p>

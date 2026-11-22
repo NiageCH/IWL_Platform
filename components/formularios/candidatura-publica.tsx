@@ -1,5 +1,6 @@
 "use client";
 
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import {
   anadirMaterial,
   completarCandidatura,
@@ -129,13 +130,11 @@ export function CompletarFicha({
               <option value="" disabled>
                 Elige una
               </option>
-              <option value="idea">Idea: todavía no hay producto</option>
-              <option value="prototipo">
-                Prototipo: algo que se puede enseñar
-              </option>
-              <option value="mvp">MVP: funciona y alguien lo usa</option>
-              <option value="primeros_clientes">Primeros clientes</option>
-              <option value="facturacion">Facturación: ya cobramos</option>
+              {ORDEN_ESTADIOS.map((e) => (
+                <option key={e} value={e}>
+                  {ESTADIOS[e]}: {DESCRIPCION_ESTADIO[e].toLowerCase()}
+                </option>
+              ))}
             </Seleccion>
           </Campo>
 

@@ -57,7 +57,7 @@ test("sin mentor asignado todavía, se le dice cuándo lo tendrá", async ({ pag
     contacto_nombre: "Contacto equipo",
     contacto_email: correo,
     estado: "preseleccionada",
-    via: "aceleracion",
+    estado_verificado: "facturando",
     situacion_societaria: "sin_constituir",
   });
   let compania: string | null = null;

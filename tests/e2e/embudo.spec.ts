@@ -459,7 +459,7 @@ test("corregir los datos no borra lo que el formulario no enseña", async ({ pag
     contacto_nombre: "Quien Sea",
     contacto_email: `e2e.sinperder.${SELLO}@ejemplo.test`,
     origen: "Recomendación de una mentora",
-    estado_declarado: "mvp",
+    estado_declarado: "mvp_sin_piloto",
     equipo_personas: 3,
     notas: "Notas que no se pueden perder",
   });
@@ -481,7 +481,7 @@ test("corregir los datos no borra lo que el formulario no enseña", async ({ pag
     expect(despues).toEqual({
       sector: "Salud",
       origen: "Recomendación de una mentora",
-      estado_declarado: "mvp",
+      estado_declarado: "mvp_sin_piloto",
       equipo_personas: 3,
       notas: "Notas que no se pueden perder",
     });

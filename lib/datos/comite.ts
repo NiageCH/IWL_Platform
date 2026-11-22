@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import type { Decision, Via } from "@/lib/comite";
+import type { Decision } from "@/lib/comite";
+import type { Estadio } from "@/lib/estadios";
 import { nombrePersona } from "@/lib/etiquetas";
 
 /** Las personas de IWL, que son quienes pueden formar el comité */
@@ -30,7 +31,7 @@ export async function leerActas(candidaturaId: string) {
   const { data } = await supabase
     .from("comite_actas")
     .select(
-      "id, fecha, resumen, decision, via, via_propuesta, via_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, last_name, email))",
+      "id, fecha, resumen, decision, estadio, estadio_propuesto, estadio_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, last_name, email))",
     )
     .eq("candidatura_id", candidaturaId)
     .order("created_at", { ascending: false });
@@ -40,9 +41,9 @@ export async function leerActas(candidaturaId: string) {
     fecha: a.fecha,
     resumen: a.resumen,
     decision: a.decision as Decision,
-    via: a.via as Via | null,
-    viaPropuesta: a.via_propuesta as Via | null,
-    viaMotivo: a.via_motivo,
+    estadio: a.estadio as Estadio | null,
+    estadioPropuesto: a.estadio_propuesto as Estadio | null,
+    estadioMotivo: a.estadio_motivo,
     motivo: a.motivo,
     revisionOn: a.revision_on,
     puedeVolver: a.puede_volver,

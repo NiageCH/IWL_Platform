@@ -7,7 +7,7 @@ import {
   comentarAnexo,
   darAccesoFundadora,
   firmarAcuerdo,
-  pasarAAceleracion,
+  cambiarEstadio,
   proponerAnexo,
   responderComentarioAnexo,
   volverABorrador,
@@ -15,6 +15,7 @@ import {
 import { CamposFirmantes } from "@/components/formularios/situacion";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
 import type { Situacion } from "@/lib/societario";
+import { ESTADIOS, PROGRAMAS, programaDe, type Estadio } from "@/lib/estadios";
 import { fueraDeHorquilla, textoHorquilla, type Horquilla } from "@/lib/entrada";
 import { equity as textoEquity } from "@/lib/utils";
 
@@ -31,7 +32,7 @@ export function ProponerAnexo({
   situacion,
   fundadoras,
   horquilla,
-  via,
+  estadio,
   equity,
   fechaHito,
 }: {
@@ -40,7 +41,7 @@ export function ProponerAnexo({
   situacion: Situacion | null;
   fundadoras: string;
   horquilla: Horquilla | null;
-  via: string | null;
+  estadio: Estadio | null;
   equity: number | null;
   fechaHito: string | null;
 }) {
@@ -59,7 +60,7 @@ export function ProponerAnexo({
             </p>
             {horquilla ? (
               <p className="text-sm text-cuerpo">
-                La horquilla de equity de {via === "aceleracion" ? "Aceleración" : "Construcción"} es{" "}
+                La horquilla de equity de {estadio ? ESTADIOS[estadio] : "su estadio"} es{" "}
                 {textoHorquilla(horquilla)}.{" "}
                 {equity === null
                   ? "Este Anexo no tiene equity todavía."
@@ -262,23 +263,43 @@ export function FirmarAcuerdoCompania({
   );
 }
 
-export function PasarAAceleracion({ companyId, slug }: { companyId: string; slug: string }) {
+export function CambiarEstadio({
+  companyId,
+  slug,
+  opciones,
+}: {
+  companyId: string;
+  slug: string;
+  /** Los que quedan por encima del suyo: el estadio no baja */
+  opciones: Estadio[];
+}) {
   return (
-    <Desplegable titulo="Pasar a Aceleración">
-      <Formulario accion={pasarAAceleracion} className="gap-3">
+    <Desplegable titulo="Cambiar el estadio">
+      <Formulario accion={cambiarEstadio} className="gap-3">
         {(r) => (
           <>
             <input type="hidden" name="company_id" value={companyId} />
             <input type="hidden" name="slug" value={slug} />
             <p className="text-xs text-secundario">
-              Cuando empieza a facturar. No tiene vuelta atrás: lo que estaba por construir pasa
-              a por entregar, queda en el registro y se avisa a su mentor principal.
+              Solo hacia arriba, cuando el proyecto ha avanzado: no tiene vuelta atrás. Queda en
+              el registro y se avisa a su mentor principal. Si sale de idea, lo que estaba por
+              construir pasa a por entregar.
             </p>
+            <Campo etiqueta="Pasa a" obligatorio error={r.ok ? undefined : r.campos?.estadio}>
+              <Seleccion name="estadio" defaultValue="" required>
+                <option value="">Elige…</option>
+                {opciones.map((e) => (
+                  <option key={e} value={e}>
+                    {ESTADIOS[e]} · {PROGRAMAS[programaDe(e)!]}
+                  </option>
+                ))}
+              </Seleccion>
+            </Campo>
             <Campo etiqueta="Motivo" obligatorio error={r.ok ? undefined : r.campos?.motivo}>
               <AreaTexto name="motivo" rows={3} required />
             </Campo>
             <div>
-              <Boton>Pasar a Aceleración</Boton>
+              <Boton>Cambiar el estadio</Boton>
             </div>
           </>
         )}

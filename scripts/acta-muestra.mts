@@ -34,9 +34,9 @@ const BASE = {
   fecha: "2026-11-20",
   resumen:
     "El equipo presenta una solución para la gestión de citas en clínicas pequeñas. Producto en MVP, con dos clínicas en piloto y un acuerdo de pago por uso firmado con una de ellas.\n\nEl comité valora el conocimiento del sector de la fundadora y la claridad del plan para los próximos seis meses. Le preocupa la dependencia de un único desarrollador externo.",
-  via: null,
-  viaPropuesta: null,
-  viaMotivo: null,
+  estadio: null,
+  estadioPropuesto: null,
+  estadioMotivo: null,
   motivo: null,
   revisionOn: null,
   puedeVolver: null,
@@ -52,9 +52,9 @@ const VARIANTES: Record<string, Omit<DatosActa, "hash">> = {
   Preseleccionada: {
     ...BASE,
     decision: "preseleccionada",
-    via: "aceleracion",
-    viaPropuesta: "construccion",
-    viaMotivo: "Ya tiene dos clínicas en piloto y una de ellas paga: entra a acelerar.",
+    estadio: "facturando",
+    estadioPropuesto: "mvp_con_piloto",
+    estadioMotivo: "Ya tiene dos clínicas en piloto y una de ellas paga: entra facturando.",
   },
   Aplazada: {
     ...BASE,

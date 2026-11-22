@@ -1,5 +1,6 @@
 "use client";
 
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import Link from "next/link";
 
 import { useState } from "react";
@@ -39,13 +40,7 @@ import { textoEnvioNda } from "@/lib/onboarding";
 import type { DatosSocietarios, Situacion } from "@/lib/societario";
 import { CamposFirmantes, CamposSituacion } from "@/components/formularios/situacion";
 
-const ESTADOS_ENTRADA = [
-  { codigo: "idea", nombre: "Idea" },
-  { codigo: "prototipo", nombre: "Prototipo" },
-  { codigo: "mvp", nombre: "MVP" },
-  { codigo: "primeros_clientes", nombre: "Primeros clientes" },
-  { codigo: "facturacion", nombre: "Facturación" },
-];
+const ESTADOS_ENTRADA = ORDEN_ESTADIOS.map((e) => ({ codigo: e, nombre: ESTADIOS[e] }));
 
 /** Alta a mano, para lo que llega por fuera del formulario */
 export function NuevaCandidatura({

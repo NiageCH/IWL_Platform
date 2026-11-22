@@ -25,7 +25,7 @@ async function candidaturaEnComite() {
       contacto_nombre: "Prueba",
       contacto_email: `rls.comite.${crypto.randomUUID().slice(0, 8)}@ejemplo.test`,
       estado: "comite",
-      estado_declarado: "mvp",
+      estado_declarado: "mvp_sin_piloto",
     })
     .select("id")
     .single();
@@ -96,12 +96,12 @@ describe("el acta", () => {
     expect(anadir.error?.message).toMatch(/el comité no cambia/);
   });
 
-  it("la última firma aplica la decisión y la vía", async () => {
+  it("la última firma aplica la decisión y el estadio", async () => {
     const c = await candidaturaEnComite();
     const [admin, equipo] = [await perfil(USUARIOS.admin), await perfil(USUARIOS.equipoIwl)];
     const id = await acta(
       c,
-      { decision: "preseleccionada", via: "construccion", via_propuesta: "construccion" },
+      { decision: "preseleccionada", estadio: "mvp_sin_piloto", estadio_propuesto: "mvp_sin_piloto" },
       [admin, equipo],
     );
 
@@ -110,8 +110,8 @@ describe("el acta", () => {
     expect((await servicio.from("candidaturas").select("estado").eq("id", c).single()).data!.estado).toBe("comite");
 
     expect((await firmar(id, equipo)).data).toBe(true);
-    const { data } = await servicio.from("candidaturas").select("estado, via").eq("id", c).single();
-    expect(data).toEqual({ estado: "preseleccionada", via: "construccion" });
+    const { data } = await servicio.from("candidaturas").select("estado, estado_verificado").eq("id", c).single();
+    expect(data).toEqual({ estado: "preseleccionada", estado_verificado: "mvp_sin_piloto" });
   });
 
   it("descartada, con su motivo", async () => {
@@ -157,8 +157,8 @@ describe("el acta", () => {
       candidatura_id: c,
       resumen: "x",
       decision: "preseleccionada",
-      via: "aceleracion",
-      via_propuesta: "construccion",
+      estadio: "facturando",
+      estadio_propuesto: "mvp_sin_piloto",
     });
     expect(otraViaSinMotivo.error).not.toBeNull();
   });

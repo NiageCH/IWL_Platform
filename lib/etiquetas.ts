@@ -1,3 +1,4 @@
+import { ESTADIOS } from "@/lib/estadios";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   euros as eurosDe,
@@ -29,13 +30,8 @@ export const PERFILES: Record<Perfil, string> = {
   hardware: "Hardware",
 };
 
-export const ESTADOS_ENTRADA: Record<Entrada, string> = {
-  idea: "Idea",
-  prototipo: "Prototipo",
-  mvp: "MVP",
-  primeros_clientes: "Primeros clientes",
-  facturacion: "Facturación",
-};
+/** El estadio, con los nombres de `lib/estadios.ts` (REVISION, 22 nov) */
+export const ESTADOS_ENTRADA: Record<Entrada, string> = ESTADIOS;
 
 export const SEVERIDADES = {
   critico: "Crítico",

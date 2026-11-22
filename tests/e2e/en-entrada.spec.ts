@@ -13,10 +13,10 @@ import {
 
 /**
  * «En entrada», al lado de la cartera, con dos compañías recién nacidas:
- * una de Aceleración, con su fundadora con cuenta, y una de Construcción.
+ * una facturando (due diligence), con su fundadora con cuenta, y una en idea (diagnóstico).
  *
- * Cada una sale con su vía y su paso; la de Aceleración, con el avance del
- * due diligence, «Validar» y «Recordar»; la de Construcción, con su
+ * Cada una sale con su estadio y su paso; la que factura, con el avance del
+ * due diligence, «Validar» y «Recordar»; la de idea, con su
  * diagnóstico. Ninguna sale en la lista de la cartera, y quien no es de IWL no ve
  * el bloque.
  */
@@ -27,14 +27,14 @@ const ACEL = `Entrada Acel ${SELLO}`;
 const CONS = `Entrada Cons ${SELLO}`;
 const CORREO = `e2e.entrada.${SELLO}@ejemplo.test`;
 
-async function nacer(nombre: string, via: string, correo: string) {
+async function nacer(nombre: string, estadio: string, correo: string) {
   const c = await insertar<{ id: string }>("candidaturas", {
     cohort_id: COHORTE,
     nombre,
     contacto_nombre: `Contacto ${nombre}`,
     contacto_email: correo,
     estado: "preseleccionada",
-    via,
+    estado_verificado: estadio,
     situacion_societaria: "sin_constituir",
   });
   const [admin] = await consultar<{ id: string }>("profiles", { email: `eq.${USUARIOS.admin}` }, "id");
@@ -50,12 +50,12 @@ async function nacer(nombre: string, via: string, correo: string) {
   return { candidatura: c.id, compania: con.company_id, slug: co.slug };
 }
 
-test("«En entrada» enseña cada compañía con su vía, su paso y lo que le toca, fuera de la cartera", async ({ page }) => {
+test("«En entrada» enseña cada compañía con su estadio, su paso y lo que le toca, fuera de la cartera", async ({ page }) => {
   const creadas: { candidatura: string; compania: string; slug: string }[] = [];
   try {
-    const acel = await nacer(ACEL, "aceleracion", CORREO);
+    const acel = await nacer(ACEL, "facturando", CORREO);
     creadas.push(acel);
-    const cons = await nacer(CONS, "construccion", `e2e.entrada.cons.${SELLO}@ejemplo.test`);
+    const cons = await nacer(CONS, "idea", `e2e.entrada.cons.${SELLO}@ejemplo.test`);
     creadas.push(cons);
 
     const ella = await crearCuenta(CORREO);
@@ -66,17 +66,17 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     const bloque = page.locator("section", { has: page.getByRole("heading", { name: "En entrada", exact: true }) });
     await expect(bloque).toBeVisible();
 
-    // Aceleración: su paso, el avance del due diligence, Validar y Recordar
+    // Facturando, con due diligence: su paso, el avance, Validar y Recordar
     const filaAcel = bloque.locator("li").filter({ hasText: ACEL });
-    await expect(filaAcel.getByText("Aceleración", { exact: true })).toBeVisible();
+    await expect(filaAcel.getByText("Facturando", { exact: true })).toBeVisible();
     await expect(filaAcel.getByText(/Confirmar su situación societaria/)).toBeVisible();
     await expect(filaAcel.getByText(/Due diligence: 0 de \d+ obligatorios validados/)).toBeVisible();
     await expect(filaAcel.getByRole("link", { name: "Validar" })).toHaveAttribute("href", `/cartera/${acel.slug}/diligencia`);
     await expect(filaAcel.getByRole("button", { name: "Recordar" })).toBeVisible();
 
-    // Construcción: el diagnóstico, sin due diligence
+    // Idea: el diagnóstico, sin due diligence
     const filaCons = bloque.locator("li").filter({ hasText: CONS });
-    await expect(filaCons.getByText("Construcción", { exact: true })).toBeVisible();
+    await expect(filaCons.getByText("Idea", { exact: true })).toBeVisible();
     await expect(filaCons.getByText("Diagnóstico:")).toBeVisible();
     await expect(filaCons.getByText(/Due diligence:/)).toHaveCount(0);
 
@@ -85,7 +85,7 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await expect(page.getByText(/Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma/)).toBeVisible();
     await page.goto("/cartera");
 
-    // Confirmada la situación, en Construcción le toca a dirección decidir
+    // Confirmada la situación, en idea le toca a dirección decidir
     await actualizar("companies", { id: `eq.${cons.compania}` }, { situacion_confirmada_at: new Date().toISOString() });
     await page.reload();
     await expect(
@@ -96,7 +96,7 @@ test("«En entrada» enseña cada compañía con su vía, su paso y lo que le to
     await expect(decidir).toContainText(`${CONS} tiene la situación societaria confirmada`);
 
     /*
-     * El tope de Construcción: con 15 días en entrada, atención en la fila y
+     * El tope del diagnóstico (idea): con 15 días en entrada, atención en la fila y
      * en los avisos de dirección. La fecha se mueve por fuera; la compañía
      * es de esta prueba y se borra al acabar.
      */

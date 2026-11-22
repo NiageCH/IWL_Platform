@@ -3,7 +3,7 @@ import { ChipCompania } from "@/components/chip-compania";
 import { Estado } from "@/components/ui/estado";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 import { Recordar } from "@/components/formularios/recordar";
-import { VIAS } from "@/lib/comite";
+import { ESTADIOS, revisionDe } from "@/lib/estadios";
 import type { FilaEntrada } from "@/lib/datos/entrada";
 
 const QUIEN: Record<FilaEntrada["paso"]["quien"], string> = {
@@ -12,7 +12,7 @@ const QUIEN: Record<FilaEntrada["paso"]["quien"], string> = {
   direccion: "le toca a dirección",
 };
 
-/** Una pieza del diagnóstico de Construcción, con su estado en palabra */
+/** Una pieza del diagnóstico (idea), con su estado en palabra */
 function Pieza({ hecho, texto }: { hecho: boolean; texto: string }) {
   return <Estado valor={hecho ? "hecho" : "pendiente"} rotulo={texto} />;
 }
@@ -22,9 +22,9 @@ function Pieza({ hecho, texto }: { hecho: boolean; texto: string }) {
  * firmado por las dos partes— y todavía no tienen Acuerdo. No cuentan en
  * la cartera ni en ninguna media, así que aquí es donde se ven.
  *
- * Cada fila dice su vía y su paso, y a quién le toca. En Aceleración, el
- * avance del due diligence, «Recordar» y «Validar»; en Construcción, el
- * diagnóstico: reunión, ficha y situación.
+ * Cada fila dice su estadio y su paso, y a quién le toca. Con due
+ * diligence, su avance, «Recordar» y «Validar»; en idea, el diagnóstico:
+ * reunión, ficha y situación.
  */
 export function EnEntrada({ filas, direccion }: { filas: FilaEntrada[]; direccion: string }) {
   if (!filas.length) return null;
@@ -40,7 +40,7 @@ export function EnEntrada({ filas, direccion }: { filas: FilaEntrada[]; direccio
               <Link href={`/cartera/${f.slug}`} className="enlace min-w-0 text-sm font-medium text-titular">
                 {f.nombre}
               </Link>
-              {f.via ? <span className="pastilla">{VIAS[f.via]}</span> : <span className="pastilla">Sin vía</span>}
+              {f.estadio ? <span className="pastilla">{ESTADIOS[f.estadio]}</span> : <span className="pastilla">Sin estadio</span>}
               {f.tope ? (
                 <Estado valor={f.tope} rotulo={`${f.dias} días sin Acuerdo`} />
               ) : (
@@ -55,7 +55,7 @@ export function EnEntrada({ filas, direccion }: { filas: FilaEntrada[]; direccio
               <span className="text-metadato"> · {QUIEN[f.paso.quien]}</span>
             </p>
 
-            {f.via === "aceleracion" ? (
+            {revisionDe(f.estadio) === "due_diligence" ? (
               <div className="flex flex-wrap items-center gap-3">
                 <span className="cifra text-xs text-secundario">
                   Due diligence: {f.obligatoriosHechos} de {f.obligatorios} obligatorios validados

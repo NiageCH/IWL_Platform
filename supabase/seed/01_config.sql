@@ -685,9 +685,9 @@ on conflict (code) do nothing;
 insert into roadmap_templates (code, name, entry_state, description, duration_months) values
   ('desde_idea', 'Desde la idea', 'idea',
    'Para equipos con tesis y sin producto. El recorrido va de confirmar que el problema existe a tener el primer cliente pagando.', 12),
-  ('desde_mvp', 'Desde el MVP', 'mvp',
+  ('desde_mvp', 'Desde el MVP', 'mvp_sin_piloto',
    'Para equipos con producto en manos de usuarios y sin modelo de venta repetible. El recorrido busca encaje y un motor comercial que no dependa del fundador.', 12),
-  ('con_facturacion', 'Con facturación', 'facturacion',
+  ('con_facturacion', 'Con facturación', 'facturando',
    'Para equipos con ingreso recurrente. El recorrido va de sostener el escalado sin romper la operación a levantar ronda institucional.', 9)
 on conflict (code) do nothing;
 

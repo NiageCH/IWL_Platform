@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 import { Estado } from "@/components/ui/estado";
 import { ConfirmarSituacion, DecidirIncorporacion, DecirSituacion } from "@/components/formularios/entrada";
-import { VIAS, type Via } from "@/lib/comite";
+import { estadioYPrograma, type Estadio } from "@/lib/estadios";
 import { BASES, siguientePasoEntrada } from "@/lib/entrada";
 import { describirSituacion, type DatosSocietarios } from "@/lib/societario";
 import type { DecisionLeida } from "@/lib/datos/entrada";
@@ -13,7 +13,7 @@ interface CompaniaEnEntrada extends Partial<DatosSocietarios> {
   id: string;
   name: string;
   slug: string;
-  via: string | null;
+  entry_state: string | null;
   situacion_confirmada_at: string | null;
 }
 
@@ -50,7 +50,7 @@ export function EntradaFundadora({
   /** El estado del Anexo que ella puede ver: propuesto, comentado o aceptado */
   propuesta?: string | null;
 }) {
-  const via = compania.via as Via | null;
+  const estadio = compania.entry_state as Estadio | null;
 
   if (!compania.situacion_societaria) {
     return (
@@ -71,7 +71,7 @@ export function EntradaFundadora({
 
   return (
     <Bloque className="mb-8">
-      <TituloBloque accion={<Metadato>{via ? `Vía ${VIAS[via]}` : "En entrada"}</Metadato>}>
+      <TituloBloque accion={<Metadato>{estadio ? estadioYPrograma(estadio) : "En entrada"}</Metadato>}>
         En entrada
       </TituloBloque>
       <div className="flex flex-col gap-3 px-5 py-4">
@@ -86,7 +86,7 @@ export function EntradaFundadora({
         ) : propuesta === "aceptado" ? (
           <p className="text-sm text-cuerpo">Has aceptado la propuesta de Acuerdo. Falta firmarla con IWL.</p>
         ) : (
-          <p className="text-sm text-cuerpo">{siguientePasoEntrada(via)}</p>
+          <p className="text-sm text-cuerpo">{siguientePasoEntrada(estadio)}</p>
         )}
         <LineaSituacion compania={compania} />
       </div>
@@ -112,11 +112,11 @@ export function EntradaIwl({
   esDireccion: boolean;
   archivada: boolean;
 }) {
-  const via = compania.via as Via | null;
+  const estadio = compania.entry_state as Estadio | null;
 
   return (
     <Bloque id="situacion" className="mb-8 scroll-mt-48">
-      <TituloBloque accion={<Metadato>{via ? `Vía ${VIAS[via]}` : "Sin vía"}</Metadato>}>
+      <TituloBloque accion={<Metadato>{estadio ? estadioYPrograma(estadio) : "Sin estadio"}</Metadato>}>
         {decision?.decision === "no" || archivada ? "No incorporada" : "En entrada"}
       </TituloBloque>
       <div className="flex flex-col gap-4 px-5 py-4">
@@ -172,7 +172,7 @@ export function EntradaIwl({
           <div id="incorporacion" className="-mx-5 -mb-4 scroll-mt-48">
             <DecidirIncorporacion
               companyId={compania.id}
-              via={via}
+              estadio={estadio}
               contacto={candidatura?.contacto ?? ""}
               startup={compania.name}
             />

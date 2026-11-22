@@ -40,7 +40,7 @@ const QUE_SIGUEN: TipoAviso[] = [
   "nda_comentario",
   "situacion_dicha",
   "anexo_comentario",
-  "cambio_via",
+  "cambio_estadio",
   "reunion_contrapropuesta",
   "reunion_caducada",
   "reunion_anotar",

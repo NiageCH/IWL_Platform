@@ -1,5 +1,6 @@
 "use server";
 
+import { ORDEN_ESTADIOS_TUPLA } from "@/lib/estadios";
 import { revalidatePath } from "next/cache";
 import { normalizarEnlace } from "@/lib/enlaces";
 import { createClient } from "@supabase/supabase-js";
@@ -47,10 +48,7 @@ const esquema = z.object({
    * pregunta que sitúa a una startup. `.catch(null)` dejaba pasar un envío
    * vacío sin decir nada.
    */
-  estado_declarado: z.enum(
-    ["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"],
-    { message: "Dinos en qué punto estáis." },
-  ),
+  estado_declarado: z.enum(ORDEN_ESTADIOS_TUPLA, { message: "Dinos en qué estadio estáis." }),
   equipo_personas: numeroEscritoAMano(
     0,
     10_000,
@@ -254,7 +252,7 @@ const esquemaCompletar = z.object({
   contacto_cargo: z.string().trim().max(80).optional(),
   contacto_telefono: z.string().trim().max(40).optional(),
   estado_declarado: z
-    .enum(["idea", "prototipo", "mvp", "primeros_clientes", "facturacion"])
+    .enum(ORDEN_ESTADIOS_TUPLA)
     .nullable()
     .catch(null),
   equipo_personas: z

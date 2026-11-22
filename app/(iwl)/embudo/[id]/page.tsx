@@ -17,7 +17,7 @@ import { BloqueComite } from "@/components/vistas/comite";
 import { BloqueCorreos } from "@/components/vistas/correos";
 import { leerCorreos } from "@/lib/datos/correos";
 import { leerActas, leerComiteDefecto, leerPersonasIwl } from "@/lib/datos/comite";
-import { viaPropuesta } from "@/lib/comite";
+import { ESTADIOS, type Estadio } from "@/lib/estadios";
 import { leerNda } from "@/lib/datos/nda";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
 import {
@@ -41,13 +41,7 @@ import {
 import { PASOS_ABIERTOS, nombrePaso, paso, tonoPaso } from "@/lib/embudo";
 import { cn, equity } from "@/lib/utils";
 
-const ESTADOS_ENTRADA: Record<string, string> = {
-  idea: "Idea",
-  prototipo: "Prototipo",
-  mvp: "MVP",
-  primeros_clientes: "Primeros clientes",
-  facturacion: "Facturación",
-};
+const ESTADOS_ENTRADA: Record<string, string> = ESTADIOS;
 
 const TIPOS_EVENTO: Record<string, string> = {
   cambio_estado: "Cambio de paso",
@@ -239,7 +233,7 @@ export default async function FichaCandidatura({
             yo={persona.id}
             personas={personasIwl}
             porDefecto={comiteDefecto}
-            viaPropuesta={viaPropuesta(c.estado_verificado ?? c.estado_declarado)}
+            estadioPropuesto={(c.estado_declarado ?? c.estado_verificado) as Estadio | null}
             contacto={c.contacto_nombre ?? ""}
             correo={c.contacto_email}
             startup={c.nombre ?? ""}

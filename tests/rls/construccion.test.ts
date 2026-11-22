@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { USUARIOS, clienteServicio, entrarComo, registrarSesion } from "./clientes";
 
 /**
- * Construcción: no se trabaja sin Acuerdo, y entrar antes cuesta más equity.
+ * Sin Acuerdo no se trabaja, y entrar antes cuesta más equity.
  *
- * Con una compañía recién nacida en entrada por Construcción, sin sociedad:
+ * Con una compañía recién nacida en entrada en idea, sin sociedad:
  *   · no se imputan horas, ni con la clave de servicio; y en una que firmó,
  *     ninguna anterior a la firma;
  *   · con la horquilla fijada, proponer un equity fuera de ella pide motivo,
@@ -52,7 +52,7 @@ beforeAll(async () => {
       contacto_nombre: "Fundadora de Prueba",
       contacto_email: CORREO,
       estado: "preseleccionada",
-      via: "construccion",
+      estado_verificado: "idea",
       situacion_societaria: "sin_constituir",
     })
     .select("id")
@@ -124,12 +124,12 @@ describe("la horquilla de equity", () => {
     const servicio = clienteServicio();
     await servicio
       .from("platform_settings")
-      .update({ value: { construccion: { min: 8, max: 12 } } })
+      .update({ value: { idea: { min: 8, max: 12 } } })
       .eq("key", "equity_horquilla");
     await servicio.from("milestones").update({ due_date: "2027-03-01" }).eq("company_id", compania).eq("origin", "societario");
 
     const { error: sinMotivo } = await proponer();
-    expect(sinMotivo?.message).toMatch(/horquilla de Construcción/);
+    expect(sinMotivo?.message).toMatch(/horquilla de Idea/);
 
     const { error } = await proponer({ equity_fuera_motivo: "Entra con el producto muy avanzado." });
     expect(error).toBeNull();

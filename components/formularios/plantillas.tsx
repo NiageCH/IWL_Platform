@@ -1,5 +1,6 @@
 "use client";
 
+import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import {
   borrarDePlantilla,
   crearEtapaPlantilla,
@@ -25,13 +26,7 @@ import {
  * de que se copien.
  */
 
-const ESTADOS = [
-  { valor: "idea", texto: "Idea" },
-  { valor: "prototipo", texto: "Prototipo" },
-  { valor: "mvp", texto: "MVP" },
-  { valor: "primeros_clientes", texto: "Primeros clientes" },
-  { valor: "facturacion", texto: "Facturación" },
-];
+const ESTADOS = ORDEN_ESTADIOS.map((e) => ({ valor: e, texto: ESTADIOS[e] }));
 
 export function NuevaPlantilla() {
   return (

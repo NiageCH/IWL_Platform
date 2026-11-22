@@ -1,4 +1,5 @@
-import { DECISIONES, VIAS, fechaActa, type Decision, type Via } from "@/lib/comite";
+import { DECISIONES, fechaActa, type Decision } from "@/lib/comite";
+import { ESTADIOS, PROGRAMAS, programaDe, type Estadio } from "@/lib/estadios";
 import { hora, lineasFirma, type FirmaNda } from "@/lib/firmas";
 import { DocumentoIwl, type DatoRegistro } from "@/lib/pdf";
 
@@ -24,9 +25,9 @@ export interface DatosActa {
   fecha: string;
   resumen: string;
   decision: Decision;
-  via: Via | null;
-  viaPropuesta: Via | null;
-  viaMotivo: string | null;
+  estadio: Estadio | null;
+  estadioPropuesto: Estadio | null;
+  estadioMotivo: string | null;
   motivo: string | null;
   revisionOn: string | null;
   puedeVolver: boolean | null;
@@ -44,9 +45,9 @@ export interface DatosActa {
 export function parrafosDecision(d: DatosActa): string[] {
   const p: string[] = [];
   if (d.decision === "preseleccionada") {
-    if (d.via) p.push(`Vía de entrada: ${VIAS[d.via]}.`);
-    if (d.via && d.viaPropuesta && d.viaPropuesta !== d.via) {
-      p.push(`La propuesta por su estado de entrada era ${VIAS[d.viaPropuesta]}. Motivo del cambio: ${d.viaMotivo ?? "—"}`);
+    if (d.estadio) p.push(`Estadio: ${ESTADIOS[d.estadio]}. Programa: ${PROGRAMAS[programaDe(d.estadio)!]}.`);
+    if (d.estadio && d.estadioPropuesto && d.estadioPropuesto !== d.estadio) {
+      p.push(`Ella declaró ${ESTADIOS[d.estadioPropuesto]}. Motivo del cambio: ${d.estadioMotivo ?? "—"}`);
     }
   }
   if (d.decision === "aplazada") {

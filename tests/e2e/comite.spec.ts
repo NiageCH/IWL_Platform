@@ -19,7 +19,7 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     contacto_nombre: "Agustina Prueba",
     contacto_email: `e2e.comite.${SELLO}@ejemplo.test`,
     estado: "comite",
-    estado_declarado: "mvp",
+    estado_declarado: "mvp_sin_piloto",
   });
   // En el acta se identifica a cada miembro con nombre y apellidos
   const [admin] = await consultar<{ full_name: string; last_name: string | null }>(
@@ -35,9 +35,9 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     const acta = page.locator("form", { has: page.locator('textarea[name="resumen"]') });
 
     await acta.getByLabel("Decisión").selectOption("preseleccionada");
-    // La vía sale propuesta por su estado de entrada
-    await expect(acta.getByText("Por su estado de entrada: Construcción")).toBeVisible();
-    await expect(acta.getByLabel("Vía de entrada")).toHaveValue("construccion");
+    // El estadio sale el que declaró ella, con su programa; el comité lo confirma o lo cambia
+    await expect(acta.getByText("Programa: Incubación · ella declaró MVP sin piloto")).toBeVisible();
+    await expect(acta.getByLabel("Estadio")).toHaveValue("mvp_sin_piloto");
 
     await acta.getByLabel(nombreAdmin, { exact: true }).check();
     await acta.getByLabel("Resumen").fill("Equipo sólido y problema claro. Producto en MVP, sin facturar.");
@@ -47,12 +47,12 @@ test("se redacta el acta, se firma y la decisión se aplica", async ({ page }) =
     await page.getByRole("button", { name: "Firmar el acta" }).click();
     await expect(page.getByText("Firmada por todos")).toBeVisible({ timeout: 15_000 });
 
-    const [despues] = await consultar<{ estado: string; via: string }>(
+    const [despues] = await consultar<{ estado: string; estado_verificado: string }>(
       "candidaturas",
       { id: `eq.${c.id}` },
-      "estado, via",
+      "estado, estado_verificado",
     );
-    expect(despues).toEqual({ estado: "preseleccionada", via: "construccion" });
+    expect(despues).toEqual({ estado: "preseleccionada", estado_verificado: "mvp_sin_piloto" });
 
     const [cerrada] = await consultar<{ documento_id: string | null; cerrada_at: string | null; contenido_hash: string | null }>(
       "comite_actas",

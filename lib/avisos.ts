@@ -23,7 +23,7 @@ export type TipoAviso =
   | "nda_comentario"
   | "situacion_dicha"
   | "anexo_comentario"
-  | "cambio_via"
+  | "cambio_estadio"
   | "reunion_contrapropuesta"
   | "reunion_caducada"
   | "reunion_anotar"
@@ -165,10 +165,10 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         ancla: "anexo",
         hasVenidoA: `responder al comentario de ${quien} sobre el Acuerdo de ${sitio}`,
       };
-    case "cambio_via":
+    case "cambio_estadio":
       return {
         ...base,
-        paso: `${sitio} pasó de Construcción a Aceleración el ${dia(a.created_at)}`,
+        paso: `${sitio} cambió de estadio el ${dia(a.created_at)}`,
         toca: "Revisar lo que pasa a por entregar",
         verbo: "Revisar",
         href: ficha("/diligencia", "puntos"),

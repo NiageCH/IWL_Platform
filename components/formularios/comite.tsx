@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { regenerarPdfActa, borrarActa, firmarActa, guardarComiteDefecto, redactarActa } from "@/lib/acciones/comite";
-import { DECISIONES, VIAS, mensajeDescarte, type Decision, type Via } from "@/lib/comite";
+import { DECISIONES, mensajeDescarte, type Decision } from "@/lib/comite";
+import { ESTADIOS, PROGRAMAS, programaDe, type Estadio } from "@/lib/estadios";
 import {
   AreaTexto,
   Boton,
@@ -42,19 +43,20 @@ export function RedactarActa({
   candidaturaId,
   personas,
   porDefecto,
-  viaPropuesta,
+  estadioPropuesto,
   contacto,
   startup,
 }: {
   candidaturaId: string;
   personas: Persona[];
   porDefecto: string[];
-  viaPropuesta: Via | null;
+  /** El que declaró ella: el comité lo confirma o lo cambia */
+  estadioPropuesto: Estadio | null;
   contacto: string;
   startup: string;
 }) {
   const [decision, setDecision] = useState<Decision | "">("");
-  const [via, setVia] = useState<Via | "">(viaPropuesta ?? "");
+  const [estadio, setEstadio] = useState<Estadio | "">(estadioPropuesto ?? "");
   const [puedeVolver, setPuedeVolver] = useState(true);
 
   return (
@@ -96,23 +98,32 @@ export function RedactarActa({
               {decision === "preseleccionada" ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Campo
-                    etiqueta="Vía de entrada"
+                    etiqueta="Estadio"
                     obligatorio
-                    error={e("via")}
-                    ayuda={viaPropuesta ? `Por su estado de entrada: ${VIAS[viaPropuesta]}` : "Sin estado de entrada: elígela"}
+                    error={e("estadio")}
+                    ayuda={
+                      estadio
+                        ? `Programa: ${PROGRAMAS[programaDe(estadio)!]}${estadioPropuesto ? ` · ella declaró ${ESTADIOS[estadioPropuesto]}` : ""}`
+                        : "Sin estadio declarado: elígelo"
+                    }
                   >
-                    <Seleccion name="via" value={via} onChange={(ev) => setVia(ev.currentTarget.value as Via | "")} required>
+                    <Seleccion
+                      name="estadio"
+                      value={estadio}
+                      onChange={(ev) => setEstadio(ev.currentTarget.value as Estadio | "")}
+                      required
+                    >
                       <option value="">Elige…</option>
-                      {Object.entries(VIAS).map(([v, n]) => (
+                      {Object.entries(ESTADIOS).map(([v, n]) => (
                         <option key={v} value={v}>
                           {n}
                         </option>
                       ))}
                     </Seleccion>
                   </Campo>
-                  {viaPropuesta && via && via !== viaPropuesta ? (
-                    <Campo etiqueta="Por qué otra vía" obligatorio error={e("via_motivo")}>
-                      <AreaTexto name="via_motivo" rows={2} required />
+                  {estadioPropuesto && estadio && estadio !== estadioPropuesto ? (
+                    <Campo etiqueta="Por qué otro estadio" obligatorio error={e("estadio_motivo")}>
+                      <AreaTexto name="estadio_motivo" rows={2} required />
                     </Campo>
                   ) : null}
                 </div>

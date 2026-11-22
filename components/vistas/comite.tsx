@@ -4,7 +4,8 @@ import { AbrirDocumento } from "@/components/formularios/expediente";
 import { EnviarMensajeDescarte } from "@/components/formularios/correo";
 import { RegenerarPdfActa, BorrarActa, FirmarActa, RedactarActa } from "@/components/formularios/comite";
 import type { Acta } from "@/lib/datos/comite";
-import { DECISIONES, VIAS, type Via } from "@/lib/comite";
+import { DECISIONES } from "@/lib/comite";
+import { ESTADIOS, type Estadio } from "@/lib/estadios";
 import { fecha } from "@/lib/utils";
 
 /**
@@ -18,7 +19,7 @@ export function BloqueComite({
   yo,
   personas,
   porDefecto,
-  viaPropuesta,
+  estadioPropuesto,
   contacto,
   correo,
   startup,
@@ -30,7 +31,7 @@ export function BloqueComite({
   yo: string;
   personas: { id: string; nombre: string }[];
   porDefecto: string[];
-  viaPropuesta: Via | null;
+  estadioPropuesto: Estadio | null;
   contacto: string;
   correo: string | null;
   startup: string;
@@ -43,7 +44,7 @@ export function BloqueComite({
       <TituloBloque accion={<Metadato>{actas.length}</Metadato>}>Comité</TituloBloque>
       {actas.length === 0 ? (
         <SinDatos>
-          Sin acta todavía. Redáctala con la decisión y la vía; cada miembro la
+          Sin acta todavía. Redáctala con la decisión y el estadio; cada miembro la
           firma con su cuenta y, cuando firman todos, se aplica.
         </SinDatos>
       ) : (
@@ -56,14 +57,14 @@ export function BloqueComite({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-titular">Acta del {fecha(a.fecha)}</span>
                   <span className="pastilla">{DECISIONES[a.decision]}</span>
-                  {a.via ? <span className="pastilla">{VIAS[a.via]}</span> : null}
+                  {a.estadio ? <span className="pastilla">{ESTADIOS[a.estadio]}</span> : null}
                   <Estado
                     valor={a.cerradaAt ? "hecho" : "curso"}
                     rotulo={a.cerradaAt ? "Firmada por todos" : `${firmadas} de ${a.firmas.length} firmas`}
                   />
                 </div>
                 <p className="whitespace-pre-wrap text-secundario [overflow-wrap:anywhere]">{a.resumen}</p>
-                {a.viaMotivo ? <p className="text-xs text-metadato">Otra vía porque: {a.viaMotivo}</p> : null}
+                {a.estadioMotivo ? <p className="text-xs text-metadato">Otro estadio porque: {a.estadioMotivo}</p> : null}
                 {a.motivo ? <p className="text-xs text-metadato">Motivo: {a.motivo}</p> : null}
                 {a.revisionOn ? <p className="text-xs text-metadato">Se revisa el {fecha(a.revisionOn)}</p> : null}
                 <p className="text-xs text-metadato">
@@ -90,7 +91,7 @@ export function BloqueComite({
           candidaturaId={candidaturaId}
           personas={personas}
           porDefecto={porDefecto}
-          viaPropuesta={viaPropuesta}
+          estadioPropuesto={estadioPropuesto}
           contacto={contacto}
           startup={startup}
         />
