@@ -9,6 +9,31 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modelo nuevo, bloque 6: equity desde la firma · commit 8356a1f
+
+**Qué cambió**
+- Desaparece la marca «Devenga equity» de los hitos: del formulario del hito, de la hoja de ruta y de la aportación. La base impide volver a ponerla, también con la clave de servicio.
+- En la aportación, el bloque «Equity y financiación» enseña el equity de IWL que pacta el Anexo, con la nota «Desde la firma del Acuerdo; no depende de hitos». Debajo sigue lo que van liberando los hitos con financiación.
+- «Libera financiación» no cambia.
+- La guía de la fundadora lo dice.
+
+**Qué decidí yo**
+- **La columna no se borra: se vacía y se cierra.** El modelo la reserva para el equity de los mentores no pagados, que no se construye todavía. Así no hay que rehacer cinco funciones que la leen y se pueden quedar como están.
+- No había ningún hito con la marca puesta, ni en la semilla ni en las pruebas, salvo las suyas propias, que ahora prueban la financiación.
+
+**Qué necesito que decidas**
+Nada.
+
+**Estado**
+- Unit 327, RLS 288 ×2, e2e 456 ×2 (4 saltadas), sin fallos.
+- Migración nueva: `20261122150000_equity_desde_la_firma`.
+- Nada desplegado.
+
+**Siguiente**
+Bloque 5: la hoja de ruta en cuatro tramos, con la lista de «lo que ya tenéis» (en idea, el diagnóstico), el asistente de tres pasos y la vista de seguimiento, más capturas para que Rodrigo lo apruebe antes de construir el resto.
+
+---
+
 ## 2026-11-22 · Modelo nuevo, bloque 7: actas, solo el mentor · commit 35fd6b1
 
 **Qué cambió**
