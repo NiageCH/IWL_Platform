@@ -9,6 +9,40 @@ como es**.
 
 ---
 
+## 2026-11-22 · Correcciones a los bloques 2 y 3: filtro, NDA sin firmas y sin comentarios · commit f2c9fac
+
+**Qué cambió**
+- **El filtro mira el sector al final.** Primero el capital en manos de mujeres; después el estadio con su prueba, o la recomendación si es una idea; solo con todo eso bien, «Otro» va a revisión manual. Una idea de «Otro» espera la recomendación y, confirmada, va a revisión manual, no a «pasa». Tres pruebas nuevas cubren esos casos.
+- **NDA sin bloques de firma.** Una plantilla sin `::: firma` es válida: ya lo era, y ahora hay una prueba que lo cubre. El registro del PDF lleva el nombre, el documento (y la sociedad con su NIF, si acepta por una), la fecha y la hora, la versión y el hash. La versión 6, con sus firmas, se sigue pintando igual.
+- **Comentar el NDA, fuera.** Se han quitado:
+  - la tabla y sus disparadores;
+  - el aviso `nda_comentario`;
+  - las pantallas de comentar y responder;
+  - la «versión propia» de una candidatura;
+  - la mención en la guía.
+
+  Encima de la casilla: «¿Alguna duda sobre el NDA? Escríbenos a iwl@inceptionwlab.es antes de aceptarlo.»
+- **En la lista del Embudo** se ve lo que escribió en «¿Cuál?» («Otro: FinTech») y, mientras no pasa, en qué quedó el filtro.
+- En la ficha, un NDA aceptado con la casilla se dice «Aceptado con la casilla por …, al presentarse», no «Firmado».
+
+**Qué decidí yo**
+- **También he quitado la «versión propia» del NDA.** Nacía de responder a un comentario, y con un NDA que no se negocia no tiene sentido. Las que ya existan se quedan, porque hay firmas que apuntan a ellas.
+- **El registro de aceptación va en la última página del PDF**, donde iba el registro de firmas, y no en el sitio del bloque `### ACEPTACIÓN`. Así sirve igual para la plantilla vieja y para la nueva.
+- El correo de dudas es una constante propia (`CORREO_DUDAS_NDA`) y no el de contacto general, porque no son el mismo.
+
+**Qué necesito que decidas**
+Nada por ahora.
+
+**Estado**
+- Unit 325, RLS 284 ×2, e2e 456 ×2 (4 saltadas), sin fallos. RLS baja de 288 a 284 porque se retiran las pruebas de comentar el NDA.
+- Migraciones nuevas: `20261122130000_filtro_otro` y `20261122131000_fuera_comentarios_nda`.
+- Nada desplegado.
+
+**Siguiente**
+Bloque 4: diagnóstico solo en idea, due diligence en el resto, y un nombre para cada cosa en textos, menús, avisos y guía.
+
+---
+
 ## 2026-11-22 · Modelo nuevo, bloques 2 y 3: el NDA al principio y el filtro · commit f1c9640
 
 **Qué cambió**
