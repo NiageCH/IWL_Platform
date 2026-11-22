@@ -84,20 +84,31 @@ export function claveConfigurada(): boolean {
  */
 export async function registrarSesion(
   cliente: SupabaseClient,
-  s: { company: string; fecha: string; profile: string; horas: number; perfil?: string; titulo?: string },
+  s: {
+    company: string;
+    fecha: string;
+    profile: string;
+    horas: number;
+    perfil?: string;
+    titulo?: string;
+    /** El acta de una sesión solo la levanta el mentor (REVISION, 22 nov); un trabajo, quien acompaña */
+    tipo?: "sesion" | "trabajo";
+  },
 ): Promise<{ id: string | null; error: { message: string } | null }> {
   const servicio = clienteServicio();
   const { data: materia } = await servicio.from("contribution_subjects").select("id").limit(1).single();
   const { data, error } = await cliente.rpc("registrar_sesion", {
     p: {
       company_id: s.company,
-      kind: "sesion",
+      kind: s.tipo ?? "sesion",
       held_on: s.fecha,
       duration_minutes: 60,
       modality: "videollamada",
       title: s.titulo ?? "Sesión de prueba",
       subject_id: materia!.id,
       worked: "Lo que se trabajó en la sesión de prueba.",
+      // Un trabajo fuera de sesión va con su entregable
+      ...(s.tipo === "trabajo" ? { deliverable_url: "https://ejemplo.test/entregable" } : {}),
       horas: [{ profile_id: s.profile, profile_code: s.perfil ?? "senior", hours: s.horas }],
     },
   });

@@ -249,7 +249,7 @@ describe("el acta deja versión (REVISION, 20 nov)", () => {
     expect((await servicio.from("work_sessions").update({ worked: "Otra cosa, a mano." }).eq("id", id)).error?.message).toMatch(/Editar el acta/);
 
     // Ella no edita el acta
-    expect((await ella.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Lo cuento yo." } })).error?.message).toMatch(/quien registró/);
+    expect((await ella.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Lo cuento yo." } })).error?.message).toMatch(/mentor de la compañía/);
 
     const r = await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Repasamos precios, embudo y la retención." } });
     expect(r.error).toBeNull();
@@ -297,5 +297,45 @@ describe("el acta deja versión (REVISION, 20 nov)", () => {
     await ella.rpc("sesion_no_cuadra", { p_sesion: id, p_comentario: "No fue tanto." });
     await ella.rpc("llevar_sesion_a_direccion", { p_sesion: id, p_motivo: "No nos ponemos de acuerdo." });
     expect((await mentor.rpc("editar_acta_sesion", { p_sesion: id, p: { title: "Otro" } })).error?.message).toMatch(/ya no está en ese punto/);
+  });
+});
+
+/**
+ * El acta la levanta siempre el mentor de la compañía (REVISION, 22 nov ·
+ * bloque 7): principal o secundario. El equipo de IWL ya no; Niage apunta
+ * su trabajo fuera de sesión, que no es un acta.
+ */
+describe("el acta es del mentor", () => {
+  it("el mentor secundario la levanta; el equipo, dirección y Niage no", async () => {
+    const secundario = await entrarComo(USUARIOS.mentorComercial);
+    const secundarioId = (await secundario.auth.getUser()).data.user!.id;
+    const suya = await registrarSesion(secundario, { company: COMPANIAS.marea, fecha: "2026-11-12", profile: secundarioId, horas: 1 });
+    expect(suya.error).toBeNull();
+    creadas.push(suya.id);
+
+    for (const correo of [USUARIOS.equipoIwl, USUARIOS.admin, USUARIOS.revisorMareaRaiz]) {
+      const quien = await entrarComo(correo);
+      const id = (await quien.auth.getUser()).data.user!.id;
+      const r = await registrarSesion(quien, { company: COMPANIAS.marea, fecha: "2026-11-12", profile: id, horas: 1 });
+      expect(r.error, correo).not.toBeNull();
+    }
+  });
+
+  it("Niage apunta su trabajo fuera de sesión, y lo corrige él", async () => {
+    const revisor = await entrarComo(USUARIOS.revisorMareaRaiz);
+    const revisorId = (await revisor.auth.getUser()).data.user!.id;
+    const r = await registrarSesion(revisor, { company: COMPANIAS.marea, fecha: "2026-11-12", profile: revisorId, horas: 1, tipo: "trabajo" });
+    expect(r.error).toBeNull();
+    creadas.push(r.id);
+    expect((await revisor.rpc("editar_acta_sesion", { p_sesion: r.id!, p: { worked: "Revisé la arquitectura del MVP." } })).error).toBeNull();
+    // El mentor no se lo cambia: es de quien lo apuntó
+    expect((await mentor.rpc("editar_acta_sesion", { p_sesion: r.id!, p: { worked: "Otra cosa." } })).error?.message).toMatch(/mentor de la compañía/);
+  });
+
+  it("el acta de un mentor la edita también el otro mentor; dirección no", async () => {
+    const id = await nueva();
+    const secundario = await entrarComo(USUARIOS.mentorComercial);
+    expect((await secundario.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Lo completó el otro mentor." } })).error).toBeNull();
+    expect((await admin.rpc("editar_acta_sesion", { p_sesion: id, p: { worked: "Lo cambia dirección." } })).error?.message).toMatch(/mentor de la compañía/);
   });
 });

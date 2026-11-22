@@ -44,6 +44,7 @@ export function RegistrarSesion({
   personas,
   yo,
   soloYo,
+  soloTrabajo = false,
 }: {
   slug: string;
   companyId: string;
@@ -54,9 +55,14 @@ export function RegistrarSesion({
   yo: string;
   /** Quien no coordina solo imputa sus propias horas: la base no le deja otras */
   soloYo: boolean;
+  /**
+   * Quien no es mentor de la compañía no levanta actas (REVISION, 22 nov):
+   * solo apunta su trabajo fuera de sesión.
+   */
+  soloTrabajo?: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
-  const [tipo, setTipo] = useState<"sesion" | "trabajo">("sesion");
+  const [tipo, setTipo] = useState<"sesion" | "trabajo">(soloTrabajo ? "trabajo" : "sesion");
   const [filas, setFilas] = useState(1);
   const [acuerdos, setAcuerdos] = useState(1);
   const hoy = new Date().toISOString().slice(0, 10);
@@ -84,6 +90,7 @@ export function RegistrarSesion({
               <input type="hidden" name="company_id" value={companyId} />
               <input type="hidden" name="kind" value={tipo} />
 
+              {soloTrabajo ? null : (
               <fieldset className="flex flex-wrap gap-4 text-sm">
                 <legend className="mb-1 text-xs text-metadato">Qué registras</legend>
                 <label className="flex items-center gap-2">
@@ -95,6 +102,7 @@ export function RegistrarSesion({
                   Trabajo fuera de sesión
                 </label>
               </fieldset>
+              )}
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <Campo etiqueta="Fecha" error={e("held_on")}>

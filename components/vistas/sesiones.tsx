@@ -12,14 +12,17 @@ import { AccionesAcuerdo, AccionesSesion, RegistrarSesion } from "@/components/f
 /**
  * Sesiones: el acta, las horas y su confirmación (REVISION, 13 nov).
  *
- * La ven IWL y la fundadora, con lo mismo delante. Quien acompaña registra
- * la sesión o el trabajo; ella confirma las horas o dice qué no cuadra, y
+ * La ven IWL y la fundadora, con lo mismo delante. El acta de una sesión
+ * la levanta siempre el mentor de la compañía (REVISION, 22 nov); quien
+ * acompaña sin ser mentor apunta su trabajo fuera de sesión; ella confirma las horas o dice qué no cuadra, y
  * lo que se hable queda en la historia de la sesión, con cada cambio de
  * horas y su motivo. Nada se borra: se anula con motivo.
  */
 export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenCompania> }) {
   const { compania, permisos } = resumen;
   const acompana = permisos.coordina || permisos.acompana;
+  // Quién apunta algo aquí: el mentor, el acta; quien acompaña sin serlo, su trabajo
+  const apunta = permisos.levantaActas || permisos.acompana;
   const [{ sesiones, recuento }, opciones, elegibles] = await Promise.all([
     leerSesiones(compania.id),
     acompana ? leerOpcionesSesion(compania.id) : Promise.resolve(null),
@@ -41,7 +44,7 @@ export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenC
           <p className="border-t border-filete px-4 py-3 text-sm text-secundario">
             Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma.
           </p>
-        ) : acompana && opciones && permisos.personaId ? (
+        ) : apunta && opciones && permisos.personaId ? (
           <RegistrarSesion
             slug={compania.slug}
             companyId={compania.id}
@@ -51,6 +54,7 @@ export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenC
             personas={opciones.personas}
             yo={permisos.personaId}
             soloYo={!permisos.coordina}
+            soloTrabajo={!permisos.levantaActas}
           />
         ) : null}
       </Bloque>
@@ -58,8 +62,10 @@ export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenC
       {sesiones.length === 0 ? (
         <Bloque>
           <SinDatos>
-            {acompana
+            {apunta
               ? "Todavía no hay sesiones. Registra la primera con «Registrar una sesión o un trabajo»: le llegará a ella para que confirme las horas."
+              : acompana
+                ? "Todavía no hay sesiones. El acta de cada sesión la levanta el mentor de la compañía."
               : "Todavía no hay sesiones. Cuando tu mentor registre una, te llegará un aviso para que confirmes las horas."}
           </SinDatos>
         </Bloque>
@@ -76,7 +82,8 @@ export async function VistaSesiones({ resumen }: { resumen: NonNullable<ResumenC
             elegibles={elegibles}
             papel={{
               ella: permisos.esFundadora,
-              registra: s.registradaPor.id === permisos.personaId || permisos.coordina,
+              // El acta la lleva el mentor; un trabajo, quien lo apuntó. Espejo de `app.lleva_el_acta`
+              registra: s.tipo === "sesion" ? permisos.levantaActas : s.registradaPor.id === permisos.personaId && apunta,
               esAdmin: permisos.esAdmin,
               habla: permisos.esFundadora || acompana,
             }}

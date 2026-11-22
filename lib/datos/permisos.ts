@@ -21,6 +21,11 @@ export interface Permisos {
   coordina: boolean;
   /** Mentor secundario o revisor de esta compañía: acompaña sin coordinar */
   acompana: boolean;
+  /**
+   * Mentor de esta compañía, principal o secundario: el único que levanta,
+   * edita y corrige un acta (REVISION, 22 nov). Espejo de `app.es_mentor_de`.
+   */
+  levantaActas: boolean;
   /** Quién mira, para saber si un hito se lo han encargado a esta persona */
   personaId: string | null;
 }
@@ -37,6 +42,7 @@ export async function permisosDeCompania(companyId: string): Promise<Permisos> {
       puedeValidar: false,
       coordina: false,
       acompana: false,
+      levantaActas: false,
       personaId: null,
     };
   }
@@ -63,6 +69,7 @@ export async function permisosDeCompania(companyId: string): Promise<Permisos> {
     puedeValidar: iwl || esRevisorAsignado,
     coordina: iwl || papeles.has("mentor_principal"),
     acompana: ["mentor_secundario", "revisor_niage", "mentor"].some((p) => papeles.has(p as never)),
+    levantaActas: papeles.has("mentor_principal") || papeles.has("mentor_secundario"),
     personaId: persona.id,
   };
 }

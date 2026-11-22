@@ -2037,3 +2037,11 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La pestaña «Due diligence general» de una idea en entrada lo dice arriba**: su revisión es el diagnóstico, y ahí no se le pide nada para entrar. El checklist sigue existiendo, por construir dentro del programa.
 - **«Due diligence técnico» (el de Niage) no cambia**: es otro módulo, posterior a la entrada, y no compite con el diagnóstico.
 
+## 2026-11-22 · El acta de una sesión es del mentor
+
+- **Solo el mentor de la compañía, principal o secundario, levanta, edita y corrige el acta de una sesión** (REVISION, 22 nov · bloque 7). Lo dice la base: `app.es_mentor_de` en la política de alta, y `app.lleva_el_acta` en editar el acta, corregir las horas y mantenerlas. El equipo y dirección ya no la levantan, ni dirección la edita: dirección decide lo que le llega, como antes.
+- **Un trabajo fuera de sesión no es un acta.** Lo sigue apuntando quien acompaña a la compañía (Niage, por ejemplo), con su entregable, y solo lo corrige quien lo apuntó.
+- **Que dos mentores lleven la misma acta es a propósito.** El secundario puede completar la del principal y al revés: «el mentor de la compañía» son los dos.
+- **Anular, llevar a dirección y decidir no cambian.**
+- Las fundadoras comentan y confirman como hasta ahora; siguen igual los 7 días para que se dé por confirmada, las versiones del acta y el escalado a dirección.
+

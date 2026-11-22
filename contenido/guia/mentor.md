@@ -11,7 +11,7 @@ Todo se mide contra la etapa de cada compañía, no contra un ideal.
 Acompañas a las compañías que tienes asignadas. Tu inicio es la [Cartera](/cartera), solo con las tuyas, y arriba están **Avisos para ti** y **Hitos por revisar**.
 
 - **Al principio, si eres mentor principal**: planifica la hoja de ruta, con sus etapas e hitos.
-- **Después de cada sesión**: regístrala con su acta y tus horas. Lo mismo con el trabajo fuera de sesión, con su entregable.
+- **Después de cada sesión**: regístrala con su acta y las horas de cada persona. El acta la levantas siempre tú, como mentor; el equipo de IWL no. Lo mismo con el trabajo fuera de sesión, con su entregable.
 - **Cuando ella entregue un hito**: revísalo, valídalo o pide cambios. Te sale en **Hitos por revisar**.
 - **Cuando ella diga que unas horas no cuadran**: respóndele. Te llega en **Avisos para ti**.
 - **Si eres mentor principal y un hito vence sin entregar**: te sale en **Avisos para ti**. Habla con ella.

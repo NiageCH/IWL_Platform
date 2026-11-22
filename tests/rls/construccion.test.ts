@@ -112,7 +112,7 @@ describe("las horas", () => {
   it("en entrada no se imputan, ni con la clave de servicio", async () => {
     const equipo = await entrarComo(USUARIOS.equipoIwl);
     const yo = (await equipo.auth.getUser()).data.user!.id;
-    const { error } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-05", profile: yo, horas: 2 });
+    const { error } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-05", profile: yo, horas: 2, tipo: "trabajo" });
     expect(error?.message).toMatch(/cuentan desde la firma/);
     const { error: servicio } = await clienteServicio().from("contribution_hours").insert(await linea("2026-11-05"));
     expect(servicio?.message).toMatch(/cuentan desde la firma/);
@@ -200,9 +200,9 @@ describe("las horas, después de firmar", () => {
 
     const equipo = await entrarComo(USUARIOS.equipoIwl);
     const yo = (await equipo.auth.getUser()).data.user!.id;
-    const { error: antes } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-09", profile: yo, horas: 2 });
+    const { error: antes } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-09", profile: yo, horas: 2, tipo: "trabajo" });
     expect(antes?.message).toMatch(/anterior/);
-    const { error: despues } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-10", profile: yo, horas: 2 });
+    const { error: despues } = await registrarSesion(equipo, { company: compania, fecha: "2026-11-10", profile: yo, horas: 2, tipo: "trabajo" });
     expect(despues).toBeNull();
   });
 });

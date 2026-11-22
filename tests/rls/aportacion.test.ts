@@ -96,7 +96,19 @@ describe("horas de aportación", () => {
     });
     expect(suelta.error?.message).toMatch(/con su sesión/);
 
-    const deIwl = await registrarSesion(equipoIwl, { company: COMPANIAS.marea, fecha: "2026-09-01", profile: equipo, horas: 2, perfil: "operacion" });
+    // El acta de una sesión la levanta el mentor, no el equipo (REVISION, 22 nov)
+    const acta = await registrarSesion(equipoIwl, { company: COMPANIAS.marea, fecha: "2026-09-01", profile: equipo, horas: 2, perfil: "operacion" });
+    expect(acta.error).not.toBeNull();
+
+    // Su trabajo fuera de sesión sí lo apunta IWL
+    const deIwl = await registrarSesion(equipoIwl, {
+      company: COMPANIAS.marea,
+      fecha: "2026-09-01",
+      profile: equipo,
+      horas: 2,
+      perfil: "operacion",
+      tipo: "trabajo",
+    });
     expect(deIwl.error).toBeNull();
     await quitarSesiones([deIwl.id]);
   });

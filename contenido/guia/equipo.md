@@ -13,7 +13,7 @@ Mueves el día a día del programa: candidaturas, reuniones, documentos y seguim
 - **Cada día**: mira **Avisos para ti**. Cada aviso dice qué pasó, qué te toca y lleva al botón exacto.
 - **Cuando llegue una candidatura**: revísala y muévela por el [Embudo](/embudo).
 - **Cuando una compañía entregue un documento**: valídalo o pide cambios.
-- **Después de cada sesión con una compañía**: regístrala con su acta y tus horas.
+- **Las sesiones las registra el mentor**, con su acta y las horas de cada persona, también las tuyas si estuviste. Tú apuntas el trabajo que hagas fuera de sesión, con su entregable.
 
 Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas y las sesiones en discusión.
 
@@ -36,8 +36,8 @@ Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas 
 1. En el aviso, pulsa **Revisar**. Te lleva a **Due diligence general**, al punto.
 2. Pulsa **Validar** o **Pedir cambios**, diciendo cuáles. Pedir cambios lo devuelve a ella.
 
-### Registrar una sesión
+### Apuntar un trabajo fuera de sesión
 
-1. Entra en la compañía, pestaña **Sesiones**.
-2. Pulsa **Registrar una sesión o un trabajo**, rellena el acta y las horas y pulsa **Registrar**.
-3. A ella le llega un correo para que confirme las horas.
+1. Entra en la compañía, pestaña **Sesiones**. Si acompañas a la compañía, verás **Registrar una sesión o un trabajo**.
+2. Rellena lo que hiciste, el enlace al entregable y tus horas, y pulsa **Registrar**.
+3. A ella le llega un correo para que confirme las horas. El acta de una sesión no la levantas tú: la levanta el mentor.
