@@ -9,6 +9,34 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modelo nuevo, bloque 4: diagnóstico y due diligence · commit 63cbc46
+
+**Qué cambió**
+- **«Revisión de entrada»** es ahora el nombre común de los dos: diagnóstico en idea, due diligence en los demás estadios. Donde un texto valía para los dos, dice eso:
+  - el botón «Darle cuenta» (antes «Darle cuenta para el due diligence»);
+  - la etapa de la candidatura;
+  - el Anexo sin firmar;
+  - el correo de acceso.
+- En el alta paso a paso, el paso se llama «Diagnóstico» en idea y «Due diligence entregado» en el resto. El NDA de la casilla aparece como «NDA aceptado».
+- La pestaña «Due diligence general» de una idea en entrada dice arriba que su revisión es el diagnóstico y que ahí no se le pide nada para entrar.
+- Las guías de dirección y equipo ya no hablan de Construcción ni de Aceleración.
+
+**Qué decidí yo**
+- «Due diligence técnico» (el de Niage) no cambia de nombre: es otro módulo y no compite con el diagnóstico.
+- La lista del diagnóstico no la inventé: lo pregunté, y ya está contestado en la revisión (la lista de hitos del tramo 1, dentro del bloque 5).
+
+**Qué necesito que decidas**
+Nada.
+
+**Estado**
+- Unit 327, RLS 284 ×2, e2e 456 ×2 (4 saltadas), sin fallos.
+- Nada desplegado.
+
+**Siguiente**
+Bloque 7 (actas: solo el mentor), bloque 6 (equity desde la firma) y bloque 5 (la hoja de ruta, con la lista de «lo que ya tenéis»).
+
+---
+
 ## 2026-11-22 · Correcciones a los bloques 2 y 3: filtro, NDA sin firmas y sin comentarios · commit f2c9fac
 
 **Qué cambió**
