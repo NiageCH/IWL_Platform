@@ -22,16 +22,18 @@ interface Paso {
   hecho: string;
 }
 
-/** El embudo de una candidatura, de que se presenta a la entrada */
+/**
+ * El embudo de una candidatura, del NDA a la entrada (REVISION, 22 nov): el
+ * NDA va primero, con una casilla, y la preselección ya abre la entrada.
+ */
 const EMBUDO: Paso[] = [
-  { hacer: "Presentarse", hecho: paso("presentada").nombre },
+  { hacer: "Aceptar el NDA", hecho: paso("borrador").nombre },
+  { hacer: "Enviar la candidatura", hecho: "Candidatura enviada" },
+  { hacer: "Pasar el filtro", hecho: "Filtro pasado" },
   { hacer: "Revisarla", hecho: paso("en_revision").nombre },
   { hacer: "Tener la reunión", hecho: paso("reunion").nombre },
   { hacer: "Pasar por comité", hecho: paso("comite").nombre },
   { hacer: "Preseleccionarla", hecho: paso("preseleccionada").nombre },
-  { hacer: "Enviarle el NDA", hecho: paso("nda").nombre },
-  { hacer: "Que ella firme el NDA", hecho: "NDA firmado por ella" },
-  { hacer: "Contrafirmar el NDA", hecho: "NDA firmado por las dos partes" },
   { hacer: "Que diga su situación societaria", hecho: paso("entrada").nombre },
 ];
 
@@ -101,7 +103,7 @@ const PASOS: Record<Recorrido, Paso[]> = {
 };
 
 /** Dónde está cada paso del embudo que se cita fuera de aquí */
-export const PASO_EMBUDO = { revisar: 1, comite: 3, nda: 5, contrafirmar: 7 } as const;
+export const PASO_EMBUDO = { filtro: 2, revisar: 3, comite: 5 } as const;
 
 /** De dónde viene un paso (lo hecho antes) y qué va después (lo que habrá que hacer) */
 export function traza(recorrido: Recorrido, indice: number): { vieneDe: string | null; despues: string | null } {

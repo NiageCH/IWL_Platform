@@ -101,8 +101,25 @@ describe("el PDF", () => {
 describe("la fecha de efecto", () => {
   it("es la de la última firma, y va en el registro, no en el texto", () => {
     const rastro = lineasRastro(DATOS).join("\n");
-    const ultima = new Date(DATOS.ella.cuando) > new Date(DATOS.iwl.cuando) ? DATOS.ella.cuando : DATOS.iwl.cuando;
+    const ultima = new Date(DATOS.ella.cuando) > new Date(DATOS.iwl!.cuando) ? DATOS.ella.cuando : DATOS.iwl!.cuando;
     expect(rastro).toMatch(/Fecha de efecto, la de la última firma: /);
     expect(rastro).toContain(new Date(ultima).getUTCFullYear().toString());
+  });
+});
+
+describe("el NDA aceptado con la casilla (REVISION, 22 nov)", () => {
+  const ACEPTADO: DatosNda = { ...DATOS, iwl: null };
+  const rastro = lineasRastro(ACEPTADO).join("\n");
+
+  it("lleva una sola aceptación, la de ella, sin contrafirma", () => {
+    expect(rastro).toContain(`Hash SHA-256 del texto aceptado: ${"a".repeat(64)}`);
+    expect(rastro).toContain("Aceptación de la candidata, con casilla electrónica");
+    expect(rastro).not.toContain("Contrafirma");
+    expect(rastro).toContain("Fecha de efecto, la de la aceptación: 09/11/2026");
+  });
+
+  it("y se genera", async () => {
+    const pdf = await PDFDocument.load(await generarPdfNda(ACEPTADO));
+    expect(pdf.getPageCount()).toBeGreaterThan(0);
   });
 });

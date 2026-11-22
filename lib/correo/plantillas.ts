@@ -27,6 +27,8 @@ export const EVENTOS = [
   "sesion_de_vuelta",
   "sesion_decidida",
   "recuperar_contrasena",
+  "nda_aceptado",
+  "filtro_no_pasa",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 
@@ -49,6 +51,8 @@ export const NOMBRE_EVENTO: Record<Evento, string> = {
   sesion_de_vuelta: "Horas que vuelven a ella",
   sesion_decidida: "Sesión cerrada por dirección",
   recuperar_contrasena: "Contraseña olvidada",
+  nda_aceptado: "NDA aceptado, con su PDF",
+  filtro_no_pasa: "No pasa el filtro",
 };
 
 export type DatosCorreo = Record<string, string | number | null | undefined>;
@@ -160,6 +164,31 @@ function botonReunion(d: DatosCorreo): Enlace | undefined {
 }
 
 const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
+  /*
+   * El NDA aceptado con la casilla, el primer paso (REVISION, 22 nov). El
+   * PDF no va en los datos: se adjunta al enviarlo, desde el que guardó la
+   * plataforma (`lib/correo/index.ts`), y así sale igual si se reintenta.
+   */
+  nda_aceptado: (d) => ({
+    asunto: `Tu NDA con Inception Woman Lab · ${s(d.startup)}`,
+    parrafos: [
+      saludo(d),
+      "Has aceptado el acuerdo de confidencialidad con Inception Woman Lab. Te lo adjuntamos en PDF, con el registro de tu aceptación.",
+      `Ahora, cuéntanos ${s(d.startup)} desde tu enlace privado. Guárdalo: es solo tuyo, y con él puedes volver cuando quieras.`,
+    ],
+    boton: { texto: "Presentar el proyecto", url: s(d.enlace) },
+  }),
+  /** Lo que no pasa el filtro: con su motivo, que es lo que lo explica */
+  filtro_no_pasa: (d) => ({
+    asunto: `Tu candidatura a Inception Woman Lab · ${s(d.startup)}`,
+    parrafos: [
+      saludo(d),
+      `Gracias por presentar ${s(d.startup)}. Hemos revisado la candidatura con las condiciones de entrada de la convocatoria y esta vez no puede seguir adelante:`,
+      s(d.motivo),
+      "Si alguno de los datos no es correcto, respóndenos a este correo y lo miramos.",
+    ],
+    boton: { texto: "Ver mi candidatura", url: s(d.enlace) },
+  }),
   enlace_candidatura: (d) => ({
     asunto: `Hemos recibido tu candidatura · ${s(d.startup)}`,
     parrafos: [

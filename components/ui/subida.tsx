@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { prepararSubida, type DestinoSubida } from "@/lib/acciones/subidas";
+import { prepararSubida, type DestinoSubida, type SubidaPreparada } from "@/lib/acciones/subidas";
 import type { Resultado } from "@/lib/acciones/resultado";
 import { comprobarFichero, type ClaseSubida } from "@/lib/subidas";
 
@@ -22,7 +22,12 @@ export interface CampoSubida {
   campo: string;
   clase: Exclude<ClaseSubida, "foto">;
   /** Adónde va, con lo que haya en el formulario */
-  destino: (formData: FormData) => DestinoSubida;
+  destino?: (formData: FormData) => DestinoSubida;
+  /**
+   * Quien sube sin sesión pide la dirección de otra forma: la prueba del
+   * estadio se autoriza con el testigo de su enlace (REVISION, 22 nov).
+   */
+  preparar?: (fichero: { nombre: string; tamano: number; tipo: string }) => Promise<SubidaPreparada>;
 }
 
 export interface Progreso {
@@ -73,11 +78,12 @@ export function useSubidas() {
             formData.delete(c.campo);
             formData.delete(`${c.campo}_nombre`);
             for (const f of ficheros) {
-              const preparada = await prepararSubida(c.destino(formData), {
-                nombre: f.name,
-                tamano: f.size,
-                tipo: f.type,
-              });
+              const anunciado = { nombre: f.name, tamano: f.size, tipo: f.type };
+              const preparada = c.preparar
+                ? await c.preparar(anunciado)
+                : c.destino
+                  ? await prepararSubida(c.destino(formData), anunciado)
+                  : ({ ok: false, error: "No sabemos adónde va ese fichero." } as const);
               if (!preparada.ok) return { ok: false, error: preparada.error, campos: { [c.campo]: preparada.error } };
 
               setProgreso({ nombre: f.name, porcentaje: 0 });

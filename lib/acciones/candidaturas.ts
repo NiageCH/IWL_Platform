@@ -621,11 +621,9 @@ export async function configurarConvocatoria(
 // -----------------------------------------------------------------------------
 
 /**
- * Enviar el NDA, desde Preseleccionada: darle cuenta y pasar a «NDA
- * enviado» en un paso. Fuera de Preseleccionada solo le da la cuenta, como
- * antes: hay candidaturas que llegaron a NDA a mano.
- *
- * Darle cuenta, al firmar el NDA.
+ * Darle cuenta a una candidata que todavía no es compañía. Desde el 22 nov
+ * ya no hay «Enviar el NDA» desde Preseleccionada: el NDA se acepta al
+ * empezar, y la preselección crea la compañía.
  *
  * Es el momento en que empieza a entregar material del due diligence, y el
  * momento en que un enlace deja de bastar: una dirección se reenvía y no se
@@ -652,6 +650,10 @@ export async function darAccesoCandidata(
 
   if (!candidatura) return error("Esa candidatura ya no está.");
   if (candidatura.profile_id) return error("Esa candidata ya tiene acceso.");
+  // Sin NDA después de la preselección (REVISION, 22 nov): sin NDA aceptado, se registra el firmado fuera
+  if (candidatura.estado === "preseleccionada") {
+    return error("Esta candidatura no tiene NDA aceptado. Registra su NDA firmado fuera y nacerá su compañía.");
+  }
 
   /*
    * Sin texto de NDA no se le da cuenta: lo primero que vería es «tu NDA
@@ -659,7 +661,7 @@ export async function darAccesoCandidata(
    * mira antes de crear la cuenta, que es lo que no tiene vuelta; la base
    * lo impide igualmente (`dar_acceso_candidatura`).
    */
-  if (candidatura.estado === "preseleccionada" || candidatura.estado === "nda") {
+  if (candidatura.estado === "nda") {
     // Sin plantilla, o con huecos que nadie va a rellenar: no tendría nada que firmar
     const plantilla = await leerPlantillaDe(id);
     const problema = plantilla
@@ -713,30 +715,18 @@ export async function darAccesoCandidata(
     return traducirError(falloAcceso);
   }
 
-  // El cambio de paso deja su evento en el historial por sí solo
-  const enviado = candidatura.estado === "preseleccionada";
-  if (enviado) {
-    const { error: falloPaso } = await supabase.from("candidaturas").update({ estado: "nda" }).eq("id", id);
-    if (falloPaso) {
-      return error(
-        `Tiene cuenta, pero no ha pasado a «NDA enviado»: ${falloPaso.message}. Su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar.`,
-      );
-    }
-  }
-
   /*
    * El correo, con un enlace para entrar y elegir su contraseña: la
-   * temporal no va por correo. Con el NDA, el del NDA; sin él —se firmó
-   * fuera—, el de su cuenta (REVISION, 11 nov). Si ya tenía cuenta, no va
+   * temporal no va por correo (REVISION, 11 nov). Si ya tenía cuenta, no va
    * ninguno: entra con la suya. Si no sale, la acción no falla —ya tiene
    * cuenta—: se dice, queda «sin enviar» en la ficha, y la contraseña se le
    * da por otro canal.
    */
   const correo =
-    enviado || !falloAlta
+    !falloAlta
       ? await notificar(
           { correo: candidatura.contacto_email!, nombre: candidatura.contacto_nombre, profileId },
-          enviado ? "nda_enviado" : "acceso_dado",
+          "acceso_dado",
           { nombre: candidatura.contacto_nombre, startup: candidatura.nombre },
           { candidaturaId: id, autor: persona?.id },
         )
@@ -750,9 +740,7 @@ export async function darAccesoCandidata(
   refrescar(id);
   return {
     ok: true,
-    mensaje: enviado
-      ? `NDA enviado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`
-      : `Acceso dado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
+    mensaje: `Acceso dado a ${candidatura.contacto_email}.${aviso} Por si hace falta por otro canal: su contraseña es ${clave} — cópiala ahora, no se vuelve a enseñar. El enlace privado queda anulado.`,
     datos: {
       correo: candidatura.contacto_email!,
       nombre: candidatura.contacto_nombre ?? "",

@@ -99,28 +99,37 @@ export function Formulario({
 
     const campos = formulario.current.elements;
 
+    // Lo enviado, agrupado por nombre: varios campos pueden compartirlo
+    const porNombre = new Map<string, string[]>();
     for (const [nombre, valor] of enviado.current) {
+      if (typeof valor !== "string") continue;
+      porNombre.set(nombre, [...(porNombre.get(nombre) ?? []), valor]);
+    }
+
+    for (const [nombre, valores] of porNombre) {
       /*
        * Un grupo de casillas o de botones de radio comparte nombre, y
-       * entonces `namedItem` devuelve la lista entera. Se recorre: lo que
-       * llegó marcado se vuelve a marcar, y solo eso.
+       * entonces `namedItem` devuelve la lista entera: lo que llegó marcado
+       * se vuelve a marcar, y solo eso. Varios campos de texto con el mismo
+       * nombre —las filas de socios— se reponen cada uno con el suyo, por
+       * orden: antes se quedaban todos con el último.
        */
       const campo = campos.namedItem(nombre);
       const varios = campo instanceof RadioNodeList ? [...campo] : [campo];
 
+      let i = 0;
       for (const uno of varios) {
         if (uno instanceof HTMLInputElement) {
           // Una casilla no guarda lo escrito en `value`: guarda si está marcada
           if (uno.type === "checkbox" || uno.type === "radio") {
-            if (uno.value === valor) uno.checked = true;
+            if (valores.includes(uno.value)) uno.checked = true;
           } else if (uno.type !== "file" && uno.type !== "hidden") {
-            uno.value = valor;
+            if (i < valores.length) uno.value = valores[i];
+            i++;
           }
-        } else if (
-          uno instanceof HTMLTextAreaElement ||
-          uno instanceof HTMLSelectElement
-        ) {
-          uno.value = valor;
+        } else if (uno instanceof HTMLTextAreaElement || uno instanceof HTMLSelectElement) {
+          if (i < valores.length) uno.value = valores[i];
+          i++;
         }
       }
     }

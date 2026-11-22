@@ -1,6 +1,7 @@
 "use client";
 
-import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
+import { ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
+import { DarAccesoFundadora } from "@/components/formularios/acuerdo";
 import Link from "next/link";
 
 import { useState } from "react";
@@ -633,6 +634,7 @@ export function AccesoCandidata({
   base,
   estado,
   problemaNda = null,
+  compania = null,
 }: {
   id: string;
   token: string | null;
@@ -648,6 +650,11 @@ export function AccesoCandidata({
    * nada que firmar; pasó en producción. La base lo impide también.
    */
   problemaNda?: string | null;
+  /**
+   * Si ya es compañía (la preselección la crea, REVISION 22 nov), la cuenta
+   * se le da como fundadora de esa compañía: entra directa a Mi compañía.
+   */
+  compania?: { id: string; slug: string } | null;
 }) {
   const [copiado, setCopiado] = useState(false);
   const [hecho, setHecho] = useState(false);
@@ -713,6 +720,9 @@ export function AccesoCandidata({
         falsa y se llevaría la contraseña con ella antes de que nadie
         pudiera copiarla.
       */}
+      {compania ? (
+        <DarAccesoFundadora companyId={compania.id} slug={compania.slug} tieneCuenta={tieneCuenta} />
+      ) : (
       <Formulario accion={darAccesoCandidata}>
         {(r) => {
           // Lo que se enseña una sola vez se cierra a mano, con «Hecho»
@@ -731,13 +741,26 @@ export function AccesoCandidata({
           if (antesDelComite) {
             return (
               <p className="text-sm text-secundario">
-                El NDA se envía cuando el comité la preselecciona: con el acta
-                firmada, aquí saldrá «Enviar el NDA».
+                La cuenta se le da cuando el comité la preselecciona y entra: con el acta firmada,
+                aquí saldrá «Darle cuenta».
               </p>
             );
           }
-          const enviar = estado === "preseleccionada";
-          if ((enviar || estado === "nda") && problemaNda) {
+          /*
+           * Sin NDA después de la preselección (REVISION, 22 nov): con el NDA
+           * aceptado al empezar, la preselección ya crea la compañía. La que
+           * llega aquí preseleccionada es una dada de alta a mano, sin NDA:
+           * se registra el firmado fuera, y eso la crea.
+           */
+          if (estado === "preseleccionada") {
+            return (
+              <p className="text-sm text-cuerpo">
+                Preseleccionada sin NDA aceptado: se dio de alta a mano. Registra su NDA firmado
+                fuera, en el bloque «NDA», y nacerá su compañía en entrada.
+              </p>
+            );
+          }
+          if (estado === "nda" && problemaNda) {
             return (
               <>
                 <p className="text-sm text-cuerpo">
@@ -749,7 +772,7 @@ export function AccesoCandidata({
                 </p>
                 <div>
                   <Boton variante="secundario" disabled>
-                    {enviar ? "Enviar el NDA" : "Darle cuenta para el due diligence"}
+                    Darle cuenta para el due diligence
                   </Boton>
                 </div>
               </>
@@ -759,23 +782,19 @@ export function AccesoCandidata({
             <>
               <input type="hidden" name="id" value={id} />
               <p className="text-sm text-secundario">
-                {enviar ? "Enviar el NDA le crea la cuenta" : "Se le crea la cuenta"} con{" "}
+                Se le crea la cuenta con{" "}
                 <strong>{correo}</strong>, enseña una contraseña{" "}
-                <strong>una sola vez</strong> y anula el enlace privado
-                {enviar ? ", y la candidatura pasa a «NDA enviado»" : ""}.
+                <strong>una sola vez</strong> y anula el enlace privado.
                 {" "}Le llega un correo con un enlace para entrar y elegir su contraseña; la
                 temporal queda para dársela por otro canal si hace falta.
-                {enviar || estado === "nda"
-                  ? " Lo primero que verá al entrar es el NDA, para comentarlo o firmarlo."
-                  : ""}
+                {estado === "nda" ? " Lo primero que verá al entrar es el NDA, para comentarlo o firmarlo." : ""}
               </p>
-              <Boton variante="secundario">
-                {enviar ? "Enviar el NDA" : "Darle cuenta para el due diligence"}
-              </Boton>
+              <Boton variante="secundario">Darle cuenta para el due diligence</Boton>
             </>
           );
         }}
       </Formulario>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import "server-only";
 import { clienteServicio } from "@/lib/supabase/servicio";
 import { direccionBase } from "@/lib/direccion";
-import { escribirCorreo, type DatosCorreo, type Evento } from "@/lib/correo/plantillas";
+import { escribirCorreo, type Adjunto, type DatosCorreo, type Evento } from "@/lib/correo/plantillas";
 import { proveedor } from "@/lib/correo/proveedores";
 import { leerAjusteModoPruebas, seRetiene, type ModoPruebas } from "@/lib/correo/modo-pruebas";
 
@@ -69,6 +69,27 @@ async function preparar(evento: Evento, datos: DatosCorreo, para: Destinatario):
   return { ...datos, enlace: data.properties.action_link, correo: para.correo };
 }
 
+/**
+ * Lo que se adjunta al enviar y no se guarda con el correo: el PDF del NDA
+ * aceptado, que se lee del que guardó la plataforma. Así un reintento
+ * adjunta lo mismo.
+ */
+async function adjuntosDe(evento: Evento, datos: DatosCorreo): Promise<Adjunto[]> {
+  if (evento !== "nda_aceptado" || !datos.candidatura_id) return [];
+  const servicio = clienteServicio();
+  const { data: firma } = await servicio
+    .from("nda_firmas")
+    .select("candidatura_documentos(storage_path)")
+    .eq("candidatura_id", String(datos.candidatura_id))
+    .maybeSingle();
+  const ruta = (firma?.candidatura_documentos as unknown as { storage_path: string } | null)?.storage_path;
+  if (!ruta) throw new Error("todavía no está el PDF del NDA");
+  const { data, error } = await servicio.storage.from("candidaturas").download(ruta);
+  if (error || !data) throw new Error(`no se ha podido leer el PDF del NDA: ${error?.message ?? "vacío"}`);
+  const contenido = Buffer.from(await data.arrayBuffer()).toString("base64");
+  return [{ nombre: "NDA aceptado.pdf", tipo: "application/pdf", contenido }];
+}
+
 async function entregar(
   filaId: string,
   evento: Evento,
@@ -93,7 +114,9 @@ async function entregar(
   }
   try {
     const listos = await preparar(evento, datos, para);
-    const c = escribirCorreo(evento, listos);
+    const escrito = escribirCorreo(evento, listos);
+    const extra = await adjuntosDe(evento, datos);
+    const c = extra.length ? { ...escrito, adjuntos: [...(escrito.adjuntos ?? []), ...extra] } : escrito;
     const { id } = await quien.enviar({ para: { correo: para.correo, nombre: para.nombre }, ...c });
     await servicio
       .from("correos")

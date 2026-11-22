@@ -30,6 +30,7 @@ export type TipoAviso =
   | "hito_entregado"
   | "hito_sin_revisar"
   | "candidatura_nueva"
+  | "recomendacion_pendiente"
   | "acta_por_firmar"
   | "anexo_aceptado"
   | "documento_entregado"
@@ -100,8 +101,8 @@ function dia(cuando: string | null | undefined): string {
 const PASO_DEL_RECORRIDO: Partial<Record<TipoAviso, [Recorrido, number]>> = {
   candidatura_nueva: ["embudo", PASO_EMBUDO.revisar],
   acta_por_firmar: ["embudo", PASO_EMBUDO.comite],
-  nda_comentario: ["embudo", PASO_EMBUDO.nda],
-  nda_firmado: ["embudo", PASO_EMBUDO.contrafirmar],
+  // Del NDA de antes del 22 nov, que ya no está en el recorrido: sin «Viene de»
+  recomendacion_pendiente: ["embudo", PASO_EMBUDO.filtro],
   situacion_dicha: ["entrada", 1],
   anexo_comentario: ["entrada", 4],
   anexo_aceptado: ["entrada", 5],
@@ -234,6 +235,16 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         href: embudo("pasos"),
         ancla: "pasos",
         hasVenidoA: `revisar la candidatura de ${sitio}`,
+      };
+    case "recomendacion_pendiente":
+      return {
+        ...base,
+        paso: `${sitio} se presenta como idea y te pone como quien la recomienda, el ${dia(a.created_at)}`,
+        toca: "Confirmar la recomendación o decir que no",
+        verbo: "Responder",
+        href: embudo("filtro"),
+        ancla: "filtro",
+        hasVenidoA: `confirmar si recomiendas ${sitio}`,
       };
     case "acta_por_firmar":
       return {

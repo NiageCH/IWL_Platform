@@ -1,4 +1,7 @@
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { nombreCompleto } from "@/lib/etiquetas";
+import type { DatosFiltro } from "@/components/vistas/filtro";
+import type { Filtro } from "@/lib/candidatura-nueva";
 import { PASOS_ABIERTOS, type EstadoCandidatura } from "@/lib/embudo";
 
 /**
@@ -153,4 +156,37 @@ export async function leerCohortes() {
     .select("id, name, convocatoria_abierta, convocatoria_cierra")
     .order("start_date", { ascending: false });
   return data ?? [];
+}
+
+/**
+ * El filtro de una candidatura y lo que lo decide (REVISION, 22 nov). Nulo
+ * en las de antes del 22 nov, que no pasaron por él.
+ */
+export async function leerFiltro(id: string): Promise<DatosFiltro | null> {
+  const supabase = await clienteServidor();
+  const { data: c } = await supabase
+    .from("candidaturas")
+    .select(
+      "id, filtro, filtro_motivo, sector, sector_otro, socios, liderazgo_femenino_pct, recomendacion, filtro_decision_motivo, prueba:candidatura_documentos!candidaturas_prueba_documento_id_fkey(nombre), recomienda:profiles!candidaturas_recomendada_por_fkey(id, full_name, last_name), decide:profiles!candidaturas_filtro_decidido_por_fkey(full_name, last_name)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (!c?.filtro) return null;
+  const recomienda = c.recomienda as unknown as { id: string; full_name: string | null; last_name: string | null } | null;
+  const decide = c.decide as unknown as { full_name: string | null; last_name: string | null } | null;
+  return {
+    candidaturaId: c.id,
+    filtro: c.filtro as Filtro,
+    motivo: c.filtro_motivo,
+    sector: c.sector,
+    sectorOtro: c.sector_otro,
+    socios: (c.socios ?? []) as unknown as DatosFiltro["socios"],
+    mujeresPct: c.liderazgo_femenino_pct === null ? null : Number(c.liderazgo_femenino_pct),
+    prueba: (c.prueba as unknown as { nombre: string } | null)?.nombre ?? null,
+    recomendadaPor: recomienda ? { id: recomienda.id, nombre: nombreCompleto(recomienda.full_name, recomienda.last_name) } : null,
+    recomendacion: c.recomendacion,
+    decision: c.filtro_decision_motivo
+      ? { quien: decide ? nombreCompleto(decide.full_name, decide.last_name) || null : null, motivo: c.filtro_decision_motivo }
+      : null,
+  };
 }

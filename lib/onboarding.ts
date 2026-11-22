@@ -31,6 +31,11 @@ export interface DatosOnboarding {
     descartada: boolean;
     ndaElla: string | null;
     ndaIwl: string | null;
+    /**
+     * El NDA aceptado con la casilla al presentarse (REVISION, 22 nov): va
+     * antes que el comité y la cuenta, y no lleva contrafirma.
+     */
+    ndaAlPrincipio?: boolean;
     /** Peticiones obligatorias del due diligence y cuántas tienen algo entregado */
     entregas: { cumplidas: number; total: number; ultima: string | null } | null;
     comite: string | null;
@@ -97,13 +102,31 @@ export function pasosDeOnboarding(
   const entregas = c?.entregas ?? null;
   const ddHecho = Boolean(entregas && entregas.total > 0 && entregas.cumplidas >= entregas.total);
 
-  const crudos: { clave: ClavePaso; fecha: string | null; detalle?: string }[] = [
+  const cuenta: { clave: ClavePaso; fecha: string | null; detalle?: string }[] = [
     { clave: "cuenta", fecha: d.cuentaCreada },
     { clave: "primer_acceso", fecha: d.primerAcceso },
     { clave: "contrasena", fecha: d.contrasenaCambiada },
   ];
+  const crudos: { clave: ClavePaso; fecha: string | null; detalle?: string }[] = [];
 
-  if (c) {
+  if (c?.ndaAlPrincipio) {
+    // El orden de hoy: el NDA, el comité, la cuenta y lo de después
+    crudos.push(
+      { clave: "nda_ella", fecha: c.ndaElla },
+      { clave: "comite", fecha: c.comite },
+      ...cuenta,
+      {
+        clave: "due_diligence",
+        fecha: ddHecho ? (entregas?.ultima ?? null) : null,
+        detalle: entregas && entregas.total > 0 ? `${entregas.cumplidas} de ${entregas.total}` : undefined,
+      },
+      { clave: "acuerdo", fecha: c.acuerdo },
+    );
+  } else {
+    crudos.push(...cuenta);
+  }
+
+  if (c && !c.ndaAlPrincipio) {
     crudos.push(
       { clave: "nda_ella", fecha: c.ndaElla },
       { clave: "nda_iwl", fecha: c.ndaIwl },

@@ -14,8 +14,9 @@ import {
 /**
  * El alta paso a paso, como la vivió Rodrigo con Agustina.
  *
- * Se le da cuenta a una candidata, entra, cambia la contraseña, y
- * dirección lo ve: el aviso en su inicio, el contador en la barra y la
+ * Se le da cuenta a una candidata con el NDA ya aceptado (desde el 22 nov
+ * va primero, con una casilla), entra, cambia la contraseña, y dirección lo
+ * ve: el aviso en su inicio, el contador en la barra y la
  * línea de pasos en la ficha. Después se deja el paso parado más de la
  * cuenta y se comprueba que se marca y que «Recordar» queda apuntado.
  *
@@ -35,7 +36,15 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     nombre: NOMBRE,
     contacto_nombre: PERSONA,
     contacto_email: CORREO,
-    estado: "preseleccionada",
+    estado: "entrada",
+  });
+  // El NDA, aceptado con la casilla al presentarse
+  await insertar("nda_firmas", {
+    candidatura_id: candidatura.id,
+    modo: "casilla",
+    firmante_nombre: PERSONA,
+    firmante_correo: CORREO,
+    firmado_at: new Date().toISOString(),
   });
 
   try {
@@ -44,8 +53,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     const fila = (paso: string) => page.locator("ol li").filter({ hasText: paso });
     await expect(fila("Cuenta creada").getByText("Por hacer")).toBeVisible();
 
-    await page.getByRole("button", { name: "Enviar el NDA" }).click();
-    const mensaje = await page.getByText(/NDA enviado a/).innerText();
+    await page.getByRole("button", { name: "Darle cuenta para el due diligence" }).click();
+    const mensaje = await page.getByText(/Acceso dado a/).innerText();
     const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
     expect(clave).toBeTruthy();
 
@@ -73,13 +82,16 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     const altas = page.locator("section").filter({ has: page.getByRole("heading", { name: "Altas en curso" }) });
     await expect(altas.getByText(PERSONA)).toBeVisible();
 
-    // La ficha: los tres primeros hechos, y el NDA esperándola desde hoy
+    // La ficha: los tres primeros hechos, el NDA también, y el due diligence esperándola desde hoy
     await page.goto(`/embudo/${candidatura.id}`);
     await expect(fila("Cuenta creada").getByText("Hecho")).toBeVisible();
     await expect(fila("Primer acceso").getByText("Hecho")).toBeVisible();
     await expect(fila("Contraseña cambiada").getByText("Hecho")).toBeVisible();
-    await expect(fila("NDA firmado por ella").getByText("En curso")).toBeVisible();
-    await expect(fila("NDA firmado por ella").getByText("lleva 0 días")).toBeVisible();
+    // El NDA va primero, aceptado con la casilla: sin contrafirma que esperar
+    await expect(fila("NDA firmado por ella").getByText("Hecho")).toBeVisible();
+    await expect(fila("NDA firmado por IWL")).toHaveCount(0);
+    await expect(fila("Due diligence entregado").getByText("En curso")).toBeVisible();
+    await expect(fila("Due diligence entregado").getByText("lleva 0 días")).toBeVisible();
 
     /*
      * Parada doce días: vencido, y se le puede recordar. La fecha se mueve
@@ -91,8 +103,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     await actualizar("profiles", { id: `eq.${perfil.id}` }, { contrasena_cambiada_at: haceDoce });
 
     await page.reload();
-    await expect(fila("NDA firmado por ella").getByText("Vencido")).toBeVisible();
-    await fila("NDA firmado por ella").getByRole("button", { name: "Recordar" }).click();
+    await expect(fila("Due diligence entregado").getByText("Vencido")).toBeVisible();
+    await fila("Due diligence entregado").getByRole("button", { name: "Recordar" }).click();
     await expect(page.getByLabel("Texto del recordatorio")).toHaveValue(/^Hola, Agustina:/);
     await page.getByRole("button", { name: "Copiar para WhatsApp" }).click();
     await expect(page.getByText("Apuntado: recordatorio por WhatsApp.")).toBeVisible();
@@ -100,8 +112,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     // Por correo lo envía la plataforma
     await page.getByRole("button", { name: "Enviar el correo" }).click();
     await expect(page.getByText("Correo enviado, y apuntado.")).toBeVisible();
-    const recordatorio = (await correosRecibidos(CORREO)).find((c) => /tienes el NDA esperando tu firma/.test(c.texto));
-    expect(recordatorio?.texto).toMatch(/^Hola, Agustina: tienes el NDA esperando tu firma/);
+    const recordatorio = (await correosRecibidos(CORREO)).find((c) => /falta documentación del due diligence/.test(c.texto));
+    expect(recordatorio?.texto).toMatch(/^Hola, Agustina: falta documentación del due diligence/);
 
     const apuntes = await consultar<{ id: number }>(
       "activity_log",

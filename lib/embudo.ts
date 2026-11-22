@@ -13,9 +13,20 @@ export type EstadoCandidatura =
  */
 export const PASOS = [
   {
+    /*
+     * El NDA va primero (REVISION, 22 nov): ha aceptado el NDA y todavía no
+     * ha enviado la candidatura. No es nada que revisar: se ve para saber
+     * que existe.
+     */
+    codigo: "borrador",
+    nombre: "NDA aceptado",
+    descripcion: "Ha aceptado el NDA. Todavía no ha enviado la candidatura.",
+    siguiente: "Que envíe la candidatura",
+  },
+  {
     codigo: "presentada",
     nombre: "Presentada",
-    descripcion: "Ha rellenado el formulario. Nadie la ha mirado todavía.",
+    descripcion: "Ha enviado la candidatura y ha pasado por el filtro. Nadie la ha mirado todavía.",
     siguiente: "Revisar lo que ha mandado",
   },
   {
@@ -39,13 +50,14 @@ export const PASOS = [
   {
     codigo: "preseleccionada",
     nombre: "Preseleccionada",
-    descripcion: "El comité ha dicho que sí.",
-    siguiente: "Enviar el NDA",
+    descripcion: "El comité ha dicho que sí. Con el NDA aceptado pasa sola a entrada; sin él, falta registrar el NDA firmado fuera.",
+    siguiente: "Registrar el NDA firmado fuera",
   },
   {
+    // Del proceso de antes del 22 nov: el NDA después de la preselección
     codigo: "nda",
     nombre: "NDA enviado",
-    descripcion: "Tiene cuenta y el NDA delante. Faltan las firmas.",
+    descripcion: "Del proceso anterior: tiene cuenta y el NDA delante. Faltan las firmas.",
     siguiente: "Firmar el NDA las dos partes",
   },
   {

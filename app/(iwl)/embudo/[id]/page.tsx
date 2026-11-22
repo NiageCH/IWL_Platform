@@ -4,7 +4,7 @@ import { nombreCompleto } from "@/lib/etiquetas";
 import { notFound, redirect } from "next/navigation";
 import { personaActual, clienteServidor } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
-import { leerCandidatura } from "@/lib/datos/candidaturas";
+import { leerCandidatura, leerFiltro } from "@/lib/datos/candidaturas";
 import { ChipCompania } from "@/components/chip-compania";
 import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { direccionBase } from "@/lib/direccion";
@@ -40,6 +40,8 @@ import {
 } from "@/components/formularios/candidatura";
 import { PASOS_ABIERTOS, nombrePaso, paso, tonoPaso } from "@/lib/embudo";
 import { cn, equity } from "@/lib/utils";
+import { BloqueFiltro } from "@/components/vistas/filtro";
+import { DecidirFiltro, ResponderRecomendacion } from "@/components/formularios/filtro";
 
 const ESTADOS_ENTRADA: Record<string, string> = ESTADIOS;
 
@@ -68,7 +70,7 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos] = await Promise.all([
+  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos, filtro] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
@@ -78,6 +80,7 @@ export default async function FichaCandidatura({
     leerPersonasIwl(),
     leerComiteDefecto(),
     leerCorreos({ candidaturaId: id }),
+    leerFiltro(id),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -119,6 +122,19 @@ export default async function FichaCandidatura({
           </div>
         </div>
       </header>
+
+      {/* El filtro de entrada, si pasó por él (REVISION, 22 nov) */}
+      {filtro ? (
+        <BloqueFiltro
+          d={filtro}
+          yo={persona.id}
+          esDireccion={persona.role === "admin_iwl"}
+          acciones={{
+            decidir: (desde) => <DecidirFiltro candidaturaId={id} desde={desde} />,
+            responder: <ResponderRecomendacion candidaturaId={id} />,
+          }}
+        />
+      ) : null}
 
       {/* Dónde está, en el recorrido entero */}
       {estado !== "descartada" && estado !== "firmada" ? (
@@ -453,6 +469,7 @@ export default async function FichaCandidatura({
               base={base}
               estado={estado}
               problemaNda={nda.firma ? null : nda.problema}
+              compania={c.company_id && c.company_slug && estado !== "firmada" ? { id: c.company_id, slug: c.company_slug } : null}
             />
           </Bloque>
 

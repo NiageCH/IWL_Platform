@@ -1037,13 +1037,13 @@ isOneToOne: false
                   ]
                 },"candidaturas": {
                   Row: {
-                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": NonNullable<Json>,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string,"company_id": string | null,"constitucion_prevista": string | null,"contacto_apellidos": string | null,"contacto_cargo": string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"enlace_abierto_at": string | null,"enlace_visto_at": string | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"],"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string,"is_demo": boolean,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"sector": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"token": string | null,"token_anulado_at": string | null,"updated_at": string,"website": string | null
+                    "acuerdo_firmado_on": string | null,"acuerdo_firmantes": NonNullable<Json>,"acuerdo_propuesto_on": string | null,"aportacion_propuesta": string | null,"cif": string | null,"cohort_id": string,"company_id": string | null,"constitucion_prevista": string | null,"contacto_apellidos": string | null,"contacto_cargo": string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"descartada_at": string | null,"descartada_desde": Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo": string | null,"descartada_por": string | null,"enlace_abierto_at": string | null,"enlace_visto_at": string | null,"enviada_at": string | null,"equipo_personas": number | null,"equity_pct": number | null,"estado": Database["public"]['Enums']["estado_candidatura"],"estado_declarado": Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado": Database["public"]['Enums']["estado_entrada"] | null,"filtro": string | null,"filtro_at": string | null,"filtro_decidido_por": string | null,"filtro_decision_motivo": string | null,"filtro_motivo": string | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"id": string,"is_demo": boolean,"liderazgo_femenino_pct": number | null,"nda_firmado_on": string | null,"nombre": string,"notas": string | null,"one_liner": string | null,"origen": string | null,"pais": string | null,"profile_id": string | null,"prueba_documento_id": string | null,"recomendacion": string | null,"recomendacion_at": string | null,"recomendada_por": string | null,"sector": string | null,"sector_otro": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"socios": NonNullable<Json>,"token": string | null,"token_anulado_at": string | null,"updated_at": string,"website": string | null
                   }
                   Insert: {
-                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id": string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_apellidos"?: string | null,"contacto_cargo"?: string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre": string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
+                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id": string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_apellidos"?: string | null,"contacto_cargo"?: string | null,"contacto_email": string,"contacto_nombre": string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"enviada_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"filtro"?: string | null,"filtro_at"?: string | null,"filtro_decidido_por"?: string | null,"filtro_decision_motivo"?: string | null,"filtro_motivo"?: string | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre": string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"prueba_documento_id"?: string | null,"recomendacion"?: string | null,"recomendacion_at"?: string | null,"recomendada_por"?: string | null,"sector"?: string | null,"sector_otro"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"socios"?: NonNullable<Json>,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
                   }
                   Update: {
-                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id"?: string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_apellidos"?: string | null,"contacto_cargo"?: string | null,"contacto_email"?: string,"contacto_nombre"?: string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre"?: string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"sector"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
+                    "acuerdo_firmado_on"?: string | null,"acuerdo_firmantes"?: NonNullable<Json>,"acuerdo_propuesto_on"?: string | null,"aportacion_propuesta"?: string | null,"cif"?: string | null,"cohort_id"?: string,"company_id"?: string | null,"constitucion_prevista"?: string | null,"contacto_apellidos"?: string | null,"contacto_cargo"?: string | null,"contacto_email"?: string,"contacto_nombre"?: string,"contacto_telefono"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"descartada_at"?: string | null,"descartada_desde"?: Database["public"]['Enums']["estado_candidatura"] | null,"descartada_motivo"?: string | null,"descartada_por"?: string | null,"enlace_abierto_at"?: string | null,"enlace_visto_at"?: string | null,"enviada_at"?: string | null,"equipo_personas"?: number | null,"equity_pct"?: number | null,"estado"?: Database["public"]['Enums']["estado_candidatura"],"estado_declarado"?: Database["public"]['Enums']["estado_entrada"] | null,"estado_verificado"?: Database["public"]['Enums']["estado_entrada"] | null,"filtro"?: string | null,"filtro_at"?: string | null,"filtro_decidido_por"?: string | null,"filtro_decision_motivo"?: string | null,"filtro_motivo"?: string | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"id"?: string,"is_demo"?: boolean,"liderazgo_femenino_pct"?: number | null,"nda_firmado_on"?: string | null,"nombre"?: string,"notas"?: string | null,"one_liner"?: string | null,"origen"?: string | null,"pais"?: string | null,"profile_id"?: string | null,"prueba_documento_id"?: string | null,"recomendacion"?: string | null,"recomendacion_at"?: string | null,"recomendada_por"?: string | null,"sector"?: string | null,"sector_otro"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"socios"?: NonNullable<Json>,"token"?: string | null,"token_anulado_at"?: string | null,"updated_at"?: string,"website"?: string | null
                   }
                   Relationships: [
                     {
@@ -1113,6 +1113,24 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "candidaturas_filtro_decidido_por_fkey"
+      columns: ["filtro_decidido_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_filtro_decidido_por_fkey"
+      columns: ["filtro_decidido_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_filtro_decidido_por_fkey"
+      columns: ["filtro_decidido_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "candidaturas_profile_id_fkey"
       columns: ["profile_id"]
 isOneToOne: true
@@ -1128,6 +1146,36 @@ isOneToOne: true
       foreignKeyName: "candidaturas_profile_id_fkey"
       columns: ["profile_id"]
 isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_prueba_documento_id_fkey"
+      columns: ["prueba_documento_id"]
+isOneToOne: false
+      referencedRelation: "candidatura_documentos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_prueba_documento_id_fkey"
+      columns: ["prueba_documento_id"]
+isOneToOne: false
+      referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_recomendada_por_fkey"
+      columns: ["recomendada_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_recomendada_por_fkey"
+      columns: ["recomendada_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "candidaturas_recomendada_por_fkey"
+      columns: ["recomendada_por"]
+isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
@@ -3445,13 +3493,13 @@ isOneToOne: false
                   ]
                 },"nda_firmas": {
                   Row: {
-                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"datos": Json | null,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"plantilla_id": string | null,"texto_firmado": string | null,"texto_hash": string | null,"texto_version": string | null
+                    "candidatura_id": string,"contrafirmado_at": string | null,"contrafirmado_ip": string | null,"contrafirmado_ua": string | null,"contrafirmante_correo": string | null,"contrafirmante_id": string | null,"contrafirmante_nombre": string | null,"created_at": string,"datos": Json | null,"documento_id": string | null,"evidencia_url": string | null,"externo": boolean,"firmado_at": string | null,"firmado_ip": string | null,"firmado_ua": string | null,"firmante_correo": string | null,"firmante_id": string | null,"firmante_nombre": string | null,"modo": string,"plantilla_id": string | null,"texto_firmado": string | null,"texto_hash": string | null,"texto_version": string | null
                   }
                   Insert: {
-                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
+                    "candidatura_id": string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"modo"?: string,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Update: {
-                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
+                    "candidatura_id"?: string,"contrafirmado_at"?: string | null,"contrafirmado_ip"?: string | null,"contrafirmado_ua"?: string | null,"contrafirmante_correo"?: string | null,"contrafirmante_id"?: string | null,"contrafirmante_nombre"?: string | null,"created_at"?: string,"datos"?: Json | null,"documento_id"?: string | null,"evidencia_url"?: string | null,"externo"?: boolean,"firmado_at"?: string | null,"firmado_ip"?: string | null,"firmado_ua"?: string | null,"firmante_correo"?: string | null,"firmante_id"?: string | null,"firmante_nombre"?: string | null,"modo"?: string,"plantilla_id"?: string | null,"texto_firmado"?: string | null,"texto_hash"?: string | null,"texto_version"?: string | null
                   }
                   Relationships: [
                     {
@@ -5229,6 +5277,11 @@ isOneToOne: false
             "aceptar_anexo":
 { Args: { "p_anexo": string }; Returns: undefined
                            },
+"aceptar_nda":
+{ Args: { "p_apellidos": string,"p_correo": string,"p_datos": Json,"p_ip": string,"p_nombre": string,"p_plantilla": string,"p_startup": string,"p_texto": string,"p_ua": string }; Returns: {
+              "candidatura_id": string,"token": string
+            }[]
+                           },
 "anadir_enlace_con_token":
 { Args: { "p_titulo": string,"p_token": string,"p_url": string }; Returns: undefined
                            },
@@ -5305,6 +5358,9 @@ isOneToOne: false
               "contraparte_nombre": string,"lugar": string,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"],"startup": string
             }[]
                            },
+"decidir_filtro":
+{ Args: { "p_candidatura": string,"p_motivo": string,"p_pasa": boolean }; Returns: undefined
+                           },
 "decidir_sesion":
 { Args: { "p_horas"?: Json,"p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
@@ -5313,6 +5369,16 @@ isOneToOne: false
                            },
 "entregar_hito":
 { Args: { "p_hito": string,"p_nota"?: string }; Returns: string
+                           },
+"enviar_candidatura":
+{ Args: { "p_estadio": Database["public"]['Enums']["estado_entrada"],"p_one_liner": string,"p_prueba": string,"p_recomendada": string,"p_sector": string,"p_sector_otro": string,"p_socios": Json,"p_token": string,"p_website": string }; Returns: {
+              "filtro": string,"motivo": string
+            }[]
+                           },
+"envio_de_candidatura":
+{ Args: { "p_token": string }; Returns: {
+              "contacto_nombre": string,"estado": Database["public"]['Enums']["estado_candidatura"],"filtro": string,"filtro_motivo": string,"id": string,"nombre": string,"recomendacion": string
+            }[]
                            },
 "estado_nda":
 { Args: { "p_candidatura": string }; Returns: string
@@ -5365,11 +5431,13 @@ isOneToOne: false
 "persona_tiene_actividad":
 { Args: { "target_profile": string }; Returns: boolean
                            },
+"personas_que_recomiendan":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": string,"nombre": string
+            }[]
+                           },
 "plantilla_nda_de":
 { Args: { "p_candidatura": string }; Returns: string
-                           },
-"presentar_candidatura":
-{ Args: { "p_contacto_apellidos": string,"p_contacto_cargo"?: string,"p_contacto_email": string,"p_contacto_nombre": string,"p_contacto_telefono"?: string,"p_enlaces"?: Json,"p_equipo_personas"?: number,"p_estado_declarado"?: Database["public"]['Enums']["estado_entrada"],"p_liderazgo_femenino_pct"?: number,"p_nombre": string,"p_one_liner"?: string,"p_origen"?: string,"p_pais"?: string,"p_sector"?: string,"p_website"?: string }; Returns: string
                            },
 "puede_cambiar_correo":
 { Args: { "target_profile": string }; Returns: boolean
@@ -5388,6 +5456,9 @@ isOneToOne: false
                            },
 "registrar_sesion":
 { Args: { "p": Json }; Returns: string
+                           },
+"responder_recomendacion":
+{ Args: { "p_candidatura": string,"p_confirma": boolean }; Returns: string
                            },
 "restaurar_compania":
 { Args: { "target_company": string }; Returns: undefined
@@ -5419,7 +5490,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"propuesto"|"comentado"|"aceptado"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"mvp_sin_piloto"|"mvp_con_piloto"|"facturando","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"entregado"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_sesion": "por_confirmar"|"en_discusion"|"en_direccion"|"confirmada"|"confirmada_plazo"|"confirmada_direccion"|"confirmada_previa"|"anulada","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion"
+            "app_role": "admin_iwl"|"equipo_iwl"|"revisor_niage"|"fundadora"|"mentor"|"lector_externo"|"candidata","base_incorporacion": "due_diligence"|"estrategica","company_member_role": "fundadora"|"responsable_iwl"|"revisor_niage"|"mentor"|"mentor_principal"|"mentor_secundario","company_stage": "pre_semilla"|"semilla"|"serie_a","company_tech_profile": "software"|"software_ia"|"hardware","decision_incorporacion": "si"|"no","estado_anexo": "borrador"|"propuesto"|"comentado"|"aceptado"|"firmado"|"cerrado","estado_caja": "comprometido"|"desembolsado"|"justificado","estado_candidatura": "borrador"|"presentada"|"en_revision"|"reunion"|"comite"|"preseleccionada"|"nda"|"entrada"|"acuerdo"|"firmada"|"descartada","estado_entrada": "idea"|"mvp_sin_piloto"|"mvp_con_piloto"|"facturando","estado_etapa": "planificada"|"en_curso"|"completada"|"cancelada","estado_evaluacion": "borrador"|"publicada","estado_hallazgo": "abierto"|"en_curso"|"resuelto"|"aceptado","estado_hito": "pendiente"|"en_curso"|"entregado"|"cumplido"|"retrasado","estado_introduccion": "presentada"|"reunion_celebrada"|"en_negociacion"|"cerrada"|"descartada","estado_objecion": "abierta"|"aceptada"|"rechazada","estado_plan": "pendiente"|"en_curso"|"hecho"|"descartado","estado_punto_dd": "pendiente"|"entregado"|"en_revision"|"validado"|"bloqueante"|"no_aplica"|"por_construir","estado_seccion_bp": "borrador"|"en_revision"|"validada"|"por_construir","estado_sesion": "por_confirmar"|"en_discusion"|"en_direccion"|"confirmada"|"confirmada_plazo"|"confirmada_direccion"|"confirmada_previa"|"anulada","estado_tarea": "pendiente"|"en_curso"|"hecha"|"bloqueada"|"descartada","estado_update": "borrador"|"entregado"|"revisado","forma_juridica": "sl"|"sa"|"otra"|"extranjera","kpi_category": "nucleo"|"sector"|"tecnico"|"propio","kpi_direction": "sube_mejor"|"baja_mejor"|"neutro","kpi_unit": "moneda"|"porcentaje"|"numero"|"meses"|"dias"|"ratio","lado_avance": "compania"|"iwl","motivo_instantanea": "linea_base"|"evaluacion"|"mensual"|"manual","origen_hito": "anexo"|"plan_tecnico"|"due_diligence"|"acordado"|"societario","origen_puntuacion": "automatico"|"manual","prioridad_tarea": "alta"|"media"|"baja","responsable_plan": "compania"|"niage","severidad_hallazgo": "critico"|"alto"|"medio"|"bajo","situacion_societaria": "sin_constituir"|"en_constitucion"|"constituida","tech_applicability": "siempre"|"ia"|"hardware","tipo_aportacion": "compra"|"evento"|"reunion_inversor"|"gestion","tipo_contacto": "inversor"|"cliente"|"partner"|"proveedor"|"organismo_publico","tipo_evento_candidatura": "cambio_estado"|"reunion"|"comite"|"nota","tipo_evidencia": "documento"|"kpi"|"hito"|"hallazgo_tecnico"|"dimension_tecnica"|"enlace","tipo_linea_base": "inicial"|"trimestral"|"previa_ronda","traffic_light": "verde"|"ambar"|"rojo","tramo_compania": "entrada"|"incubacion"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -5539,7 +5610,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "propuesto", "comentado", "aceptado", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "mvp_sin_piloto", "mvp_con_piloto", "facturando"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "entregado", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_sesion": ["por_confirmar", "en_discusion", "en_direccion", "confirmada", "confirmada_plazo", "confirmada_direccion", "confirmada_previa", "anulada"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"]
+            "app_role": ["admin_iwl", "equipo_iwl", "revisor_niage", "fundadora", "mentor", "lector_externo", "candidata"],"base_incorporacion": ["due_diligence", "estrategica"],"company_member_role": ["fundadora", "responsable_iwl", "revisor_niage", "mentor", "mentor_principal", "mentor_secundario"],"company_stage": ["pre_semilla", "semilla", "serie_a"],"company_tech_profile": ["software", "software_ia", "hardware"],"decision_incorporacion": ["si", "no"],"estado_anexo": ["borrador", "propuesto", "comentado", "aceptado", "firmado", "cerrado"],"estado_caja": ["comprometido", "desembolsado", "justificado"],"estado_candidatura": ["borrador", "presentada", "en_revision", "reunion", "comite", "preseleccionada", "nda", "entrada", "acuerdo", "firmada", "descartada"],"estado_entrada": ["idea", "mvp_sin_piloto", "mvp_con_piloto", "facturando"],"estado_etapa": ["planificada", "en_curso", "completada", "cancelada"],"estado_evaluacion": ["borrador", "publicada"],"estado_hallazgo": ["abierto", "en_curso", "resuelto", "aceptado"],"estado_hito": ["pendiente", "en_curso", "entregado", "cumplido", "retrasado"],"estado_introduccion": ["presentada", "reunion_celebrada", "en_negociacion", "cerrada", "descartada"],"estado_objecion": ["abierta", "aceptada", "rechazada"],"estado_plan": ["pendiente", "en_curso", "hecho", "descartado"],"estado_punto_dd": ["pendiente", "entregado", "en_revision", "validado", "bloqueante", "no_aplica", "por_construir"],"estado_seccion_bp": ["borrador", "en_revision", "validada", "por_construir"],"estado_sesion": ["por_confirmar", "en_discusion", "en_direccion", "confirmada", "confirmada_plazo", "confirmada_direccion", "confirmada_previa", "anulada"],"estado_tarea": ["pendiente", "en_curso", "hecha", "bloqueada", "descartada"],"estado_update": ["borrador", "entregado", "revisado"],"forma_juridica": ["sl", "sa", "otra", "extranjera"],"kpi_category": ["nucleo", "sector", "tecnico", "propio"],"kpi_direction": ["sube_mejor", "baja_mejor", "neutro"],"kpi_unit": ["moneda", "porcentaje", "numero", "meses", "dias", "ratio"],"lado_avance": ["compania", "iwl"],"motivo_instantanea": ["linea_base", "evaluacion", "mensual", "manual"],"origen_hito": ["anexo", "plan_tecnico", "due_diligence", "acordado", "societario"],"origen_puntuacion": ["automatico", "manual"],"prioridad_tarea": ["alta", "media", "baja"],"responsable_plan": ["compania", "niage"],"severidad_hallazgo": ["critico", "alto", "medio", "bajo"],"situacion_societaria": ["sin_constituir", "en_constitucion", "constituida"],"tech_applicability": ["siempre", "ia", "hardware"],"tipo_aportacion": ["compra", "evento", "reunion_inversor", "gestion"],"tipo_contacto": ["inversor", "cliente", "partner", "proveedor", "organismo_publico"],"tipo_evento_candidatura": ["cambio_estado", "reunion", "comite", "nota"],"tipo_evidencia": ["documento", "kpi", "hito", "hallazgo_tecnico", "dimension_tecnica", "enlace"],"tipo_linea_base": ["inicial", "trimestral", "previa_ronda"],"traffic_light": ["verde", "ambar", "rojo"],"tramo_compania": ["entrada", "incubacion"]
           }
         }
 } as const

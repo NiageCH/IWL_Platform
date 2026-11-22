@@ -12,8 +12,6 @@ import { USUARIOS, clienteAnonimo, clienteServicio, entrarComo } from "./cliente
  * candidatura sin cuenta, y solo eso.
  */
 
-const CORREO_PRUEBA = `rls.candidatura.${Date.now()}@ejemplo.test`;
-
 describe("el embudo solo lo ve IWL", () => {
   it("la dirección ve las candidaturas", async () => {
     const iwl = await entrarComo(USUARIOS.admin);
@@ -76,85 +74,7 @@ describe("el formulario público", () => {
       .eq("id", "00000000-0000-0000-0003-000000000001");
   });
 
-  it("alguien sin cuenta puede presentarse", async () => {
-    const anonimo = clienteAnonimo();
-    const { data, error } = await anonimo.rpc("presentar_candidatura", {
-      p_nombre: "Candidata Anónima",
-      p_contacto_nombre: "Quien Sea",
-      p_contacto_apellidos: "De Prueba",
-      p_contacto_email: CORREO_PRUEBA,
-    });
-
-    expect(error).toBeNull();
-    expect(data).toBeTruthy();
-  });
-
-  it("sin apellidos no se presenta: van en el NDA", async () => {
-    const { error } = await clienteAnonimo().rpc("presentar_candidatura", {
-      p_nombre: "Candidata Sin Apellidos",
-      p_contacto_nombre: "Quien Sea",
-      p_contacto_apellidos: "  ",
-      p_contacto_email: CORREO_PRUEBA,
-    });
-    expect(error?.message).toMatch(/Hacen falta tu nombre y tus apellidos/);
-  });
-
-  it("y la que crea nace en el primer paso, no donde quiera", async () => {
-    /*
-     * Esto es lo que de verdad protege el formulario. La función recibe solo
-     * los campos del formulario: el estado, la cohorte y las fechas las pone
-     * ella. Si fuese un `insert` con política para `anon`, cualquiera con la
-     * clave pública —que va en el navegador— podría darse de alta ya
-     * preseleccionada, o con un equity pactado.
-     */
-    const servicio = clienteServicio();
-    const { data } = await servicio
-      .from("candidaturas")
-      .select("estado, equity_pct, company_id")
-      .eq("contacto_email", CORREO_PRUEBA)
-      .single();
-
-    expect(data?.estado).toBe("presentada");
-    expect(data?.equity_pct).toBeNull();
-    expect(data?.company_id).toBeNull();
-  });
-
-  it("no puede leer lo que ha escrito, ni lo de nadie", async () => {
-    const anonimo = clienteAnonimo();
-    const { data } = await anonimo
-      .from("candidaturas")
-      .select("id")
-      .eq("contacto_email", CORREO_PRUEBA);
-    expect(data ?? []).toEqual([]);
-  });
-
-  it("el mismo correo no se presenta dos veces a la misma convocatoria", async () => {
-    const anonimo = clienteAnonimo();
-    const { error } = await anonimo.rpc("presentar_candidatura", {
-      p_nombre: "Candidata Anónima Otra Vez",
-      p_contacto_nombre: "Quien Sea",
-      p_contacto_apellidos: "De Prueba",
-      p_contacto_email: CORREO_PRUEBA,
-    });
-    expect(error).not.toBeNull();
-  });
-
-  it("con la convocatoria cerrada no admite nada", async () => {
-    await clienteServicio()
-      .from("cohorts")
-      .update({ convocatoria_abierta: false })
-      .eq("id", "00000000-0000-0000-0003-000000000001");
-
-    const anonimo = clienteAnonimo();
-    const { error } = await anonimo.rpc("presentar_candidatura", {
-      p_nombre: "Fuera de plazo",
-      p_contacto_nombre: "Quien Sea",
-      p_contacto_apellidos: "De Prueba",
-      p_contacto_email: `tarde.${Date.now()}@ejemplo.test`,
-    });
-
-    expect(error?.message).toMatch(/convocatoria abierta/i);
-  });
+  // Presentarse —NDA, candidatura y filtro— se prueba en `presentarse.test.ts`
 
   it("y la convocatoria que se enseña no cuenta lo que no es asunto suyo", async () => {
     /*

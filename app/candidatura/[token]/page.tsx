@@ -14,6 +14,9 @@ import { Desplegable } from "@/components/ui/formulario";
 import { CORREO_CONTACTO } from "@/lib/contacto";
 import { TarjetaReunion } from "@/components/vistas/reunion-candidata";
 import { leerReunionDeElla } from "@/lib/datos/reuniones";
+import { PresentarProyecto } from "@/components/formularios/presentar-proyecto";
+import { ResultadoFiltro } from "@/components/vistas/filtro";
+import type { Filtro } from "@/lib/candidatura-nueva";
 
 export const metadata = {
   title: "Tu candidatura · Inception Woman Lab",
@@ -60,11 +63,51 @@ export default async function PorEnlace({
     await supabase.rpc("registrar_apertura_enlace", { p_token: token });
   }
 
-  const reunion = await leerReunionDeElla(token);
+  const [reunion, { data: envios }] = await Promise.all([
+    leerReunionDeElla(token),
+    supabase.rpc("envio_de_candidatura", { p_token: token }),
+  ]);
+  const envio = envios?.[0] ?? null;
+
+  /*
+   * En borrador (REVISION, 22 nov): ha aceptado el NDA y le falta contarnos
+   * el proyecto. Es lo único que ve: no hay nada más que enseñarle todavía.
+   */
+  if (envio?.estado === "borrador") {
+    const { data: recomiendan } = await supabase.rpc("personas_que_recomiendan");
+    return (
+      <Marco tema="oscuro">
+        <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+          <div className="relative mb-8 pl-4">
+            <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
+            <h1 className="titular-marca text-3xl text-titular sm:text-4xl">Presenta {envio.nombre}</h1>
+            <p className="mt-2 text-base leading-relaxed text-secundario">
+              El NDA está aceptado: te lo hemos mandado en PDF. Ahora, el proyecto.
+            </p>
+          </div>
+          <div className="tarjeta p-6">
+            <PresentarProyecto token={token} recomiendan={(recomiendan ?? []) as Array<{ id: string; nombre: string }>} />
+          </div>
+          <p className="mt-6 text-xs leading-relaxed text-metadato">
+            Esta dirección es tuya y privada: con ella vuelves cuando quieras. Si la pierdes,
+            escríbenos a{" "}
+            <a href={`mailto:${CORREO_CONTACTO}`} className="enlace text-acento-texto">
+              {CORREO_CONTACTO}
+            </a>
+            .
+          </p>
+        </main>
+      </Marco>
+    );
+  }
 
   return (
     <Marco tema="oscuro">
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+        {/* En qué ha quedado el filtro, mientras no haya pasado */}
+        {envio?.filtro && envio.filtro !== "pasa" && envio.estado === "presentada" ? (
+          <ResultadoFiltro filtro={envio.filtro as Filtro} motivo={envio.filtro_motivo} />
+        ) : null}
         {/* La reunión, si hay una en juego: es su siguiente paso */}
         {reunion ? <TarjetaReunion reunion={reunion} token={token} /> : null}
         <CandidaturaPublica

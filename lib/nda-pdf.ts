@@ -28,17 +28,24 @@ export interface DatosNda {
   /** El hash del texto que firmaron las dos partes: el mismo */
   hash: string;
   ella: FirmaNda;
-  iwl: FirmaNda;
+  /**
+   * La contrafirma de IWL. Sin ella es un NDA aceptado con la casilla, el
+   * primer paso desde el 22 nov: una sola aceptación, la de ella.
+   */
+  iwl?: FirmaNda | null;
   /** ISO, cuándo se genera el documento */
   generado: string;
 }
 
 /** La última de las dos firmas, que da la fecha de efecto */
 function ultimaFirma(d: DatosNda): string {
+  if (!d.iwl) return d.ella.cuando;
   return new Date(d.ella.cuando) > new Date(d.iwl.cuando) ? d.ella.cuando : d.iwl.cuando;
 }
 
 function registro(d: DatosNda): DatoRegistro[] {
+  if (!d.iwl) return registroAceptado(d);
+  const iwl = d.iwl;
   return [
     { tipo: "dato", etiqueta: "Candidatura", valor: `${d.candidatura} (${d.candidaturaId})` },
     { tipo: "dato", etiqueta: "Plantilla del NDA", valor: `versión ${d.version}` },
@@ -50,13 +57,37 @@ function registro(d: DatosNda): DatoRegistro[] {
       valor: `${hora(ultimaFirma(d), "Europe/Madrid")} (Madrid)`,
     },
     { tipo: "firmante", rotulo: "Firma de la candidata", firma: d.ella },
-    { tipo: "firmante", rotulo: "Contrafirma de Inception Woman Lab", firma: d.iwl },
+    { tipo: "firmante", rotulo: "Contrafirma de Inception Woman Lab", firma: iwl },
     {
       tipo: "dato",
       etiqueta: "Documento generado",
       valor: `${hora(d.generado, "Europe/Madrid")} (Madrid) · ${hora(d.generado, "UTC")} (UTC)`,
     },
     { tipo: "nota", texto: "Firma electrónica simple, registrada por la plataforma de Inception Woman Lab." },
+  ];
+}
+
+/** El registro de un NDA aceptado con la casilla: una sola aceptación, la de ella */
+function registroAceptado(d: DatosNda): DatoRegistro[] {
+  return [
+    { tipo: "dato", etiqueta: "Candidatura", valor: `${d.candidatura} (${d.candidaturaId})` },
+    { tipo: "dato", etiqueta: "Plantilla del NDA", valor: `versión ${d.version}` },
+    { tipo: "dato", etiqueta: "Hash SHA-256 del texto aceptado", valor: d.hash, mono: true },
+    {
+      tipo: "dato",
+      etiqueta: "Fecha de efecto, la de la aceptación",
+      valor: `${hora(d.ella.cuando, "Europe/Madrid")} (Madrid)`,
+    },
+    { tipo: "firmante", rotulo: "Aceptación de la candidata, con casilla electrónica", firma: d.ella },
+    {
+      tipo: "dato",
+      etiqueta: "Documento generado",
+      valor: `${hora(d.generado, "Europe/Madrid")} (Madrid) · ${hora(d.generado, "UTC")} (UTC)`,
+    },
+    {
+      tipo: "nota",
+      texto: "Aceptado con casilla electrónica antes de presentar el proyecto, y registrado por la plataforma de Inception Woman Lab.",
+    },
   ];
 }
 
@@ -132,6 +163,6 @@ export async function generarPdfNda(d: DatosNda): Promise<Uint8Array> {
     }
   });
 
-  doc.registro("Registro de firmas", registro(d));
+  doc.registro(d.iwl ? "Registro de firmas" : "Registro de la aceptación", registro(d));
   return doc.terminar();
 }

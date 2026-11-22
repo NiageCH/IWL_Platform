@@ -47,6 +47,7 @@ const QUE_SIGUEN: TipoAviso[] = [
   "hito_entregado",
   "hito_sin_revisar",
   "candidatura_nueva",
+  "recomendacion_pendiente",
   "acta_por_firmar",
   "anexo_aceptado",
   "documento_entregado",
@@ -81,11 +82,11 @@ describe("cada aviso", () => {
     expect(p.verbo).toBe("Anotar");
   });
 
-  it("la candidatura nueva viene de presentada y lleva a sus pasos", () => {
+  it("la candidatura nueva viene del filtro y lleva a sus pasos", () => {
     const p = presentarAviso({ ...BASE, tipo: "candidatura_nueva" });
     expect(p.paso).toBe("Alba Ruiz presentó Porongo el 10 nov 2026");
     expect(p.href).toBe(`/embudo/${BASE.candidaturaId}?aviso=${BASE.id}#pasos`);
-    expect(p.vieneDe).toBe("Presentada");
+    expect(p.vieneDe).toBe("Filtro pasado");
     expect(p.despues).toBe("Tener la reunión");
   });
 
@@ -105,8 +106,7 @@ describe("cada aviso", () => {
 
   it("los pasos del embudo que se citan fuera siguen siendo los que dicen", () => {
     expect(pasosDe("embudo")[PASO_EMBUDO.comite].hacer).toBe("Pasar por comité");
-    expect(pasosDe("embudo")[PASO_EMBUDO.nda].hacer).toBe("Enviarle el NDA");
-    expect(pasosDe("embudo")[PASO_EMBUDO.contrafirmar].hacer).toBe("Contrafirmar el NDA");
+    expect(pasosDe("embudo")[PASO_EMBUDO.filtro].hacer).toBe("Pasar el filtro");
     expect(pasosDe("embudo")[PASO_EMBUDO.revisar].hacer).toBe("Revisarla");
   });
 

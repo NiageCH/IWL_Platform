@@ -269,7 +269,7 @@ test("una candidatura nueva avisa a dirección y al equipo; al pasarla a revisi�
     await entrarComo(page, USUARIOS.admin, "/cartera");
     const aviso = page.locator('li[data-aviso="candidatura_nueva"]').filter({ hasText: nombre });
     await expect(aviso).toContainText(`Nueva Prueba presentó ${nombre}`);
-    await expect(aviso).toContainText("Viene de: Presentada");
+    await expect(aviso).toContainText("Viene de: Filtro pasado");
     await aviso.getByRole("link", { name: "Abrir" }).click();
     await expect(page).toHaveURL(new RegExp(`/embudo/${c.id}\\?aviso=[0-9a-f-]+#pasos$`));
 

@@ -1981,3 +1981,41 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La horquilla de equity va por estadio**, cuatro y no dos. Estaba vacía, así que no había nada que traducir; los números los fija Luciana.
 - **El contenido de un acta firmada cambió de forma** («Estadio:» en lugar de «Vía:»). El hash de un acta firmada antes de esto no coincidirá al regenerar su PDF. Son datos de prueba.
 
+## 2026-11-22 · El NDA al principio, con una casilla; la candidatura y su filtro · SUSTITUYE al NDA tras la preselección
+
+- **El NDA es el primer paso** (REVISION, 22 nov · bloque 2). En `/presentarse`, antes de contar nada:
+  - ella da su nombre, apellidos, correo, el nombre de la startup y si acepta como persona física o en nombre de una sociedad, con los datos que pida la plantilla;
+  - ve el NDA completado con ellos y lo acepta con una casilla.
+
+  Nace la candidatura en **borrador** (`estado_candidatura` nuevo), con la aceptación en `nda_firmas` (`modo = 'casilla'`): quién, cuándo, IP, navegador, versión y hash del texto. Sin contrafirma.
+- **Aceptar y enviar van con la clave de servicio**, como firmar el NDA. La IP la sabe el servidor; si la base dejara llamarlas desde el navegador, cada cual se escribiría la suya. La base vuelve a comprobar lo que puede: convocatoria abierta, plantilla vigente, ningún hueco en el texto y, al enviar, el testigo.
+- **El PDF del NDA aceptado** lleva una sola aceptación en su registro y se guarda en el expediente. **Se adjunta al correo al enviarlo, no se guarda con él**: así un reintento adjunta lo mismo.
+- **La candidatura se presenta desde el enlace privado.** Pide solo lo que usa el filtro:
+  - sector (HealthTech, AgroTech, RetailTech, EdTech u «Otro», con cuál);
+  - estadio;
+  - socios con su parte del capital y si son mujeres, sumando el 100 %;
+  - la prueba del estadio, un fichero, salvo en idea;
+  - en idea, quién de IWL la recomienda.
+
+  La prueba se sube con una dirección firmada que autoriza el testigo, no una sesión.
+- **El filtro lo aplica la base, en `app.filtro_candidatura`.** Es una función pura que devuelve el resultado y el motivo en la voz de IWL. Orden de las reglas:
+  1. Más del 50 % del capital en manos de mujeres; si no, no pasa.
+  2. Sector de la tesis; si no, revisión manual.
+  3. En idea, espera a que confirme quien la recomienda.
+
+  La prueba del estadio es obligatoria para enviarla, así que no hace falta como regla.
+- **Lo que no pasa no avanza.** Un guardián de integridad impide moverla de paso con el filtro sin pasar, también con la clave de servicio. El borrador solo se envía o se descarta.
+- **Decidir a mano**, siempre con motivo, que queda en la candidatura, en su historia y en el registro:
+  - la revisión manual la resuelve cualquiera de IWL;
+  - sacar una del «no pasa» es de dirección.
+
+  Si acaba en «no pasa», a ella le llega un correo con el motivo.
+- **La recomendación la responde solo quien fue elegido**, desde su aviso. Pueden recomendar dirección y equipo, y el formulario público solo ve su nombre.
+- **El aviso de candidatura nueva** sale cuando la candidatura pasa el filtro o va a revisión manual, ya no al insertarla.
+- **Sin NDA después de la preselección.** Firmar el acta en «preseleccionada» crea ya la compañía en entrada, si tiene NDA. Una dada de alta a mano, sin NDA, se queda preseleccionada hasta registrar su NDA firmado fuera, que es lo que la crea, como antes.
+  - Con la compañía creada, la cuenta se le da como fundadora desde la ficha de la candidatura, y entra directa a Mi compañía.
+  - «Enviar el NDA» desaparece.
+- **Fuera `presentar_candidatura`.** Con la clave pública, cualquiera podía seguir dándose de alta sin NDA y sin filtro.
+- **El alta paso a paso tiene el orden nuevo** cuando el NDA se aceptó con la casilla: NDA, comité, cuenta, primer acceso, contraseña, due diligence y Acuerdo.
+- **`<Formulario>` repone, tras un error, cada campo repetido con su valor.** Antes, varias filas con el mismo nombre (los socios) se quedaban todas con el último valor escrito.
+

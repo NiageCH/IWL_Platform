@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
@@ -8,6 +7,7 @@ import { clienteServicio } from "@/lib/supabase/servicio";
 import { enlaceOpcional, error, ok, traducirError, validar, type Resultado } from "@/lib/acciones/resultado";
 import { descartarSubida, leerSubida, subidasDe } from "@/lib/subidas-servidor";
 import { generarPdfNda } from "@/lib/nda-pdf";
+import { lugarDelNda, origen } from "@/lib/nda-servidor";
 import { faltanMarcas } from "@/lib/nda-formato";
 import { notificar } from "@/lib/correo";
 import { direccionBase } from "@/lib/direccion";
@@ -37,15 +37,6 @@ function refrescar(candidaturaId?: string) {
   if (candidaturaId) revalidatePath(`/embudo/${candidaturaId}`);
 }
 
-/** De dónde viene la petición: la IP de verdad la pone el proxy delante */
-async function origen() {
-  const h = await headers();
-  const ip =
-    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    h.get("x-real-ip") ||
-    null;
-  return { ip, ua: h.get("user-agent") };
-}
 
 // -----------------------------------------------------------------------------
 // La plantilla
@@ -129,14 +120,6 @@ const esquemaFirma = z.object({
 });
 
 /** El lugar de firma, de Programa */
-async function lugarDelNda(): Promise<string> {
-  const { data } = await clienteServicio()
-    .from("platform_settings")
-    .select("value")
-    .eq("key", "nda_lugar")
-    .maybeSingle();
-  return typeof data?.value === "string" && data.value.trim() ? data.value.trim() : "Málaga";
-}
 
 const ROTULOS: Record<string, string> = {
   documento: "tu documento",

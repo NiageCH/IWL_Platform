@@ -5,8 +5,6 @@ import {
   borrar,
   borrarCuenta,
   consultar,
-  correosRecibidos,
-  darGuiaPorVista,
   entrarComo,
   insertar,
 } from "./entrada";
@@ -134,184 +132,27 @@ async function preseleccionada(sufijo: string) {
   return { ...c, correo };
 }
 
-test("antes del comité no se envía el NDA", async ({ page }) => {
+test("antes del comité no se le da cuenta, ni hay NDA que enviar", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, `/embudo/${BROTA}`);
-  await expect(page.getByText(/El NDA se envía cuando el comité la preselecciona/)).toBeVisible();
+  await expect(page.getByText(/La cuenta se le da cuando el comité la preselecciona y entra/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Enviar el NDA" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Darle cuenta/ })).toHaveCount(0);
 });
 
-test("al enviar el NDA, el enlace deja de valer y pasa a «NDA enviado»", async ({ page }) => {
-  const c = await preseleccionada("enlace");
-  const token = await tokenDe(c.id);
-
+/*
+ * Sin NDA después de la preselección (REVISION, 22 nov): el NDA se acepta
+ * al presentarse, y preseleccionar ya crea la compañía. La que llega aquí
+ * preseleccionada es una dada de alta a mano, sin NDA.
+ */
+test("preseleccionada sin NDA no se le envía: se registra el firmado fuera", async ({ page }) => {
+  const c = await preseleccionada("sin-nda");
   await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
-
-  // El enlace se enseña para poder mandarlo a mano
-  await expect(page.getByText(new RegExp(token.slice(0, 12)))).toBeVisible();
-
-  await page.getByRole("button", { name: "Enviar el NDA" }).click();
-
-  /*
-   * El mensaje tiene que salir, y aquí no es un detalle: lleva la
-   * contraseña y se enseña una sola vez. El formulario se monta siempre
-   * precisamente para que darle la cuenta no se lleve por delante la
-   * credencial antes de que nadie pueda copiarla.
-   */
-  await expect(page.getByText(/NDA enviado a/)).toBeVisible();
-  await expect(page.getByText(/no se vuelve a enseñar/)).toBeVisible();
-
-  /*
-   * Le llega un correo de la plataforma con un enlace para elegir su
-   * contraseña; la temporal no va en él. Esa queda aquí, para dársela por
-   * otro canal, hasta que se pulse «Hecho».
-   */
-  await expect(page.getByText(/Le ha llegado un correo con un enlace para entrar y elegir su contraseña/)).toBeVisible();
-  const clave = (await page.getByText(/NDA enviado a/).innerText()).match(/contraseña es ([^\s]+)/)![1];
-  const [recibido] = await correosRecibidos(c.correo);
-  expect(recibido.asunto).toMatch(/Tu acuerdo de confidencialidad, listo para firmar/);
-  expect(recibido.texto).toMatch(/Entrar y elegir mi contraseña: http/);
-  expect(recibido.texto).not.toContain(clave);
-  await expect(page.getByRole("link", { name: "Abrir el correo" })).toHaveCount(0);
-
-  const acceso = page.getByLabel("Su acceso, para mandárselo por otro canal");
-  await expect(acceso).toHaveValue(new RegExp(`Correo: ${c.correo.replace(/\./g, "\\.")}`));
-  await page.getByRole("button", { name: "Hecho" }).click();
-  await expect(acceso).toHaveCount(0);
-
-  // Y en su ficha, el correo enviado
-  await page.reload();
-  const correos = page.locator("section").filter({ has: page.getByRole("heading", { name: "Correos", exact: true }) });
-  await expect(correos.getByText("NDA enviado")).toBeVisible();
-  await expect(correos.getByText("Enviado", { exact: true })).toBeVisible();
-
-  const [despues] = await consultar<{ estado: string }>("candidaturas", { id: `eq.${c.id}` }, "estado");
-  expect(despues.estado).toBe("nda");
-
-  // Y desde fuera, el enlace ya no abre nada
-  const respuesta = await page.goto(`/candidatura/${token}`);
-  expect(respuesta?.status()).toBe(404);
+  await expect(page.getByText(/Preseleccionada sin NDA aceptado: se dio de alta a mano/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Enviar el NDA" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Darle cuenta/ })).toHaveCount(0);
 });
 
-test("al entrar con su cuenta aterriza en su candidatura, no en «sin compañía»", async ({
-  page,
-}) => {
-  /*
-   * El agujero que esto cubre: se le daba cuenta al firmar el NDA, entraba,
-   * y la raíz la mandaba a `/proyecto` —que es la vista de una compañía—
-   * para acabar en «no tienes compañía». Verdad, pero inútil: todavía no la
-   * tiene, y lo suyo estaba en otra dirección que nadie le había dicho.
-   */
-  const c = await preseleccionada("aterriza");
-
-  // Se le envía el NDA desde el embudo, que es el único camino
-  await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
-  await page.getByRole("button", { name: "Enviar el NDA" }).click();
-  await expect(page.getByText(/NDA enviado a/)).toBeVisible();
-
-  // La contraseña se enseña una vez: se saca del propio mensaje
-  const mensaje = await page.getByText(/NDA enviado a/).innerText();
-  const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
-  expect(clave).toBeTruthy();
-
-  // Y entra con ella, por la puerta de siempre
-  await page.getByRole("button", { name: "Salir" }).first().click();
-  await page.waitForURL(/\/entrar/);
-
-  await darGuiaPorVista(c.correo);
-  await page.locator('input[type="email"]').fill(c.correo);
-  await page.locator('input[type="password"]').fill(clave!);
-  await page.getByRole("button", { name: "Entrar", exact: true }).click();
-
-  // La contraseña la puso IWL: antes de nada, la cambia
-  await expect(page).toHaveURL(/\/cambiar-contrasena/);
-  await page.getByLabel("Nueva contraseña", { exact: true }).fill("la-de-envio-2026");
-  await page.getByLabel("Otra vez", { exact: true }).fill("la-de-envio-2026");
-  await page.getByRole("button", { name: "Guardar y entrar" }).click();
-
-  /*
-   * Aterriza en su candidatura, y lo primero que ve es el NDA, como
-   * siguiente paso. La firma tiene su propia prueba (nda.spec.ts).
-   */
-  await expect(page).toHaveURL(/\/candidatura$/, { timeout: 15_000 });
-  await expect(
-    page.getByRole("heading", { name: "Firma el NDA" }),
-  ).toBeVisible();
-});
-
-test("quien se presenta por el formulario recibe su enlace", async ({
-  page,
-}) => {
-  /*
-   * Sin esto se quedaba sin forma de volver: la pantalla le decía «te
-   * escribimos al correo» y no hay envío de correo montado, así que su
-   * candidatura desaparecía de su vista al cerrar la pestaña.
-   */
-  await actualizar(
-    "cohorts",
-    { id: `eq.${COHORTE}` },
-    { convocatoria_abierta: true, convocatoria_cierra: null },
-  );
-
-  const correo = `e2e.presenta.${Date.now()}@ejemplo.test`;
-  CORREOS.push(correo);
-
-  await page.goto("/presentarse");
-  await page.locator('input[name="nombre"]').fill("Startup Que Se Presenta");
-  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
-  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
-  await page.locator('input[name="contacto_email"]').fill(correo);
-  /*
-   * Se rellena la descripción y el punto en que están, que es lo que hace
-   * que la candidatura esté completa. Sin eso, el enlace le pediría —con
-   * razón— que terminara de presentarse, y entonces esta prueba no estaría
-   * comprobando lo que dice comprobar.
-   */
-  await page
-    .locator('textarea[name="one_liner"]')
-    .fill("Hacemos seguimiento de cultivos.");
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
-  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
-
-  await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
-
-  // Le llega por correo, con su enlace privado
-  const [recibido] = await correosRecibidos(correo);
-  expect(recibido.asunto).toBe("Hemos recibido tu candidatura · Startup Que Se Presenta");
-  expect(recibido.texto).toMatch(/^Hola, Quien:/);
-  expect(recibido.texto).toMatch(/Ver mi candidatura: http\S+\/candidatura\/\S+/);
-
-  // Y con su enlace a la vista, para guardarlo
-  await expect(page.getByText(/Guarda esta dirección/)).toBeVisible();
-  await page.getByRole("link", { name: "Abrir mi candidatura" }).click();
-
-  await expect(
-    page.getByRole("heading", { name: "Startup Que Se Presenta" }),
-  ).toBeVisible();
-
-  /*
-   * Y como se presentó ella, no se le pide que se presente: se le da las
-   * gracias. Es la diferencia con el camino de la invitación.
-   */
-  await expect(page.getByText("Recibida", { exact: true })).toBeVisible();
-  await expect(page.getByText("Cuéntanos quiénes sois")).toHaveCount(0);
-
-  /*
-   * Y se cierra aquí mismo, no en el `afterAll`.
-   *
-   * La convocatoria es configuración compartida: mientras esté abierta,
-   * cualquier otra prueba que mire el formulario público ve algo distinto.
-   * Dejarlo para el `afterAll` parecía suficiente y no lo era —los ganchos
-   * de un fichero no se disparan necesariamente antes de que empiece el
-   * siguiente—, así que otra prueba de otro fichero encontraba la
-   * convocatoria cerrada a media ejecución.
-   */
-  await actualizar(
-    "cohorts",
-    { id: `eq.${COHORTE}` },
-    { convocatoria_abierta: false },
-  );
-});
+// Presentarse por el formulario —NDA, proyecto y filtro— se prueba en `presentarse.spec.ts`
 
 test("a quien da de alta IWL se le pide que se presente, no se le dan las gracias", async ({
   page,
@@ -364,83 +205,6 @@ test("a quien da de alta IWL se le pide que se presente, no se le dan las gracia
   ).toBeVisible();
 });
 
-test("un porcentaje escrito a mano no tira la candidatura por tierra", async ({
-  page,
-}) => {
-  /*
-   * Lo que pasó de verdad: alguien rellenó el formulario entero, escribió
-   * «50 %» donde se pide el porcentaje, y al enviar se encontró con «revisa
-   * los campos marcados» —sin ninguno marcado— y el formulario en blanco.
-   *
-   * Tres cosas a la vez, y las tres se comprueban aquí: que un porcentaje
-   * escrito como lo escribe una persona vale, que cuando algo falla se dice
-   * cuál, y que lo escrito se queda donde estaba.
-   */
-  await actualizar(
-    "cohorts",
-    { id: `eq.${COHORTE}` },
-    { convocatoria_abierta: true, convocatoria_cierra: null },
-  );
-
-  const correo = `e2e.porcentaje.${Date.now()}@ejemplo.test`;
-  CORREOS.push(correo);
-
-  // 1. Con el signo y el espacio puestos, entra
-  await page.goto("/presentarse");
-  await page.locator('input[name="nombre"]').fill("Escrito A Mano");
-  await page.locator('textarea[name="one_liner"]').fill("Sensores agrícolas.");
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
-  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
-  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
-  await page.locator('input[name="contacto_email"]').fill(correo);
-  await page.locator('input[name="liderazgo_femenino_pct"]').fill("50 %");
-  await page.locator('input[name="equipo_personas"]').fill("6");
-  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
-
-  await expect(page.getByText("Recibida. Gracias.")).toBeVisible();
-
-  // Y llega como número, no como texto
-  const [fila] = await consultar<{ liderazgo_femenino_pct: number }>(
-    "candidaturas",
-    { contacto_email: `eq.${correo}` },
-    "liderazgo_femenino_pct",
-  );
-  expect(Number(fila.liderazgo_femenino_pct)).toBe(50);
-
-  // 2. Y cuando de verdad no es un número, se dice cuál y no se borra nada
-  await page.goto("/presentarse");
-  await page.locator('input[name="nombre"]').fill("La Que Se Equivoca");
-  await page
-    .locator('textarea[name="one_liner"]')
-    .fill("Una frase que costó escribir.");
-  // Obligatorio desde que se quitó «prefiero no decirlo»
-  await page.locator('select[name="estado_declarado"]').selectOption("mvp_sin_piloto");
-  await page.locator('input[name="contacto_nombre"]').fill("Quien Sea");
-  await page.locator('input[name="contacto_apellidos"]').fill("De Prueba");
-  await page
-    .locator('input[name="contacto_email"]')
-    .fill(`e2e.mal.${Date.now()}@ejemplo.test`);
-  await page.locator('input[name="liderazgo_femenino_pct"]').fill("la mitad");
-  await page.getByRole("button", { name: /Enviar la candidatura/ }).click();
-
-  // Se nombra el campo, en las palabras de la pantalla
-  await expect(page.getByText(/Revisa este campo: liderazgo femenino/)).toBeVisible();
-  await expect(page.getByText("Un porcentaje entre 0 y 100.")).toBeVisible();
-
-  // Y lo demás sigue escrito: React reinicia el formulario tras cada acción
-  await expect(page.locator('input[name="nombre"]')).toHaveValue(
-    "La Que Se Equivoca",
-  );
-  await expect(page.locator('textarea[name="one_liner"]')).toHaveValue(
-    "Una frase que costó escribir.",
-  );
-
-  await actualizar(
-    "cohorts",
-    { id: `eq.${COHORTE}` },
-    { convocatoria_abierta: false },
-  );
-});
 
 test.afterAll(async () => {
   /*

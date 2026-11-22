@@ -1,269 +1,183 @@
 "use client";
 
-import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import { useState } from "react";
-import { presentarse } from "@/lib/acciones/presentarse";
-import {
-  AreaTexto,
-  Boton,
-  Campo,
-  Formulario,
-  Seleccion,
-  Texto,
-} from "@/components/ui/formulario";
+import { aceptarNda } from "@/lib/acciones/presentarse";
+import { Boton, Campo, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
+import { TextoNda } from "@/components/vistas/texto-nda";
+import { camposQuePide, completarNda, huecos, type CampoDeElla } from "@/lib/nda-texto";
 
-const ESTADOS = ORDEN_ESTADIOS.map((e) => ({ codigo: e, nombre: `${ESTADIOS[e]}: ${DESCRIPCION_ESTADIO[e].toLowerCase()}` }));
+const CAMPOS: Record<CampoDeElla, { etiqueta: string; ayuda?: string; autoComplete?: string }> = {
+  documento: { etiqueta: "Tu DNI, NIE o pasaporte" },
+  domicilio: { etiqueta: "Domicilio", ayuda: "Calle, número, código postal y ciudad", autoComplete: "street-address" },
+  denominacion: { etiqueta: "Denominación de la sociedad", ayuda: "Como en la escritura, con SL o SA" },
+  nif: { etiqueta: "NIF de la sociedad" },
+  cargo: { etiqueta: "Tu cargo en la sociedad", ayuda: "Por ejemplo, administradora única" },
+};
 
 /**
- * El formulario de candidatura.
+ * El primer paso de todo (REVISION, 22 nov · bloque 2): antes de contar nada
+ * del proyecto, sus datos y el NDA.
  *
- * Corto a propósito. Lo que de verdad sitúa a una startup está en los
- * documentos que ya tiene hechos —el pitch, el caso de negocio—, no en
- * campos que obliguen a redactar otra vez lo mismo en una caja de texto.
+ * El texto se completa mientras escribe, con el mismo código que usa el
+ * servidor al aceptarlo, y se pinta con el mismo intérprete de marcas que el
+ * PDF: lo que lee es lo que acepta, y su hash es el de ese texto. La casilla
+ * va después del texto entero, que está a la vista antes de marcarla.
  *
- * Al enviarse no se redirige: se queda con el acuse puesto. Quien rellena un
- * formulario necesita ver que ha llegado, y una pantalla nueva que diga
- * «gracias» se lee menos que la confirmación donde estaba mirando.
+ * Aceptado, la lleva a su enlace privado, que es donde presenta el
+ * proyecto: el acuse es la pantalla siguiente.
  */
-export function FormularioPresentarse() {
-  const [enlace, setEnlace] = useState<string | null>(null);
-  const [enviada, setEnviada] = useState(false);
-  const [copiado, setCopiado] = useState(false);
+export function FormularioPresentarse({
+  plantillaId,
+  version,
+  texto,
+  lugar,
+}: {
+  plantillaId: string;
+  version: number;
+  texto: string;
+  lugar: string;
+}) {
+  const [startup, setStartup] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [como, setComo] = useState<"" | "persona" | "sociedad">("");
+  const [valores, setValores] = useState<Partial<Record<CampoDeElla, string>>>({});
+  const esSociedad = como === "sociedad";
 
-  if (enviada) {
-    const completo =
-      typeof window !== "undefined" && enlace
-        ? `${window.location.origin}${enlace}`
-        : enlace;
-
-    return (
-      <div>
-        <p className="text-base text-titular">Recibida. Gracias.</p>
-        <p className="mt-2 text-sm text-secundario">
-          La revisamos y te escribimos al correo que nos has dejado.
-        </p>
-
-        {/*
-          Y su enlace, que es lo que faltaba.
-          
-          Sin esto se quedaba sin forma de volver: le decíamos «te
-          escribimos al correo» y su candidatura desaparecía de su vista en
-          cuanto cerrara la pestaña.
-        */}
-        {completo ? (
-          <div className="mt-5">
-            <p className="text-sm text-titular">
-              Guarda esta dirección. Es tuya y privada: ahí puedes ver cómo va
-              y añadir lo que se te haya quedado por mandar.
-            </p>
-            <div className="mt-2 flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-md border border-filete bg-hundido px-3 py-2 text-xs text-secundario">
-                {completo}
-              </code>
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(completo);
-                  setCopiado(true);
-                  setTimeout(() => setCopiado(false), 2000);
-                }}
-                className="boton-marca shrink-0 px-4 py-2 text-xs"
-              >
-                {copiado ? "Copiada" : "Copiar"}
-              </button>
-            </div>
-            <a href={enlace!} className="enlace mt-3 inline-block text-sm text-acento-texto">
-              Abrir mi candidatura
-            </a>
-          </div>
-        ) : null}
-      </div>
-    );
-  }
+  const pide = como ? camposQuePide(texto, esSociedad) : [];
+  const completado = completarNda(texto, {
+    startup: startup.trim(),
+    contraparte_nombre: `${nombre.trim()} ${apellidos.trim()}`.trim(),
+    lugar,
+    es_sociedad: esSociedad,
+    ...valores,
+  });
+  const faltan = huecos(completado);
+  const listo = Boolean(como && startup.trim() && nombre.trim() && apellidos.trim()) && faltan.length === 0;
 
   return (
     <Formulario
       accion={async (datos) => {
-        const r = await presentarse(datos);
-        if (r.ok && r.enlace) setEnlace(r.enlace);
+        const r = await aceptarNda(datos);
+        // Navegación completa: la página siguiente es su enlace privado, sin sesión que esperar
+        if (r.ok && r.enlace) window.location.assign(r.enlace);
         return r;
       }}
-      onOk={() => setEnviada(true)}
+      className="gap-5"
     >
       {(r) => (
         <>
+          <input type="hidden" name="plantilla_id" value={plantillaId} />
           {/*
-            La trampa para los robots.
-
-            Un campo que nadie ve y que un navegador de verdad deja vacío.
-            Si viene relleno, la acción lo descarta sin decir por qué: un
-            mensaje de error le enseñaría al robot cómo evitarlo.
+            La trampa para los robots: un campo que nadie ve y que un
+            navegador de verdad deja vacío. Si viene relleno, la acción lo
+            descarta sin decir por qué.
           */}
           <div aria-hidden="true" className="absolute left-[-9999px]">
             <label>
               No rellenes esto
-              <input
-                type="text"
-                name="apodo"
-                tabIndex={-1}
-                autoComplete="off"
-              />
+              <input type="text" name="apodo" tabIndex={-1} autoComplete="off" />
             </label>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo
-              etiqueta="Tu startup"
-              obligatorio
-              error={r.ok ? undefined : r.campos?.nombre}
-            >
-              <Texto name="nombre" required autoComplete="organization" />
-            </Campo>
-            <Campo etiqueta="Web" error={r.ok ? undefined : r.campos?.website}>
-              <Texto name="website" placeholder="https://" />
-            </Campo>
-          </div>
-
-          <Campo
-            etiqueta="En una frase, qué hacéis"
-            error={r.ok ? undefined : r.campos?.one_liner}
-          >
-            <AreaTexto name="one_liner" rows={2} />
-          </Campo>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo etiqueta="Sector" error={r.ok ? undefined : r.campos?.sector}>
-              <Texto name="sector" placeholder="Salud, logística…" />
-            </Campo>
-            <Campo etiqueta="País" error={r.ok ? undefined : r.campos?.pais}>
-              <Texto name="pais" autoComplete="country-name" />
-            </Campo>
-          </div>
-
-          <Campo
-            etiqueta="¿En qué punto estáis?"
-            obligatorio
-            ayuda="Lo comprobamos después contigo; esto solo nos ayuda a situaros."
-            error={r.ok ? undefined : r.campos?.estado_declarado}
-          >
-            {/*
-              Sin «prefiero no decirlo».
-              
-              Lo quitó Rodrigo: es la pregunta que sitúa a una startup y
-              dejarla en blanco no ayuda a nadie. Pero la opción vacía se
-              queda como aviso y deshabilitada: si se quitara del todo, el
-              navegador elegiría «Idea» por defecto y apuntaríamos eso de
-              quien ni siquiera miró el desplegable, que es peor que no
-              saberlo.
-            */}
-            <Seleccion name="estado_declarado" defaultValue="" required>
-              <option value="" disabled>
-                Elige una
-              </option>
-              {ESTADOS.map((e) => (
-                <option key={e.codigo} value={e.codigo}>
-                  {e.nombre}
-                </option>
-              ))}
-            </Seleccion>
-          </Campo>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo
-              etiqueta="Cuántas personas sois"
-              error={r.ok ? undefined : r.campos?.equipo_personas}
-            >
-              <Texto name="equipo_personas" inputMode="numeric" />
-            </Campo>
-            <Campo
-              etiqueta="Liderazgo femenino (%)"
-              ayuda="Qué parte del equipo fundador y de dirección."
-              error={r.ok ? undefined : r.campos?.liderazgo_femenino_pct}
-            >
-              <Texto name="liderazgo_femenino_pct" inputMode="decimal" />
-            </Campo>
-          </div>
-
-          <hr className="border-0 border-t border-filete" />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo
-              etiqueta="Tu nombre"
-              obligatorio
-              error={r.ok ? undefined : r.campos?.contacto_nombre}
-            >
-              <Texto name="contacto_nombre" required autoComplete="given-name" />
-            </Campo>
-            <Campo
-              etiqueta="Tus apellidos"
-              obligatorio
-              error={r.ok ? undefined : r.campos?.contacto_apellidos}
-            >
-              <Texto name="contacto_apellidos" required autoComplete="family-name" />
-            </Campo>
-            <Campo
-              etiqueta="Tu cargo"
-              error={r.ok ? undefined : r.campos?.contacto_cargo}
-            >
-              <Texto name="contacto_cargo" placeholder="CEO, CTO…" />
-            </Campo>
-            <Campo
-              etiqueta="Tu correo"
-              obligatorio
-              error={r.ok ? undefined : r.campos?.contacto_email}
-            >
-              <Texto
-                name="contacto_email"
-                type="email"
-                required
-                autoComplete="email"
-              />
-            </Campo>
-            <Campo
-              etiqueta="Teléfono"
-              error={r.ok ? undefined : r.campos?.contacto_telefono}
-            >
-              <Texto name="contacto_telefono" autoComplete="tel" />
-            </Campo>
-          </div>
-
-          <hr className="border-0 border-t border-filete" />
-
           <p className="text-sm text-secundario">
-            Déjanos lo que ya tengas hecho: el pitch, el caso de negocio, una
-            presentación. Un enlace de Drive, Notion o lo que uséis, con
-            permiso de lectura.
+            Antes de contarnos nada, firmamos un acuerdo de confidencialidad, en las dos
+            direcciones: lo que nos cuentes queda protegido desde el primer momento. Primero
+            tus datos; abajo tienes el NDA ya completado con ellos.
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo
-              etiqueta="Enlace al pitch o la presentación"
-              error={r.ok ? undefined : r.campos?.enlace_1}
-            >
-              <Texto name="enlace_1" placeholder="https://" />
+          <fieldset className="flex flex-col gap-4">
+            <legend className="mb-2 text-sm font-semibold text-titular">Tus datos</legend>
+            <Campo etiqueta="Tu startup" obligatorio error={r.ok ? undefined : r.campos?.startup}>
+              <Texto
+                name="startup"
+                required
+                autoComplete="organization"
+                onChange={(e) => setStartup(e.currentTarget.value)}
+              />
             </Campo>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Campo etiqueta="Nombre" ayuda="Como en tu documento" obligatorio error={r.ok ? undefined : r.campos?.nombre}>
+                <Texto name="nombre" required autoComplete="given-name" onChange={(e) => setNombre(e.currentTarget.value)} />
+              </Campo>
+              <Campo etiqueta="Apellidos" obligatorio error={r.ok ? undefined : r.campos?.apellidos}>
+                <Texto name="apellidos" required autoComplete="family-name" onChange={(e) => setApellidos(e.currentTarget.value)} />
+              </Campo>
+            </div>
             <Campo
-              etiqueta="Enlace al caso de negocio"
-              error={r.ok ? undefined : r.campos?.enlace_2}
+              etiqueta="Correo"
+              ayuda="Ahí te mandamos el NDA en PDF y tu enlace privado"
+              obligatorio
+              error={r.ok ? undefined : r.campos?.correo}
             >
-              <Texto name="enlace_2" placeholder="https://" />
+              <Texto name="correo" type="email" required autoComplete="email" />
             </Campo>
+            <Campo etiqueta="Aceptas" obligatorio error={r.ok ? undefined : r.campos?.como}>
+              <Seleccion
+                name="como"
+                value={como}
+                onChange={(e) => setComo(e.currentTarget.value as "" | "persona" | "sociedad")}
+                required
+              >
+                <option value="">Elige…</option>
+                <option value="persona">Como persona física</option>
+                <option value="sociedad">En nombre de una sociedad constituida</option>
+              </Seleccion>
+            </Campo>
+            {pide.map((c) => (
+              <Campo
+                key={c}
+                etiqueta={CAMPOS[c].etiqueta}
+                ayuda={CAMPOS[c].ayuda}
+                obligatorio
+                error={r.ok ? undefined : r.campos?.[c]}
+              >
+                <Texto
+                  name={c}
+                  autoComplete={CAMPOS[c].autoComplete ?? "off"}
+                  required
+                  onChange={(e) => {
+                    const v = e.currentTarget.value;
+                    setValores((antes) => ({ ...antes, [c]: v }));
+                  }}
+                />
+              </Campo>
+            ))}
+          </fieldset>
+
+          <div>
+            <p className="mb-2 text-xs text-metadato">
+              El NDA, con tus datos{faltan.length ? ". Los huecos se rellenan al escribir arriba" : ""}:
+            </p>
+            <div
+              className="max-h-[28rem] overflow-y-auto rounded-lg border border-filete bg-hundido py-5 pr-5 pl-2"
+              tabIndex={0}
+              aria-label={`Texto del NDA, versión ${version}`}
+            >
+              <TextoNda texto={completado} />
+            </div>
           </div>
-          <Campo
-            etiqueta="Algo más que quieras enseñarnos"
-            error={r.ok ? undefined : r.campos?.enlace_3}
-          >
-            <Texto name="enlace_3" placeholder="https://" />
-          </Campo>
 
-          <Campo
-            etiqueta="¿Cómo nos has conocido?"
-            error={r.ok ? undefined : r.campos?.origen}
-          >
-            <Texto name="origen" />
-          </Campo>
-
-          <Boton>Enviar la candidatura</Boton>
+          <label className="flex items-start gap-3 text-sm text-titular">
+            <input type="checkbox" name="acepto" value="si" required className="mt-1 size-4" />
+            <span>
+              He leído el NDA y lo acepto.
+              {!r.ok && r.campos?.acepto ? <span className="block text-xs text-mal">{r.campos.acepto}</span> : null}
+            </span>
+          </label>
+          <p className="text-xs text-metadato">
+            Al aceptarlo quedan registrados tus datos, la fecha y la hora, tu dirección IP y tu
+            navegador, junto con la versión del texto ({version}) y su huella. Te mandamos el PDF
+            por correo. Después nos cuentas el proyecto.
+          </p>
+          {!listo ? (
+            <p className="text-sm text-cuerpo" role="status">
+              Para aceptarlo, rellena lo de arriba.
+            </p>
+          ) : null}
+          <div>
+            <Boton disabled={!listo}>Aceptar el NDA y seguir</Boton>
+          </div>
         </>
       )}
     </Formulario>

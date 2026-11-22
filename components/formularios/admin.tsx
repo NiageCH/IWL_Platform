@@ -1,6 +1,6 @@
 "use client";
 
-import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
+import { ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import { CamposSituacion } from "@/components/formularios/situacion";
 import { useState, useTransition } from "react";
 import Link from "next/link";

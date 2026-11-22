@@ -4,7 +4,10 @@ Lo que hay que hacer, en este orden, el día que se deje de trabajar con datos
 de prueba en producción. Se añade aquí cada paso que dependa de ese día.
 
 1. **Borrar los datos de prueba de producción**: compañías, candidaturas y
-   cuentas de prueba, con sus ficheros. Antes, una copia de la base.
+   cuentas de prueba, con sus ficheros. Antes, una copia de la base. Con
+   ellas se van las del proceso anterior al 22 nov (en «NDA enviado»), y
+   entonces se puede retirar el código de firmar y contrafirmar el NDA
+   con cuenta, que ya solo sirve para esas.
 2. **Revisar Administración → Correos**: lo retenido por el modo pruebas no
    se envía nunca; si algo de ahí debía llegar a alguien de verdad, se le
    manda a mano.

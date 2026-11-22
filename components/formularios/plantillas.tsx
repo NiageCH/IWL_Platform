@@ -1,6 +1,6 @@
 "use client";
 
-import { DESCRIPCION_ESTADIO, ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
+import { ESTADIOS, ORDEN_ESTADIOS } from "@/lib/estadios";
 import {
   borrarDePlantilla,
   crearEtapaPlantilla,

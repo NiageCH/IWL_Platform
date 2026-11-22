@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { Marco } from "@/components/marco";
 import { CORREO_CONTACTO } from "@/lib/contacto";
 import { FormularioPresentarse } from "@/components/formularios/presentarse";
+import { clienteServicio } from "@/lib/supabase/servicio";
+import { problemaParaEnviar } from "@/lib/nda-texto";
+import { lugarDelNda } from "@/lib/nda-servidor";
 
 /*
  * Se renderiza en cada petición, no en la compilación.
@@ -53,8 +56,24 @@ async function convocatoria() {
  * con la clave pública, que va en el navegador, podría darse de alta ya
  * preseleccionada.
  */
+/**
+ * El NDA genérico vigente, sin huecos que nadie vaya a rellenar. Sin él no
+ * se puede empezar: el NDA es el primer paso (REVISION, 22 nov).
+ */
+async function ndaVigente() {
+  const { data } = await clienteServicio()
+    .from("nda_plantillas")
+    .select("id, version, texto")
+    .is("candidatura_id", null)
+    .order("version", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data || problemaParaEnviar(data.texto)) return null;
+  return data;
+}
+
 export default async function Presentarse() {
-  const abierta = await convocatoria();
+  const [abierta, nda, lugar] = await Promise.all([convocatoria(), ndaVigente(), lugarDelNda()]);
 
   return (
     <Marco tema="oscuro">
@@ -104,13 +123,23 @@ export default async function Presentarse() {
             ) : null}
 
             <div className="tarjeta p-6">
-              <FormularioPresentarse />
+              {nda ? (
+                <FormularioPresentarse plantillaId={nda.id} version={nda.version} texto={nda.texto} lugar={lugar} />
+              ) : (
+                <p className="text-sm text-cuerpo">
+                  Estamos preparando el acuerdo de confidencialidad que firmamos antes de que nos
+                  cuentes nada. Vuelve en unos días, o escríbenos a{" "}
+                  <a href={`mailto:${CORREO_CONTACTO}`} className="enlace text-acento-texto">
+                    {CORREO_CONTACTO}
+                  </a>
+                  .
+                </p>
+              )}
             </div>
 
             <p className="mt-6 text-xs leading-relaxed text-metadato">
-              Lo que nos mandes lo usamos solo para valorar tu candidatura. Si
-              seguimos adelante, firmamos un acuerdo de confidencialidad antes
-              de pedirte nada sensible.
+              Lo que nos mandes lo usamos solo para valorar tu candidatura, y queda protegido por el
+              NDA desde el primer momento.
             </p>
           </>
         )}

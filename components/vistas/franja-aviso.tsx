@@ -1,3 +1,4 @@
+import { ResponderRecomendacion } from "@/components/formularios/filtro";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { presentarAviso, type DatosAviso, type TipoAviso } from "@/lib/avisos";
@@ -61,6 +62,7 @@ const QUIEN_DESPUES: Partial<Record<TipoAviso, QuienMueve | "mentor">> = {
   hito_sin_revisar: "ella",
   cambio_estadio: "ella",
   candidatura_nueva: "iwl",
+  recomendacion_pendiente: "iwl",
   acta_por_firmar: "iwl",
   documento_entregado: "ella",
 };
@@ -160,6 +162,8 @@ async function acciones(
       return a.candidaturaId ? <ContrafirmarNda candidaturaId={a.candidaturaId} sinApellidos={sinApellidos} /> : null;
     case "candidatura_nueva":
       return a.candidaturaId ? <SiguientePaso id={a.candidaturaId} estado="presentada" /> : null;
+    case "recomendacion_pendiente":
+      return a.candidaturaId ? <ResponderRecomendacion candidaturaId={a.candidaturaId} /> : null;
     case "acta_por_firmar":
       return a.actaId && a.candidaturaId ? <FirmarActa actaId={a.actaId} candidaturaId={a.candidaturaId} /> : null;
     case "documento_entregado": {

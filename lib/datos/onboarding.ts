@@ -57,7 +57,7 @@ async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
 
   const [{ data: firmas }, { data: entregas }, { data: documentos }, { data: eventos }] =
     await Promise.all([
-      supabase.from("nda_firmas").select("candidatura_id, firmado_at, contrafirmado_at").in("candidatura_id", ids),
+      supabase.from("nda_firmas").select("candidatura_id, firmado_at, contrafirmado_at, modo").in("candidatura_id", ids),
       supabase.from("candidatura_entregas").select("candidatura_id, obligatoria, documentos").in("candidatura_id", ids),
       supabase.from("candidatura_documentos").select("candidatura_id, created_at").in("candidatura_id", ids),
       supabase
@@ -81,7 +81,12 @@ async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
      * comité anotado después de que IWL firmara el NDA, o el paso a
      * «Acuerdo propuesto», que no se da sin él.
      */
-    const desde = firma?.contrafirmado_at?.slice(0, 10) ?? null;
+    /*
+     * Aceptado con la casilla (REVISION, 22 nov) no hay contrafirma: la
+     * aceptación de ella lo cierra, y cuenta para los dos pasos.
+     */
+    const cerrado = firma?.modo === "casilla" ? firma.firmado_at : (firma?.contrafirmado_at ?? null);
+    const desde = cerrado?.slice(0, 10) ?? null;
     const propios = (eventos ?? []).filter((e) => e.candidatura_id === id);
     const comite =
       propios
@@ -99,7 +104,8 @@ async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
     salida.set(id, {
       descartada: false,
       ndaElla: firma?.firmado_at ?? null,
-      ndaIwl: firma?.contrafirmado_at ?? null,
+      ndaIwl: cerrado,
+      ndaAlPrincipio: firma?.modo === "casilla",
       entregas: obligatorias.length
         ? {
             cumplidas: obligatorias.filter((e) => (e.documentos ?? 0) > 0).length,
