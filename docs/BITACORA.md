@@ -9,6 +9,53 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modelo nuevo, bloque 1: estadios en lugar de vías · commit b788402
+
+**Qué cambió**
+- Desaparecen las vías Construcción y Aceleración. Hay cuatro estadios: idea, MVP sin piloto, MVP con piloto y facturando. Todo lo que se deriva de ellos está en `lib/estadios.ts`:
+  - el programa: Incubación para idea y MVP sin piloto; Aceleración para MVP con piloto y facturando;
+  - la revisión de entrada: diagnóstico en idea, due diligence en el resto.
+- La candidata declara el estadio en el formulario. El acta del comité lo confirma o lo cambia; si lo cambia, con motivo. Al cerrarse el acta, el estadio pasa a la candidatura y de ahí a la compañía.
+- «Pasar a Aceleración» pasa a ser **«Cambiar el estadio»**: solo dirección, con motivo y solo hacia arriba. Lo garantiza la base. Al salir de idea, lo que estaba por construir pasa a por entregar. Al mentor principal le llega el aviso `cambio_estadio`.
+- En Programa, la horquilla de equity tiene **cuatro filas, una por estadio**. El tope de días en entrada pasa a aplicarse al diagnóstico (idea).
+- Las siete listas de estados que había escritas a mano (formularios, acciones, ficha) salen ahora de la misma lista.
+
+**Qué decidí yo**
+- **Reaprovecho `estado_entrada`**, que ya existía (idea, prototipo, MVP, primeros clientes, facturación) para el estado declarado, el verificado y el de la compañía. Le cambio los valores en lugar de crear un campo nuevo: tener «estado» y «vía» por separado era justo lo que confundía.
+- **Traducción de lo que solo tenía estado**:
+  - idea y prototipo → idea;
+  - MVP → MVP sin piloto;
+  - primeros clientes → **MVP con piloto**;
+  - facturación → facturando.
+
+  Lo que tenía vía, como pediste: Construcción → MVP sin piloto, Aceleración → facturando.
+- **Lo que era de Construcción va ahora con idea, y lo de Aceleración con los otros tres estadios.** Así queda alineado con la revisión de entrada:
+  - el tope de días;
+  - que el checklist y el business plan nazcan «por construir»;
+  - que el Acuerdo pida el due diligence validado.
+
+  Consecuencia: las compañías de prueba que eran de Construcción son ahora MVP sin piloto y tienen due diligence. Lo que tenían «por construir» pasa a «por entregar».
+- **Para el comité, el estadio propuesto es el que declaró ella**, ya no uno calculado desde el estado.
+- **El estadio no baja.** Lo dejé como estaba la vía, que solo subía. Mientras la compañía está en entrada, es el comité quien lo fija.
+- En las pruebas, lo que era Construcción pasa a idea: es lo que mantiene el camino que comprueban (diagnóstico, sin due diligence).
+
+**Qué necesito que decidas**
+1. ¿Te vale primeros clientes → MVP con piloto? La otra opción era facturando, pero entonces ningún dato antiguo caería en MVP con piloto. Solo afecta a datos de prueba.
+2. Con el modelo nuevo, ¿tiene sentido cambiar el estadio una vez firmado el Acuerdo? Los tramos ya avanzan solos (bloque 5). Si no lo tiene, quito «Cambiar el estadio» fuera de la entrada.
+3. El PDF de un acta firmada antes de este cambio ya no coincide con su hash si se regenera, porque el acta dice «Estadio» donde decía «Vía». Son datos de prueba. ¿Lo dejamos así?
+
+**Estado**
+- Unit 317, RLS 284 ×2, e2e 458 ×2 (4 saltadas), sin fallos.
+- Una tanda anterior falló por el entorno, no por el código: se solaparon dos ejecuciones, el Mac se quedó sin memoria y se cerró Docker. Se relanzó limpia.
+- Migración nueva: `20261122110000_estadios`.
+- Pendiente para el bloque 9: la guía y `docs/AVISOS.md` todavía hablan de vías.
+- Nada desplegado.
+
+**Siguiente**
+Bloques 2 y 3: el NDA con casilla como primer paso, y la candidatura con su filtro automático.
+
+---
+
 ## 2026-11-22 · Modo pruebas del correo · commit 9c026aa
 
 **Qué cambió**
