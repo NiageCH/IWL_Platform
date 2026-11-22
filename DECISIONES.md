@@ -2045,3 +2045,9 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Anular, llevar a dirección y decidir no cambian.**
 - Las fundadoras comentan y confirman como hasta ahora; siguen igual los 7 días para que se dé por confirmada, las versiones del acta y el escalado a dirección.
 
+## 2026-11-22 · El equity de IWL, desde la firma
+
+- **El equity de IWL es el porcentaje del Anexo y existe desde la firma del Acuerdo** (REVISION, 22 nov · bloque 6). Ningún hito de la compañía lo devenga: fuera la marca «Devenga equity» del hito, de la hoja de ruta y de la aportación. «Libera financiación» no cambia.
+- **La columna `milestones.accrues_equity_pct` no se borra.** Se queda vacía y una restricción impide rellenarla, también con la clave de servicio. El modelo la reserva para el equity de los mentores no pagados, que se definirá más adelante y no se construye todavía. Las funciones que la leen siguen valiendo: con todo a nulo, no hay nada que devengar, y no hay que rehacerlas dos veces.
+- **En la aportación**, el bloque «Equity y financiación» enseña el equity de IWL tal como lo pacta el Anexo, «desde la firma del Acuerdo; no depende de hitos», junto a la financiación liberada hito a hito.
+

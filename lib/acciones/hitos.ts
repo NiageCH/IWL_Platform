@@ -6,7 +6,6 @@ import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import {
   error,
   idOpcional,
-  numeroEscritoAMano,
   ok,
   textoObligatorio,
   textoOpcional,
@@ -160,16 +159,15 @@ export async function configurarRevisionHito(formData: FormData): Promise<Result
 }
 
 /**
- * El equity que devenga y la financiación que libera. Solo dirección, y
- * solo con el Anexo en borrador: lo comprueba la base, que además no deja
- * repartir más de lo que el Anexo pacta.
+ * La financiación que libera un hito. Solo dirección, y solo con el Anexo en
+ * borrador: lo comprueba la base, que además no deja repartir más de lo que
+ * el Anexo compromete. El equity ya no va por hitos (REVISION, 22 nov).
  */
 export async function marcarHitoEconomico(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
     z.object({
       slug: textoObligatorio(),
       id: uuid,
-      equity: numeroEscritoAMano(0, 100, "El equity va entre 0 y 100."),
       financiacion: z
         .union([z.string(), z.null()])
         .optional()
@@ -182,14 +180,13 @@ export async function marcarHitoEconomico(formData: FormData): Promise<Resultado
 
   const persona = await personaActual();
   if (!persona) return error("Tu sesión ha caducado. Vuelve a entrar.");
-  if (persona.role !== "admin_iwl") return error("El equity y la financiación de un hito los pone dirección.");
+  if (persona.role !== "admin_iwl") return error("La financiación de un hito la pone dirección.");
 
   const supabase = await clienteServidor();
   const { data, error: falloBase } = await supabase
     .from("milestones")
     .update({
       // Cero es quitar la marca
-      accrues_equity_pct: datos.equity ? datos.equity : null,
       releases_funding: datos.financiacion ? datos.financiacion : null,
     })
     .eq("id", datos.id)

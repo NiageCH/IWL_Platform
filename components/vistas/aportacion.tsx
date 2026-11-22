@@ -170,7 +170,7 @@ export async function VistaAportacion({
       </Bloque>
       )}
 
-      <DevengadoPorHitos
+      <EquityYFinanciacion
         devengos={devengos}
         reparto={reparto}
         equityPactado={compromiso?.equityPct ?? null}
@@ -557,13 +557,14 @@ function Barra({
 }
 
 /**
- * Lo que los hitos validados han devengado y liberado, frente a lo pactado.
+ * El equity de IWL y la financiación que han liberado los hitos.
  *
- * Cada línea sale del registro que deja la base al validar. Quién validó lo
- * ve IWL; ella ve qué y cuándo. Sin hitos marcados no se enseña nada: no
- * todos los Anexos reparten el equity por hitos.
+ * El equity existe desde la firma del Acuerdo y no depende de hitos
+ * (REVISION, 22 nov): se enseña tal como lo pacta el Anexo. La
+ * financiación sí se libera hito a hito, y cada línea sale del registro que
+ * deja la base al validar. Quién validó lo ve IWL; ella ve qué y cuándo.
  */
-function DevengadoPorHitos({
+function EquityYFinanciacion({
   devengos,
   reparto,
   equityPactado,
@@ -576,17 +577,17 @@ function DevengadoPorHitos({
   financiacionPactada: number | null;
   verQuien: boolean;
 }) {
-  const hayMarcas = reparto.equityRepartido > 0 || reparto.financiacionRepartida > 0;
-  if (!hayMarcas && devengos.lineas.length === 0) return null;
+  const lineas = devengos.lineas.filter((l) => l.tipo !== "equity");
+  const hayFinanciacion = reparto.financiacionRepartida > 0 || lineas.length > 0;
+  if (equityPactado === null && !hayFinanciacion) return null;
   return (
     <Bloque>
-      <TituloBloque accion={<Metadato>Hitos con efecto económico</Metadato>}>Devengado por hitos</TituloBloque>
+      <TituloBloque accion={<Metadato>Lo que pacta el Anexo</Metadato>}>Equity y financiación</TituloBloque>
       <div className="grid gap-6 px-4 py-4 sm:grid-cols-2">
         <Cifra
-          etiqueta="Equity devengado"
-          valor={textoEquity(devengos.equity)}
-          referencia={equityPactado === null ? undefined : `de ${textoEquity(equityPactado)} pactado`}
-          nota={`${textoEquity(reparto.equityRepartido)} repartido en hitos`}
+          etiqueta="Equity de IWL"
+          valor={equityPactado === null ? "—" : textoEquity(equityPactado)}
+          nota="Desde la firma del Acuerdo; no depende de hitos"
         />
         <Cifra
           etiqueta="Financiación liberada"
@@ -596,16 +597,14 @@ function DevengadoPorHitos({
           nota={`${euros(reparto.financiacionRepartida)} repartidos en hitos`}
         />
       </div>
-      {devengos.lineas.length === 0 ? (
-        <SinDatos>Todavía no se ha validado ningún hito con equity o financiación.</SinDatos>
+      {!hayFinanciacion ? null : lineas.length === 0 ? (
+        <SinDatos>Todavía no se ha validado ningún hito que libere financiación.</SinDatos>
       ) : (
         <ul className="divide-y divide-filete border-t border-filete">
-          {devengos.lineas.map((l) => (
+          {lineas.map((l) => (
             <li key={l.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2.5 text-sm">
               <span className="min-w-0 flex-1 text-titular">
-                {l.tipo === "equity"
-                  ? `Devengado ${textoEquity(l.cifra)} el ${fecha(l.fecha)}`
-                  : `Liberados ${euros(l.cifra)} el ${fecha(l.fecha)}`}
+                {`Liberados ${euros(l.cifra)} el ${fecha(l.fecha)}`}
                 {verQuien && l.validadoPor ? `, validado por ${l.validadoPor}` : ""}
               </span>
               <span className="text-xs text-metadato">{l.titulo}</span>

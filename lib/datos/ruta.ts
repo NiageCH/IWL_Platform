@@ -47,7 +47,7 @@ export interface HitoDeEtapa {
   completadoEl: string | null;
   /** Si al entregarlo lo tiene que validar el mentor */
   requiereValidacion: boolean;
-  /** Equity que devenga al validarse, tal como se escribió */
+  /** Sin uso desde el 22 nov: el equity de IWL va con el Anexo desde la firma */
   equityPct: number | null;
   /** Financiación directa que libera al validarse */
   financiacion: number | null;

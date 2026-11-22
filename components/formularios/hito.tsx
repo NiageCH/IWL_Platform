@@ -10,7 +10,7 @@ import {
   validarHito,
 } from "@/lib/acciones/hitos";
 import { AreaTexto, Boton, Campo, Formulario, Seleccion, Texto } from "@/components/ui/formulario";
-import { equity as textoEquity, euros } from "@/lib/utils";
+import { euros } from "@/lib/utils";
 
 /**
  * Los formularios del circuito de un hito.
@@ -111,7 +111,7 @@ export function RevisarHito({
   slug: string;
   id: string;
   titulo: string;
-  /** «Devenga 2,5 % de equity», para que quien valida sepa lo que firma */
+  /** «Libera 20.000 €», para que quien valida sepa lo que firma */
   efecto: string | null;
 }) {
   const [modo, setModo] = useState<"nada" | "validar" | "cambios">("nada");
@@ -293,27 +293,22 @@ export function RevisionDeHito({
 }
 
 /**
- * El equity que devenga y la financiación que libera. Solo dirección, y
- * solo con el Anexo en borrador. Enseña cuánto queda por repartir.
+ * La financiación que libera un hito. Solo dirección, y solo con el Anexo en
+ * borrador. Enseña cuánto queda por repartir. El equity de IWL ya no va por
+ * hitos: existe desde la firma del Acuerdo (REVISION, 22 nov).
  */
 export function EfectoEconomicoHito({
   slug,
   id,
-  equityPct,
   financiacion,
-  equityPactado,
-  equityLibre,
   financiacionPactada,
   financiacionLibre,
 }: {
   slug: string;
   id: string;
-  equityPct: number | null;
   financiacion: number | null;
-  equityPactado: number | null;
-  /** Lo que queda por repartir sin contar este hito */
-  equityLibre: number;
   financiacionPactada: number | null;
+  /** Lo que queda por repartir sin contar este hito */
   financiacionLibre: number;
 }) {
   return (
@@ -323,22 +318,6 @@ export function EfectoEconomicoHito({
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={id} />
           <div className="grid gap-3 sm:grid-cols-2">
-            <Campo
-              etiqueta="Devenga equity (%)"
-              ayuda={
-                equityPactado === null
-                  ? "El Anexo no pacta equity."
-                  : `El Anexo pacta ${textoEquity(equityPactado)}; quedan ${textoEquity(equityLibre)} por repartir.`
-              }
-              error={!resultado.ok ? resultado.campos?.equity : undefined}
-            >
-              <Texto
-                name="equity"
-                inputMode="decimal"
-                defaultValue={equityPct === null ? "" : String(equityPct).replace(".", ",")}
-                placeholder="Sin equity"
-              />
-            </Campo>
             <Campo
               etiqueta="Libera financiación (€)"
               ayuda={
@@ -357,7 +336,7 @@ export function EfectoEconomicoHito({
             </Campo>
           </div>
           <p className="text-xs text-metadato">
-            Con cualquiera de las dos, la validación del mentor es obligatoria. Al proponer el Anexo, quedan fijas.
+            Con financiación, la validación del mentor es obligatoria. Al proponer el Anexo, queda fija.
           </p>
           <Boton type="submit" variante="secundario" className="self-start">
             Guardar

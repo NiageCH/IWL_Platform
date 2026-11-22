@@ -22,7 +22,7 @@ Todo está en [Mi compañía](/proyecto), en sus pestañas: **Resumen**, **Hoja 
 ## De qué dependes y quién depende de ti
 
 - **Dependes de tu mentor** para tener hoja de ruta: si no la planifica, no verás hitos que entregar. Si llevas tiempo sin hitos, díselo.
-- **Tu mentor depende de ti** para revisar: hasta que entregas un hito con su evidencia, no lo puede validar, y lo que ese hito libere, sea equity o financiación, espera.
+- **Tu mentor depende de ti** para revisar: hasta que entregas un hito con su evidencia, no lo puede validar, y si ese hito libera financiación, la financiación espera. El equity de IWL no depende de los hitos: existe desde la firma del Acuerdo.
 - **IWL depende de tu avance del mes**: si no lo cargas, tu mentor y dirección ven tu compañía en blanco, y los informes salen sin datos de ese mes.
 - **Las horas de IWL cuentan cuando tú las confirmas**: el compromiso del Anexo se mide con las confirmadas. Si algo no cuadra, dilo; si no dices nada, a los 7 días cuentan igual.
 

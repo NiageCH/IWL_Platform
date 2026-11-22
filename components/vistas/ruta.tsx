@@ -52,7 +52,7 @@ import {
 import { Estado, LeyendaEstados } from "@/components/ui/estado";
 import { BarraHitos, LineaRecorrido } from "@/components/linea-recorrido";
 import { estadoVisual } from "@/lib/estados";
-import { equity, euros, fecha, numero } from "@/lib/utils";
+import { euros, fecha, numero } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 /**
@@ -506,7 +506,6 @@ function Hito({
   // Entrega ella; la evidencia la toca mientras el hito está abierto
   const entrega = permisos.esFundadora && abierto;
   const efecto = [
-    hito.equityPct !== null ? `Devenga ${equity(hito.equityPct)} de equity` : null,
     hito.financiacion !== null ? `Libera ${euros(hito.financiacion)}` : null,
   ]
     .filter(Boolean)
@@ -525,7 +524,6 @@ function Hito({
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-sm text-titular">{hito.titulo}</span>
             {hito.condicionaInvertible ? <Etiqueta>Condiciona invertible</Etiqueta> : null}
-            {hito.equityPct !== null ? <Etiqueta>Devenga {equity(hito.equityPct)}</Etiqueta> : null}
             {hito.financiacion !== null ? <Etiqueta>Libera {euros(hito.financiacion)}</Etiqueta> : null}
             {!hito.requiereValidacion ? <Etiqueta>Sin validación</Etiqueta> : null}
           </div>
@@ -675,10 +673,7 @@ function Hito({
                 <EfectoEconomicoHito
                   slug={slug}
                   id={hito.id}
-                  equityPct={hito.equityPct}
                   financiacion={hito.financiacion}
-                  equityPactado={contexto.reparto.equityPactado}
-                  equityLibre={libre(contexto.reparto.equityPactado, contexto.reparto.equityRepartido, hito.equityPct)}
                   financiacionPactada={contexto.reparto.financiacionPactada}
                   financiacionLibre={libre(
                     contexto.reparto.financiacionPactada,

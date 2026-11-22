@@ -8,7 +8,7 @@ import { USUARIOS, clienteServicio, entrarComo } from "./clientes";
  *
  * Con una compañía y una fundadora recién creadas, no con las de la
  * semilla: hace falta un Anexo en borrador para poder marcar hitos con
- * equity, y proponerlo después para ver que las marcas quedan fijas. El
+ * financiación (el equity ya no va por hitos), y proponerlo después para ver que las marcas quedan fijas. El
  * mentor de producto coordina; el comercial acompaña sin coordinar.
  *
  * Todo lo que se crea se borra al acabar: la compañía (con sus hitos,
@@ -253,19 +253,22 @@ describe("sin validación", () => {
 describe("efecto económico", () => {
   let economico = "";
 
-  it("las marcas las pone dirección, y no pasan de lo que pacta el Anexo", async () => {
+  it("el equity no va por hitos: ningún hito lo devenga, ni con la clave de servicio (REVISION, 22 nov)", async () => {
+    const id = await nuevoHito();
+    expect((await admin.from("milestones").update({ accrues_equity_pct: 2 }).eq("id", id)).error).not.toBeNull();
+    expect((await servicio.from("milestones").update({ accrues_equity_pct: 2 }).eq("id", id)).error?.message).toMatch(
+      /milestones_sin_equity_de_compania/,
+    );
+  });
+
+  it("la financiación la pone dirección, y no pasa de lo que compromete el Anexo", async () => {
     economico = await nuevoHito();
     expect(
-      (await equipo.from("milestones").update({ accrues_equity_pct: 2 }).eq("id", economico)).error?.message,
+      (await equipo.from("milestones").update({ releases_funding: 2000 }).eq("id", economico)).error?.message,
     ).toMatch(/dirección/);
-    expect(
-      (await admin.from("milestones").update({ accrues_equity_pct: 2.5, releases_funding: 20000 }).eq("id", economico))
-        .error,
-    ).toBeNull();
+    expect((await admin.from("milestones").update({ releases_funding: 20000 }).eq("id", economico)).error).toBeNull();
 
     const otro = await nuevoHito();
-    const pasa = await admin.from("milestones").update({ accrues_equity_pct: 3 }).eq("id", otro);
-    expect(pasa.error?.message).toMatch(/Quedan 2,5 %/);
     const caja = await admin.from("milestones").update({ releases_funding: 15000 }).eq("id", otro);
     expect(caja.error?.message).toMatch(/Quedan 10000 €/);
 
@@ -280,7 +283,7 @@ describe("efecto económico", () => {
       .update({ firmantes: [{ nombre: "Fundadora de Prueba", calidad: "personal" }], status: "propuesto" })
       .eq("company_id", companyId);
     expect(proponer.error?.message ?? null).toBeNull();
-    const cambiar = await admin.from("milestones").update({ accrues_equity_pct: 1 }).eq("id", economico);
+    const cambiar = await admin.from("milestones").update({ releases_funding: 1000 }).eq("id", economico);
     expect(cambiar.error?.message).toMatch(/quedan fijos/);
 
     const { data: version } = await servicio
@@ -292,10 +295,10 @@ describe("efecto económico", () => {
     const hitos = (version!.contenido as { hitos_economicos: Array<{ equity_pct: number; financiacion: number }> })
       .hitos_economicos;
     expect(hitos).toHaveLength(1);
-    expect(hitos[0]).toMatchObject({ equity_pct: 2.5, financiacion: 20000 });
+    expect(hitos[0]).toMatchObject({ financiacion: 20000 });
   });
 
-  it("se cumple solo por «Validar», sobre una entrega, y deja lo devengado en el registro", async () => {
+  it("se cumple solo por «Validar», sobre una entrega, y deja lo liberado en el registro", async () => {
     // Quien coordina no lo da por cumplido desde el selector
     expect((await principal.from("milestones").update({ status: "cumplido" }).eq("id", economico)).error).not.toBeNull();
 
@@ -309,9 +312,8 @@ describe("efecto económico", () => {
       .eq("entity_id", economico)
       .in("action", ["equity_devengado", "financiacion_liberada"])
       .order("action");
-    expect(registro).toHaveLength(2);
-    expect(registro![0]).toMatchObject({ action: "equity_devengado", detail: { pct: 2.5 } });
-    expect(registro![1]).toMatchObject({ action: "financiacion_liberada", detail: { importe: 20000 } });
+    expect(registro).toHaveLength(1);
+    expect(registro![0]).toMatchObject({ action: "financiacion_liberada", detail: { importe: 20000 } });
     expect((registro![0].detail as { validado_por: string | null }).validado_por).toBeTruthy();
   });
 
