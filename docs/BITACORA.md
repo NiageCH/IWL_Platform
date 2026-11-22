@@ -9,6 +9,66 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modelo nuevo, bloques 2 y 3: el NDA al principio y el filtro · commit f1c9640
+
+**Qué cambió**
+- **El NDA es lo primero.** En `/presentarse`, antes de contar nada:
+  - ella escribe su nombre y apellidos, el correo, la startup y si acepta como persona o como sociedad, con los datos que pida la plantilla;
+  - lee el NDA ya completado con esos datos y lo acepta con una casilla.
+
+  Nace la candidatura «NDA aceptado», en borrador. Queda registrado quién, cuándo, desde qué IP y navegador, qué versión y la huella del texto. Le llega el PDF por correo, con el registro de la aceptación, y la página la lleva a su enlace privado.
+- **La candidatura se presenta desde ese enlace**:
+  - sector: HealthTech, AgroTech, RetailTech, EdTech u «Otro»;
+  - estadio;
+  - socios con su % y si son mujeres; mientras escribe ve la suma y la parte en manos de mujeres;
+  - la prueba del estadio, un fichero, salvo en idea;
+  - en idea, quién de IWL la recomienda.
+- **El filtro, al enviar**:
+  - pasa;
+  - no pasa: lo ve en su enlace y le llega un correo con el motivo;
+  - revisión manual;
+  - en espera de la recomendación.
+
+  En la ficha, el bloque «Filtro de entrada» enseña el resultado, los socios, la parte de mujeres y la prueba:
+  - el equipo decide las de revisión manual;
+  - dirección puede «Sacarla del no pasa», con motivo;
+  - quien recomienda confirma desde su aviso, «Confirmar la recomendación».
+- **Lo que no pasa el filtro no se puede mover de paso.** Lo impide la base.
+- **Preseleccionar ya crea la compañía en entrada.** Desaparece «Enviar el NDA». Si ya es compañía, la cuenta se le da desde la ficha de la candidatura y entra como fundadora.
+- El embudo empieza en «NDA aceptado». El alta paso a paso sigue el orden nuevo: NDA, comité, cuenta, primer acceso, contraseña, due diligence y Acuerdo.
+- **Agujero cerrado:** se podía llamar con la clave pública a la vieja `presentar_candidatura` y darse de alta sin NDA ni filtro. La he quitado.
+- **Fallo corregido en `<Formulario>`**: al volver de un error, los campos repetidos (las filas de socios) quedaban todos con el último valor. Ahora cada uno recupera el suyo.
+
+**Qué decidí yo**
+- **Al aceptar el NDA no se crea cuenta.** Ella sigue con su enlace privado, y la cuenta llega al entrar en la Fase 2, como dice el proceso.
+- **La prueba del estadio es un fichero**, no un enlace, porque el texto habla de adjunto. Se sube sin sesión, con una dirección firmada que autoriza su enlace privado.
+- **Orden de las reglas**: primero el capital (si no pasa, no pasa), después el sector y después la recomendación. La prueba es obligatoria para poder enviar, así que no hace falta como regla.
+- **Exactamente el 50 % no pasa**: la regla dice «más del 50 %».
+- **Cualquiera de IWL resuelve la revisión manual.** Sacar una candidatura del «no pasa» es solo de dirección, como pediste.
+- **Pueden recomendar dirección y el equipo**, no los mentores. El formulario público solo ve sus nombres.
+- **Una candidatura dada de alta a mano, sin NDA**, se queda en «preseleccionada» hasta que se registre su NDA firmado fuera, que es lo que crea la compañía, igual que antes.
+- **Las candidaturas de prueba del proceso viejo** (en «NDA enviado») siguen funcionando con el código de firmar y contrafirmar. Lo apunté en `docs/SALIDA.md` para retirarlo cuando se borren los datos de prueba.
+- **Comentar el NDA antes de aceptarlo ya no tiene sitio**: no hay cuenta, y la casilla va en el mismo paso. La guía, que lo dice, se corrige en el bloque 9.
+- La candidatura ya no pide el número de personas del equipo ni enlaces al pitch. El filtro no los usa, y siguen pudiendo añadirse desde el enlace.
+
+**Qué necesito que decidas**
+1. **La plantilla del NDA de producción**: no puedo leerla. Si dice «firma» donde ahora es aceptación con casilla, que la revise Luciana.
+2. **Comentar el NDA antes de aceptarlo**: ¿lo quitamos? La otra opción sería un correo de contacto junto a la casilla.
+3. **¿Pueden recomendar también los mentores?** Ahora solo dirección y el equipo.
+4. **Los cuatro sectores**: ¿«Otro» siempre a revisión manual, o hay alguno más que deba entrar directo?
+
+**Estado**
+- Unit 323, RLS 288 ×2, e2e 456 ×2 (4 saltadas), sin fallos.
+- Pruebas nuevas: `tests/rls/presentarse.test.ts` y `tests/e2e/presentarse.spec.ts`.
+- Pruebas retiradas, del flujo viejo: firmar y contrafirmar el NDA con cuenta, y comentarlo.
+- Migraciones nuevas: `20261122120000_candidatura_borrador` y `20261122121000_nda_al_inicio_y_filtro`.
+- Nada desplegado.
+
+**Siguiente**
+Bloque 4: un nombre para cada cosa. Diagnóstico solo en idea, due diligence en el resto, sin usarlos como sinónimos.
+
+---
+
 ## 2026-11-22 · Modelo nuevo, bloque 1: estadios en lugar de vías · commit b788402
 
 **Qué cambió**
