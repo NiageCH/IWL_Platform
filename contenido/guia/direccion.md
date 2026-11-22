@@ -16,7 +16,7 @@ Decides, firmas y vigilas lo vencido. Tu inicio es la [Cartera](/cartera): arrib
 
 ## De qué dependes y quién depende de ti
 
-- **Las compañías en entrada dependen de ti**: sin tu decisión no hay Acuerdo, y sin Acuerdo no se trabaja. En Construcción hay un tope de días; pasado, te sale en atención y luego vencido.
+- **Las compañías en entrada dependen de ti**: sin tu decisión no hay Acuerdo, y sin Acuerdo no se trabaja. Las que entran como idea van con diagnóstico, y tienen un tope de días; pasado, te sale en atención y luego vencido. Las demás van con due diligence.
 - **Los mentores dependen de ti** cuando no se ponen de acuerdo con una fundadora en unas horas: la sesión llega a dirección y espera tu decisión.
 - **Dependes de los mentores** para que haya hoja de ruta y se revisen los hitos. Un hito entregado sin revisar te avisa a los 7 días.
 - **Dependes de ellas** para el avance del mes: sin él, la compañía sale en blanco en la cartera y en los informes.

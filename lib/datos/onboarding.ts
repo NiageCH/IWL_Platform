@@ -2,6 +2,7 @@ import { nombreCompleto, nombrePersona } from "@/lib/etiquetas";
 import type { DatosAviso } from "@/lib/avisos";
 import { describirSituacion, type DatosSocietarios } from "@/lib/societario";
 import { cache } from "react";
+import { revisionDe, type Estadio } from "@/lib/estadios";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { contarEntradaParaDireccion } from "@/lib/datos/entrada";
 import { leerRevisionesComite } from "@/lib/datos/comite";
@@ -55,7 +56,7 @@ const COLUMNAS_PERFIL = "id, full_name, last_name, email, created_at, primer_acc
 async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
   if (!ids.length) return new Map<string, NonNullable<DatosOnboarding["candidatura"]>>();
 
-  const [{ data: firmas }, { data: entregas }, { data: documentos }, { data: eventos }] =
+  const [{ data: firmas }, { data: entregas }, { data: documentos }, { data: eventos }, { data: estadios }] =
     await Promise.all([
       supabase.from("nda_firmas").select("candidatura_id, firmado_at, contrafirmado_at, modo").in("candidatura_id", ids),
       supabase.from("candidatura_entregas").select("candidatura_id, obligatoria, documentos").in("candidatura_id", ids),
@@ -64,6 +65,8 @@ async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
         .from("candidatura_eventos")
         .select("candidatura_id, tipo, hasta, ocurrido_on")
         .in("candidatura_id", ids),
+      // El estadio dice si su revisión de entrada es diagnóstico o due diligence
+      supabase.from("candidaturas").select("id, estado_verificado, estado_declarado").in("id", ids),
     ]);
 
   const salida = new Map<string, NonNullable<DatosOnboarding["candidatura"]>>();
@@ -106,6 +109,11 @@ async function datosDeCandidaturas(supabase: Cliente, ids: string[]) {
       ndaElla: firma?.firmado_at ?? null,
       ndaIwl: cerrado,
       ndaAlPrincipio: firma?.modo === "casilla",
+      revision: revisionDe(
+        ((estadios ?? []).find((e) => e.id === id)?.estado_verificado ??
+          (estadios ?? []).find((e) => e.id === id)?.estado_declarado ??
+          null) as Estadio | null,
+      ),
       entregas: obligatorias.length
         ? {
             cumplidas: obligatorias.filter((e) => (e.documentos ?? 0) > 0).length,

@@ -89,7 +89,7 @@ test("darle cuenta para el due diligence le manda el enlace para elegir contrase
   });
   try {
     await entrarComo(page, USUARIOS.admin, `/embudo/${c.id}`);
-    await page.getByRole("button", { name: "Darle cuenta para el due diligence" }).click();
+    await page.getByRole("button", { name: "Darle cuenta", exact: true }).click();
     await expect(page.getByText(/Le ha llegado un correo con un enlace para entrar y elegir su contraseña/)).toBeVisible();
     const temporal = (await page.getByRole("textbox", { name: /Su acceso/ }).inputValue()).match(/· Contraseña: (\S+)/)?.[1];
 

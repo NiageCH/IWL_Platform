@@ -244,7 +244,7 @@ export async function VistaPrograma({
               ? "Todavía no hay Anexo. Ábrelo y queda en borrador: pones la duración, lo que IWL compromete y el equity; después se lo propones, ella lo acepta en la plataforma y se firma. Sin Anexo no se pueden imputar horas."
               : compania.tramo === "entrada"
                 ? "Todavía no hay propuesta de Acuerdo. Cuando IWL decida tu incorporación, la verás aquí con sus cifras para comentarla y aceptarla."
-                : "Todavía no hay Anexo firmado. Se firma al terminar el due diligence conjunto y es donde se acuerdan los pilares, la duración y los hitos."}
+                : "Todavía no hay Anexo firmado. Se firma tras la revisión de entrada, que es el diagnóstico en idea y el due diligence en los demás estadios. En él se acuerdan los pilares, la duración y los hitos."}
           </SinDatos>
           {esIwl ? (
             <div className="px-4 pb-4">

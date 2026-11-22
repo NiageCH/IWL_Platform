@@ -252,7 +252,7 @@ export function AcuerdoCandidatura({
               />
             </Campo>
             <Campo
-              etiqueta="Etapa, tras el due diligence"
+              etiqueta="Etapa, tras la revisión de entrada"
               ayuda="En qué punto está de verdad, no el que declaró al presentarse. Es la que hereda la compañía al firmar."
             >
               {/*
@@ -772,7 +772,7 @@ export function AccesoCandidata({
                 </p>
                 <div>
                   <Boton variante="secundario" disabled>
-                    Darle cuenta para el due diligence
+                    Darle cuenta
                   </Boton>
                 </div>
               </>
@@ -789,7 +789,7 @@ export function AccesoCandidata({
                 temporal queda para dársela por otro canal si hace falta.
                 {estado === "nda" ? " Lo primero que verá al entrar es el NDA, para comentarlo o firmarlo." : ""}
               </p>
-              <Boton variante="secundario">Darle cuenta para el due diligence</Boton>
+              <Boton variante="secundario">Darle cuenta</Boton>
             </>
           );
         }}

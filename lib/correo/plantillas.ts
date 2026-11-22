@@ -274,7 +274,7 @@ const PIEZAS: Record<Evento, (d: DatosCorreo) => Pieza> = {
     asunto: `Tu cuenta en la plataforma de IWL · ${s(d.startup)}`,
     parrafos: [
       saludo(d),
-      "Ya tienes cuenta en la plataforma de Inception Woman Lab. Desde ella seguiremos lo que viene: el due diligence, el Acuerdo y el programa.",
+      "Ya tienes cuenta en la plataforma de Inception Woman Lab. Desde ella seguiremos lo que viene: la revisión de entrada, el Acuerdo y el programa. La revisión es un diagnóstico si sois una idea, y un due diligence si ya tenéis MVP o facturáis.",
       `Entra con este enlace y elige tu contraseña. Tu usuario es ${s(d.correo)}. El enlace vale una vez; si caduca, pídelo en la entrada, en «¿Has olvidado tu contraseña?».`,
     ],
     boton: { texto: "Entrar y elegir mi contraseña", url: s(d.enlace) },

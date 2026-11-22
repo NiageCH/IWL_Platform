@@ -175,3 +175,26 @@ describe("el correo que acompaña al NDA", () => {
     expect(cuerpo).toContain("· Contraseña: clave-temporal");
   });
 });
+
+describe("el alta con el NDA al principio (REVISION, 22 nov)", () => {
+  const base = { cuentaCreada: null, primerAcceso: null, contrasenaCambiada: null };
+
+  it("va en el orden de hoy: NDA, comité, cuenta y lo de después; sin contrafirma", () => {
+    const pasos = pasosDeOnboarding(
+      { ...base, candidatura: candidatura({ ndaAlPrincipio: true, ndaElla: "2026-11-01T10:00:00Z", ndaIwl: "2026-11-01T10:00:00Z" }) },
+      undefined,
+      HOY,
+    );
+    expect(pasos.map((p) => p.clave)).toEqual(["nda_ella", "comite", "cuenta", "primer_acceso", "contrasena", "due_diligence", "acuerdo"]);
+    expect(pasos[0].nombre).toBe("NDA aceptado");
+  });
+
+  it("en idea, la revisión de entrada se llama diagnóstico, no due diligence", () => {
+    const nombre = (revision: "diagnostico" | "due_diligence") =>
+      pasosDeOnboarding({ ...base, candidatura: candidatura({ ndaAlPrincipio: true, revision }) }, undefined, HOY).find(
+        (p) => p.clave === "due_diligence",
+      )?.nombre;
+    expect(nombre("diagnostico")).toBe("Diagnóstico");
+    expect(nombre("due_diligence")).toBe("Due diligence entregado");
+  });
+});

@@ -37,6 +37,8 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     contacto_nombre: PERSONA,
     contacto_email: CORREO,
     estado: "entrada",
+    // Facturando: su revisión de entrada es el due diligence
+    estado_verificado: "facturando",
   });
   // El NDA, aceptado con la casilla al presentarse
   await insertar("nda_firmas", {
@@ -53,7 +55,7 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     const fila = (paso: string) => page.locator("ol li").filter({ hasText: paso });
     await expect(fila("Cuenta creada").getByText("Por hacer")).toBeVisible();
 
-    await page.getByRole("button", { name: "Darle cuenta para el due diligence" }).click();
+    await page.getByRole("button", { name: "Darle cuenta", exact: true }).click();
     const mensaje = await page.getByText(/Acceso dado a/).innerText();
     const clave = mensaje.match(/contraseña es ([^\s]+)/)?.[1];
     expect(clave).toBeTruthy();
@@ -88,7 +90,7 @@ test("dirección ve el alta de una candidata paso a paso", async ({ page }) => {
     await expect(fila("Primer acceso").getByText("Hecho")).toBeVisible();
     await expect(fila("Contraseña cambiada").getByText("Hecho")).toBeVisible();
     // El NDA va primero, aceptado con la casilla: sin contrafirma que esperar
-    await expect(fila("NDA firmado por ella").getByText("Hecho")).toBeVisible();
+    await expect(fila("NDA aceptado").getByText("Hecho")).toBeVisible();
     await expect(fila("NDA firmado por IWL")).toHaveCount(0);
     await expect(fila("Due diligence entregado").getByText("En curso")).toBeVisible();
     await expect(fila("Due diligence entregado").getByText("lleva 0 días")).toBeVisible();

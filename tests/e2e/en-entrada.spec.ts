@@ -80,6 +80,13 @@ test("«En entrada» enseña cada compañía con su estadio, su paso y lo que le
     await expect(filaCons.getByText("Diagnóstico:")).toBeVisible();
     await expect(filaCons.getByText(/Due diligence:/)).toHaveCount(0);
 
+    // Y en su pestaña de due diligence se dice que no lo tiene: va con diagnóstico (REVISION, 22 nov)
+    await page.goto(`/cartera/${cons.slug}/diligencia`);
+    await expect(page.locator("[data-diagnostico]")).toContainText("su revisión de entrada es el diagnóstico");
+    await page.goto(`/cartera/${acel.slug}/diligencia`);
+    await expect(page.locator("[data-diagnostico]")).toHaveCount(0);
+    await page.goto("/cartera");
+
     // Sin Acuerdo no se trabaja: no hay dónde imputar horas, y se dice por qué donde se imputan
     await page.goto(`/cartera/${cons.slug}/sesiones`);
     await expect(page.getByText(/Todavía no hay Acuerdo firmado: las horas de acompañamiento cuentan desde la firma/)).toBeVisible();

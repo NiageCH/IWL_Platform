@@ -62,9 +62,9 @@ export const PASOS = [
   },
   {
     /*
-     * Antes «diligencia»: el due diligence de la candidata. Desde el nuevo
-     * corte, con el NDA firmado ya existe la compañía, y la entrada es
-     * due diligence en Aceleración o diagnóstico en Construcción.
+     * Antes «diligencia»: el due diligence de la candidata. Desde el 22 nov
+     * la compañía nace al preseleccionarla, y la entrada es el diagnóstico
+     * en idea o el due diligence en los demás estadios.
      */
     codigo: "entrada",
     nombre: "En entrada",

@@ -1,3 +1,4 @@
+import type { Revision } from "@/lib/estadios";
 import type { EstadoVisual } from "@/lib/estados";
 
 /**
@@ -36,6 +37,8 @@ export interface DatosOnboarding {
      * antes que el comité y la cuenta, y no lleva contrafirma.
      */
     ndaAlPrincipio?: boolean;
+    /** La revisión de entrada: diagnóstico en idea, due diligence en el resto */
+    revision?: Revision | null;
     /** Peticiones obligatorias del due diligence y cuántas tienen algo entregado */
     entregas: { cumplidas: number; total: number; ultima: string | null } | null;
     comite: string | null;
@@ -75,6 +78,17 @@ const NOMBRES: Record<ClavePaso, string> = {
   comite: "Comité",
   acuerdo: "Acuerdo firmado",
 };
+
+/**
+ * El nombre de un paso, con el de su caso (REVISION, 22 nov): en idea la
+ * revisión de entrada es el diagnóstico, no el due diligence; y el NDA
+ * aceptado con la casilla no se «firma».
+ */
+function nombreDe(clave: ClavePaso, c: DatosOnboarding["candidatura"]): string {
+  if (clave === "due_diligence" && c?.revision === "diagnostico") return "Diagnóstico";
+  if (clave === "nda_ella" && c?.ndaAlPrincipio) return "NDA aceptado";
+  return NOMBRES[clave];
+}
 
 function hoyISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -154,7 +168,7 @@ export function pasosDeOnboarding(
   let anterior: string | null = null;
 
   return crudos.map((p, i) => {
-    const base = { clave: p.clave, nombre: NOMBRES[p.clave], fecha: p.fecha, dias: null, detalle: p.detalle };
+    const base = { clave: p.clave, nombre: nombreDe(p.clave, c), fecha: p.fecha, dias: null, detalle: p.detalle };
 
     if (p.fecha) {
       anterior = p.fecha;

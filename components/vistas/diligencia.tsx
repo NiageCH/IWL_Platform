@@ -84,8 +84,22 @@ export async function VistaDiligencia({
   const base = permisos.esIwl ? `/cartera/${compania.slug}/diligencia` : "/proyecto/diligencia";
   const filtro = filtroDe(ver);
 
+  /*
+   * Una idea en entrada no tiene due diligence: va con diagnóstico
+   * (REVISION, 22 nov). Lo de aquí se construye dentro del programa, y se
+   * dice para que nadie lo tome por algo que falta para entrar.
+   */
+  const ideaEnEntrada = compania.tramo === "entrada" && compania.entry_state === "idea";
+
   return (
     <div className="flex flex-col gap-6">
+      {ideaEnEntrada ? (
+        <p className="tarjeta p-4 text-sm text-cuerpo" data-diagnostico>
+          Esta compañía entra como idea: su revisión de entrada es el diagnóstico, no el due
+          diligence. Aquí no se le pide nada para entrar; lo documental se construye dentro del
+          programa.
+        </p>
+      ) : null}
       {/*
         Por dónde va el due diligence, lo primero y sin leer.
 

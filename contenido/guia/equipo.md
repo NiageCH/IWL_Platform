@@ -20,7 +20,7 @@ Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas 
 ## De qué dependes y quién depende de ti
 
 - **Las candidatas dependen de ti** para avanzar: una candidatura nueva espera a que alguien la pase a revisión, y una reunión celebrada, a que alguien la anote.
-- **Las compañías que entran en Aceleración dependen de ti** para validar su due diligence: hasta que lo obligatorio esté validado, dirección no puede decidir. En Construcción no hay due diligence de entrada.
+- **Las compañías que entran con MVP o facturando dependen de ti** para validar su due diligence: hasta que lo obligatorio esté validado, dirección no puede decidir. Las que entran como idea no tienen due diligence de entrada: van con diagnóstico.
 - **Dependes de dirección** para las decisiones y las firmas.
 
 ## Cómo se hace

@@ -2026,3 +2026,14 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Una plantilla del NDA sin bloques `::: firma` es válida**; nunca se exigieron. Con la casilla, el PDF lleva en el registro de la aceptación el nombre, el documento (y la sociedad, si acepta por una), la fecha y la hora, la versión y el hash. Una plantilla que sí los tenga, como la versión 6, se sigue pintando igual.
 - **Fuera los comentarios del NDA.** Con la casilla, el NDA es estándar y no se negocia. Encima de la casilla, una línea con el correo para dudas (`CORREO_DUDAS_NDA`). Se van la tabla `nda_comentarios`, sus disparadores, el aviso `nda_comentario`, la respuesta y la «versión propia» de una candidatura, que nacía de responder a un comentario. Las versiones propias que haya se quedan, porque una firma apunta a la suya.
 
+## 2026-11-22 · Diagnóstico y due diligence: un nombre para cada cosa
+
+- **La revisión de entrada es el nombre de los dos**: el diagnóstico en idea y el due diligence en los demás estadios. Donde un texto valía para los dos, ahora dice «revisión de entrada» y no «due diligence»:
+  - el botón «Darle cuenta», que decía «para el due diligence»;
+  - la etapa de la candidatura, «tras la revisión de entrada»;
+  - el Anexo sin firmar;
+  - el correo de acceso.
+- **El alta paso a paso nombra el paso por su caso**: «Diagnóstico» en idea, «Due diligence entregado» en el resto. El NDA de la casilla es «NDA aceptado», no «firmado».
+- **La pestaña «Due diligence general» de una idea en entrada lo dice arriba**: su revisión es el diagnóstico, y ahí no se le pide nada para entrar. El checklist sigue existiendo, por construir dentro del programa.
+- **«Due diligence técnico» (el de Niage) no cambia**: es otro módulo, posterior a la entrada, y no compite con el diagnóstico.
+
