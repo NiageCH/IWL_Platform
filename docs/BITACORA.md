@@ -9,6 +9,49 @@ como es**.
 
 ---
 
+## 2026-11-22 · Modo pruebas del correo · commit 9c026aa
+
+**Qué cambió**
+- Con el modo pruebas activo, un correo a un dominio que no esté en la lista no sale. Queda **«Retenido: modo pruebas»**, con su contenido. Por defecto la lista es `inceptionwlab.es` y `niage.es`.
+- En Administración → Correos hay una lista nueva, «Retenidos por el modo pruebas». Cada correo, retenido o no, tiene «Ver el correo» para leerlo como habría llegado.
+- En Administración → Programa, arriba, «Modo pruebas del correo»:
+  - los dominios, editables;
+  - «Quitar el modo pruebas», que pide escribir `ACTIVAR CORREOS`. Queda quién y cuándo, en el ajuste y en el registro;
+  - quitado, «Volver al modo pruebas».
+- Dirección ve una franja fija en la consola: «Modo pruebas: los correos solo salen a @inceptionwlab.es y @niage.es», con enlace a cambiarlo.
+- En modo pruebas, el resumen diario solo llega a quien lo elige a mano en Mi cuenta, y allí se le explica.
+- «¿Has olvidado tu contraseña?» sale ahora por la plataforma, con el mismo texto que la plantilla de Supabase. Así respeta la lista.
+- Lista nueva `docs/SALIDA.md`, «Antes de cargar la primera startup real», con el paso de quitar el modo pruebas.
+
+**Qué decidí yo**
+- El modo pruebas **nace activo en la migración**, que es lo que llega a producción. **La semilla local lo apaga**, porque las pruebas de interfaz leen sus correos en la bandeja local. Si falta el ajuste, se lee como activo.
+- La retención se decide **al enviar**, no al apuntar. A un retenido no se le prepara el enlace de acceso, porque crearía uno de verdad.
+- Ni «Reintentar» ni quitar el modo pruebas envían un retenido.
+- La base solo deja apagar el modo pruebas por la función que pide la frase. Volver a ponerlo y cambiar los dominios se hacen a mano, porque no dañan a nadie.
+- Para el resumen, «elegirlo a mano» es haber guardado «Cada mañana» en Mi cuenta. El valor de serie no cuenta.
+- Para «¿Has olvidado tu contraseña?»:
+  - genero el enlace con la clave de servicio, como el del NDA;
+  - contesta lo mismo exista la cuenta o no;
+  - limito a un correo por minuto y cuenta, como hacía Supabase.
+
+  Ya no hace falta abrir el enlace «desde este mismo navegador», así que quité esa frase.
+- La franja la ve solo dirección. Al equipo no le cambia nada de lo que hace.
+- `docs/SALIDA.md` no existía, así que lo creé con cuatro pasos. Los otros tres son míos y conviene que los mires: borrar los datos de prueba, revisar los retenidos y probar con una cuenta de fuera.
+
+**Qué necesito que decidas**
+1. ¿Te valen los cuatro pasos de `docs/SALIDA.md`?
+2. Invitaciones de Supabase Auth: la plataforma no las usa, porque las cuentas se crean con contraseña y el enlace sale por `notificar`. No he tocado la configuración de Auth. Si alguien manda una invitación desde el panel de Supabase, no pasa por la lista.
+
+**Estado**
+- Unit 316, RLS 284 ×2, e2e 458 ×2 (4 saltadas), sin fallos.
+- Una prueba de `nda-comentarios` chocaba con el texto de «Ver el correo» y ahora busca el texto exacto.
+- Migración nueva: `20261122100000_correo_modo_pruebas`. No se despliega todavía: el modelo nuevo va antes.
+
+**Siguiente**
+El modelo nuevo, en el orden pedido. Primero el bloque 1, estadios en lugar de vías.
+
+---
+
 ## 2026-11-21 · La guía revisada, y lo calculado en el resumen diario · commit 7750d12
 
 **Qué cambió**
