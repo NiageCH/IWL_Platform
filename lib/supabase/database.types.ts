@@ -5493,6 +5493,9 @@ isOneToOne: false
 "generar_hoja_de_ruta":
 { Args: { "p_company": string,"p_inicio"?: string }; Returns: number
                            },
+"hitos_para_graduar":
+{ Args: { "p_company": string }; Returns: Json
+                           },
 "instanciar_hoja_de_ruta":
 { Args: { "inicio"?: string,"target_annex"?: string,"target_company": string,"template": string }; Returns: number
                            },

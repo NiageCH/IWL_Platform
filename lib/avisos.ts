@@ -183,13 +183,14 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
     case "listo_para_invertible":
       return {
         ...base,
-        paso: `${sitio} cerró el tramo 4 el ${dia(a.created_at)}: proyecto listo para valorar si es invertible`,
-        toca: "Valorar si es invertible",
-        verbo: "Valorar",
+        // El texto, de la REVISION del 23 nov (invertible decidido)
+        paso: `${sitio} cerró el tramo 4 el ${dia(a.created_at)}. Lista para graduar: confirma si es invertible`,
+        toca: "Lista para graduar: confirma si es invertible",
+        verbo: "Confirmar",
         // Si lo es, se gradúa: el cierre, en su ficha (bloque 8)
         href: ficha("", "cierre"),
         ancla: "cierre",
-        hasVenidoA: `valorar si ${sitio} es invertible`,
+        hasVenidoA: `confirmar si ${sitio} es invertible y graduarla`,
       };
     case "plazo_vencido":
       return {

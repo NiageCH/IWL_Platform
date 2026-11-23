@@ -49,7 +49,7 @@ Decides, firmas y vigilas lo vencido. Tu inicio es la [Cartera](/cartera): arrib
 ### Cerrar una compañía
 
 1. En su ficha, al final, abre **Cerrar la compañía**.
-2. Elige cómo termina: **Graduada**, si es invertible; **Finalizada · Salida**, si acabó el plazo sin serlo; **Finalizada · Baja**, si no sigue.
+2. Elige cómo termina: **Graduada**, si es invertible; **Finalizada · Salida**, si acabó el plazo sin serlo; **Finalizada · Baja**, si no sigue. **Graduada** solo se puede elegir con todos los hitos que condicionan invertible validados; si falta alguno, te dice cuántos.
 3. Pon la fecha y el motivo y pulsa **Cerrar la compañía**.
 4. Desaparece de todas las listas, avisos y resúmenes, para todo el mundo. Queda en **Administración → Histórico**, para consultarla. Ella conserva sus documentos firmados.
 5. Si fue un error, en el **Histórico** abre **Reabrir la compañía**, escribe por qué y pulsa **Reabrir la compañía**. Vuelve como estaba, con su hoja de ruta, su equipo y sus accesos. Sus avisos no se reabren.
@@ -66,7 +66,7 @@ En [Administración](/admin):
 
 - **Compañías y cohortes**: dar de alta compañías y cohortes.
 - **Personas y accesos**: dar de alta a alguien y darle acceso.
-- **Hoja de ruta**: los hitos fundamentales de los cuatro tramos. Se añaden, se retiran, se ordenan con **Subir** y **Bajar** y se cambian sus textos. Nada de esto toca las hojas de ruta ya hechas ni las firmadas. Retirar un hito no lo borra: deja de salir en las nuevas, y se puede volver a usar.
+- **Hoja de ruta**: los hitos fundamentales de los cuatro tramos. Se añaden, se retiran, se ordenan con **Subir** y **Bajar** y se cambian sus textos. Nada de esto toca las hojas de ruta ya hechas ni las firmadas. Retirar un hito no lo borra: deja de salir en las nuevas, y se puede volver a usar. En **Editar** marcas si **condiciona invertible**: una compañía solo se gradúa con todos los suyos validados. Por defecto lo llevan los cuatro del tramo 4.
 - **Evaluación técnica**: los criterios del due diligence técnico.
 - **Programa y umbrales**: el NDA, la tarifa, la horquilla de equity, el tope de entrada y los días del avance del mes.
 - **Correos**: los que no salieron, con **Reintentar**.

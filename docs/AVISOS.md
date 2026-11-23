@@ -58,7 +58,7 @@ acción. Si pone «— », solo lo cierra la acción.
 | **Horas en dirección** (`sesion_en_direccion`), **20 nov** | Dirección | «Las horas de "Precios" con Marea no cuadran y han llegado a dirección» | Decidir y cerrar · **Decidir** | `/cartera/<slug>/sesiones#sesion-<id>` | Dirección decide, o se anula | Cuentan para el Anexo; a ella le llega un correo con la decisión |
 
 | **Tramo cerrado** (`tramo_cerrado`, a dirección; `tramo_cerrado_ella`, a ella), **23 nov** | Dirección y las fundadoras de la compañía | «Raíz cerró un tramo de su hoja de ruta el 3 dic» | Ver cómo sigue · **Ver** | `/cartera/<slug>/ruta#seguimiento` · ella, `/proyecto/ruta#seguimiento` | Lo cierra quien lo lee | El tramo siguiente |
-| **Listo para valorar si es invertible** (`listo_para_invertible`), **23 nov** | Dirección | «Raíz cerró el tramo 4 el 3 dic: proyecto listo para valorar si es invertible» | Valorar si es invertible · **Valorar** | `/cartera/<slug>#cierre` | Lo cierra quien lo lee; se cierra la compañía | Si es invertible, se gradúa: **Cerrar la compañía** |
+| **Lista para graduar** (`listo_para_invertible`), **23 nov** | Dirección | «Raíz cerró el tramo 4 el 3 dic. Lista para graduar: confirma si es invertible» | Lista para graduar: confirma si es invertible · **Confirmar** | `/cartera/<slug>#cierre` | Lo cierra quien lo lee; se cierra la compañía | Si es invertible, se gradúa: **Cerrar la compañía**. «Graduada» solo se puede elegir con validados los hitos que condicionan invertible |
 | **Plazo vencido** (`plazo_vencido`), **23 nov** | Dirección, una vez por compañía | «A Raíz se le ha acabado el plazo máximo de su hoja de ruta» | Decidir el cierre · **Revisar** | `/cartera/<slug>#cierre` | Lo cierra quien lo lee; se cierra la compañía | **Cerrar la compañía**: graduada, salida o baja. No se cierra nada solo |
 
 ## Los calculados
@@ -124,5 +124,5 @@ cuántos de cada tipo.
   finalizada, se cierran todos sus avisos abiertos. La compañía desaparece
   para todos menos dirección, así que un aviso suyo no podría llevar a
   ningún sitio.
-- **«Listo para valorar si es invertible» y «Plazo vencido» llevan al cierre**
+- **«Lista para graduar» y «Plazo vencido» llevan al cierre**
   (`#cierre`, en la ficha), que es donde se decide.

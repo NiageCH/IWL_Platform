@@ -262,6 +262,20 @@ function FormularioHito({ panel, onCerrar }: { panel: NonNullable<Panel>; onCerr
             <Campo etiqueta="Evidencia esperada" error={e("expected_evidence")} ayuda="Lo que se pide como prueba">
               <AreaTexto name="expected_evidence" rows={3} defaultValue={editar?.evidencia ?? ""} />
             </Campo>
+            <label className="flex items-start gap-2 text-sm text-cuerpo">
+              <input
+                type="checkbox"
+                name="gates_investable"
+                defaultChecked={editar?.condicionaInvertible ?? false}
+                className="mt-0.5 accent-[var(--color-acento)]"
+              />
+              <span>
+                <span className="text-titular">Condiciona invertible</span>
+                <span className="block text-xs text-secundario">
+                  Una compañía solo se puede graduar con todos los hitos así validados.
+                </span>
+              </span>
+            </label>
             <p className="text-xs text-secundario">
               Vale para las hojas de ruta nuevas. Las que están en marcha y las firmadas llevan su copia.
             </p>

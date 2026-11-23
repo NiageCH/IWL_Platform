@@ -55,6 +55,16 @@ beforeAll(async () => {
     .select("id")
     .single();
   hito = m!.id;
+  // Graduarla pide sus hitos de invertible validados (graduar.test.ts)
+  await servicio.from("milestones").insert({
+    company_id: compania,
+    title: "Clientes que repiten",
+    success_criteria: "Algo comprobable",
+    origin: "anexo",
+    gates_investable: true,
+    requires_validation: true,
+    status: "cumplido",
+  });
   await servicio.from("avisos").insert({ tipo: "hito_entregado", company_id: compania, para_iwl: true });
 });
 

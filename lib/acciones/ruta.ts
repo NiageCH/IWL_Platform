@@ -547,6 +547,10 @@ export async function editarHitoPlantilla(formData: FormData): Promise<Resultado
         .string()
         .optional()
         .transform((v) => (v ?? "").trim() || null),
+      gates_investable: z
+        .union([z.string(), z.null()])
+        .optional()
+        .transform((v) => v === "on" || v === "true"),
     }),
     formData,
   );
@@ -555,7 +559,12 @@ export async function editarHitoPlantilla(formData: FormData): Promise<Resultado
   const supabase = await clienteServidor();
   const { data, error: falloBase } = await supabase
     .from("roadmap_template_milestones")
-    .update({ title: datos.title, success_criteria: datos.success_criteria, expected_evidence: datos.expected_evidence })
+    .update({
+      title: datos.title,
+      success_criteria: datos.success_criteria,
+      expected_evidence: datos.expected_evidence,
+      gates_investable: datos.gates_investable,
+    })
     .eq("id", datos.id)
     .select("id");
   if (falloBase) return traducirError(falloBase);
@@ -581,6 +590,10 @@ export async function anadirHitoFundamental(formData: FormData): Promise<Resulta
         .string()
         .optional()
         .transform((v) => (v ?? "").trim() || null),
+      gates_investable: z
+        .union([z.string(), z.null()])
+        .optional()
+        .transform((v) => v === "on" || v === "true"),
     }),
     formData,
   );

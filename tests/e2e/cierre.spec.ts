@@ -28,11 +28,22 @@ test("dirección cierra una compañía: sale de la cartera, queda en el Históri
     const ella = await crearCuenta(correo);
     await actualizar("profiles", { id: `eq.${ella}` }, { role: "fundadora", full_name: "Fundadora" });
     await insertar("company_members", { company_id: c.id, profile_id: ella, member_role: "fundadora" });
+    await insertar("milestones", {
+      company_id: c.id,
+      title: "Clientes que repiten",
+      success_criteria: "Algo que se puede comprobar",
+      origin: "anexo",
+      gates_investable: true,
+      requires_validation: true,
+    });
 
     // Dirección, desde la ficha
     await entrarComo(page, USUARIOS.admin, `/cartera/${c.slug}`);
     const cierre = page.locator("#cierre");
     await cierre.getByText("Cerrar la compañía").first().click();
+    // Sin sus hitos de invertible validados, «Graduada» no se puede elegir y dice cuántos faltan
+    await expect(cierre.getByLabel(/^Graduada/)).toBeDisabled();
+    await expect(cierre.getByText("Faltan 1 hito para poder graduarla.")).toBeVisible();
     await cierre.getByLabel(/Finalizada · Salida/).check();
     await cierre.getByLabel("Motivo").fill("Terminó el plazo sin llegar a ser invertible.");
     await cierre.getByRole("button", { name: "Cerrar la compañía" }).click();

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cerrarCompania, reabrirCompania } from "@/lib/acciones/cierre";
-import { CIERRES, type Cierre } from "@/lib/cierre";
+import { CIERRES, motivoNoGradua, type Cierre, type HitosParaGraduar } from "@/lib/cierre";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Texto } from "@/components/ui/formulario";
 
 /**
@@ -14,15 +14,19 @@ export function CerrarCompania({
   companyId,
   nombre,
   sugerida,
+  paraGraduar,
   hoy,
 }: {
   companyId: string;
   nombre: string;
   /** Si cerró el tramo 4, lo normal es graduarla */
   sugerida: Cierre | null;
+  /** Los hitos que condicionan invertible: sin todos validados no se gradúa */
+  paraGraduar: HitosParaGraduar | null;
   hoy: string;
 }) {
   const [cierre, setCierre] = useState<Cierre | "">(sugerida ?? "");
+  const noGradua = motivoNoGradua(paraGraduar);
   return (
     <Desplegable titulo="Cerrar la compañía">
       <Formulario accion={cerrarCompania} className="gap-4 px-4 py-4">
@@ -33,23 +37,37 @@ export function CerrarCompania({
               <input type="hidden" name="company_id" value={companyId} />
               <fieldset className="flex flex-col gap-2">
                 <legend className="mb-1 text-sm text-titular">Cómo termina</legend>
-                {(Object.keys(CIERRES) as Cierre[]).map((c) => (
-                  <label key={c} className="flex cursor-pointer items-start gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="cierre"
-                      value={c}
-                      checked={cierre === c}
-                      onChange={() => setCierre(c)}
-                      className="mt-0.5"
-                      required
-                    />
-                    <span>
-                      <span className="text-titular">{CIERRES[c].nombre}</span>
-                      <span className="text-secundario"> · {CIERRES[c].explicacion}</span>
-                    </span>
-                  </label>
-                ))}
+                {(Object.keys(CIERRES) as Cierre[]).map((c) => {
+                  // La base lo impide igual (`app.guard_graduada`); aquí se dice por qué
+                  const bloqueada = c === "graduada" && noGradua !== null;
+                  return (
+                    <label
+                      key={c}
+                      className={`flex items-start gap-2 text-sm ${bloqueada ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                    >
+                      <input
+                        type="radio"
+                        name="cierre"
+                        value={c}
+                        checked={cierre === c}
+                        onChange={() => setCierre(c)}
+                        disabled={bloqueada}
+                        aria-describedby={bloqueada ? "no-gradua" : undefined}
+                        className="mt-0.5"
+                        required
+                      />
+                      <span>
+                        <span className="text-titular">{CIERRES[c].nombre}</span>
+                        <span className="text-secundario"> · {CIERRES[c].explicacion}</span>
+                        {bloqueada ? (
+                          <span id="no-gradua" className="es-atencion texto-estado block text-xs">
+                            {noGradua}
+                          </span>
+                        ) : null}
+                      </span>
+                    </label>
+                  );
+                })}
                 {e("cierre") ? <p className="text-xs text-mal">{e("cierre")}</p> : null}
               </fieldset>
               <Campo etiqueta="Fecha del cierre" obligatorio error={e("fecha")}>
