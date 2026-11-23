@@ -33,7 +33,7 @@ export default async function LayoutIwl({ children }: { children: ReactNode }) {
             <BarraSuperior />
           </div>
           <FranjaModoPruebas rol={persona?.role} />
-          <PrimeraVez vista={!persona || Boolean(persona.guia_vista_at)} />
+          <PrimeraVez vista={!persona || Boolean(persona.guia_vista_at)} rol={persona?.role} />
           {children}
         </div>
       </div>

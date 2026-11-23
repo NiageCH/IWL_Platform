@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
    */
   outputFileTracingIncludes: {
     "/**": ["./lib/fuentes/**/*"],
-    // La guía de cada rol vive en Markdown, para corregirla sin tocar código
-    "/guia": ["./contenido/guia/**/*"],
   },
 };
 

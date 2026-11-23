@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { FICHERO_GUIA, leerGuia, leerLinea } from "./guia";
+import { TEXTOS_GUIA } from "./guia-textos.generado";
 
 describe("leer la guía", () => {
   it("títulos, párrafos y listas", () => {
@@ -30,6 +31,14 @@ describe("leer la guía", () => {
 
 describe("los ficheros de la guía", () => {
   const dir = path.join(process.cwd(), "contenido", "guia");
+
+  it("el módulo generado es el de los Markdown: si falla, `node scripts/guia-generar.mjs`", () => {
+    const ficheros = readdirSync(dir).filter((f) => f.endsWith(".md"));
+    expect(Object.keys(TEXTOS_GUIA).sort()).toEqual(ficheros.map((f) => f.replace(/\.md$/, "")).sort());
+    for (const f of ficheros) {
+      expect(TEXTOS_GUIA[f.replace(/\.md$/, "")], f).toBe(readFileSync(path.join(dir, f), "utf8"));
+    }
+  });
 
   it("hay uno por rol, y ninguno sobra", () => {
     const ficheros = readdirSync(dir).filter((f) => f.endsWith(".md")).map((f) => f.replace(/\.md$/, ""));

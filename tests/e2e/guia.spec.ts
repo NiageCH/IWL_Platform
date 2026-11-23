@@ -69,3 +69,36 @@ test("cada rol lee la suya", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Tu guía · Dirección IWL" })).toBeVisible();
   await expect(page.getByText("Decidir la incorporación").first()).toBeVisible();
 });
+
+/**
+ * Los siete roles, sobre la compilación de producción (REVISION, 23 nov ·
+ * urgente). En producción la de dirección salió vacía y aquí todo pasaba:
+ * la guía se leía del disco, y en local el disco siempre está. Ahora va
+ * dentro del código; esto comprueba que cada rol abre la suya, y que no
+ * sale ni «no hemos podido cargar» ni «no tiene guía».
+ */
+const TITULOS: Record<string, string> = {
+  admin_iwl: "Tu guía · Dirección IWL",
+  equipo_iwl: "Tu guía · Equipo IWL",
+  mentor: "Tu guía · Mentoría",
+  revisor_niage: "Tu guía · Ingeniería Niage",
+  fundadora: "Tu guía · Equipo fundador",
+  lector_externo: "Tu guía · Acceso de lectura",
+  candidata: "Tu guía · Candidatura",
+};
+
+for (const [rol, titulo] of Object.entries(TITULOS)) {
+  test(`${rol} abre su guía`, async ({ page }) => {
+    const correo = `e2e.guia.${rol}.${Date.now()}.${test.info().project.name}@ejemplo.test`;
+    try {
+      const id = await crearCuenta(correo);
+      await actualizar("profiles", { id: `eq.${id}` }, { role: rol, full_name: "Persona de prueba" });
+      await entrarComo(page, correo, "/guia");
+      await expect(page.getByRole("heading", { name: titulo, level: 1 })).toBeVisible();
+      await expect(page.getByText("No hemos podido cargar la guía")).toHaveCount(0);
+      await expect(page.getByText("no tiene guía")).toHaveCount(0);
+    } finally {
+      await borrarCuenta(correo);
+    }
+  });
+}

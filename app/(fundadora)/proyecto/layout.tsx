@@ -51,7 +51,7 @@ export default async function LayoutProyecto({
           <div className="md:hidden">
             <BarraSuperior />
           </div>
-          <PrimeraVez vista={Boolean(persona.guia_vista_at)} />
+          <PrimeraVez vista={Boolean(persona.guia_vista_at)} rol={persona.role} />
           {children}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
 import { inicioDe } from "@/lib/permisos";
+import { hayGuia } from "@/lib/datos/guia";
 
 /**
  * Raíz. Lleva a cada persona a su vista.
@@ -28,7 +29,7 @@ export default async function Inicio() {
     .select("guia_vista_at")
     .eq("id", persona.id)
     .single();
-  if (vista && !vista.guia_vista_at) redirect("/guia?primera=1");
+  if (vista && !vista.guia_vista_at && hayGuia(persona.role)) redirect("/guia?primera=1");
 
   /*
    * A dónde va cada quien lo decide `lib/permisos.ts`, no esta cadena.

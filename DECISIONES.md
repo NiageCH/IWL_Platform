@@ -2124,3 +2124,10 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Ordenar cambia el sitio con el de al lado**, en la base (`mover_hito_fundamental`), porque el orden es único por tramo y el cambio pasa por un hueco.
 - **Un hito nuevo es fundamental y va al final de su tramo.** Detrás también de los retirados, que conservan su número.
 - **La prueba del estadio se abre con la política de siempre del almacén**: el mentor es de la compañía y `puede_ver_expediente` ya le dejaba leer la carpeta de su candidatura. Lo que faltaba era el enlace: `ficha_entrada` da ahora la ruta, y la pantalla la firma con su sesión.
+
+## 2026-11-23 · La guía va dentro del código · SUSTITUYE a «la guía se lee del disco en cada visita»
+
+- **En producción la guía de dirección salió vacía**, con «Todavía no hay guía para tu papel», y todas las suites en verde. Se leía del disco en cada visita, un `catch` se tragaba el error y en local el disco siempre está.
+- **Ahora `scripts/guia-generar.mjs` genera `lib/guia-textos.generado.ts`** en `prebuild` y en `predev`. Corregir el Markdown y desplegar sigue bastando, porque Vercel corre `prebuild`. El módulo se versiona para que tsc y las pruebas lo encuentren sin compilar. Una prueba unitaria falla si no coincide con los Markdown.
+- **Se distinguen «tu papel no tiene guía» y «no hemos podido cargarla».** Lo segundo deja un `console.error`. Sin guía para un rol, ni la franja ni la entrada por `/` la ofrecen.
+- **Lo único que sigue leyéndose del disco son las fuentes del PDF** (`lib/pdf.ts`). Viajan por `outputFileTracingIncludes` en todas las rutas, y si faltan el PDF falla con error, no en silencio.

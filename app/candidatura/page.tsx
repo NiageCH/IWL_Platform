@@ -61,7 +61,7 @@ export default async function MiCandidatura() {
   if (nda.estado === "sin_plantilla" || nda.estado === "plantilla_con_huecos" || nda.estado === "por_firmar") {
     return (
       <Marco tema="oscuro">
-        <PrimeraVez vista={Boolean(persona.guia_vista_at)} />
+        <PrimeraVez vista={Boolean(persona.guia_vista_at)} rol={persona.role} />
         <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
           <div className="mb-8 flex justify-end">
             <BotonSalir />
@@ -102,7 +102,7 @@ export default async function MiCandidatura() {
 
   return (
     <Marco tema="oscuro">
-      <PrimeraVez vista={Boolean(persona.guia_vista_at)} />
+      <PrimeraVez vista={Boolean(persona.guia_vista_at)} rol={persona.role} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
         <div className="mb-8 flex justify-end">
           <BotonSalir />

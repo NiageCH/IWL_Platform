@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cerrarAvisoGuia } from "@/lib/acciones/guia";
+import { hayGuia } from "@/lib/datos/guia";
 
 /**
  * La primera entrada por un enlace de aviso.
@@ -7,10 +8,11 @@ import { cerrarAvisoGuia } from "@/lib/acciones/guia";
  * Quien entra por `/` la primera vez cae en su guía. Quien entra por el
  * enlace de un correo va directa a lo suyo, que es a lo que venía, y aquí
  * se le dice en una línea que hay guía. Sale mientras no la haya abierto
- * ni la haya cerrado; las dos cosas la dan por vista.
+ * ni la haya cerrado; las dos cosas la dan por vista. Si su papel no tiene
+ * guía, no se le ofrece.
  */
-export function PrimeraVez({ vista }: { vista: boolean }) {
-  if (vista) return null;
+export function PrimeraVez({ vista, rol }: { vista: boolean; rol: string | null | undefined }) {
+  if (vista || !hayGuia(rol)) return null;
   return (
     <div
       data-primera-vez

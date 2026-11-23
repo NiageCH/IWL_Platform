@@ -20,7 +20,8 @@ export default async function Guia({ searchParams }: { searchParams: Promise<{ p
   const persona = await personaActual();
   if (!persona) redirect("/entrar?siguiente=/guia");
   const { primera } = await searchParams;
-  const bloques = await leerGuiaDe(persona.role);
+  const guia = leerGuiaDe(persona.role);
+  const bloques = guia.estado === "ok" ? guia.bloques : null;
   await (await clienteServidor()).rpc("marcar_guia_vista");
   const titulo = bloques?.find((b) => b.tipo === "titulo" && b.nivel === 1);
   const inicio = inicioDe(persona.role);
@@ -51,9 +52,14 @@ export default async function Guia({ searchParams }: { searchParams: Promise<{ p
           <div className="px-4 py-4">
             {bloques ? (
               <TextoGuia bloques={bloques} />
+            ) : guia.estado === "error" ? (
+              <p className="text-sm text-secundario" role="alert">
+                No hemos podido cargar la guía. Vuelve a intentarlo en un rato y, si sigue igual, avisa a tu contacto en
+                IWL.
+              </p>
             ) : (
               <p className="text-sm text-secundario">
-                Todavía no hay guía para tu papel. Si algo no sabes cómo se hace, pregunta a tu contacto en IWL.
+                Tu papel no tiene guía. Si algo no sabes cómo se hace, pregunta a tu contacto en IWL.
               </p>
             )}
           </div>
