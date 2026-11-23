@@ -1585,13 +1585,13 @@ isOneToOne: false
                   ]
                 },"companies": {
                   Row: {
-                    "archive_reason": string | null,"archived_at": string | null,"archived_by": string | null,"cif": string | null,"cohort_id": string | null,"constitucion_prevista": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"entry_state": Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct": number | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"founded_on": string | null,"id": string,"is_demo": boolean,"logo_path": string | null,"name": string,"one_liner": string | null,"organization_id": string,"phase_id": string | null,"sector": string | null,"situacion_confirmada_at": string | null,"situacion_confirmada_por": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"slug": string,"stage": Database["public"]['Enums']["company_stage"] | null,"tech_profile": Database["public"]['Enums']["company_tech_profile"] | null,"tramo": Database["public"]['Enums']["tramo_compania"],"updated_at": string,"website": string | null
+                    "archive_reason": string | null,"archived_at": string | null,"archived_by": string | null,"cerrada_at": string | null,"cerrada_on": string | null,"cerrada_por": string | null,"cierre": string | null,"cierre_motivo": string | null,"cif": string | null,"cohort_id": string | null,"constitucion_prevista": string | null,"created_at": string,"created_by": string | null,"denominacion_social": string | null,"entry_state": Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct": number | null,"forma_juridica": Database["public"]['Enums']["forma_juridica"] | null,"founded_on": string | null,"id": string,"is_demo": boolean,"logo_path": string | null,"name": string,"one_liner": string | null,"organization_id": string,"phase_id": string | null,"sector": string | null,"situacion_confirmada_at": string | null,"situacion_confirmada_por": string | null,"situacion_societaria": Database["public"]['Enums']["situacion_societaria"] | null,"slug": string,"stage": Database["public"]['Enums']["company_stage"] | null,"tech_profile": Database["public"]['Enums']["company_tech_profile"] | null,"tramo": Database["public"]['Enums']["tramo_compania"],"updated_at": string,"website": string | null
                   }
                   Insert: {
-                    "archive_reason"?: string | null,"archived_at"?: string | null,"archived_by"?: string | null,"cif"?: string | null,"cohort_id"?: string | null,"constitucion_prevista"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"entry_state"?: Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct"?: number | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"founded_on"?: string | null,"id"?: string,"is_demo"?: boolean,"logo_path"?: string | null,"name": string,"one_liner"?: string | null,"organization_id": string,"phase_id"?: string | null,"sector"?: string | null,"situacion_confirmada_at"?: string | null,"situacion_confirmada_por"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"slug": string,"stage"?: Database["public"]['Enums']["company_stage"] | null,"tech_profile"?: Database["public"]['Enums']["company_tech_profile"] | null,"tramo"?: Database["public"]['Enums']["tramo_compania"],"updated_at"?: string,"website"?: string | null
+                    "archive_reason"?: string | null,"archived_at"?: string | null,"archived_by"?: string | null,"cerrada_at"?: string | null,"cerrada_on"?: string | null,"cerrada_por"?: string | null,"cierre"?: string | null,"cierre_motivo"?: string | null,"cif"?: string | null,"cohort_id"?: string | null,"constitucion_prevista"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"entry_state"?: Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct"?: number | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"founded_on"?: string | null,"id"?: string,"is_demo"?: boolean,"logo_path"?: string | null,"name": string,"one_liner"?: string | null,"organization_id": string,"phase_id"?: string | null,"sector"?: string | null,"situacion_confirmada_at"?: string | null,"situacion_confirmada_por"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"slug": string,"stage"?: Database["public"]['Enums']["company_stage"] | null,"tech_profile"?: Database["public"]['Enums']["company_tech_profile"] | null,"tramo"?: Database["public"]['Enums']["tramo_compania"],"updated_at"?: string,"website"?: string | null
                   }
                   Update: {
-                    "archive_reason"?: string | null,"archived_at"?: string | null,"archived_by"?: string | null,"cif"?: string | null,"cohort_id"?: string | null,"constitucion_prevista"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"entry_state"?: Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct"?: number | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"founded_on"?: string | null,"id"?: string,"is_demo"?: boolean,"logo_path"?: string | null,"name"?: string,"one_liner"?: string | null,"organization_id"?: string,"phase_id"?: string | null,"sector"?: string | null,"situacion_confirmada_at"?: string | null,"situacion_confirmada_por"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"slug"?: string,"stage"?: Database["public"]['Enums']["company_stage"] | null,"tech_profile"?: Database["public"]['Enums']["company_tech_profile"] | null,"tramo"?: Database["public"]['Enums']["tramo_compania"],"updated_at"?: string,"website"?: string | null
+                    "archive_reason"?: string | null,"archived_at"?: string | null,"archived_by"?: string | null,"cerrada_at"?: string | null,"cerrada_on"?: string | null,"cerrada_por"?: string | null,"cierre"?: string | null,"cierre_motivo"?: string | null,"cif"?: string | null,"cohort_id"?: string | null,"constitucion_prevista"?: string | null,"created_at"?: string,"created_by"?: string | null,"denominacion_social"?: string | null,"entry_state"?: Database["public"]['Enums']["estado_entrada"] | null,"female_leadership_pct"?: number | null,"forma_juridica"?: Database["public"]['Enums']["forma_juridica"] | null,"founded_on"?: string | null,"id"?: string,"is_demo"?: boolean,"logo_path"?: string | null,"name"?: string,"one_liner"?: string | null,"organization_id"?: string,"phase_id"?: string | null,"sector"?: string | null,"situacion_confirmada_at"?: string | null,"situacion_confirmada_por"?: string | null,"situacion_societaria"?: Database["public"]['Enums']["situacion_societaria"] | null,"slug"?: string,"stage"?: Database["public"]['Enums']["company_stage"] | null,"tech_profile"?: Database["public"]['Enums']["company_tech_profile"] | null,"tramo"?: Database["public"]['Enums']["tramo_compania"],"updated_at"?: string,"website"?: string | null
                   }
                   Relationships: [
                     {
@@ -1609,6 +1609,24 @@ isOneToOne: false
     },{
       foreignKeyName: "companies_archived_by_fkey"
       columns: ["archived_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "companies_cerrada_por_fkey"
+      columns: ["cerrada_por"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "companies_cerrada_por_fkey"
+      columns: ["cerrada_por"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "companies_cerrada_por_fkey"
+      columns: ["cerrada_por"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -5315,6 +5333,9 @@ isOneToOne: false
 "anadir_enlace_con_token":
 { Args: { "p_titulo": string,"p_token": string,"p_url": string }; Returns: undefined
                            },
+"anexo_firmado_tras_cierre":
+{ Args: { "p_annex": string }; Returns: Json
+                           },
 "anular_sesion":
 { Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
                            },
@@ -5350,6 +5371,9 @@ isOneToOne: false
                            },
 "cambiar_mentor_principal":
 { Args: { "p_company": string,"p_mentor": string }; Returns: undefined
+                           },
+"cerrar_compania":
+{ Args: { "p_cierre": string,"p_company": string,"p_fecha": string,"p_motivo": string }; Returns: undefined
                            },
 "comentar_hito":
 { Args: { "p_hito": string,"p_nota": string }; Returns: undefined
@@ -5402,6 +5426,9 @@ isOneToOne: false
                            },
 "decidir_sesion":
 { Args: { "p_horas"?: Json,"p_motivo": string,"p_sesion": string }; Returns: undefined
+                           },
+"documentos_tras_cierre":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "editar_acta_sesion":
 { Args: { "p": Json,"p_horas"?: Json,"p_motivo"?: string,"p_sesion": string }; Returns: boolean

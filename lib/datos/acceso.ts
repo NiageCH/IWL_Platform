@@ -23,3 +23,13 @@ export async function puedeVerCompania(slug: string): Promise<boolean> {
 
   return data !== null;
 }
+
+/**
+ * Si la compañía está cerrada (bloque 8). Solo dirección la puede leer, así
+ * que para el resto la respuesta es «no la encuentro», que ya acaba en 404.
+ */
+export async function companiaCerrada(slug: string): Promise<boolean> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase.from("companies").select("cierre").eq("slug", slug).maybeSingle();
+  return Boolean(data?.cierre);
+}

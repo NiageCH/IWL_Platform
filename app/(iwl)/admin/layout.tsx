@@ -25,6 +25,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
     { icono: "evaluacion", href: "/admin/evaluacion", nombre: "Evaluación técnica" },
     { icono: "umbrales", href: "/admin/programa", nombre: "Programa y umbrales" },
     { icono: "correos", href: "/admin/correos", nombre: "Correos" },
+    { icono: "historico", href: "/admin/historico", nombre: "Histórico" },
   ];
 
   return (

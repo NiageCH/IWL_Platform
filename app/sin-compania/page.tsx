@@ -1,6 +1,34 @@
 import { BarraSuperior } from "@/components/barra-superior";
 import { Marco } from "@/components/marco";
-import { personaActual } from "@/lib/supabase/servidor";
+import { clienteServidor, personaActual } from "@/lib/supabase/servidor";
+import { nombreCierre } from "@/lib/cierre";
+import { fecha } from "@/lib/utils";
+
+interface CerradaConDocumentos {
+  compania: string;
+  cierre: string;
+  cerrada_on: string;
+  nda: string | null;
+  anexos: Array<{ id: string; version: number; firmado_on: string | null }>;
+}
+
+/**
+ * Lo que conserva una fundadora de una compañía cerrada (bloque 8): sus
+ * documentos firmados. La base dice cuáles (`documentos_tras_cierre`); el
+ * NDA se firma con la sesión, y el Anexo sale de su copia firmada.
+ */
+async function leerCerradas(): Promise<Array<CerradaConDocumentos & { ndaUrl: string | null }>> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase.rpc("documentos_tras_cierre");
+  const filas = (data ?? []) as unknown as CerradaConDocumentos[];
+  return Promise.all(
+    filas.map(async (f) => {
+      if (!f.nda) return { ...f, ndaUrl: null };
+      const { data: firmada } = await supabase.storage.from("candidaturas").createSignedUrl(f.nda, 600);
+      return { ...f, ndaUrl: firmada?.signedUrl ?? null };
+    }),
+  );
+}
 
 export const metadata = { title: "Sin compañía asignada · Plataforma IWL" };
 
@@ -13,6 +41,56 @@ export const metadata = { title: "Sin compañía asignada · Plataforma IWL" };
 export default async function SinCompania() {
   const persona = await personaActual();
   const esDesarrollo = process.env.NODE_ENV === "development";
+  const cerradas = persona?.role === "fundadora" ? await leerCerradas() : [];
+
+  if (cerradas.length) {
+    return (
+      <Marco tema="claro">
+        <BarraSuperior />
+        <main className="mx-auto w-full max-w-2xl px-6 py-16">
+          <div className="relative pl-4">
+            <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
+            <h1 className="text-lg font-semibold tracking-tight text-titular">Tu paso por el programa ha terminado</h1>
+            <p className="mt-2 text-sm text-secundario">
+              La compañía ya no está en la plataforma. Te quedan tus documentos firmados, para descargarlos cuando los
+              necesites.
+            </p>
+          </div>
+          {cerradas.map((c) => (
+            <section key={c.compania} className="tarjeta mt-8 flex flex-col gap-3 px-5 py-4" aria-label={c.compania}>
+              <p className="text-sm">
+                <span className="font-medium text-titular">{c.compania}</span>
+                <span className="text-metadato">
+                  {" "}
+                  · {nombreCierre(c.cierre)} el {fecha(c.cerrada_on)}
+                </span>
+              </p>
+              <ul className="flex flex-col gap-2 text-sm">
+                {c.ndaUrl ? (
+                  <li>
+                    <a href={c.ndaUrl} className="enlace text-acento-texto" target="_blank" rel="noreferrer">
+                      NDA aceptado (PDF)
+                    </a>
+                  </li>
+                ) : null}
+                {c.anexos.map((a) => (
+                  <li key={a.id}>
+                    <a href={`/anexo/${a.id}`} className="enlace text-acento-texto" target="_blank" rel="noreferrer">
+                      Acuerdo y Anexo de Programa, versión {a.version}
+                      {a.firmado_on ? `, firmado el ${fecha(a.firmado_on)}` : ""} (PDF)
+                    </a>
+                  </li>
+                ))}
+                {!c.ndaUrl && !c.anexos.length ? (
+                  <li className="text-secundario">No hay documentos firmados guardados. Si necesitas alguno, pídeselo a IWL.</li>
+                ) : null}
+              </ul>
+            </section>
+          ))}
+        </main>
+      </Marco>
+    );
+  }
 
   return (
     <Marco tema="claro">

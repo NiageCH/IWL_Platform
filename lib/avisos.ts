@@ -186,8 +186,9 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         paso: `${sitio} cerró el tramo 4 el ${dia(a.created_at)}: proyecto listo para valorar si es invertible`,
         toca: "Valorar si es invertible",
         verbo: "Valorar",
-        href: ficha("/ruta", "seguimiento"),
-        ancla: "seguimiento",
+        // Si lo es, se gradúa: el cierre, en su ficha (bloque 8)
+        href: ficha("", "cierre"),
+        ancla: "cierre",
         hasVenidoA: `valorar si ${sitio} es invertible`,
       };
     case "plazo_vencido":
@@ -196,8 +197,8 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         paso: `A ${sitio} se le ha acabado el plazo máximo de su hoja de ruta`,
         toca: "Decidir el cierre",
         verbo: "Revisar",
-        href: ficha("/ruta", "seguimiento"),
-        ancla: "seguimiento",
+        href: ficha("", "cierre"),
+        ancla: "cierre",
         hasVenidoA: `decidir qué se hace con ${sitio}, que ha agotado su plazo`,
       };
     case "cambio_estadio":

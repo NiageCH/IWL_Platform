@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Archive,
   BarChart3,
   Building2,
   CalendarCheck,
@@ -64,6 +65,7 @@ export const ICONOS = {
   correos: Mail,
   sesiones: CalendarCheck,
   guia: BookOpen,
+  historico: Archive,
 } satisfies Record<NombreIcono, LucideIcon>;
 
 export type Seccion = {

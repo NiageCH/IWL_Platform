@@ -28,7 +28,17 @@ export async function leerEmbudo() {
     ? await supabase.from("candidaturas").select("id, sector_otro, filtro").in("id", ids)
     : { data: [] as { id: string; sector_otro: string | null; filtro: string | null }[] };
   const deFiltro = new Map((filtros ?? []).map((f) => [f.id, f]));
-  const filas = (candidaturas ?? []).map((c) => {
+  /*
+   * Las de una compañía cerrada salen del embudo (bloque 8): cerrada, solo
+   * la ve dirección, en el Histórico. Para el equipo la compañía ya no se
+   * lee, así que no aparece; para dirección se mira su cierre.
+   */
+  const companias = [...new Set((candidaturas ?? []).map((c) => c.company_id).filter((x): x is string => Boolean(x)))];
+  const { data: vivas } = companias.length
+    ? await supabase.from("companies").select("id, cierre").in("id", companias)
+    : { data: [] as { id: string; cierre: string | null }[] };
+  const sinCerrar = new Set((vivas ?? []).filter((c) => !c.cierre).map((c) => c.id));
+  const filas = (candidaturas ?? []).filter((c) => !c.company_id || sinCerrar.has(c.company_id)).map((c) => {
     const f = deFiltro.get(c.id!);
     return {
       ...c,

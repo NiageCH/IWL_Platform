@@ -80,7 +80,10 @@ export default async function AdminCompanias() {
     horas_comprometidas: Number(p.horas_comprometidas ?? 0),
   }));
 
-  const todas = companias.data ?? [];
+  // Las cerradas viven en el Histórico (bloque 8): aquí, con «Restaurar» al lado, no
+  const { data: cerradas } = await supabase.from("companies").select("id").not("cierre", "is", null);
+  const idsCerradas = new Set((cerradas ?? []).map((c) => c.id));
+  const todas = (companias.data ?? []).filter((c) => !idsCerradas.has(c.id!));
 
   /*
    * Qué hay dentro de las que tienen trabajo registrado.
@@ -90,7 +93,7 @@ export default async function AdminCompanias() {
    * borrar con histórico diga exactamente qué se destruye, en vez de
    * pedir una confirmación a ciegas.
    */
-  const conActividad = (companias.data ?? []).filter((c) => c.tiene_actividad);
+  const conActividad = todas.filter((c) => c.tiene_actividad);
   const contenidos = new Map<string, Record<string, number>>(
     await Promise.all(
       conActividad.map(async (c) => {

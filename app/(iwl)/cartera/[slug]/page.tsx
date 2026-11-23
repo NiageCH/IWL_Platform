@@ -14,6 +14,9 @@ import { leerEntrada, leerFichaEntrada, leerMentorPrincipal } from "@/lib/datos/
 import { leerMentores } from "@/lib/datos/comite";
 import { leerCorreos } from "@/lib/datos/correos";
 import { BloqueCorreos } from "@/components/vistas/correos";
+import { CerrarCompania } from "@/components/formularios/cierre";
+import { leerSeguimiento } from "@/lib/datos/hoja";
+import { Bloque, TituloBloque } from "@/components/ui/primitivas";
 
 export default async function ResumenCompania({ params, searchParams }: PageProps<"/cartera/[slug]">) {
   const { slug } = await params;
@@ -36,6 +39,10 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
   const [mentor, mentores] = enEntrada
     ? await Promise.all([leerMentorPrincipal(resumen.compania.id), leerMentores()])
     : [null, []];
+  // Cerrarla es de dirección, y solo con la compañía ya en el programa (bloque 8)
+  const cierraDireccion = persona?.role === "admin_iwl" && resumen.compania.tramo === "incubacion";
+  const seguimiento = cierraDireccion ? await leerSeguimiento(resumen.compania.id) : null;
+  const tramo4Cerrado = Boolean(seguimiento?.tramos.some((t) => t.tramo === 4 && t.cerrado));
   // Los correos de la compañía —el Acuerdo propuesto, las respuestas—, para IWL
   const correos = esIwl(persona?.role) ? await leerCorreos({ companyId: resumen.compania.id }) : null;
 
@@ -80,6 +87,22 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
           <div className="mt-8">
             <BloqueCorreos correos={correos} />
           </div>
+        ) : null}
+        {cierraDireccion ? (
+          <Bloque id="cierre" className="mt-8 scroll-mt-48">
+            <TituloBloque>Cierre</TituloBloque>
+            <p className="px-4 py-3 text-sm text-secundario">
+              {tramo4Cerrado
+                ? "Ha cerrado el tramo 4: toca valorar si es invertible. Si lo es, se gradúa."
+                : "Cuando termine en el programa: graduada si es invertible, salida si acaba el plazo sin serlo, baja si no sigue."}
+            </p>
+            <CerrarCompania
+              companyId={resumen.compania.id}
+              nombre={resumen.compania.name}
+              sugerida={tramo4Cerrado ? "graduada" : null}
+              hoy={new Date().toISOString().slice(0, 10)}
+            />
+          </Bloque>
         ) : null}
       </main>
     </>

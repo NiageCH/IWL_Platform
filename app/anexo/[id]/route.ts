@@ -17,7 +17,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const supabase = await clienteServidor();
   const { data: anexo } = await supabase.from("annexes").select("*").eq("id", id).maybeSingle();
-  if (!anexo) return new Response("Ese Anexo no está, o no lo puedes ver.", { status: 404 });
+  if (!anexo) {
+    // La fundadora de una compañía cerrada ya no la lee, pero conserva su
+    // Anexo firmado (bloque 8): la base se lo da, tal como se firmó
+    const { data: firmado } = await supabase.rpc("anexo_firmado_tras_cierre", { p_annex: id });
+    if (!firmado) return new Response("Ese Anexo no está, o no lo puedes ver.", { status: 404 });
+    return pdfDeCopia(firmado as unknown as { compania: string; version: number; contenido: Record<string, unknown> });
+  }
 
   const { data: co } = await supabase
     .from("companies")
@@ -81,8 +87,36 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   };
 
   const pdf = await generarPdfAnexo(datos);
+  return respuestaPdf(pdf, co?.name ?? "compania", anexo.version);
+}
+
+/** El PDF solo con la copia firmada: lo que ve quien ya no lee la compañía */
+async function pdfDeCopia(f: { compania: string; version: number; contenido: Record<string, unknown> }) {
+  const c = f.contenido;
+  const num = (x: unknown) => (x === null || x === undefined || x === "" ? null : Number(x));
+  const pdf = await generarPdfAnexo({
+    compania: f.compania,
+    version: f.version,
+    estado: "firmado",
+    origen: "firmado",
+    firmadoEl: (c.signed_on as string | null) ?? null,
+    duracionMeses: num(c.duration_months),
+    inicio: (c.starts_on as string | null) ?? null,
+    fin: (c.ends_on as string | null) ?? null,
+    horas: num(c.committed_hours),
+    valorHoras: num(c.committed_hours_value),
+    financiacion: num(c.committed_cash),
+    equityPct: num(c.equity_pct),
+    otros: (c.other_commitments as string | null) ?? null,
+    plazoMeses: num(c.plazo_meses),
+    hoja: (c.hoja_de_ruta as TramoPdf[] | undefined) ?? [],
+  });
+  return respuestaPdf(pdf, f.compania, f.version);
+}
+
+function respuestaPdf(pdf: Uint8Array, compania: string, version: number) {
   // Una cabecera solo admite ASCII: «Raíz» rompía la respuesta
-  const nombre = `IWL_AnexoPrograma_${(co?.name ?? "compania").normalize("NFD").replace(/[^A-Za-z0-9]+/g, "")}_v${anexo.version}.pdf`;
+  const nombre = `IWL_AnexoPrograma_${compania.normalize("NFD").replace(/[^A-Za-z0-9]+/g, "")}_v${version}.pdf`;
   return new Response(Buffer.from(pdf), {
     headers: {
       "content-type": "application/pdf",

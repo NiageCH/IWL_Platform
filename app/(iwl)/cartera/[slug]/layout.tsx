@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound, redirect } from "next/navigation";
 import { personaActual } from "@/lib/supabase/servidor";
-import { capacidades } from "@/lib/permisos";
-import { puedeVerCompania } from "@/lib/datos/acceso";
+import { companiaCerrada, puedeVerCompania } from "@/lib/datos/acceso";
 
 /**
  * El cerrojo de arriba de la ficha de una compañía.
@@ -29,9 +28,18 @@ export default async function LayoutCompania({
   if (!persona) redirect("/entrar");
 
   const { slug } = await params;
-  const c = capacidades(persona.role);
 
-  if (!c.verTodaLaCartera && !(await puedeVerCompania(slug))) notFound();
+  // También para IWL: una compañía cerrada ya no la lee el equipo (bloque
+  // 8), y sin esto la ficha acababa redirigiendo en vez de decir 404
+  if (!(await puedeVerCompania(slug))) notFound();
+
+  // Cerrada, solo la lee dirección, y en el Histórico (bloque 8): la ficha
+  // tiene botones que la base ya no acepta, así que no se abre
+  const cerrada = await companiaCerrada(slug);
+  if (cerrada) {
+    if (persona.role === "admin_iwl") redirect(`/admin/historico#${slug}`);
+    notFound();
+  }
 
   return <>{children}</>;
 }
