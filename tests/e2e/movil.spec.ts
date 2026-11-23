@@ -58,12 +58,12 @@ test("en las pantallas de IWL el menú se despliega entero, sin recortes", async
   await entrarComo(page, USUARIOS.admin, "/cartera");
   const ancho = page.viewportSize()!.width;
 
-  for (const ruta of ["/cartera", "/embudo", "/admin/rutas", "/admin/companias", "/cartera/marea-clinica", "/guia"]) {
+  for (const ruta of ["/cartera", "/embudo", "/admin/rutas", "/admin/companias", "/cartera/marea-clinica", "/cartera/marea-clinica/ruta", "/guia"]) {
     await page.goto(ruta);
     const barra = page.locator(".barra-superior");
     // Plegado: la barra es una sola fila y ninguna pestaña asoma
     expect((await barra.boundingBox())!.height).toBeLessThan(80);
-    await expect(page.getByRole("link", { name: "Embudo", exact: true })).toBeHidden();
+    await expect(barra.getByRole("link", { name: "Embudo", exact: true })).toBeHidden();
 
     await page.getByRole("button", { name: /Menú/ }).click();
     const menu = page.locator("#menu-movil");
