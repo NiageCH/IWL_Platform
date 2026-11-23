@@ -7,6 +7,83 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Bloque 9: la guía y los avisos · commit 093591a
+**Qué cambió**
+- Las siete guías de `contenido/guia/`, al día con el modelo nuevo:
+  - **candidata**: el NDA con casilla al empezar, la candidatura con socios y prueba del estadio, y el filtro con la recomendación en idea. La guía todavía decía «Firmar el NDA» y que lo contrafirmaba IWL.
+  - **fundadora**: contestar su lista (Diagnóstico o «Lo que ya tenéis»), los cuatro tramos con su plazo máximo, el Anexo en PDF y qué pasa cuando termina el programa.
+  - **mentor**: entra desde la preselección, verifica la lista y prepara la hoja de ruta con el asistente en tres pasos. Sustituye a «Crear la hoja de ruta, desde un recorrido».
+  - **equipo y dirección**: el filtro y cómo sacar a una candidata del «no pasa», la recomendación, el mentor en el acta y en la decisión, lo fundamental, el cierre y el Histórico. Dirección ya no contrafirma el NDA.
+  - **lector y revisor**: «hasta que se gradúa» pasa a «hasta que termina el programa», y en la hoja de ruta, el tramo y el plazo.
+- `docs/AVISOS.md`:
+  - salen «NDA firmado» y «Comentario al NDA», que ya no se crean desde el 22 nov;
+  - «Cambio de vía» pasa a «Cambio de estadio»;
+  - el cierre cierra los avisos de la compañía;
+  - «Listo para valorar si es invertible» y «Plazo vencido» llevan al cierre.
+
+**Qué decidí yo**
+- En las guías, «etapa» se queda solo donde es la etapa de inversión («todo se mide contra la etapa en la que estás»). Es otra cosa que el tramo.
+- Los tipos `nda_firmado` y `nda_comentario` siguen en el código, como los de «Los que salen de avisos»: pueden quedar en el historial.
+
+**Qué necesito que decidas**
+1. Ninguna pregunta nueva de este bloque.
+
+**Estado**
+- Los bloques 8 y 9, verificados juntos sobre el último commit:
+  - unitarias: 339;
+  - RLS: 303, dos veces;
+  - interfaz: 462 dos veces, con 4 saltadas;
+  - tsc y lint limpios.
+- Un primer intento de esta verificación falló al arrancar: la base aún se estaba reiniciando tras parar una pasada mal lanzada, y los tipos se regeneraron vacíos. Se restauraron los tipos del commit, sin cambiar nada del código, y la verificación se repitió entera.
+- Sin desplegar. Pendientes de subir, todas juntas como pediste:
+  - las migraciones `20261122100000` (modo pruebas del correo), `20261123100000`, `20261123110000`, `20261124100000` y `20261125100000`;
+  - las de los bloques 1 a 7 que no se hayan subido todavía.
+- El modo pruebas del correo está hecho (9c026aa) y va en ese mismo despliegue.
+
+**Siguiente**
+- Tu revisión de los bloques 8 y 9.
+- Después, el despliegue conjunto, cuando lo digas.
+
+---
+
+## 2026-11-23 · Bloque 8: el cierre, graduada o finalizada · commit 8bad86d
+**Qué cambió**
+- Dirección cierra una compañía desde su ficha (bloque **Cierre**, al final): **Graduada**, **Finalizada · Salida** o **Finalizada · Baja**, con fecha y motivo.
+- Cerrada:
+  - solo la lee dirección, y la ficha la lleva a **Administración → Histórico**;
+  - nadie la edita, tampoco dirección ni la clave de servicio;
+  - se archiva y se cierran sus avisos abiertos;
+  - sale del embudo y de la lista de compañías de Administración.
+- El Histórico enseña cómo terminó cada una, cuándo, quién la cerró, el motivo y el enlace al Anexo firmado en PDF.
+- La fundadora pierde el acceso. Al entrar ve «Tu paso por el programa ha terminado», con el NDA aceptado y el Acuerdo con su Anexo para descargar.
+- «Listo para valorar si es invertible» y «Plazo vencido» llevan ahora al cierre, en vez de al seguimiento.
+- Pruebas: 5 de RLS y una de interfaz, con una compañía recién creada que se borra al acabar.
+
+**Qué decidí yo**
+- Cerrar también la archiva: así sale de todos los listados que ya filtraban las archivadas, sin repetir el filtro en cada uno.
+- Una compañía en entrada no se cierra: si no sigue, es «no se incorpora», en su decisión.
+- La fecha del cierre es hoy o antes.
+- Graduada no exige haber cerrado el tramo 4. Si lo ha cerrado, el formulario la propone; decide dirección.
+- No hay «reabrir». No se pidió, y el formulario avisa de que no tiene vuelta atrás.
+- Para que ella conserve sus documentos, la base le da su NDA (una política de Storage solo para ese fichero) y su Anexo firmado, sacado de la copia de la firma. No se usa la clave de servicio.
+- Ya conserva la descarga de los documentos firmados; si decides que no, se quita sin tocar nada más.
+
+**Qué necesito que decidas**
+1. ¿Se mantiene que la fundadora conserve la descarga de sus documentos firmados? Está hecho así; la revisión decía que lo confirmarías.
+2. ¿Hace falta poder reabrir una compañía cerrada por error? Ahora solo se puede borrar entera.
+3. Algunas políticas de solo IWL (Anexos, decisiones, candidaturas) no preguntan por el cierre. El equipo no llega a ellas desde la interfaz, porque la compañía ya no se le abre, pero sí con una llamada directa a la API. ¿Lo cierro también ahí, política por política?
+
+**Estado**
+- Unitarias: 339.
+- RLS: 303, dos veces.
+- Interfaz: la primera pasada, 462 en verde. En la segunda, 1 fallo por tiempo agotado en Safari móvil («la fundadora trabaja desde el móvil»), con la máquina cargada: esa pasada tardó 10,3 min frente a 6,8, y el servidor dio errores de flujo cortado. Repetida 4 veces en Safari móvil, 8 de 8 en verde. La verificación final de los dos bloques está en la entrada siguiente.
+- Sin desplegar. Hay una migración nueva: `20261125100000_cierre`.
+
+**Siguiente**
+- Bloque 9: guía y avisos.
+
+---
+
 ## 2026-11-23 · Bloque 5, segunda parte · commit 3435a79
 **Qué cambió**
 - Los cuatro retoques:
