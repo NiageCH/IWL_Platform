@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SeguimientoTramos } from "@/components/vistas/hoja";
-import { FechaHito, QuitarHito } from "@/components/formularios/lista-entrada";
+import { AccionesTramo, MenuHito } from "@/components/formularios/hoja-compania";
 import { finDelPlazo } from "@/lib/tramos";
 import { leerSeguimiento } from "@/lib/datos/hoja";
 import type { ResumenCompania } from "@/lib/datos/compania";
@@ -35,15 +35,7 @@ import {
 } from "@/components/formularios/hito";
 import { personaActual } from "@/lib/supabase/servidor";
 import { EstadoHito } from "@/components/formularios/programa";
-import {
-  BorrarAvance,
-  EditorEtapa,
-  NuevaEtapa,
-  NuevoAvance,
-  BorrarEtapa,
-  MoverHito,
-  NuevoHito,
-} from "@/components/formularios/ruta";
+import { BorrarAvance, NuevaEtapa, NuevoAvance } from "@/components/formularios/ruta";
 import {
   Bloque,
   Cifra,
@@ -319,130 +311,114 @@ function TarjetaEtapa({
   const cumplidos = etapa.hitos.filter((h) => h.estado === "cumplido").length;
   const estado = estadoVisual("etapa", { estado: etapa.estado, fin: etapa.fin });
 
+  /*
+   * La tarjeta del tramo con el patrón de Administración (REVISION, 23
+   * nov): la cabecera siempre a la vista, con su estado, sus cifras en
+   * chips y, para IWL, «Añadir hito» y el menú del tramo. Lo de dentro
+   * —objetivo, hitos y diario— se pliega salvo en el tramo en curso.
+   */
   return (
     <Bloque
       id={`etapa-${etapa.id}`}
       className={cn("scroll-mt-24 border-l-2 filete-estado", `es-${estado}`)}
     >
-      <details open={abierta}>
-        <summary className="desplegable-titulo titulo-bloque flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-          <span
-            aria-hidden="true"
-            className="flecha-desplegable cifra text-acento-texto"
-          >
-            ›
+      <header className="titulo-bloque flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+        <h2 className="text-sm font-semibold tracking-tight text-titular">
+          {etapa.tramo ? `Tramo ${etapa.tramo} · ${etapa.nombre}` : `${etapa.orden + 1}. ${etapa.nombre}`}
+        </h2>
+        <Estado
+          valor={estado}
+          rotulo={ESTADOS_ETAPA[etapa.estado]}
+          motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
+        />
+        <span className="flex flex-1 flex-wrap items-center justify-end gap-2">
+          <span className="pastilla">
+            {etapa.hitos.length === 0 ? "Sin hitos" : `${cumplidos} de ${etapa.hitos.length} hitos`}
           </span>
-          <h2 className="text-sm font-semibold tracking-tight text-titular">
-            {etapa.tramo ? `Tramo ${etapa.tramo} · ${etapa.nombre}` : `${etapa.orden + 1}. ${etapa.nombre}`}
-          </h2>
-          <Estado
-            valor={estado}
-            rotulo={ESTADOS_ETAPA[etapa.estado]}
-            motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
-          />
-          <span className="flex-1" />
-          {/* Las cifras del tramo, para no tener que abrirlo solo por verlas */}
-          <Metadato>
-            {etapa.hitos.length === 0
-              ? "Sin hitos"
-              : `${cumplidos} de ${etapa.hitos.length} hitos`}
-          </Metadato>
-          <Metadato>
+          <span className="pastilla">
             {etapa.horasPrevistas === null
               ? `${numero(etapa.horasImputadas)} h`
               : `${numero(etapa.horasImputadas)} de ${numero(etapa.horasPrevistas)} h`}
-          </Metadato>
-          <Metadato>
-            {etapa.inicio && etapa.fin
-              ? `${fecha(etapa.inicio)} → ${fecha(etapa.fin)}`
-              : "Sin fechas"}
-          </Metadato>
+          </span>
+          <span className="pastilla cifra">
+            {etapa.inicio && etapa.fin ? `${fecha(etapa.inicio)} → ${fecha(etapa.fin)}` : "Sin fechas"}
+          </span>
+          {permisos.esIwl ? (
+            <AccionesTramo
+              slug={slug}
+              companyId={companyId}
+              esDireccion={permisos.esAdmin}
+              etapa={{
+                id: etapa.id,
+                tramo: etapa.tramo,
+                nombre: etapa.nombre,
+                objetivo: etapa.objetivo,
+                orden: etapa.orden,
+                inicio: etapa.inicio,
+                fin: etapa.fin,
+                estado: etapa.estado,
+                horasPrevistas: etapa.horasPrevistas,
+                cajaPrevista: etapa.cajaPrevista,
+                notas: etapa.notas,
+                hitos: etapa.hitos.length,
+              }}
+            />
+          ) : null}
+        </span>
+      </header>
+
+      <details open={abierta}>
+        <summary className="desplegable-titulo cursor-pointer border-t border-filete px-4 py-2.5 text-sm">
+          <span className="accion">{abierta ? "Hitos y diario del tramo" : "Ver los hitos y el diario"}</span>
         </summary>
 
-      <div className="flex flex-col gap-3 border-b border-filete px-4 py-3">
-        <p className="text-sm text-cuerpo">{etapa.objetivo}</p>
-        <dl className="flex flex-wrap gap-x-8 gap-y-2">
-          <Dato etiqueta="Plazo">
-            {etapa.inicio && etapa.fin
-              ? `${fecha(etapa.inicio)} → ${fecha(etapa.fin)}`
-              : "Sin fechas"}
-          </Dato>
-          <Dato etiqueta="Hitos">
-            {etapa.hitos.length === 0
-              ? "Ninguno"
-              : `${cumplidos} de ${etapa.hitos.length} cumplidos`}
-          </Dato>
-          <Dato etiqueta="Horas de IWL">
-            {etapa.horasPrevistas === null
-              ? `${numero(etapa.horasImputadas)} imputadas`
-              : `${numero(etapa.horasImputadas)} de ${numero(etapa.horasPrevistas)}${etapa.horasPct === null ? "" : ` · ${etapa.horasPct} %`}`}
-          </Dato>
-          {etapa.cajaPrevista ? (
-            <Dato etiqueta="Caja prevista">{euros(etapa.cajaPrevista)}</Dato>
+        <div className="flex flex-col gap-2 border-y border-filete px-4 py-3">
+          <p className="text-sm text-cuerpo">{etapa.objetivo}</p>
+          {etapa.cajaPrevista || etapa.horasPct !== null ? (
+            <p className="text-xs text-secundario">
+              {[
+                etapa.horasPct !== null ? `Horas de IWL al ${etapa.horasPct} %` : null,
+                etapa.cajaPrevista ? `Caja prevista ${euros(etapa.cajaPrevista)}` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
           ) : null}
-        </dl>
-        {etapa.notas ? (
-          <p className="text-xs text-secundario">{etapa.notas}</p>
-        ) : null}
-      </div>
-
-      {etapa.hitos.length === 0 ? (
-        <SinDatos>
-          Esta etapa no tiene hitos. Sin hitos con criterio de éxito, cerrarla
-          es una opinión.
-        </SinDatos>
-      ) : (
-        <ul className="divide-y divide-filete">
-          {etapa.hitos.map((h) => (
-            <li key={h.id} className="px-4 py-3">
-              <Hito
-                hito={h}
-                slug={slug}
-                permisos={permisos}
-                contexto={contexto}
-                stageId={etapa.id}
-                etapas={etapas}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <Diario
-        avances={avances}
-        slug={slug}
-        companyId={companyId}
-        stageId={etapa.id}
-        puedeEscribir={permisos.puedeEscribir}
-        esIwl={permisos.esIwl}
-      />
-
-      {permisos.esIwl ? (
-        <div className="flex flex-col gap-4 border-t border-filete px-4 py-3">
-          <NuevoHito slug={slug} companyId={companyId} stageId={etapa.id} />
-          <EditorEtapa
-            slug={slug}
-            etapa={{
-              id: etapa.id,
-              nombre: etapa.nombre,
-              objetivo: etapa.objetivo,
-              orden: etapa.orden,
-              inicio: etapa.inicio,
-              fin: etapa.fin,
-              estado: etapa.estado,
-              horasPrevistas: etapa.horasPrevistas,
-              cajaPrevista: etapa.cajaPrevista,
-              notas: etapa.notas,
-            }}
-          />
-          <BorrarEtapa
-            slug={slug}
-            id={etapa.id}
-            nombre={etapa.nombre}
-            hitos={etapa.hitos.length}
-          />
+          {etapa.notas ? <p className="text-xs text-secundario">{etapa.notas}</p> : null}
         </div>
-      ) : null}
+
+        {etapa.hitos.length === 0 ? (
+          <SinDatos>
+            {permisos.esIwl
+              ? "Este tramo no tiene hitos. Pulsa «Añadir hito»: sin hitos con criterio de éxito, cerrarlo es una opinión."
+              : "Este tramo no tiene hitos todavía."}
+          </SinDatos>
+        ) : (
+          <ol className="divide-y divide-filete">
+            {etapa.hitos.map((h, i) => (
+              <li key={h.id} className="px-4 py-3" data-fila-hito={h.titulo}>
+                <Hito
+                  hito={h}
+                  orden={i + 1}
+                  slug={slug}
+                  permisos={permisos}
+                  contexto={contexto}
+                  stageId={etapa.id}
+                  etapas={etapas}
+                />
+              </li>
+            ))}
+          </ol>
+        )}
+
+        <Diario
+          avances={avances}
+          slug={slug}
+          companyId={companyId}
+          stageId={etapa.id}
+          puedeEscribir={permisos.puedeEscribir}
+          esIwl={permisos.esIwl}
+        />
       </details>
     </Bloque>
   );
@@ -475,6 +451,7 @@ const TEXTO_REVISION: Record<RevisionHito["tipo"], string> = {
 
 function Hito({
   hito,
+  orden,
   slug,
   permisos,
   contexto,
@@ -482,6 +459,8 @@ function Hito({
   etapas = [],
 }: {
   hito: HitoDeEtapa;
+  /** Su número en el tramo; fuera de un tramo no lleva */
+  orden?: number;
   slug: string;
   permisos: NonNullable<ResumenCompania>["permisos"];
   contexto: ContextoHitos;
@@ -521,83 +500,159 @@ function Hito({
   const conSelector =
     hito.estado !== "entregado" &&
     (permisos.coordina || (permisos.puedeEscribir && hito.estado !== "cumplido"));
+  // El historial y los ajustes, en el panel del menú ⋯ (REVISION, 23 nov)
+  const hayAjustes = historial.length > 0 || permisos.coordina || permisos.acompana || permisos.esAdmin;
+  const ajustes = hayAjustes
+    ? {
+        texto: historial.length > 0 ? (permisos.coordina || permisos.acompana || permisos.esAdmin ? "Historial y ajustes" : "Historial") : "Ajustes del hito",
+        contenido: (
+          <>
+            {historial.length > 0 ? (
+              <ol className="flex flex-col gap-2">
+                {historial.map((r) => (
+                  <li key={r.id} className="border-l-2 border-l-filete pl-3">
+                    <p className="text-metadato">
+                      {TEXTO_REVISION[r.tipo]} el {fecha(r.cuando)}
+                      {/* Ella ve lo que le dicen; quién lo validó, IWL */}
+                      {r.autor && (!permisos.esFundadora || r.tipo === "entrega") ? ` · ${r.autor}` : ""}
+                    </p>
+                    {r.comentario ? <p className="whitespace-pre-line text-cuerpo">{r.comentario}</p> : null}
+                    {r.tipo === "entrega" && r.evidencias.length > 0 ? (
+                      <p className="text-metadato">
+                        Con: {r.evidencias.map((e) => e.label).join(", ")}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+
+            {permisos.acompana || (permisos.coordina && !revisa) ? <NotaHito slug={slug} id={hito.id} /> : null}
+
+            {permisos.coordina && hito.estado !== "cumplido" ? (
+              <RevisionDeHito
+                slug={slug}
+                id={hito.id}
+                requiere={hito.requiereValidacion}
+                obligatoria={economico || hito.condicionaInvertible}
+                revisorId={hito.revisorId}
+                acompanantes={contexto.acompanantes}
+              />
+            ) : null}
+
+            {permisos.esAdmin && hito.estado !== "cumplido" ? (
+              contexto.reparto.abierto ? (
+                <EfectoEconomicoHito
+                  slug={slug}
+                  id={hito.id}
+                  financiacion={hito.financiacion}
+                  financiacionPactada={contexto.reparto.financiacionPactada}
+                  financiacionLibre={libre(
+                    contexto.reparto.financiacionPactada,
+                    contexto.reparto.financiacionRepartida,
+                    hito.financiacion,
+                  )}
+                />
+              ) : (
+                <p className="text-metadato">
+                  {contexto.reparto.hayAnexo
+                    ? "El equity y la financiación de los hitos quedan fijos con el Anexo propuesto o firmado. Para cambiarlos, abre una versión nueva del Anexo."
+                    : "Para marcar un hito con equity o financiación, abre antes el Anexo de Programa."}
+                </p>
+              )
+            ) : null}
+          </>
+        ),
+      }
+    : undefined;
+  // Ajustar el hito —su fecha, quitarlo—: quien coordina, mientras no esté cumplido
+  const ajusta =
+    permisos.coordina &&
+    stageId !== null &&
+    hito.estado !== "cumplido" &&
+    (!hito.fundamental || !contexto.firmado || permisos.esAdmin);
 
   return (
     <div id={`hito-${hito.id}`} className="flex scroll-mt-24 flex-col gap-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-sm text-titular">{hito.titulo}</span>
-            {hito.condicionaInvertible ? <Etiqueta>Condiciona invertible</Etiqueta> : null}
-            {hito.financiacion !== null ? <Etiqueta>Libera {euros(hito.financiacion)}</Etiqueta> : null}
-            {!hito.requiereValidacion ? <Etiqueta>Sin validación</Etiqueta> : null}
+      {/*
+        La fila, como las de Administración (REVISION, 23 nov): número,
+        título en negrita, el criterio en gris si no repite el título, sus
+        chips, y a la derecha la fecha, el estado y el menú ⋯. Cambiar la
+        fecha, moverlo y quitarlo van en el menú y se hacen en el panel.
+      */}
+      <div className="flex items-start gap-3">
+        {orden ? (
+          <span className="cifra w-6 shrink-0 pt-0.5 text-right text-sm text-metadato">{orden}</span>
+        ) : null}
+        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className="text-sm font-semibold text-titular">{hito.titulo}</p>
+            {hito.criterio.trim() !== hito.titulo.trim() ? (
+              <p className="text-xs text-secundario">{hito.criterio}</p>
+            ) : null}
+            {hito.evidencia ? <p className="text-xs text-metadato">Se espera: {hito.evidencia}</p> : null}
+            {hito.condicionaInvertible || hito.financiacion !== null || !hito.requiereValidacion ? (
+              <div className="mt-0.5 flex flex-wrap gap-1.5">
+                {hito.condicionaInvertible ? <span className="pastilla">Condiciona invertible</span> : null}
+                {hito.financiacion !== null ? <span className="pastilla">Libera {euros(hito.financiacion)}</span> : null}
+                {!hito.requiereValidacion ? <span className="pastilla">Sin validación</span> : null}
+              </div>
+            ) : null}
           </div>
-          <p className="text-xs text-secundario">{hito.criterio}</p>
-          {hito.evidencia ? (
-            <p className="text-xs text-metadato">Se espera: {hito.evidencia}</p>
-          ) : null}
-        </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          <span className={cn("cifra text-xs", vencido ? "es-vencido texto-estado" : "text-metadato")}>
-            {hito.estado === "cumplido" && hito.completadoEl
-              ? fecha(hito.completadoEl)
-              : hito.estado === "entregado" && hito.entregadoEl
-                ? `Entregado el ${fecha(hito.entregadoEl)}`
-                : hito.fecha
-                  ? fecha(hito.fecha)
-                  : "Sin fecha"}
-          </span>
-          {/*
-            El estado se ve siempre, se pueda tocar o no. Quien podía
-            editarlo solo tenía delante un desplegable gris: el estado estaba
-            escrito, pero no se veía. Con el control delante va solo el
-            icono, que si no la fila dice «Cumplido» dos veces.
-          */}
-          {conSelector ? (
-            <>
-              <Estado valor={visual} soloIcono />
-              <EstadoHito
-                slug={slug}
-                id={hito.id}
-                estado={hito.estado}
-                visual={visual}
-                // Con efecto económico, cumplido solo por «Validar»
-                puedeConfirmar={permisos.coordina && !economico}
-              />
-            </>
-          ) : (
-            <Estado valor={visual} rotulo={rotulo} />
-          )}
-          {/* Mover de carril: la acción existía y no había por dónde llamarla,
-              así que un hito creado donde no tocaba se quedaba ahí */}
-          {permisos.esIwl ? (
-            <MoverHito slug={slug} id={hito.id} stageId={stageId} etapas={etapas} />
-          ) : null}
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <span className={cn("cifra text-xs", vencido ? "es-vencido texto-estado" : "text-metadato")}>
+              {hito.estado === "cumplido" && hito.completadoEl
+                ? fecha(hito.completadoEl)
+                : hito.estado === "entregado" && hito.entregadoEl
+                  ? `Entregado el ${fecha(hito.entregadoEl)}`
+                  : hito.fecha
+                    ? fecha(hito.fecha)
+                    : "Sin fecha"}
+            </span>
+            {/*
+              El estado se ve siempre, se pueda tocar o no. Con el control
+              delante va solo el icono, que si no la fila dice «Cumplido» dos
+              veces.
+            */}
+            {conSelector ? (
+              <>
+                <Estado valor={visual} soloIcono />
+                <EstadoHito
+                  slug={slug}
+                  id={hito.id}
+                  estado={hito.estado}
+                  visual={visual}
+                  // Con efecto económico, cumplido solo por «Validar»
+                  puedeConfirmar={permisos.coordina && !economico}
+                />
+              </>
+            ) : (
+              <Estado valor={visual} rotulo={rotulo} />
+            )}
+            {/*
+              Tras la firma, uno fundamental solo lo toca dirección, con
+              motivo (REVISION, 23 nov); la base lo exige igual.
+            */}
+            <MenuHito
+              slug={slug}
+              hito={{ id: hito.id, titulo: hito.titulo, fecha: hito.fecha, fundamental: hito.fundamental }}
+              fecha={
+                ajusta
+                  ? {
+                      finPlazo: contexto.finPlazo,
+                      esDireccion: permisos.esAdmin,
+                      pideMotivo: hito.fundamental && contexto.firmado,
+                    }
+                  : undefined
+              }
+              mover={permisos.esIwl ? { stageId, etapas } : undefined}
+              quitar={ajusta && (!hito.fundamental || permisos.esAdmin)}
+              ajustes={ajustes}
+            />
+          </div>
         </div>
       </div>
-
-      {/*
-        Ajustar el hito: su fecha y quitarlo, para quien coordina. Tras la
-        firma, uno fundamental solo lo toca dirección, con motivo
-        (REVISION, 23 nov); la base lo exige igual.
-      */}
-      {permisos.coordina && stageId && hito.estado !== "cumplido" && (!hito.fundamental || !contexto.firmado || permisos.esAdmin) ? (
-        <div className="flex flex-wrap items-start gap-x-3 gap-y-2 text-xs">
-          <span className="pt-1.5 text-metadato">Fecha prevista</span>
-          <FechaHito
-            id={hito.id}
-            slug={slug}
-            actual={hito.fecha}
-            finPlazo={contexto.finPlazo}
-            esDireccion={permisos.esAdmin}
-            pideMotivo={hito.fundamental && contexto.firmado}
-          />
-          {!hito.fundamental || permisos.esAdmin ? (
-            <QuitarHito id={hito.id} slug={slug} fundamental={hito.fundamental} />
-          ) : null}
-        </div>
-      ) : null}
 
       {/* Lo último que dijo quien revisa, cuando ella tiene que volver a entregar */}
       {cambiosPendientes?.tipo === "cambios" ? (
@@ -656,69 +711,6 @@ function Hito({
         </p>
       ) : null}
 
-      {historial.length > 0 || permisos.coordina || permisos.acompana || permisos.esAdmin ? (
-        <details className="text-xs">
-          <summary className="accion inline-flex cursor-pointer">
-            {historial.length > 0 ? `Historial y ajustes (${historial.length})` : "Ajustes del hito"}
-          </summary>
-          <div className="mt-3 flex flex-col gap-4">
-            {historial.length > 0 ? (
-              <ol className="flex flex-col gap-2">
-                {historial.map((r) => (
-                  <li key={r.id} className="border-l-2 border-l-filete pl-3">
-                    <p className="text-metadato">
-                      {TEXTO_REVISION[r.tipo]} el {fecha(r.cuando)}
-                      {/* Ella ve lo que le dicen; quién lo validó, IWL */}
-                      {r.autor && (!permisos.esFundadora || r.tipo === "entrega") ? ` · ${r.autor}` : ""}
-                    </p>
-                    {r.comentario ? <p className="whitespace-pre-line text-cuerpo">{r.comentario}</p> : null}
-                    {r.tipo === "entrega" && r.evidencias.length > 0 ? (
-                      <p className="text-metadato">
-                        Con: {r.evidencias.map((e) => e.label).join(", ")}
-                      </p>
-                    ) : null}
-                  </li>
-                ))}
-              </ol>
-            ) : null}
-
-            {permisos.acompana || (permisos.coordina && !revisa) ? <NotaHito slug={slug} id={hito.id} /> : null}
-
-            {permisos.coordina && hito.estado !== "cumplido" ? (
-              <RevisionDeHito
-                slug={slug}
-                id={hito.id}
-                requiere={hito.requiereValidacion}
-                obligatoria={economico || hito.condicionaInvertible}
-                revisorId={hito.revisorId}
-                acompanantes={contexto.acompanantes}
-              />
-            ) : null}
-
-            {permisos.esAdmin && hito.estado !== "cumplido" ? (
-              contexto.reparto.abierto ? (
-                <EfectoEconomicoHito
-                  slug={slug}
-                  id={hito.id}
-                  financiacion={hito.financiacion}
-                  financiacionPactada={contexto.reparto.financiacionPactada}
-                  financiacionLibre={libre(
-                    contexto.reparto.financiacionPactada,
-                    contexto.reparto.financiacionRepartida,
-                    hito.financiacion,
-                  )}
-                />
-              ) : (
-                <p className="text-metadato">
-                  {contexto.reparto.hayAnexo
-                    ? "El equity y la financiación de los hitos quedan fijos con el Anexo propuesto o firmado. Para cambiarlos, abre una versión nueva del Anexo."
-                    : "Para marcar un hito con equity o financiación, abre antes el Anexo de Programa."}
-                </p>
-              )
-            ) : null}
-          </div>
-        </details>
-      ) : null}
     </div>
   );
 }
@@ -729,20 +721,6 @@ function libre(pactado: number | null, repartido: number, propio: number | null)
   return Math.max(0, Math.round((pactado - repartido + (propio ?? 0)) * 100) / 100);
 }
 
-function Dato({
-  etiqueta,
-  children,
-}: {
-  etiqueta: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <Metadato>{etiqueta}</Metadato>
-      <dd className="text-sm text-cuerpo">{children}</dd>
-    </div>
-  );
-}
 
 /**
  * Los dos carriles.

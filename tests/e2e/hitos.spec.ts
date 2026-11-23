@@ -90,8 +90,10 @@ test("ella entrega con un enlace; el mentor pide cambios y después lo valida", 
     // Ella lo ve cumplido, con su historial
     await ella.reload();
     await expect(suyo.getByText("Cumplido", { exact: true })).toBeVisible();
-    await suyo.getByText(/Historial y ajustes/).click();
-    await expect(suyo.getByText(/Validado el/)).toBeVisible();
+    // El historial, en el panel de su menú ⋯ (REVISION, 23 nov)
+    await suyo.getByRole("button", { name: /^Acciones de/ }).click();
+    await ella.getByRole("menuitem", { name: "Historial" }).click();
+    await expect(ella.getByRole("dialog", { name: "Historial" }).getByText(/Validado el/)).toBeVisible();
   } finally {
     await ella.context().close();
     await mentor.context().close();

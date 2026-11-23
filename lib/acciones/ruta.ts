@@ -150,7 +150,8 @@ export async function editarEtapa(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(slug);
-  return ok("Tramo guardado.");
+  // El acuse es la tarjeta cambiada: el panel se cierra al guardar
+  return ok();
 }
 
 const esquemaBorrarEtapa = z.object({ slug: textoObligatorio(), id: uuid });
@@ -216,7 +217,8 @@ export async function crearHito(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(slug);
-  return ok("Hito añadido.");
+  // El acuse es el hito en su tramo: el panel se cierra al guardar
+  return ok();
 }
 
 const esquemaMoverHito = z.object({
@@ -241,7 +243,8 @@ export async function moverHito(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(datos.slug);
-  return ok("Hito movido.");
+  // El acuse es la fila en su tramo nuevo
+  return ok();
 }
 
 // -----------------------------------------------------------------------------

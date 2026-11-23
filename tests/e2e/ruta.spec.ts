@@ -83,7 +83,8 @@ test("la fundadora no puede rediseñar el plan", async ({ page }) => {
 
   await expect(page.getByText("Añadir un tramo")).toHaveCount(0);
   await expect(page.getByText("Editar el tramo")).toHaveCount(0);
-  await expect(page.getByText(/Añadir un hito/)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Añadir hito" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Acciones del tramo/ })).toHaveCount(0);
 });
 
 test("la fundadora sí mueve sus hitos, pero no los da por cumplidos", async ({
@@ -102,13 +103,34 @@ test("la fundadora sí mueve sus hitos, pero no los da por cumplidos", async ({
 test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/ruta");
 
-  /* En el tramo en curso, que es el único que nace abierto. En los demás
-     los botones existen igual, a un clic */
+  /* Con el patrón de Administración (REVISION, 23 nov): «Añadir hito» en
+     la cabecera de cada tramo, plegado o no, y editarlo en su menú ⋯ */
   const tramo = tramoDe(page, "Tramo 4 · De facturación a invertible");
-  await expect(tramo.getByText("Editar el tramo").first()).toBeVisible();
-  await expect(
-    tramo.getByText("Añadir un hito a este tramo").first(),
-  ).toBeVisible();
+  await expect(tramo.getByRole("button", { name: "Añadir hito" })).toBeVisible();
+  await tramo.getByRole("button", { name: /^Acciones del tramo/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Editar el tramo" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Borrar el tramo" })).toBeVisible();
+  await page.keyboard.press("Escape");
+
+  // Añadir un hito se hace en el panel, y el acuse es el hito en su tramo
+  const titulo = `Hito del panel ${Date.now()}`;
+  await tramo.getByRole("button", { name: "Añadir hito" }).click();
+  const panel = page.getByRole("dialog", { name: "Añadir un hito al tramo 4" });
+  await panel.getByLabel("Título").fill(titulo);
+  await panel.getByLabel("Criterio de éxito").fill("Algo que se pueda comprobar sin opinar.");
+  // La marca de invertible es de dirección: el equipo no la ve
+  await expect(panel.getByLabel("Condiciona invertible")).toHaveCount(0);
+  await panel.getByRole("button", { name: "Añadir el hito" }).click();
+  await expect(panel).toHaveCount(0);
+  const fila = tramo.locator(`li[data-fila-hito="${titulo}"]`);
+  await expect(fila).toBeVisible();
+
+  // Y se quita desde su menú, confirmando en el panel, en rojo
+  await fila.getByRole("button", { name: `Acciones de «${titulo}»` }).click();
+  await page.getByRole("menuitem", { name: "Quitar" }).click();
+  const quitar = page.getByRole("dialog", { name: "Quitar el hito" });
+  await quitar.getByRole("button", { name: "Quitar el hito" }).click();
+  await expect(page.locator(`li[data-fila-hito="${titulo}"]`)).toHaveCount(0);
 
   // Y sí puede confirmar un hito
   const estado = page.locator('select[name="status"]').first();
@@ -329,12 +351,13 @@ test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
      cualquiera, pulsando su línea */
   const etapa = page.locator("section[id^='etapa-']").filter({ hasText: nombre }).last();
   await expect(etapa).toBeVisible();
-  await etapa.locator("summary").first().click();
 
-  // Y ahora se borra, que es lo que no se podía
-  await etapa.getByRole("button", { name: "Borrar el tramo" }).click();
-  await expect(page.getByText(/No tiene hitos/)).toBeVisible();
-  await page.getByRole("button", { name: "Borrar", exact: true }).click();
+  // Y ahora se borra, que es lo que no se podía: desde el menú del tramo, en el panel
+  await etapa.getByRole("button", { name: /^Acciones del tramo/ }).click();
+  await page.getByRole("menuitem", { name: "Borrar el tramo" }).click();
+  const panel = page.getByRole("dialog", { name: "Borrar el tramo" });
+  await expect(panel.getByText(/No tiene hitos/)).toBeVisible();
+  await panel.getByRole("button", { name: "Borrar el tramo" }).click();
 
   await expect(page.getByText(nombre)).toHaveCount(0);
 });

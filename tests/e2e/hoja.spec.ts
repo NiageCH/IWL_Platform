@@ -112,12 +112,17 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     await expect(asistente.getByText("1 hito ya cumplido al entrar")).toBeVisible();
 
     // Una fecha más allá del plazo: lo avisa, y sin ser dirección no se guarda
+    // La fecha se cambia desde el menú ⋯ de la fila, en el panel (REVISION, 23 nov)
     const pendiente = asistente.locator('li[data-hito^="Sociedad constituida y pacto de socias"]');
-    await pendiente.locator('input[name="due_date"]').fill("2029-01-01");
-    await expect(pendiente.getByText(/Fuera del plazo del programa: acaba el/)).toBeVisible();
-    await expect(pendiente.getByRole("button", { name: "Cambiar", exact: true })).toBeDisabled();
-    // Título, fecha y nada más: un fundamental no lo quita el equipo
-    await expect(pendiente.getByRole("button", { name: "Quitar" })).toHaveCount(0);
+    await pendiente.getByRole("button", { name: /^Acciones de/ }).click();
+    // Cambiar la fecha y nada más: un fundamental no lo quita el equipo
+    await expect(page.getByRole("menuitem", { name: "Quitar" })).toHaveCount(0);
+    await page.getByRole("menuitem", { name: "Cambiar la fecha" }).click();
+    const panel = page.getByRole("dialog", { name: "Cambiar la fecha" });
+    await panel.locator('input[name="due_date"]').fill("2029-01-01");
+    await expect(panel.getByText(/Fuera del plazo del programa: acaba el/)).toBeVisible();
+    await expect(panel.getByRole("button", { name: "Cambiar", exact: true })).toBeDisabled();
+    await page.keyboard.press("Escape");
 
     // Paso 3: no queda nada por verificar, así que se puede seguir
     await asistente.getByRole("link", { name: "Seguir: revisar y proponer" }).click();

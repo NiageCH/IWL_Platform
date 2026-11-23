@@ -257,9 +257,28 @@ export function NuevaEtapa({
   );
 }
 
-export function EditorEtapa({
+/** Cancelar, con borde: el secundario de cada formulario del panel */
+export function BotonCancelar({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm font-medium text-titular hover:border-filete-fuerte"
+    >
+      Cancelar
+    </button>
+  );
+}
+
+/**
+ * Editar un tramo, en el panel lateral (REVISION, 23 nov: el patrón de
+ * Administración en la hoja de cada compañía). Al guardar, el panel se
+ * cierra y el acuse es la tarjeta cambiada.
+ */
+export function FormularioEtapa({
   slug,
   etapa,
+  onCerrar,
 }: {
   slug: string;
   etapa: {
@@ -274,23 +293,10 @@ export function EditorEtapa({
     cajaPrevista: number | null;
     notas: string | null;
   };
+  onCerrar: () => void;
 }) {
-  const [abierto, setAbierto] = useState(false);
-
-  if (!abierto) {
-    return (
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        className="accion text-xs text-secundario"
-      >
-        Editar el tramo
-      </button>
-    );
-  }
-
   return (
-    <Formulario accion={editarEtapa} onOk={() => setAbierto(false)}>
+    <Formulario accion={editarEtapa} onOk={onCerrar} className="gap-4">
       {(resultado) => (
         <>
           <input type="hidden" name="slug" value={slug} />
@@ -307,15 +313,9 @@ export function EditorEtapa({
 
           <CamposEtapa resultado={resultado} valores={etapa} />
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Boton>Guardar</Boton>
-            <button
-              type="button"
-              onClick={() => setAbierto(false)}
-              className="rounded-md border border-filete bg-elevado px-3 py-2 text-sm text-secundario"
-            >
-              Cancelar
-            </button>
+            <BotonCancelar onClick={onCerrar} />
           </div>
         </>
       )}
@@ -323,80 +323,59 @@ export function EditorEtapa({
   );
 }
 
-export function NuevoHito({
+/**
+ * Añadir un hito a un tramo, en el panel lateral. La marca «condiciona
+ * invertible» solo la ve dirección: es quien decide qué hace invertible a
+ * un proyecto (REVISION, 23 nov).
+ */
+export function FormularioNuevoHito({
   slug,
   companyId,
   stageId,
+  esDireccion,
+  onCerrar,
 }: {
   slug: string;
   companyId: string;
   stageId: string;
+  esDireccion: boolean;
+  onCerrar: () => void;
 }) {
-  const [abierto, setAbierto] = useState(false);
-
-  if (!abierto) {
-    return (
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        className="accion text-xs text-secundario"
-      >
-        Añadir un hito a este tramo
-      </button>
-    );
-  }
-
   return (
-    <Formulario accion={crearHito} onOk={() => setAbierto(false)}>
+    <Formulario accion={crearHito} onOk={onCerrar} className="gap-4">
       {(resultado) => (
         <>
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="company_id" value={companyId} />
           <input type="hidden" name="stage_id" value={stageId} />
 
-          <Campo
-            etiqueta="Título"
-            error={!resultado.ok ? resultado.campos?.title : undefined}
-          >
+          <Campo etiqueta="Título" obligatorio error={!resultado.ok ? resultado.campos?.title : undefined}>
             <Texto name="title" required />
           </Campo>
 
           <Campo
             etiqueta="Criterio de éxito"
-            error={
-              !resultado.ok ? resultado.campos?.success_criteria : undefined
-            }
+            obligatorio
+            error={!resultado.ok ? resultado.campos?.success_criteria : undefined}
             ayuda="Qué tiene que pasar para darlo por cumplido, escrito de forma que se pueda comprobar."
           >
-            <AreaTexto name="success_criteria" rows={2} required />
+            <AreaTexto name="success_criteria" rows={3} required />
           </Campo>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo
-              etiqueta="Fecha prevista"
-              error={!resultado.ok ? resultado.campos?.due_date : undefined}
-            >
-              <Texto type="date" name="due_date" />
-            </Campo>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm text-cuerpo">
-              <input
-                type="checkbox"
-                name="gates_investable"
-                className="accent-[var(--color-acento)]"
-              />
-              Condiciona el estado invertible
-            </label>
-          </div>
+          <Campo etiqueta="Fecha prevista" error={!resultado.ok ? resultado.campos?.due_date : undefined}>
+            <Texto type="date" name="due_date" className="w-48" />
+          </Campo>
 
-          <div className="flex gap-2">
-            <Boton>Añadir hito</Boton>
-            <button
-              type="button"
-              onClick={() => setAbierto(false)}
-              className="rounded-md border border-filete bg-elevado px-3 py-2 text-sm text-secundario"
-            >
-              Cancelar
-            </button>
+          {esDireccion ? (
+            <label className="flex items-center gap-2 text-sm text-cuerpo">
+              <input type="checkbox" name="gates_investable" className="accent-[var(--color-acento)]" />
+              Condiciona invertible
+            </label>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2">
+            <Boton>Añadir el hito</Boton>
+            <BotonCancelar onClick={onCerrar} />
           </div>
         </>
       )}
@@ -628,61 +607,42 @@ export function NuevaAportacion({
 }
 
 /**
- * Borrar una etapa de la hoja de ruta.
+ * Borrar un tramo de la hoja de ruta, en el panel lateral.
  *
- * La acción existía desde el principio y no había botón: desde la pantalla
- * una etapa mal creada no se podía quitar. Pide confirmación porque es
- * irreversible, y dice lo que de verdad pasa con los hitos —no se borran,
- * se quedan sueltos—, que es lo que uno teme al pulsar.
+ * Pide confirmación porque es irreversible, y dice lo que de verdad pasa
+ * con los hitos —no se borran, se quedan sueltos—, que es lo que uno teme
+ * al pulsar. El botón va en rojo: es lo destructivo (REVISION, 23 nov).
  */
-export function BorrarEtapa({
+export function FormularioBorrarEtapa({
   slug,
   id,
   nombre,
   hitos,
+  onCerrar,
 }: {
   slug: string;
   id: string;
   nombre: string;
   hitos: number;
+  onCerrar: () => void;
 }) {
-  const [abierto, setAbierto] = useState(false);
-
-  if (!abierto) {
-    return (
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        className="accion accion-riesgo self-start text-xs"
-      >
-        Borrar el tramo
-      </button>
-    );
-  }
-
   return (
-    <Formulario accion={borrarEtapa}>
+    <Formulario accion={borrarEtapa} className="gap-4">
       {() => (
         <>
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={id} />
-          <p className="text-sm text-secundario">
+          <p className="text-sm text-cuerpo">
             Se borra «{nombre}».{" "}
             {hitos === 0
               ? "No tiene hitos."
               : hitos === 1
-                ? "Su hito no se borra: se queda sin tramo, en «Hitos ya acordados»."
-                : `Sus ${hitos} hitos no se borran: se quedan sin tramo, en «Hitos ya acordados».`}
+                ? "Su hito no se borra: se queda sin tramo, en «Hitos fuera del plan»."
+                : `Sus ${hitos} hitos no se borran: se quedan sin tramo, en «Hitos fuera del plan».`}
           </p>
-          <div className="flex gap-2">
-            <Boton>Borrar</Boton>
-            <button
-              type="button"
-              onClick={() => setAbierto(false)}
-              className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm text-secundario"
-            >
-              Cancelar
-            </button>
+          <div className="flex flex-wrap gap-2">
+            <button className="rounded-full bg-mal px-4 py-2 text-sm font-semibold text-white">Borrar el tramo</button>
+            <BotonCancelar onClick={onCerrar} />
           </div>
         </>
       )}
@@ -691,10 +651,11 @@ export function BorrarEtapa({
 }
 
 /**
- * Mover un hito a otra etapa.
+ * Mover un hito a otro tramo, en el panel lateral.
  *
- * Igual que el anterior: la acción estaba y no había por dónde llamarla, así
- * que un hito creado en el carril equivocado se quedaba ahí.
+ * La acción estaba y no había por dónde llamarla, así que un hito creado
+ * en el tramo equivocado se quedaba ahí. Al moverlo, la fila cambia de
+ * tarjeta y el panel se va con ella: ese es el acuse.
  */
 export function MoverHito({
   slug,
@@ -707,29 +668,25 @@ export function MoverHito({
   stageId: string | null;
   etapas: Array<{ id: string; nombre: string }>;
 }) {
-  if (etapas.length < 2) return null;
-
   return (
-    <Formulario accion={moverHito} className="gap-0">
+    <Formulario accion={moverHito} className="gap-4">
       {() => (
         <>
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={id} />
-          <Seleccion
-            key={stageId ?? "sueltos"}
-            name="stage_id"
-            defaultValue={stageId ?? ""}
-            onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className="py-1 text-xs"
-            aria-label="Mover a otro tramo"
-          >
-            <option value="">Sin tramo</option>
-            {etapas.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.nombre}
-              </option>
-            ))}
-          </Seleccion>
+          <Campo etiqueta="Tramo">
+            <Seleccion key={stageId ?? "sueltos"} name="stage_id" defaultValue={stageId ?? ""}>
+              <option value="">Sin tramo</option>
+              {etapas.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.nombre}
+                </option>
+              ))}
+            </Seleccion>
+          </Campo>
+          <div>
+            <Boton>Mover</Boton>
+          </div>
         </>
       )}
     </Formulario>

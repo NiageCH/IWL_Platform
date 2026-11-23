@@ -244,63 +244,56 @@ export function RehacerHoja({ companyId, slug }: { companyId: string; slug: stri
 }
 
 /**
- * Quitar un hito, en la misma línea que su título (REVISION, 23 nov). Uno
- * propio se quita al pulsar; uno fundamental abre el motivo debajo, a lo
- * ancho de la fila, y solo lo ve dirección. Va dentro de una fila con
- * `flex-wrap`: el panel ocupa la línea entera con `basis-full`.
+ * Quitar un hito, en el panel lateral, con confirmación (REVISION, 23 nov:
+ * lo destructivo, en rojo y confirmado en pantalla). Uno fundamental pide
+ * motivo, que queda en el registro, y solo lo ve dirección. Quitado, la
+ * fila desaparece y el panel con ella: ese es el acuse.
  */
-export function QuitarHito({ id, slug, fundamental }: { id: string; slug: string; fundamental: boolean }) {
-  const [abierto, setAbierto] = useState(false);
-  if (!fundamental) {
-    return (
-      <Formulario accion={quitarHito} className="gap-1">
-        {() => (
-          <>
-            <input type="hidden" name="id" value={id} />
-            <input type="hidden" name="slug" value={slug} />
-            <button className="accion accion-riesgo text-xs">Quitar</button>
-          </>
-        )}
-      </Formulario>
-    );
-  }
+export function QuitarHito({
+  id,
+  slug,
+  titulo,
+  fundamental,
+  onCerrar,
+}: {
+  id: string;
+  slug: string;
+  titulo: string;
+  fundamental: boolean;
+  onCerrar: () => void;
+}) {
   return (
-    <>
-      <button
-        type="button"
-        className="accion accion-riesgo text-xs"
-        aria-expanded={abierto}
-        onClick={() => setAbierto((a) => !a)}
-      >
-        Quitar
-      </button>
-      {abierto ? (
-        <div className="basis-full">
-          <Formulario accion={quitarHito} className="gap-3 rounded-md border border-filete bg-hundido px-3 py-3">
-            {(r) => (
-              <>
-                <input type="hidden" name="id" value={id} />
-                <input type="hidden" name="slug" value={slug} />
-                <Campo
-                  etiqueta="Por qué se quita"
-                  ayuda="Es un hito fundamental: el motivo queda en el registro"
-                  obligatorio
-                  error={r.ok ? undefined : r.campos?.motivo}
-                >
-                  <AreaTexto name="motivo" rows={2} required minLength={10} />
-                </Campo>
-                <div className="flex flex-wrap gap-2">
-                  <Boton variante="secundario">Quitar el hito</Boton>
-                  <button type="button" className="accion text-xs" onClick={() => setAbierto(false)}>
-                    Cancelar
-                  </button>
-                </div>
-              </>
-            )}
-          </Formulario>
-        </div>
-      ) : null}
-    </>
+    <Formulario accion={quitarHito} onOk={onCerrar} className="gap-4">
+      {(r) => (
+        <>
+          <input type="hidden" name="id" value={id} />
+          <input type="hidden" name="slug" value={slug} />
+          <p className="text-sm text-cuerpo">
+            Se quita «{titulo}» de la hoja de ruta de esta compañía. La hoja de ruta del programa no cambia.
+          </p>
+          {fundamental ? (
+            <Campo
+              etiqueta="Por qué se quita"
+              ayuda="Es un hito fundamental: el motivo queda en el registro"
+              obligatorio
+              error={r.ok ? undefined : r.campos?.motivo}
+            >
+              <AreaTexto name="motivo" rows={3} required minLength={10} />
+            </Campo>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <button className="rounded-full bg-mal px-4 py-2 text-sm font-semibold text-white">Quitar el hito</button>
+            <button
+              type="button"
+              className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm font-medium text-titular hover:border-filete-fuerte"
+              onClick={onCerrar}
+            >
+              Cancelar
+            </button>
+          </div>
+        </>
+      )}
+    </Formulario>
   );
 }
 
@@ -317,6 +310,7 @@ export function FechaHito({
   finPlazo,
   esDireccion,
   pideMotivo = false,
+  onOk,
 }: {
   id: string;
   slug: string;
@@ -324,18 +318,20 @@ export function FechaHito({
   finPlazo: string | null;
   esDireccion: boolean;
   pideMotivo?: boolean;
+  /** En el panel lateral: lo cierra al guardar */
+  onOk?: () => void;
 }) {
   const [valor, setValor] = useState(actual ?? "");
   const fuera = Boolean(finPlazo && valor && valor > finPlazo);
   const cambiada = valor !== (actual ?? "");
   return (
-    <Formulario accion={fecharHito} className="gap-1.5">
+    <Formulario accion={fecharHito} onOk={onOk} className="gap-1.5">
       {(r) => (
         <>
           <input type="hidden" name="id" value={id} />
           <input type="hidden" name="slug" value={slug} />
           <div className="flex flex-wrap items-center gap-2">
-            <label className="sr-only" htmlFor={`fecha-${id}`}>
+            <label className={onOk ? "w-full text-sm text-titular" : "sr-only"} htmlFor={`fecha-${id}`}>
               Fecha prevista
             </label>
             <Texto

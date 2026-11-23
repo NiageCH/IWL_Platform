@@ -1,15 +1,8 @@
 import Link from "next/link";
 import { Estado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
-import {
-  ContestarHito,
-  FechaHito,
-  GenerarHoja,
-  QuitarHito,
-  RehacerHoja,
-  VerificarHito,
-} from "@/components/formularios/lista-entrada";
-import { NuevoHito } from "@/components/formularios/ruta";
+import { ContestarHito, GenerarHoja, RehacerHoja, VerificarHito } from "@/components/formularios/lista-entrada";
+import { AnadirHito, MenuHito } from "@/components/formularios/hoja-compania";
 import { resumenLista, type ItemLista, type ListaEntrada, type Seguimiento } from "@/lib/datos/hoja";
 import type { EstadoVisual } from "@/lib/estados";
 import {
@@ -376,12 +369,15 @@ function PasoAjustar({
           );
           return (
             <section key={t.id} className="rounded-md border border-filete" aria-label={`Tramo ${t.tramo}`}>
-              <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-filete px-4 py-2.5">
-                <span className="font-medium text-titular">
+              <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-filete px-4 py-2.5">
+                <span className="font-semibold text-titular">
                   Tramo {t.tramo} · {t.nombre}
                 </span>
-                <span className="text-xs text-metadato">
-                  {t.inicio ? fecha(t.inicio) : "—"} a {t.fin ? fecha(t.fin) : "—"}
+                <span className="flex flex-1 flex-wrap items-center justify-end gap-2">
+                  <span className="pastilla cifra">
+                    {t.inicio ? fecha(t.inicio) : "—"} a {t.fin ? fecha(t.fin) : "—"}
+                  </span>
+                  <AnadirHito slug={slug} companyId={companyId} stageId={t.id} tramo={t.tramo} esDireccion={esDireccion} />
                 </span>
               </header>
               {t.tramo === entrada && alEntrar.length ? (
@@ -401,28 +397,24 @@ function PasoAjustar({
               ) : null}
               <ul className="divide-y divide-filete">
                 {pendientes.map((h) => (
-                  <li
-                    key={h.id}
-                    data-hito={h.titulo}
-                    className="flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-2.5"
-                  >
-                    <div className="flex min-w-0 flex-1 basis-60 flex-col gap-0.5">
-                      <span className="text-titular">{h.titulo}</span>
-                      <span className="flex flex-wrap gap-x-2 text-xs text-metadato">
-                        {h.deTramo ? <span>Pendiente del tramo {h.deTramo}</span> : null}
-                        {h.fundamental ? <span>Fundamental</span> : <span>Propio</span>}
+                  <li key={h.id} data-hito={h.titulo} className="flex items-start gap-3 px-4 py-2.5">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className="font-semibold text-titular">{h.titulo}</span>
+                      <span className="flex flex-wrap gap-1.5">
+                        {h.deTramo ? <span className="pastilla">Pendiente del tramo {h.deTramo}</span> : null}
+                        <span className="pastilla">{h.fundamental ? "Fundamental" : "Propio"}</span>
                       </span>
                     </div>
-                    <FechaHito id={h.id} slug={slug} actual={h.fecha} finPlazo={fin} esDireccion={esDireccion} />
-                    {!h.fundamental || esDireccion ? (
-                      <QuitarHito id={h.id} slug={slug} fundamental={h.fundamental} />
-                    ) : null}
+                    <span className="cifra shrink-0 pt-0.5 text-xs text-metadato">{h.fecha ? fecha(h.fecha) : "Sin fecha"}</span>
+                    <MenuHito
+                      slug={slug}
+                      hito={{ id: h.id, titulo: h.titulo, fecha: h.fecha, fundamental: h.fundamental }}
+                      fecha={{ finPlazo: fin, esDireccion, pideMotivo: false }}
+                      quitar={!h.fundamental || esDireccion}
+                    />
                   </li>
                 ))}
               </ul>
-              <div className="border-t border-filete px-4 py-2.5">
-                <NuevoHito slug={slug} companyId={companyId} stageId={t.id} />
-              </div>
             </section>
           );
         })}
@@ -502,16 +494,41 @@ export function SeguimientoTramos({ seguimiento, hoy }: { seguimiento: Seguimien
       >
         {actual ? actual.nombre : "Hoja de ruta cumplida"}
       </TituloBloque>
-      <ol className="grid grid-cols-2 gap-1 px-4 pt-4 sm:grid-cols-4" aria-label="Los tramos">
+      {/*
+        Los cuatro tramos de un vistazo, como en Administración → Hoja de
+        ruta (REVISION, 23 nov): número grande, nombre, estado y hitos.
+        Pulsar uno baja a su tarjeta.
+      */}
+      <ol className="grid grid-cols-2 gap-3 px-4 pt-4 lg:grid-cols-4" aria-label="Los tramos">
         {([1, 2, 3, 4] as NumeroTramo[]).map((n) => {
           const t = tramos.find((x) => x.tramo === n);
           const valor: EstadoVisual = !t ? "no_aplica" : t.cerrado ? "hecho" : t === actual ? "curso" : "pendiente";
           const rotulo = !t ? "Antes de su entrada" : t.cerrado ? "Cerrado" : t === actual ? "En curso" : "Por hacer";
+          const contenido = (
+            <>
+              <span className="flex items-start justify-between gap-2">
+                <span className="cifra text-3xl font-semibold leading-none text-titular">{n}</span>
+                <Estado valor={valor} rotulo={rotulo} />
+              </span>
+              <span className="text-sm font-medium text-titular">{TRAMOS[n].nombre}</span>
+              <span className="text-xs text-secundario">
+                {t
+                  ? `${t.hitos.filter((h) => h.estado === "cumplido").length} de ${t.hitos.length} hitos`
+                  : "Entró después de este tramo"}
+              </span>
+            </>
+          );
           return (
-            <li key={n} className="flex flex-col gap-1 rounded-md border border-filete px-3 py-2" aria-current={t === actual ? "step" : undefined}>
-              <span className="text-xs text-metadato">Tramo {n}</span>
-              <span className="text-sm text-titular">{TRAMOS[n].nombre}</span>
-              <Estado valor={valor} rotulo={rotulo} />
+            <li key={n} aria-current={t === actual ? "step" : undefined}>
+              {t ? (
+                <a href={`#etapa-${t.id}`} className="tarjeta fila-enlace flex h-full flex-col gap-1.5 px-4 py-3">
+                  {contenido}
+                </a>
+              ) : (
+                <div className="flex h-full flex-col gap-1.5 rounded-md border border-dashed border-filete px-4 py-3 opacity-70">
+                  {contenido}
+                </div>
+              )}
             </li>
           );
         })}

@@ -2131,3 +2131,17 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Ahora `scripts/guia-generar.mjs` genera `lib/guia-textos.generado.ts`** en `prebuild` y en `predev`. Corregir el Markdown y desplegar sigue bastando, porque Vercel corre `prebuild`. El módulo se versiona para que tsc y las pruebas lo encuentren sin compilar. Una prueba unitaria falla si no coincide con los Markdown.
 - **Se distinguen «tu papel no tiene guía» y «no hemos podido cargarla».** Lo segundo deja un `console.error`. Sin guía para un rol, ni la franja ni la entrada por `/` la ofrecen.
 - **Lo único que sigue leyéndose del disco son las fuentes del PDF** (`lib/pdf.ts`). Viajan por `outputFileTracingIncludes` en todas las rutas, y si faltan el PDF falla con error, no en silencio.
+
+## 2026-11-23 · Invertible: graduar exige los hitos marcados · SUSTITUYE a «Graduada no comprueba que haya cerrado el tramo 4»
+
+- **Decisión de Rodrigo:** un proyecto es invertible cuando tiene validados los hitos de su hoja de ruta que condicionan invertible y la dirección lo confirma al graduarlo. Por defecto los llevan los cuatro fundamentales del tramo 4; ya venían así de la plantilla.
+- **«Graduada» solo con todos los marcados en `cumplido`.** Un hito con la marca no puede quitarse la validación (`milestones_validacion_obligatoria`) y la fundadora no lo da por cumplido, así que cumplido es validado por quien coordina o revisa. Lo impone `app.guard_graduada` sobre `companies.cierre`: vale para `cerrar_compania` y también escribiendo la columna a mano con la clave de servicio. La pantalla desactiva la opción y dice cuántos faltan, con la misma cuenta (`hitos_para_graduar`, solo para dirección).
+- **Sin ningún hito marcado tampoco se gradúa.** Que falten cero de cero no dice que sea invertible: dice que nadie lo ha medido. Si dirección quita la marca a todos en la plantilla, las hojas nuevas no se podrán graduar, y lo dice.
+- **La marca la cambia dirección.** En la plantilla ya era así. En la hoja de una compañía, quien coordina puede crear un hito marcado (el formulario solo se lo ofrece a dirección), pero no quitarle la marca a uno que la tiene: sería graduar con un hito sin cumplir. `app.guard_marca_invertible`, de autorización: sin sesión no aplica.
+- **Finalizada sigue libre**, con hitos pendientes o sin ellos.
+- **El aviso del tramo 4 dice «Lista para graduar: confirma si es invertible».** Lleva al cierre, en la ficha.
+
+## 2026-11-23 · El menú de arriba, en un botón por debajo de lg
+
+- **Las pestañas iban en la fila de la marca con desbordamiento horizontal**, y en un móvil salían recortadas y montadas sobre la cabecera. Ahora, por debajo de `lg`, un botón «Menú» las despliega enteras debajo de la barra, en las filas que hagan falta, y se cierra al cambiar de página. El botón lleva la suma de los contadores de pendientes.
+- **Las pantallas de IWL y de la fundadora solo enseñan la barra de arriba por debajo de `md`**, donde manda la lateral. A partir de `lg` las que la tienen siempre (guía, perfil, sin compañía) siguen con las pestañas en línea.
