@@ -31,8 +31,19 @@ export async function firmarFotos(
   return firmarRutas("fotos", rutas);
 }
 
+/**
+ * Las evidencias de la lista de entrada, en el data room. Mismo criterio:
+ * quién puede firmar cuál lo dice la política del bucket.
+ */
+export async function firmarRutasDe(
+  bucket: "data-room",
+  rutas: Array<string | null | undefined>,
+): Promise<Map<string, string>> {
+  return firmarRutas(bucket, rutas);
+}
+
 async function firmarRutas(
-  bucket: "logos" | "fotos",
+  bucket: "logos" | "fotos" | "data-room",
   rutas: Array<string | null | undefined>,
 ): Promise<Map<string, string>> {
   const limpias = [...new Set(rutas.filter((r): r is string => Boolean(r)))];

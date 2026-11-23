@@ -2724,6 +2724,85 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"entry_checks": {
+                  Row: {
+                    "answer": string,"answered_at": string,"answered_by": string | null,"company_id": string,"evidence_name": string | null,"evidence_path": string | null,"id": string,"review_comment": string | null,"template_milestone_id": string,"verification": string | null,"verified_at": string | null,"verified_by": string | null
+                  }
+                  Insert: {
+                    "answer": string,"answered_at"?: string,"answered_by"?: string | null,"company_id": string,"evidence_name"?: string | null,"evidence_path"?: string | null,"id"?: string,"review_comment"?: string | null,"template_milestone_id": string,"verification"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
+                  }
+                  Update: {
+                    "answer"?: string,"answered_at"?: string,"answered_by"?: string | null,"company_id"?: string,"evidence_name"?: string | null,"evidence_path"?: string | null,"id"?: string,"review_comment"?: string | null,"template_milestone_id"?: string,"verification"?: string | null,"verified_at"?: string | null,"verified_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "entry_checks_answered_by_fkey"
+      columns: ["answered_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_answered_by_fkey"
+      columns: ["answered_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_answered_by_fkey"
+      columns: ["answered_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "admin_companias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "commitment_counter"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "entry_checks_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "tech_score_input"
+      referencedColumns: ["company_id"]
+    },{
+      foreignKeyName: "entry_checks_template_milestone_id_fkey"
+      columns: ["template_milestone_id"]
+isOneToOne: false
+      referencedRelation: "roadmap_template_milestones"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_verified_by_fkey"
+      columns: ["verified_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_verified_by_fkey"
+      columns: ["verified_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_checks_verified_by_fkey"
+      columns: ["verified_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"evidence_links": {
                   Row: {
                     "company_id": string,"created_at": string,"created_by": string | null,"entity": string | null,"entity_id": string | null,"hypothesis_id": string | null,"id": string,"kind": Database["public"]['Enums']["tipo_evidencia"],"label": string,"section_id": string | null,"target_code": string | null,"target_id": string | null,"url": string | null
@@ -3208,13 +3287,13 @@ isOneToOne: false
                   ]
                 },"milestones": {
                   Row: {
-                    "accrues_equity_pct": number | null,"annex_id": string | null,"company_id": string,"completed_on": string | null,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"created_by": string | null,"delivered_at": string | null,"delivered_by": string | null,"description": string | null,"due_date": string | null,"evidence": string | null,"gates_investable": boolean,"id": string,"origin": Database["public"]['Enums']["origen_hito"],"phase_id": string | null,"plan_item_id": string | null,"releases_funding": number | null,"requires_validation": boolean,"reviewer_id": string | null,"stage_id": string | null,"status": Database["public"]['Enums']["estado_hito"],"success_criteria": string,"title": string,"updated_at": string
+                    "accrues_equity_pct": number | null,"annex_id": string | null,"company_id": string,"completed_on": string | null,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"created_by": string | null,"delivered_at": string | null,"delivered_by": string | null,"description": string | null,"due_date": string | null,"evidence": string | null,"from_tramo": number | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"origin": Database["public"]['Enums']["origen_hito"],"phase_id": string | null,"plan_item_id": string | null,"releases_funding": number | null,"requires_validation": boolean,"reviewer_id": string | null,"stage_id": string | null,"status": Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id": string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria": string,"title": string,"updated_at"?: string
+                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id": string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id"?: string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria"?: string,"title"?: string,"updated_at"?: string
+                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id"?: string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria"?: string,"template_milestone_id"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -3342,6 +3421,12 @@ isOneToOne: false
       columns: ["stage_id"]
 isOneToOne: false
       referencedRelation: "roadmap_stages"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "milestones_template_milestone_id_fkey"
+      columns: ["template_milestone_id"]
+isOneToOne: false
+      referencedRelation: "roadmap_template_milestones"
       referencedColumns: ["id"]
     }
                   ]
@@ -3839,13 +3924,13 @@ isOneToOne: false
                   ]
                 },"roadmap_stages": {
                   Row: {
-                    "annex_id": string | null,"company_id": string,"created_at": string,"created_by": string | null,"ends_on": string | null,"id": string,"name": string,"notes": string | null,"objective": string,"order_index": number,"planned_cash": number | null,"planned_hours": number | null,"starts_on": string | null,"status": Database["public"]['Enums']["estado_etapa"],"template_stage_id": string | null,"updated_at": string
+                    "annex_id": string | null,"closed_at": string | null,"company_id": string,"created_at": string,"created_by": string | null,"ends_on": string | null,"id": string,"name": string,"notes": string | null,"objective": string,"order_index": number,"planned_cash": number | null,"planned_hours": number | null,"starts_on": string | null,"status": Database["public"]['Enums']["estado_etapa"],"template_stage_id": string | null,"tramo": number | null,"updated_at": string
                   }
                   Insert: {
-                    "annex_id"?: string | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"ends_on"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"objective": string,"order_index": number,"planned_cash"?: number | null,"planned_hours"?: number | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_etapa"],"template_stage_id"?: string | null,"updated_at"?: string
+                    "annex_id"?: string | null,"closed_at"?: string | null,"company_id": string,"created_at"?: string,"created_by"?: string | null,"ends_on"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"objective": string,"order_index": number,"planned_cash"?: number | null,"planned_hours"?: number | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_etapa"],"template_stage_id"?: string | null,"tramo"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "annex_id"?: string | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"ends_on"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"objective"?: string,"order_index"?: number,"planned_cash"?: number | null,"planned_hours"?: number | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_etapa"],"template_stage_id"?: string | null,"updated_at"?: string
+                    "annex_id"?: string | null,"closed_at"?: string | null,"company_id"?: string,"created_at"?: string,"created_by"?: string | null,"ends_on"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"objective"?: string,"order_index"?: number,"planned_cash"?: number | null,"planned_hours"?: number | null,"starts_on"?: string | null,"status"?: Database["public"]['Enums']["estado_etapa"],"template_stage_id"?: string | null,"tramo"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -3912,13 +3997,13 @@ isOneToOne: false
                   ]
                 },"roadmap_template_milestones": {
                   Row: {
-                    "gates_investable": boolean,"id": string,"offset_weeks": number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
+                    "expected_evidence": string | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"offset_weeks": number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
                   }
                   Insert: {
-                    "gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
+                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
                   }
                   Update: {
-                    "gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index"?: number,"success_criteria"?: string,"template_stage_id"?: string,"title"?: string
+                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index"?: number,"success_criteria"?: string,"template_stage_id"?: string,"title"?: string
                   }
                   Relationships: [
                     {
@@ -3931,13 +4016,13 @@ isOneToOne: false
                   ]
                 },"roadmap_template_stages": {
                   Row: {
-                    "code": string,"id": string,"name": string,"objective": string,"order_index": number,"planned_cash": number | null,"planned_hours": number | null,"planned_weeks": number | null,"template_id": string
+                    "code": string,"id": string,"name": string,"objective": string,"order_index": number,"planned_cash": number | null,"planned_hours": number | null,"planned_months": number | null,"planned_weeks": number | null,"template_id": string,"tramo": number | null
                   }
                   Insert: {
-                    "code": string,"id"?: string,"name": string,"objective": string,"order_index": number,"planned_cash"?: number | null,"planned_hours"?: number | null,"planned_weeks"?: number | null,"template_id": string
+                    "code": string,"id"?: string,"name": string,"objective": string,"order_index": number,"planned_cash"?: number | null,"planned_hours"?: number | null,"planned_months"?: number | null,"planned_weeks"?: number | null,"template_id": string,"tramo"?: number | null
                   }
                   Update: {
-                    "code"?: string,"id"?: string,"name"?: string,"objective"?: string,"order_index"?: number,"planned_cash"?: number | null,"planned_hours"?: number | null,"planned_weeks"?: number | null,"template_id"?: string
+                    "code"?: string,"id"?: string,"name"?: string,"objective"?: string,"order_index"?: number,"planned_cash"?: number | null,"planned_hours"?: number | null,"planned_months"?: number | null,"planned_weeks"?: number | null,"template_id"?: string,"tramo"?: number | null
                   }
                   Relationships: [
                     {
@@ -5224,11 +5309,17 @@ isOneToOne: false
 "avisar_hitos_sin_revisar":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"avisar_plazos_vencidos":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "avisar_reuniones_caducadas":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "avisar_reuniones_por_anotar":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"borrar_borrador_hoja_de_ruta":
+{ Args: { "p_company": string }; Returns: undefined
                            },
 "borrar_compania":
 { Args: { "target_company": string }; Returns: undefined
@@ -5327,6 +5418,9 @@ isOneToOne: false
 "firmar_nda":
 { Args: { "p_candidatura": string,"p_datos": Json,"p_ip": string,"p_nombre": string,"p_plantilla": string,"p_profile": string,"p_texto": string,"p_ua": string }; Returns: undefined
                            },
+"generar_hoja_de_ruta":
+{ Args: { "p_company": string,"p_inicio"?: string }; Returns: number
+                           },
 "instanciar_hoja_de_ruta":
 { Args: { "inicio"?: string,"target_annex"?: string,"target_company": string,"template": string }; Returns: number
                            },
@@ -5369,6 +5463,9 @@ isOneToOne: false
 "puede_cambiar_correo":
 { Args: { "target_profile": string }; Returns: boolean
                            },
+"quitar_hito":
+{ Args: { "p_hito": string,"p_motivo"?: string }; Returns: undefined
+                           },
 "quitar_modo_pruebas":
 { Args: { "p_confirmacion": string }; Returns: undefined
                            },
@@ -5383,6 +5480,9 @@ isOneToOne: false
                            },
 "registrar_sesion":
 { Args: { "p": Json }; Returns: string
+                           },
+"responder_lista_entrada":
+{ Args: { "p_company": string,"p_hito": string,"p_nombre"?: string,"p_respuesta": string,"p_ruta"?: string }; Returns: undefined
                            },
 "responder_recomendacion":
 { Args: { "p_candidatura": string,"p_confirma": boolean }; Returns: string
@@ -5414,6 +5514,9 @@ isOneToOne: false
 { Args: { "p_token": string }; Returns: {
               "contacto_cargo": string,"contacto_telefono": string,"convocatoria": string,"en_diligencia": boolean,"enlaces": Json,"equipo_personas": number,"estado_declarado": Database["public"]['Enums']["estado_entrada"],"id": string,"le_toca_a_ella": boolean,"liderazgo_femenino_pct": number,"momento": string,"nombre": string,"one_liner": string,"pais": string,"presentada_on": string,"puede_subir": boolean,"sector": string,"website": string
             }[]
+                           },
+"verificar_lista_entrada":
+{ Args: { "p_check": string,"p_comentario"?: string,"p_verificado": boolean }; Returns: undefined
                            }
           }
           Enums: {

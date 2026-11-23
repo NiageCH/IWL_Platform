@@ -46,7 +46,7 @@ test("los dos carriles se ven sobre la misma etapa", async ({ page }) => {
    * abierto el tramo en curso hay que abrirlo. Se abre como lo abriría
    * cualquiera: pulsando su línea.
    */
-  const tramo = await abrirTramo(page, "1. Diagnóstico y línea base");
+  const tramo = await abrirTramo(page, "Tramo 2 · De MVP a piloto");
 
   await expect(tramo.getByText("La compañía").first()).toBeVisible();
   await expect(tramo.getByText("IWL", { exact: true }).first()).toBeVisible();

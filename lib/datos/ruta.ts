@@ -62,6 +62,8 @@ export interface Etapa {
   nombre: string;
   objetivo: string;
   orden: number;
+  /** El tramo de la hoja de ruta IWL (REVISION, 22 nov); nulo en las de antes */
+  tramo: number | null;
   inicio: string | null;
   fin: string | null;
   estado: EstadoEtapa;
@@ -148,7 +150,7 @@ export async function leerHojaDeRuta(
     supabase
       .from("roadmap_stages")
       .select(
-        "id, name, objective, order_index, starts_on, ends_on, status, planned_hours, planned_cash, notes",
+        "id, name, objective, order_index, tramo, starts_on, ends_on, status, planned_hours, planned_cash, notes",
       )
       .eq("company_id", companyId)
       .order("order_index"),
@@ -198,6 +200,7 @@ export async function leerHojaDeRuta(
       nombre: e.name,
       objetivo: e.objective,
       orden: e.order_index,
+      tramo: e.tramo ?? null,
       inicio: e.starts_on,
       fin: e.ends_on,
       estado: e.status,

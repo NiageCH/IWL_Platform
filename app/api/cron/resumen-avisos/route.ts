@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
   const { data: porAnotar } = await clienteServicio().rpc("avisar_reuniones_por_anotar");
   // Horas sin respuesta en 7 días: se confirman solas (REVISION, 13 nov)
   const { data: porPlazo } = await clienteServicio().rpc("confirmar_sesiones_por_plazo");
+  // El plazo máximo de la hoja de ruta, vencido: aviso a dirección, sin cerrar nada (REVISION, 23 nov)
+  const { data: plazos } = await clienteServicio().rpc("avisar_plazos_vencidos");
   const resultado = await enviarResumenes();
 
   /*
@@ -50,6 +52,7 @@ export async function GET(request: NextRequest) {
     hitosSinRevisar: sinRevisar ?? 0,
     reunionesPorAnotar: porAnotar ?? 0,
     sesionesPorPlazo: porPlazo ?? 0,
+    plazosVencidos: plazos ?? 0,
     ficherosSueltos: limpieza,
   });
 }

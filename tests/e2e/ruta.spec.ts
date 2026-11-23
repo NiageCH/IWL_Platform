@@ -51,29 +51,31 @@ test("la fundadora ve su hoja de ruta con el objetivo de cada etapa", async ({
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
 
   await expect(page.getByRole("heading", { name: "Hoja de ruta" })).toBeVisible();
-  await expect(page.getByText("Entró en MVP")).toBeVisible();
+  await expect(page.getByText("Entró en MVP sin piloto")).toBeVisible();
 
   /*
-   * Las etapas del recorrido «Desde el MVP», en orden.
+   * Los tramos de la hoja de ruta IWL desde el suyo, el 2 (REVISION, 22 nov).
    *
    * Por el título de su tarjeta y no por el texto suelto: desde que la
    * hoja de ruta abre con la línea de puntos, el nombre de cada tramo
    * sale dos veces —el punto que baja a la tarjeta y la tarjeta—, y
    * `getByText` se queja de que hay dos.
    */
-  await expect(
-    page.getByRole("heading", { name: "1. Diagnóstico y línea base" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "3. Motor comercial repetible" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tramo 2 · De MVP a piloto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tramo 4 · De facturación a invertible" })).toBeVisible();
+  // El tramo 1 no se abre: lo que le faltaba de él va dentro del 2
+  await expect(page.getByRole("heading", { name: /^Tramo 1 · / })).toHaveCount(0);
 
-  // Y el objetivo, que es lo que distingue una etapa de un plazo. Está
-  // dentro del tramo, que ahora nace plegado si no es el que está en curso
-  const tramo = await abrirTramo(page, "3. Motor comercial repetible");
-  await expect(
-    tramo.getByText(/Que vender deje de depender del fundador/),
-  ).toBeVisible();
+  // Y el objetivo, que es lo que distingue un tramo de un plazo. Está
+  // dentro del tramo, que nace plegado si no es el que está en curso
+  const tramo = await abrirTramo(page, "Tramo 2 · De MVP a piloto");
+  await expect(tramo.getByText(/usuarios externos usando el MVP/)).toBeVisible();
+
+  // Arriba, el seguimiento: el tramo en curso, dónde estamos y el plazo
+  const seguimiento = page.locator("#seguimiento");
+  await expect(seguimiento.getByText("Tramo 4 de 4")).toBeVisible();
+  await expect(seguimiento.getByText(/hitos de este tramo cumplidos/)).toBeVisible();
+  await expect(seguimiento.getByText(/plazo máximo de 12 meses desde la firma/)).toBeVisible();
 });
 
 test("la fundadora no puede rediseñar el plan", async ({ page }) => {
@@ -102,7 +104,7 @@ test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
 
   /* En el tramo en curso, que es el único que nace abierto. En los demás
      los botones existen igual, a un clic */
-  const tramo = tramoDe(page, "4. Preparación de ronda");
+  const tramo = tramoDe(page, "Tramo 4 · De facturación a invertible");
   await expect(tramo.getByText("Editar la etapa").first()).toBeVisible();
   await expect(
     tramo.getByText("Añadir un hito a esta etapa").first(),
@@ -113,44 +115,31 @@ test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   await expect(estado.locator('option[value="cumplido"]')).toHaveCount(1);
 });
 
-test("una compañía sin hoja de ruta invita a diseñarla, y se diseña", async ({
-  page,
-}) => {
-  // Vega está en fase 1, todavía en diagnóstico: no tiene plan. Este test se
-  // lo crea, así que se deja como estaba para poder volver a pasarlo
+test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su tramo", async ({ page }) => {
+  // Vega, una idea, no tiene hoja de ruta en la semilla. Se la crea esta prueba y la quita
   await borrar("milestones", { company_id: COMPANIAS.vega });
   await borrar("roadmap_stages", { company_id: COMPANIAS.vega });
 
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva/ruta");
+  await expect(page.getByText(/todavía no tiene hoja de ruta/)).toBeVisible();
+  await page.getByRole("link", { name: "Preparar la hoja de ruta, en Programa y Anexo" }).click();
 
-  await expect(
-    page.getByText(/todavía no tiene hoja de ruta/),
-  ).toBeVisible();
+  // El asistente: el punto de partida dice dónde entra y su plazo
+  const asistente = page.locator("#asistente-hoja");
+  await expect(asistente.getByText(/tramo 1/)).toBeVisible();
+  await expect(asistente.getByText("18 meses")).toBeVisible();
+  await asistente.locator('input[name="inicio"]').fill("2026-04-06");
+  await asistente.getByRole("button", { name: "Generar la hoja de ruta" }).click();
 
-  const disenar = page.locator("form", {
-    has: page.locator('select[name="template_id"]'),
-  });
-  await disenar.locator('input[name="starts_on"]').fill("2026-04-06");
-  await disenar.getByRole("button", { name: "Crear la hoja de ruta" }).click();
+  // Paso 2: los cuatro tramos, con sus hitos fundamentales
+  await expect(asistente.getByText("Tramo 1 · De idea a MVP")).toBeVisible();
+  await expect(asistente.getByText("Tramo 4 · De facturación a invertible")).toBeVisible();
+  await expect(asistente.getByText(/Sociedad constituida y pacto de socias/)).toBeVisible();
 
-  /*
-   * El formulario desaparece al crearse el plan, sustituido por la lista, así
-   * que lo que se comprueba es el efecto y no el mensaje: la plantilla
-   * sugerida fue la del estado de entrada de Vega, que entró en idea.
-   */
-  await expect(
-    page.getByRole("heading", { name: "1. Validación del problema" }),
-  ).toBeVisible();
+  await page.goto("/cartera/vega-predictiva/ruta");
+  await expect(page.getByRole("heading", { name: "Tramo 1 · De idea a MVP" })).toBeVisible();
   await expect(page.getByText("Entró en Idea")).toBeVisible();
-  /* El plazo sale dos veces desde que el tramo se pliega: en su línea y,
-     al abrirlo, en el detalle */
-  await expect(page.getByText("06 abr 2026 → 31 may 2026").first()).toBeVisible();
-
-  // Y ninguna etapa está abierta todavía: el plan existe, el trabajo no
-  await expect(page.getByText("Etapa que toca")).toBeVisible();
-  await expect(
-    page.getByText("Por calendario. Nadie la ha abierto todavía"),
-  ).toBeVisible();
+  await expect(page.locator("#seguimiento").getByText(/borrador, hasta la firma/)).toBeVisible();
 });
 
 test("añadir una etapa exige decir qué se persigue en ella", async ({ page }) => {
@@ -175,12 +164,9 @@ test("los recorridos se configuran desde administración", async ({ page }) => {
     page.getByRole("heading", { name: "Recorridos del programa" }),
   ).toBeVisible();
 
-  // Los tres del catálogo inicial, uno por estado de entrada
-  await expect(page.getByRole("heading", { name: "Desde la idea" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Desde el MVP" })).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Con facturación" }),
-  ).toBeVisible();
+  // Una sola hoja de ruta, en cuatro tramos (REVISION, 22 nov)
+  await expect(page.getByRole("heading", { name: "Hoja de ruta IWL" })).toBeVisible();
+  await expect(page.getByText("De idea a MVP").first()).toBeVisible();
 
   // Y se explica por qué tocarlos aquí no rompe nada en marcha
   await expect(

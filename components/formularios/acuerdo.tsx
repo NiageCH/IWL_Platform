@@ -188,17 +188,17 @@ export function AceptarAnexo({ id, slug }: { id: string; slug: string }) {
 
 /**
  * Firmar el Acuerdo y su Anexo aceptado. Pasa la compañía a incubación:
- * fija etapa, perfil, fase y recorrido, y crea sus KPI y su hoja de ruta.
+ * fija etapa, perfil y fase, y crea sus KPI. La hoja de ruta ya se preparó
+ * con el Anexo (REVISION, 22 nov): al firmar queda viva y abre su primer
+ * tramo.
  */
 export function FirmarAcuerdoCompania({
   companyId,
   slug,
-  plantillas,
   fases,
 }: {
   companyId: string;
   slug: string;
-  plantillas: { id: string; name: string }[];
   fases: { code: string; name: string }[];
 }) {
   return (
@@ -209,7 +209,8 @@ export function FirmarAcuerdoCompania({
             <input type="hidden" name="company_id" value={companyId} />
             <input type="hidden" name="slug" value={slug} />
             <p className="text-xs text-secundario">
-              La compañía pasa a incubación y entra en la cartera, con sus KPI y su hoja de ruta.
+              La compañía pasa a incubación y entra en la cartera, con sus KPI. Su hoja de ruta, la que va en el
+              Anexo, queda viva: empieza su primer tramo y cuenta el plazo.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <Campo etiqueta="Etapa de inversión" obligatorio error={r.ok ? undefined : r.campos?.stage}>
@@ -235,19 +236,6 @@ export function FirmarAcuerdoCompania({
                     </option>
                   ))}
                 </Seleccion>
-              </Campo>
-              <Campo etiqueta="Recorrido">
-                <Seleccion name="roadmap_template" defaultValue="">
-                  <option value="">Sin hoja de ruta todavía</option>
-                  {plantillas.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </Seleccion>
-              </Campo>
-              <Campo etiqueta="Empieza el" error={r.ok ? undefined : r.campos?.roadmap_start}>
-                <Texto type="date" name="roadmap_start" />
               </Campo>
               <Campo etiqueta="Firmado el" obligatorio error={r.ok ? undefined : r.campos?.firmado_on}>
                 <Texto type="date" name="firmado_on" required />

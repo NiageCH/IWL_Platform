@@ -1,10 +1,12 @@
+import Link from "next/link";
+import { SeguimientoTramos } from "@/components/vistas/hoja";
+import { leerSeguimiento } from "@/lib/datos/hoja";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
   ESTADOS_ETAPA,
   avancesDeEtapa,
   leerAvances,
   leerHojaDeRuta,
-  leerPlantillas,
   nombreEstadoEntrada,
   leerAcompanantes,
   leerRepartoAnexo,
@@ -33,7 +35,6 @@ import { personaActual } from "@/lib/supabase/servidor";
 import { EstadoHito } from "@/components/formularios/programa";
 import {
   BorrarAvance,
-  DisenarHojaDeRuta,
   EditorEtapa,
   NuevaEtapa,
   NuevoAvance,
@@ -82,7 +83,7 @@ export async function VistaRuta({
 }) {
   const { compania, permisos } = resumen;
   const persona = await personaActual();
-  const [ruta, avances, evidencias, elegibles, revisiones, acompanantes, reparto] = await Promise.all([
+  const [ruta, avances, evidencias, elegibles, revisiones, acompanantes, reparto, seguimiento] = await Promise.all([
     leerHojaDeRuta(compania.id, compania.entry_state),
     leerAvances(compania.id, persona?.id ?? null),
     leerEvidencias(compania.id, "milestone"),
@@ -90,6 +91,7 @@ export async function VistaRuta({
     leerRevisionesHitos(compania.id),
     permisos.coordina ? leerAcompanantes(compania.id) : Promise.resolve([]),
     leerRepartoAnexo(compania.id),
+    leerSeguimiento(compania.id),
   ]);
   const contexto: ContextoHitos = {
     companyId: compania.id,
@@ -101,35 +103,26 @@ export async function VistaRuta({
   };
 
   if (ruta.etapas.length === 0) {
-    const plantillas = permisos.esIwl ? await leerPlantillas() : [];
 
     return (
       <div className="flex flex-col gap-6">
         <Bloque>
           <TituloBloque>Hoja de ruta</TituloBloque>
           <SinDatos>
-            {permisos.esIwl
-              ? "Este proyecto todavía no tiene hoja de ruta. Se diseña partiendo de la plantilla que corresponda al estado en que entró, y a partir de ahí se edita libremente: la plantilla es el punto de partida, no el programa cerrado."
-              : "IWL todavía no ha publicado la hoja de ruta de este proyecto. Se acuerda al firmar el Anexo, después del diagnóstico inicial."}
+            {permisos.esIwl ? (
+              <>
+                Este proyecto todavía no tiene hoja de ruta. Se prepara con el Anexo, desde la lista de lo que ya tiene:{" "}
+                <Link href={`/cartera/${compania.slug}/programa#asistente-hoja`} className="enlace text-acento-texto">
+                  Preparar la hoja de ruta, en Programa y Anexo
+                </Link>
+                .
+              </>
+            ) : (
+              "IWL todavía no ha preparado la hoja de ruta de este proyecto. Se prepara con la propuesta de Acuerdo, desde lo que ya tenéis, y la verás con el Anexo."
+            )}
           </SinDatos>
         </Bloque>
 
-        {permisos.esIwl && plantillas.length > 0 ? (
-          <DisenarHojaDeRuta
-            slug={compania.slug}
-            companyId={compania.id}
-            estadoEntrada={compania.entry_state}
-            plantillas={plantillas.map((p) => ({
-              id: p.id,
-              nombre: p.nombre,
-              estadoEntrada: p.estadoEntrada,
-              descripcion: p.descripcion,
-              etapas: p.etapas.length,
-              hitos: p.etapas.reduce((t, e) => t + e.hitos.length, 0),
-              meses: p.meses,
-            }))}
-          />
-        ) : null}
 
         {ruta.sueltos.length > 0 ? (
           <Bloque>
@@ -154,6 +147,7 @@ export async function VistaRuta({
 
   return (
     <div className="flex flex-col gap-6">
+      <SeguimientoTramos seguimiento={seguimiento} hoy={new Date().toISOString().slice(0, 10)} />
       <Bloque elevacion={2}>
         <TituloBloque
           accion={
@@ -332,7 +326,7 @@ function TarjetaEtapa({
             ›
           </span>
           <h2 className="text-sm font-semibold tracking-tight text-titular">
-            {etapa.orden + 1}. {etapa.nombre}
+            {etapa.tramo ? `Tramo ${etapa.tramo} · ${etapa.nombre}` : `${etapa.orden + 1}. ${etapa.nombre}`}
           </h2>
           <Estado
             valor={estado}

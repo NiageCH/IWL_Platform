@@ -248,11 +248,6 @@ const esquemaFirma = z.object({
   stage: z.enum(["pre_semilla", "semilla", "serie_a"], { message: "¿En qué etapa entra?" }),
   tech_profile: z.enum(["software", "software_ia", "hardware"], { message: "¿Qué perfil técnico tiene?" }),
   phase_code: texto,
-  roadmap_template: z
-    .union([uuid, z.literal(""), z.null()])
-    .optional()
-    .transform((v) => v || null),
-  roadmap_start: texto,
   firmado_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "¿Qué día se firma?"),
 });
 
@@ -268,8 +263,6 @@ export async function firmarAcuerdo(formData: FormData): Promise<Resultado> {
     p_stage: datos.stage,
     p_tech_profile: datos.tech_profile,
     p_phase_code: datos.phase_code ?? undefined,
-    p_roadmap_template: datos.roadmap_template ?? undefined,
-    p_roadmap_start: datos.roadmap_start ?? undefined,
     p_firmado_on: datos.firmado_on,
   });
   if (falloBase) return traducirError(falloBase);

@@ -1,3 +1,5 @@
+import { ListaDeEntrada } from "@/components/vistas/hoja";
+import { leerListaEntrada } from "@/lib/datos/hoja";
 import { FranjaAviso } from "@/components/vistas/franja-aviso";
 import { companiaPorSlug } from "@/lib/datos/sesion";
 import { CabeceraProyecto } from "@/components/cabecera-proyecto";
@@ -23,6 +25,7 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
   const altas = esIwl(persona?.role) ? await leerAltaCompania(resumen.compania.id) : null;
   const enEntrada = resumen.compania.tramo === "entrada" && esIwl(persona?.role);
   const entrada = enEntrada ? await leerEntrada(resumen.compania.id) : null;
+  const lista = enEntrada ? await leerListaEntrada(resumen.compania.id) : null;
   // Los correos de la compañía —el Acuerdo propuesto, las respuestas—, para IWL
   const correos = esIwl(persona?.role) ? await leerCorreos({ companyId: resumen.compania.id }) : null;
 
@@ -43,6 +46,15 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
             candidatura={entrada.candidatura}
             esDireccion={persona?.role === "admin_iwl"}
             archivada={Boolean(resumen.compania.archived_at)}
+          />
+        ) : null}
+        {lista ? (
+          <ListaDeEntrada
+            lista={lista}
+            companyId={resumen.compania.id}
+            slug={slug}
+            contesta={false}
+            verifica={resumen.permisos.coordina}
           />
         ) : null}
         <VistaResumen resumen={resumen} />

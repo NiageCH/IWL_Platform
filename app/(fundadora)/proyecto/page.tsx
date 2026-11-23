@@ -1,3 +1,5 @@
+import { ListaDeEntrada } from "@/components/vistas/hoja";
+import { leerListaEntrada } from "@/lib/datos/hoja";
 import { companiaDeLaPersona } from "@/lib/datos/sesion";
 import { CabeceraProyecto } from "@/components/cabecera-proyecto";
 import { leerMovimiento } from "@/lib/datos/movimiento";
@@ -18,6 +20,8 @@ export default async function ResumenProyecto() {
     persona ? leerAvisosParaMi(persona.id) : Promise.resolve([]),
     resumen.compania.tramo === "entrada" ? Promise.resolve([]) : leerLoQueLeToca(resumen.compania.id),
   ]);
+
+  const lista = resumen.compania.tramo === "entrada" ? await leerListaEntrada(resumen.compania.id) : null;
 
   // El borrador no le llega (RLS): lo que vea aquí ya se le ha propuesto
   let propuesta: string | null = null;
@@ -40,6 +44,10 @@ export default async function ResumenProyecto() {
       <main className="mx-auto w-full max-w-6xl px-6 py-8">
         <AvisosParaMi avisos={avisos} calculados={calculados} titulo="Te toca" />
         {resumen.compania.tramo === "entrada" ? <EntradaFundadora compania={resumen.compania} propuesta={propuesta} /> : null}
+        {/* Su lista de entrada: «Diagnóstico» o «Lo que ya tenéis» (REVISION, 22 nov) */}
+        {lista && resumen.compania.situacion_societaria ? (
+          <ListaDeEntrada lista={lista} companyId={resumen.compania.id} slug={resumen.compania.slug} contesta verifica={false} />
+        ) : null}
         <VistaResumen resumen={resumen} />
         <EquipoIwl companyId={resumen.compania.id} />
       </main>

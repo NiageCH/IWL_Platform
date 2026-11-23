@@ -54,6 +54,10 @@ acción. Si pone «— », solo lo cierra la acción.
 | **No cuadra** (`sesion_no_cuadra`), **20 nov** | Quien registró la sesión | «Alba dice que no cuadran las horas de "Precios", del 12 nov» | Responder: corregirlas o mantenerlas · **Responder** | `/cartera/<slug>/sesiones#sesion-<id>` | Las corrige o las mantiene (vuelve a ella), se lleva a dirección o se anula | Ella vuelve a confirmar |
 | **Horas en dirección** (`sesion_en_direccion`), **20 nov** | Dirección | «Las horas de "Precios" con Marea no cuadran y han llegado a dirección» | Decidir y cerrar · **Decidir** | `/cartera/<slug>/sesiones#sesion-<id>` | Dirección decide, o se anula | Cuentan para el Anexo; a ella le llega un correo con la decisión |
 
+| **Tramo cerrado** (`tramo_cerrado`, a dirección; `tramo_cerrado_ella`, a ella), **23 nov** | Dirección y las fundadoras de la compañía | «Raíz cerró un tramo de su hoja de ruta el 3 dic» | Ver cómo sigue · **Ver** | `/cartera/<slug>/ruta#seguimiento` · ella, `/proyecto/ruta#seguimiento` | Lo cierra quien lo lee | El tramo siguiente |
+| **Listo para valorar si es invertible** (`listo_para_invertible`), **23 nov** | Dirección | «Raíz cerró el tramo 4 el 3 dic: proyecto listo para valorar si es invertible» | Valorar si es invertible · **Valorar** | `/cartera/<slug>/ruta#seguimiento` | Lo cierra quien lo lee | El cierre (bloque 8) |
+| **Plazo vencido** (`plazo_vencido`), **23 nov** | Dirección, una vez por compañía | «A Raíz se le ha acabado el plazo máximo de su hoja de ruta» | Decidir el cierre · **Revisar** | `/cartera/<slug>/ruta#seguimiento` | Lo cierra quien lo lee | El cierre (bloque 8). No se cierra nada solo |
+
 ## Los calculados
 
 No se guardan: salen cada vez del estado, así que desaparecen solos cuando la

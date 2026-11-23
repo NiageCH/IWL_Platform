@@ -30,6 +30,10 @@ export type TipoAviso =
   | "hito_sin_revisar"
   | "candidatura_nueva"
   | "recomendacion_pendiente"
+  | "tramo_cerrado"
+  | "tramo_cerrado_ella"
+  | "listo_para_invertible"
+  | "plazo_vencido"
   | "acta_por_firmar"
   | "anexo_aceptado"
   | "documento_entregado"
@@ -154,6 +158,47 @@ export function presentarAviso(a: DatosAviso): AvisoPresentado {
         href: ficha("/programa", "anexo"),
         ancla: "anexo",
         hasVenidoA: `responder al comentario de ${quien} sobre el Acuerdo de ${sitio}`,
+      };
+    // La hoja de ruta en cuatro tramos (REVISION, 23 nov)
+    case "tramo_cerrado":
+      return {
+        ...base,
+        paso: `${sitio} cerró un tramo de su hoja de ruta el ${dia(a.created_at)}`,
+        toca: "Ver cómo sigue",
+        verbo: "Ver",
+        href: ficha("/ruta", "seguimiento"),
+        ancla: "seguimiento",
+        hasVenidoA: `ver cómo sigue la hoja de ruta de ${sitio}`,
+      };
+    case "tramo_cerrado_ella":
+      return {
+        ...base,
+        paso: `Habéis cerrado un tramo de vuestra hoja de ruta el ${dia(a.created_at)}`,
+        toca: "Ver el siguiente",
+        verbo: "Ver",
+        href: conAviso("/proyecto/ruta", "seguimiento"),
+        ancla: "seguimiento",
+        hasVenidoA: "ver el tramo que empieza",
+      };
+    case "listo_para_invertible":
+      return {
+        ...base,
+        paso: `${sitio} cerró el tramo 4 el ${dia(a.created_at)}: proyecto listo para valorar si es invertible`,
+        toca: "Valorar si es invertible",
+        verbo: "Valorar",
+        href: ficha("/ruta", "seguimiento"),
+        ancla: "seguimiento",
+        hasVenidoA: `valorar si ${sitio} es invertible`,
+      };
+    case "plazo_vencido":
+      return {
+        ...base,
+        paso: `A ${sitio} se le ha acabado el plazo máximo de su hoja de ruta`,
+        toca: "Decidir el cierre",
+        verbo: "Revisar",
+        href: ficha("/ruta", "seguimiento"),
+        ancla: "seguimiento",
+        hasVenidoA: `decidir qué se hace con ${sitio}, que ha agotado su plazo`,
       };
     case "cambio_estadio":
       return {

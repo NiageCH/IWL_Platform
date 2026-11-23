@@ -1,3 +1,6 @@
+import { AsistenteHoja, ResumenTramos } from "@/components/vistas/hoja";
+import { leerListaEntrada, leerSeguimiento } from "@/lib/datos/hoja";
+import { plazoMaximoMeses } from "@/lib/tramos";
 import Link from "next/link";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import type { ResumenCompania } from "@/lib/datos/compania";
@@ -61,6 +64,11 @@ export async function VistaPrograma({
       .order("created_at", { ascending: false }),
   ]);
 
+  const [seguimiento, lista] = await Promise.all([
+    leerSeguimiento(companyId),
+    esIwl ? leerListaEntrada(companyId) : Promise.resolve(null),
+  ]);
+
   const listaHitos = hitos.data ?? [];
   const cumplidos = listaHitos.filter((h) => h.status === "cumplido").length;
   const queCondicionan = listaHitos.filter((h) => h.gates_investable);
@@ -110,6 +118,31 @@ export async function VistaPrograma({
         </ol>
         <BloqueEstadio compania={compania} esAdmin={resumen.permisos.esAdmin} />
       </Bloque>
+
+      {/* Preparar la hoja de ruta, con el Anexo en borrador (REVISION, 22 y 23 nov) */}
+      {/* Mientras el Acuerdo no esté firmado: en entrada, o una compañía sin hoja de ruta todavía */}
+      {esIwl && lista && (compania.tramo === "entrada" || !seguimiento.tramos.length || !seguimiento.firma) ? (
+        <AsistenteHoja
+          lista={lista}
+          seguimiento={seguimiento}
+          companyId={companyId}
+          slug={compania.slug}
+          hoy={new Date().toISOString().slice(0, 10)}
+          anexoEnBorrador={!anexo.data || anexo.data.status === "borrador"}
+        />
+      ) : null}
+
+      {/* La sección I del Anexo: los tramos con sus hitos y el plazo máximo */}
+      {seguimiento.tramos.length && seguimiento.estadio ? (
+        <Bloque id="anexo-hoja">
+          <TituloBloque accion={<Metadato>Plazo máximo: {plazoMaximoMeses(seguimiento.estadio)} meses desde la firma</Metadato>}>
+            I · Hitos y calendario
+          </TituloBloque>
+          <div className="px-4 py-4">
+            <ResumenTramos seguimiento={seguimiento} />
+          </div>
+        </Bloque>
+      ) : null}
 
       {anexo.data ? (
         <Bloque>

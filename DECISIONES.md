@@ -2051,3 +2051,24 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La columna `milestones.accrues_equity_pct` no se borra.** Se queda vacía y una restricción impide rellenarla, también con la clave de servicio. El modelo la reserva para el equity de los mentores no pagados, que se definirá más adelante y no se construye todavía. Las funciones que la leen siguen valiendo: con todo a nulo, no hay nada que devengar, y no hay que rehacerlas dos veces.
 - **En la aportación**, el bloque «Equity y financiación» enseña el equity de IWL tal como lo pacta el Anexo, «desde la firma del Acuerdo; no depende de hitos», junto a la financiación liberada hito a hito.
 
+## 2026-11-23 · La hoja de ruta en cuatro tramos · SUSTITUYE a las ocho etapas y los tres recorridos
+
+- **Una sola hoja de ruta, «Hoja de ruta IWL», en cuatro tramos con sus hitos fundamentales** (REVISION, 22 y 23 nov · bloque 5): de idea a MVP (6 meses), de MVP a piloto (4), de piloto a facturación (3) y de facturación a invertible (5). La crea la migración, porque es el programa y no un dato de prueba. Los tres recorridos de antes quedan inactivos.
+- **Las «tres plantillas» son la misma hoja de ruta empezando en otro tramo.** El tramo de entrada sale del estadio (`app.tramo_de_entrada`): idea → 1, MVP sin piloto → 2, MVP con piloto → 3, facturando → 4. Tener una sola fuente evita que las tres se desvíen.
+- **El plazo máximo es la suma de los tramos que le quedan** (18, 12, 8 o 5 meses) y cuenta desde la firma del Acuerdo. Si vence, no se cierra nada solo: el cron avisa a dirección una vez (`plazo_vencido`) y decide dirección (bloque 8).
+- **La lista de entrada (`entry_checks`)** es la de los hitos fundamentales anteriores a su entrada: en idea, los del tramo 1. Se llama «Diagnóstico» en idea y «Lo que ya tenéis» en el resto.
+  - Ella contesta «Ya lo tenemos», con archivo obligatorio, o «Todavía no».
+  - Quien coordina verifica cada «ya lo tenemos»: «Verificado», o «No basta» con comentario.
+  - Si ella cambia una respuesta, vuelve a estar por verificar.
+  - Con la hoja de ruta hecha, la lista queda fija.
+- **Generar la hoja de ruta** (paso 2 del asistente) crea el tramo de entrada y los siguientes, con las fechas repartidas por la duración de cada tramo.
+  - Lo verificado entra como cumplido y lo demás como pendiente.
+  - Los hitos de tramos anteriores van dentro del tramo de entrada, marcados con el tramo de donde vienen (`from_tramo`). No se abre un tramo viejo.
+  - Se genera en borrador con el Anexo y se rehace mientras no se haya propuesto.
+  - Al firmar, el primer tramo pasa a en curso. Ya no se elige recorrido al firmar.
+- **Un tramo se cierra solo al validarse su último hito** (`milestones_cerrar_tramo`), y se abre el siguiente. Avisa a ella (`tramo_cerrado_ella`) y a dirección (`tramo_cerrado`). Al cerrar el tramo 4, el aviso a dirección es `listo_para_invertible`. Antes de la firma no se cierra nada, porque es un borrador.
+- **Un hito fundamental lo quita solo dirección, con motivo** (`quitar_hito`), que queda en el registro. Un hito propio lo quita quien coordina, sin más. Rehacer el borrador sí puede quitarlos, porque es la misma hoja de ruta otra vez.
+- **La sección I del Anexo** enseña los tramos con sus hitos y el plazo máximo.
+- **La semilla genera las hojas de ruta con la función interna** (`app.copiar_hoja_iwl`), sin sesión. La pública (`generar_hoja_de_ruta`) pide ser quien coordina.
+- **Las capturas de una propuesta tienen su propia configuración** (`playwright.capturas.config.ts`), fuera de la suite. Dejan las imágenes en `docs/constancia/`.
+

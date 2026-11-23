@@ -77,7 +77,7 @@ export function LineaRecorrido({
                 aqui ? "font-semibold text-titular" : "text-secundario",
               )}
             >
-              {etapa.orden + 1}. {etapa.nombre}
+              {etapa.tramo ? `Tramo ${etapa.tramo} · ${etapa.nombre}` : `${etapa.orden + 1}. ${etapa.nombre}`}
             </Link>
 
             {hitos.length > 0 ? (

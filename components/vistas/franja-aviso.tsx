@@ -62,6 +62,10 @@ const QUIEN_DESPUES: Partial<Record<TipoAviso, QuienMueve | "mentor">> = {
   cambio_estadio: "ella",
   candidatura_nueva: "iwl",
   recomendacion_pendiente: "iwl",
+  tramo_cerrado: "ella",
+  tramo_cerrado_ella: "ella",
+  listo_para_invertible: "direccion",
+  plazo_vencido: "direccion",
   acta_por_firmar: "iwl",
   documento_entregado: "ella",
 };

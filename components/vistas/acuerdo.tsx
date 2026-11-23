@@ -78,7 +78,7 @@ export async function PropuestaAcuerdo({
   const aceptado = anexo.status === "aceptado";
 
   const borrador = esIwl && anexo.status === "borrador";
-  const [comentarios, candidatura, fundadoras, plantillas, fases, horquillas, hito] = await Promise.all([
+  const [comentarios, candidatura, fundadoras, fases, horquillas, hito] = await Promise.all([
     supabase
       .from("anexo_comentarios")
       .select("id, texto, created_at, respuesta, respondido_at")
@@ -91,9 +91,6 @@ export async function PropuestaAcuerdo({
     borrador
       ? supabase.from("company_members").select("id").eq("company_id", compania.id).eq("member_role", "fundadora")
       : Promise.resolve({ data: [] as { id: string }[] }),
-    esIwl && enEntrada && aceptado
-      ? supabase.from("roadmap_templates").select("id, name").order("name")
-      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     esIwl && enEntrada && aceptado
       ? supabase.from("phases").select("code, name").order("order_index")
       : Promise.resolve({ data: [] as { code: string; name: string }[] }),
@@ -210,7 +207,6 @@ export async function PropuestaAcuerdo({
           <FirmarAcuerdoCompania
             companyId={compania.id}
             slug={compania.slug}
-            plantillas={plantillas.data ?? []}
             fases={fases.data ?? []}
           />
         </div>
