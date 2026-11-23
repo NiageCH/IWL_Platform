@@ -7,6 +7,99 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · La hoja de ruta de cada compañía, con el patrón de Administración · commit 64185ac
+
+**Qué cambió**
+- El seguimiento abre con los cuatro tramos en tarjetas: número grande, nombre, estado e hitos cumplidos. Pulsar una baja a su tramo. Los tramos de antes de la entrada salen en gris, con «Entró después de este tramo».
+- Cada tramo es una tarjeta con la cabecera siempre a la vista: título, estado y chips de hitos, horas y fechas. Para IWL lleva «Añadir hito», que es el botón principal, y el menú del tramo «⋯» con «Editar el tramo» y «Borrar el tramo», este en rojo.
+- Lo de dentro (objetivo, hitos y diario) se pliega salvo en el tramo en curso, con su botón «Ver los hitos y el diario».
+- Cada hito es una fila: número, título en negrita, el criterio en gris si no repite el título, y chips. A la derecha van la fecha, el estado y el menú «⋯».
+- El menú «⋯» del hito tiene «Historial y ajustes» (o «Historial» para ella), «Cambiar la fecha», «Mover a otro tramo» y «Quitar». «Quitar» va en rojo y pide confirmación en el panel; en un hito fundamental, también el motivo.
+- Todo se edita en el panel lateral: añadir un hito, editar o borrar el tramo, la fecha, mover, quitar, la nota, quién revisa y el efecto económico.
+- En la fila ya no hay ni el campo de fecha, ni el desplegable para mover, ni el «Quitar» suelto, ni los ajustes plegados.
+- El asistente («Ajustar», en Programa y Anexo) usa las mismas piezas: «Añadir hito» en la cabecera de cada tramo y el menú «⋯» en cada fila.
+- Capturas de antes y después de Vega (idea) y Raíz (facturando), en escritorio y en móvil, más el menú abierto y el panel, en `docs/constancia/compania-hoja-*.png`. Se sacan con `tests/capturas/compania-hoja.spec.ts`.
+- Pruebas de interfaz: añadir un hito y quitarlo desde el panel, borrar un tramo desde su menú, la fecha fuera de plazo en el asistente y el historial de ella en el panel.
+
+**Qué decidí yo**
+- No hay estilos nuevos: usé `MenuAcciones`, `PanelLateral`, `.pastilla`, `.tarjeta` y `boton-marca`.
+- Los formularios del tramo y del hito pasaron a ser formularios de panel. Crear un hito, editar un tramo y mover un hito ya no devuelven mensaje: el panel se cierra y el aviso de que se ha hecho es la pantalla cambiada (la regla de `<Formulario>`).
+- La casilla «Condiciona invertible» de un hito nuevo solo la ve dirección.
+- Vega no trae hoja de ruta en la semilla. La prueba de capturas se la genera desde el asistente y se la quita al acabar.
+- La línea de puntos, la barra de hitos y la cifra de recorrido se quedan como estaban: no eran lo que se pedía.
+- «Añadir un tramo» sigue abajo, como desplegable secundario.
+
+**Qué necesito que decidas**
+1. ¿Apruebas las capturas `docs/constancia/compania-hoja-*-despues-*.png`? No despliego hasta que digas.
+2. Si la estructura te vale, la siguiente candidata con el mismo patrón sería la pestaña Programa y Anexo. ¿Quieres que siga por ahí o paro aquí?
+
+**Estado**
+- Las tres suites, en verde dos veces seguidas sobre 64185ac: unit 340, RLS 361 y e2e 480 (7,6 min cada pasada).
+- Sin desplegar: espera tu visto bueno.
+
+**Siguiente**
+- Con la aprobación, desplegar la rama entera. Hay una migración nueva, `20261127100000_graduar_invertible.sql`.
+
+---
+
+## 2026-11-23 · Invertible: «Graduada» solo con los hitos marcados validados · commit 55fd280
+
+**Qué cambió**
+- «Graduada» solo se puede elegir con validados todos los hitos de la compañía que condicionan invertible. Si falta alguno, la opción sale desactivada con «Faltan N hitos para poder graduarla» y solo quedan las dos «Finalizada».
+- Lo impone la base (`app.guard_graduada`), también si alguien escribe la columna a mano con la clave de servicio.
+- La cuenta la da `hitos_para_graduar`, que solo lee dirección.
+- La marca «Condiciona invertible» se pone y se quita en Administración → Hoja de ruta, en el panel de editar o añadir un hito. Por defecto la llevan los cuatro fundamentales del tramo 4, y ya venían así de la plantilla.
+- En la hoja de una compañía, quien coordina no puede quitarle la marca a un hito (`app.guard_marca_invertible`).
+- El aviso del tramo 4 dice ahora «Lista para graduar: confirma si es invertible» y su botón es «Confirmar». Actualizados la guía de dirección y `docs/AVISOS.md`.
+- Pruebas RLS nuevas en `tests/rls/graduar.test.ts`: sin marcados, con pendientes, escribiendo la columna a mano, la marca intocable para quien coordina, graduar con todos validados y «Finalizada» libre. En la de interfaz del cierre, «Graduada» desactivada con «Faltan 1 hito».
+
+**De dónde sale el chip y qué hace** (lo pedías en la entrada anterior)
+- Sale de `gates_investable`, que ya existía en la plantilla y en cada hito: se copia al generar la hoja de ruta.
+- Antes, la plataforma no decidía nada sola con él. Se usaba en el cálculo del estado invertible de la ficha, impedía quitarle la validación al hito y salía en informes y en la línea base.
+- Desde este commit, además, bloquea «Graduada», como has decidido.
+
+**Qué decidí yo**
+- «Validado» es el hito en `cumplido`. Con la marca, la validación no se puede quitar y ella no lo da por cumplido; quien lo pone es quien coordina o revisa.
+- Si la compañía no tiene ningún hito marcado, tampoco se gradúa: que falten cero de cero no dice que sea invertible. Si quitas la marca a todos en la plantilla, las hojas nuevas no se podrán graduar, y la pantalla lo dice.
+- Quien coordina sí puede crear un hito marcado (más exigencia, no menos), pero el formulario solo se lo ofrece a dirección.
+- No he cargado ningún texto de criterio ni de evidencia: los carga Rodrigo.
+
+**Qué necesito que decidas**
+1. ¿Te vale que una compañía sin ningún hito marcado no se pueda graduar?
+
+**Estado**
+- Las suites, en verde dos veces seguidas (ver la entrada de 64185ac). Hay una migración: `20261127100000_graduar_invertible.sql`.
+- Sin desplegar.
+
+**Siguiente**
+- Desplegar junto con el resto cuando apruebes las capturas.
+
+---
+
+## 2026-11-23 · En móvil, el menú de arriba va en un botón · commits f33d703 y f617638
+
+**Qué cambió**
+- Por debajo de `lg`, la barra de arriba es una sola fila: marca, «Menú» y «Salir». «Menú» despliega las pestañas enteras debajo de la barra, en las filas que hagan falta, y lleva la suma de los pendientes. Se cierra al cambiar de página y con Escape.
+- Antes iban en la fila de la marca con desbordamiento horizontal, y salían recortadas sobre la cabecera («rtera», «nbudo», «ministración»).
+- Prueba en móvil (Pixel y iPhone) que lo recorre en cartera, embudo, administración, compañías, la ficha, la hoja de ruta de una compañía y la guía. Comprueba que la barra plegada es una fila, que cada pestaña cabe entera y que la página no desborda en horizontal.
+- f617638 corrige esa prueba, que en /embudo confundía con el menú un enlace «Embudo» del propio contenido.
+
+**Qué decidí yo**
+- El punto de corte es `lg`, no `sm`. Guía, perfil y la pantalla sin compañía enseñan la barra también en escritorio, y entre 640 y 1024 px las pestañas tampoco cabían.
+- Arreglo 3 de la entrada (el criterio repetido): ya estaba hecho en aa75327, y no he inventado textos.
+- El arreglo 2 (el chip) lo sustituye tu entrada de invertible: ver la entrada de 55fd280.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- En verde con lo demás (ver la entrada de 64185ac). Sin desplegar.
+
+**Siguiente**
+- Va en el mismo despliegue.
+
+---
+
 ## 2026-11-23 · Administración → Hoja de ruta, que no parezca un Word · commit aa75327
 
 **Qué cambió**
