@@ -7,6 +7,64 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Bloque 5: la hoja de ruta en cuatro tramos y los diez arreglos · commit e95647e, 57f6277
+**Qué cambió**
+- e95647e, primera parte. Una sola hoja de ruta en cuatro tramos con sus hitos fundamentales. La lista de entrada («Diagnóstico» / «Lo que ya tenéis») sale de ahí. Lleva el asistente, el seguimiento, el cierre de tramo con avisos y el aviso de plazo vencido.
+- 57f6277, los diez arreglos de la REVISION:
+  1. Radios: un círculo vacío sin elegir y un punto de marca elegido.
+  2. Selector de archivo en castellano (`<SelectorArchivo>`), el mismo que en la evidencia de un hito.
+  3. La lista guarda sola, sin botón. «Todavía no» se guarda al elegirlo y «Ya lo tenemos» al subir el archivo. Muestra «Guardado», o «Falta el archivo» si no lo hay.
+  4. «Verificar» y «No basta» van iguales, y el comentario es obligatorio.
+  5. El asistente enseña solo el paso en el que está. Los anteriores quedan en una línea con «Volver».
+  6. Ajustar se hace ahí mismo: la fecha de cada hito, añadir uno propio y quitar uno. Un fundamental solo lo quita dirección, con motivo.
+  7. En el tramo de entrada, una línea plegada con «N hitos ya cumplidos al entrar». Debajo, los pendientes: primero los de tramos anteriores, con su etiqueta.
+  8. El paso 3 se bloquea con «Faltan N por verificar» y un enlace a la lista. La base tampoco deja proponer en ese caso.
+  9. Las fechas salen de la firma; antes de firmar, de la «Fecha prevista de firma». Ningún hito va más allá del plazo («Fuera del plazo del programa»), salvo que lo guarde dirección.
+  10. El seguimiento dice «9 cumplidos al entrar · 2 de 6 pendientes hechos».
+- Mentor principal:
+  - se elige en el acta del comité al preseleccionar y entra con la compañía;
+  - en entrada ve la lista y el asistente, y verifica;
+  - el due diligence queda solo para IWL mientras la compañía está en entrada;
+  - si verifica dirección, queda dicho quién lo hizo.
+- Semilla coherente:
+  - Raíz firma el 1 sept con 5 meses y acaba el 31 ene 2027, con dos hitos de su tramo hechos;
+  - Marea tiene 12 meses desde el 6 de marzo.
+- Capturas rehechas: 16 imágenes, de cuatro pantallas en escritorio y móvil, en claro y en oscuro. Están en `docs/constancia/IWL_HojaDeRuta_*.png`, que no va al repositorio.
+
+**Qué decidí yo**
+- Edité la migración del bloque 5 (`20261123100000`) en vez de añadir otra, porque no está desplegada. Ya está commiteada en e95647e: lo digo para que no sorprenda el cambio.
+- Al firmar, las fechas se corren solo en la primera firma. Renovar el Anexo no puede mover una hoja de ruta en marcha. La REVISION no lo decía.
+- El último día del plazo es la firma más los meses, menos un día. El aviso de plazo vencido usa la misma cuenta que el guardián de las fechas. Antes había una diferencia de un día entre las dos.
+- Los radios se arreglan para toda la plataforma, no solo en la lista. El selector de archivo también va en la evidencia de un hito.
+- El paso del asistente va en la dirección (`?paso=`).
+- Desde el asistente no se cambian las fechas de los tramos, solo las de los hitos. Las de los tramos salen de la firma.
+- «Ajustar» reutiliza `NuevoHito` tal cual, con su rótulo «Añadir un hito a esta etapa».
+- El mentor ve la lista y el asistente, pero no la ficha de entrada de IWL (candidatura y decisión). Son datos del embudo que no puede leer.
+- La decisión de incorporación no tiene campo de mentor. Si se cambia el mentor, se hace en Equipo. Todo cuelga de la compañía, así que el nuevo lo hereda sin hacer nada.
+- Mientras hay algo por verificar, el botón de proponer el Acuerdo desaparece y se explica por qué.
+
+**Qué necesito que decidas**
+1. ¿El mentor debe ver también la ficha de entrada de IWL (candidatura, decisión)? Ahora solo ve la ficha de la compañía con la lista.
+2. ¿Hace falta elegir el mentor en la decisión de incorporación, o basta con cambiarlo en Equipo?
+3. Pendiente de este bloque, sin hacer todavía:
+   - la sección I en el PDF del Anexo;
+   - las reglas de cambio tras la firma, con su registro;
+   - editar los textos de los hitos en Administración.
+   ¿Van en la segunda parte del bloque 5 o antes del 8?
+
+**Estado**
+- Unitarias: 337.
+- RLS: 294, dos veces.
+- Interfaz: 458 dos veces, con 4 saltadas.
+- tsc y lint limpios.
+- Sin desplegar: hay dos migraciones nuevas sin subir, `20261123100000` y `20261123110000`.
+
+**Siguiente**
+- Tu revisión de las capturas.
+- Después, lo pendiente del bloque 5 y el bloque 8 (cierre).
+
+---
+
 ---
 
 ## 2026-11-22 · Modelo nuevo, bloque 6: equity desde la firma · commit 8356a1f
