@@ -1,68 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  abrirAnexo,
-  cambiarEstadoHito,
-  guardarAnexo,
-} from "@/lib/acciones/programa";
-import type { EstadoVisual } from "@/lib/estados";
-import { cifraEquity, cn, euros, fecha } from "@/lib/utils";
+import { abrirAnexo, guardarAnexo } from "@/lib/acciones/programa";
+import { cifraEquity, euros, fecha } from "@/lib/utils";
 import { finAnexo, valorHoras } from "@/lib/anexo";
 import {
   AreaTexto,
   Boton,
   Campo,
   Formulario,
-  Seleccion,
   Texto,
 } from "@/components/ui/formulario";
-
-/**
- * Estado de un hito.
- *
- * La compañía lo mueve a «en curso» y aporta evidencia; confirmarlo como
- * cumplido es de IWL, y por eso esa opción no se le ofrece. Quien de verdad lo
- * impide es un trigger de la base.
- */
-export function EstadoHito({
-  slug,
-  id,
-  estado,
-  visual,
-  puedeConfirmar,
-}: {
-  slug: string;
-  id: string;
-  estado: string;
-  /** El estado visual, para que el control lleve su color */
-  visual: EstadoVisual;
-  puedeConfirmar: boolean;
-}) {
-  return (
-    <Formulario accion={cambiarEstadoHito} className="gap-0">
-      {(resultado) => (
-        <>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="id" value={id} />
-          <Seleccion
-            key={estado}
-            name="status"
-            defaultValue={estado}
-            onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className={cn("select-estado py-1 text-xs", `es-${visual}`)}
-            error={!resultado.ok}
-          >
-            <option value="pendiente">Pendiente</option>
-            <option value="en_curso">En curso</option>
-            <option value="retrasado">Retrasado</option>
-            {puedeConfirmar ? <option value="cumplido">Cumplido</option> : null}
-          </Seleccion>
-        </>
-      )}
-    </Formulario>
-  );
-}
 
 /**
  * Abrir el Anexo cuando no hay ninguno.

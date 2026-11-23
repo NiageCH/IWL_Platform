@@ -1,4 +1,5 @@
 import { CalendarClock, ShieldAlert, Target, Wallet } from "lucide-react";
+import { ESTADIOS, conAcuerdoFirmado, esEstadio, etiquetaEtapa } from "@/lib/estadios";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ChipCompania } from "@/components/chip-compania";
@@ -36,12 +37,6 @@ import { EnEntrada } from "@/components/vistas/en-entrada";
 import { direccionBase } from "@/lib/direccion";
 
 export const metadata = { title: "Cartera · Plataforma IWL" };
-
-const ETAPAS: Record<string, string> = {
-  pre_semilla: "Pre-semilla",
-  semilla: "Semilla",
-  serie_a: "Serie A",
-};
 
 /**
  * Dashboard de cohorte (§4.7): una fila por compañía con fase, semáforo,
@@ -298,8 +293,10 @@ export default async function Cartera() {
                     {c.compania.name}
                   </Link>
                   <span className="block truncate text-xs text-metadato">
-                    {c.compania.stage ? (ETAPAS[c.compania.stage] ?? c.compania.stage) : "Sin etapa todavía"}
-                    {c.compania.phases?.name ? ` · ${c.compania.phases.name}` : ""}
+                    {/* Estadio y etapa, del estadio y no de las vías antiguas (REVISION, 23 nov) */}
+                    {esEstadio(c.compania.entry_state)
+                      ? `${ESTADIOS[c.compania.entry_state]} · ${etiquetaEtapa(c.compania.entry_state, conAcuerdoFirmado(c.compania.annexes))}`
+                      : "Sin estadio"}
                     {describirSituacion(c.compania) ? ` · ${describirSituacion(c.compania)}` : ""}
                   </span>
                   {c.compania.is_demo ? (

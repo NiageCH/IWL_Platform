@@ -1,4 +1,5 @@
 import { AsistenteHoja, ResumenTramos } from "@/components/vistas/hoja";
+import { conAcuerdoFirmado, esEstadio, etiquetaEtapa } from "@/lib/estadios";
 import { leerListaEntrada, leerSeguimiento, resumenLista } from "@/lib/datos/hoja";
 import { plazoMaximoMeses } from "@/lib/tramos";
 import Link from "next/link";
@@ -84,7 +85,11 @@ export async function VistaPrograma({
     <div className="flex flex-col gap-6">
       <Bloque>
         <TituloBloque
-          accion={<Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>}
+          accion={
+            <Metadato>
+              {etiquetaEtapa(esEstadio(compania.entry_state) ? compania.entry_state : null, conAcuerdoFirmado(compania.annexes))}
+            </Metadato>
+          }
         >
           Fase del programa
         </TituloBloque>

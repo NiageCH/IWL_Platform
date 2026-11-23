@@ -39,35 +39,6 @@ function refrescar(slug: string) {
   revalidatePath("/admin", "layout");
 }
 
-const esquemaHito = z.object({
-  slug: textoObligatorio(),
-  id: uuid,
-  status: z.enum(["pendiente", "en_curso", "cumplido", "retrasado"]),
-  evidence: textoOpcional,
-});
-
-export async function cambiarEstadoHito(formData: FormData): Promise<Resultado> {
-  const { datos, fallo } = validar(esquemaHito, formData);
-  if (fallo) return fallo;
-
-  const supabase = await clienteServidor();
-
-  const cambios =
-    datos.evidence === null
-      ? { status: datos.status }
-      : { status: datos.status, evidence: datos.evidence };
-
-  const { error: falloBase } = await supabase
-    .from("milestones")
-    .update(cambios)
-    .eq("id", datos.id);
-
-  if (falloBase) return traducirError(falloBase);
-
-  refrescar(datos.slug);
-  return ok();
-}
-
 const esquemaIntroduccion = z.object({
   slug: textoObligatorio(),
   id: uuid,

@@ -87,16 +87,19 @@ test("la leyenda nombra los cinco estados y aparece una sola vez", async ({
   }
 });
 
-test("el recorrido abre con la línea de puntos y marca dónde se está", async ({
+test("el recorrido abre con los cuatro tramos y marca el que está en curso", async ({
   page,
 }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/ruta");
 
-  await expect(page.getByText("Estás aquí")).toHaveCount(1);
+  // Un solo resumen (REVISION, 23 nov): las cuatro tarjetas, una en curso
+  const tramos = page.locator("#seguimiento ol[aria-label='Los tramos'] > li");
+  await expect(tramos).toHaveCount(4);
+  await expect(page.locator("#seguimiento li[aria-current='step']")).toHaveCount(1);
 
   /*
-   * Y cada punto de la línea lleva a su tarjeta. Sin eso la línea sería un
-   * adorno: se mira, se entiende y hay que bajar a buscar a mano.
+   * Y cada tarjeta lleva a su tramo. Sin eso el resumen sería un adorno:
+   * se mira, se entiende y hay que bajar a buscar a mano.
    */
   const destino = await page
     .locator("a[href^='#etapa-']")

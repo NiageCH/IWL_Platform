@@ -34,18 +34,14 @@ import {
   RevisionDeHito,
 } from "@/components/formularios/hito";
 import { personaActual } from "@/lib/supabase/servidor";
-import { EstadoHito } from "@/components/formularios/programa";
-import { BorrarAvance, NuevaEtapa, NuevoAvance } from "@/components/formularios/ruta";
+import { BorrarAvance, NuevoAvance } from "@/components/formularios/ruta";
 import {
   Bloque,
-  Cifra,
-  Etiqueta,
   Metadato,
   SinDatos,
   TituloBloque,
 } from "@/components/ui/primitivas";
 import { Estado, LeyendaEstados } from "@/components/ui/estado";
-import { BarraHitos, LineaRecorrido } from "@/components/linea-recorrido";
 import { estadoVisual } from "@/lib/estados";
 import { euros, fecha, numero } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -139,82 +135,17 @@ export async function VistaRuta({
     );
   }
 
-  const pctHitos =
-    ruta.hitosTotales > 0
-      ? Math.round((ruta.hitosCumplidos / ruta.hitosTotales) * 100)
-      : null;
+  const enCurso = seguimiento.tramos.find((t) => !t.cerrado)?.id ?? ruta.etapaActual?.id ?? null;
 
   return (
     <div className="flex flex-col gap-6">
-      <SeguimientoTramos seguimiento={seguimiento} hoy={new Date().toISOString().slice(0, 10)} />
-      <Bloque elevacion={2}>
-        <TituloBloque
-          accion={
-            compania.entry_state ? (
-              <Etiqueta>Entró en {nombreEstadoEntrada(compania.entry_state)}</Etiqueta>
-            ) : null
-          }
-        >
-          Hoja de ruta
-        </TituloBloque>
-        <div className="grid gap-6 px-4 py-4 sm:grid-cols-4">
-          <Cifra
-            destacada
-            valor={pctHitos === null ? "—" : `${pctHitos} %`}
-            etiqueta="Recorrido"
-            nota={`${ruta.hitosCumplidos} de ${ruta.hitosTotales} hitos cumplidos`}
-          />
-          <Cifra
-            valor={ruta.etapaActual ? ruta.etapaActual.nombre : "—"}
-            etiqueta={ruta.etapaAbierta ? "Tramo en curso" : "Tramo que toca"}
-            nota={
-              !ruta.etapaActual
-                ? "Ningún tramo abierto ni en plazo"
-                : ruta.etapaAbierta
-                  ? ruta.etapaActual.fin
-                    ? `Hasta el ${fecha(ruta.etapaActual.fin)}`
-                    : "Sin fecha de cierre"
-                  : "Por calendario. Nadie la ha abierto todavía"
-            }
-          />
-          <Cifra
-            valor={numero(ruta.horasImputadas)}
-            etiqueta="Horas de IWL"
-            referencia={
-              ruta.horasPrevistas > 0
-                ? `de ${numero(ruta.horasPrevistas)} h`
-                : undefined
-            }
-            nota={
-              ruta.horasPrevistas > 0
-                ? "previstas en el plan"
-                : "sin previsión por tramo"
-            }
-          />
-          <Cifra
-            valor={`${ruta.etapas.filter((e) => e.estado === "completada").length} / ${ruta.etapas.length}`}
-            etiqueta="Tramos cerrados"
-          />
-        </div>
-
-        {/*
-          El plan entero en una línea.
-
-          Seis tarjetas de media pantalla cada una no contestan «¿por dónde
-          vamos?» sin leérselas las seis. Aquí se ve de un vistazo, con el
-          tramo en el que se está marcado, y cada punto baja a su tarjeta.
-        */}
-        <div className="border-t border-filete">
-          <LineaRecorrido
-            etapas={ruta.etapas}
-            etapaActualId={ruta.etapaActual?.id ?? null}
-          />
-        </div>
-
-        <div className="border-t border-filete px-4 py-4">
-          <BarraHitos etapas={ruta.etapas} sueltos={ruta.sueltos} />
-        </div>
-      </Bloque>
+      <SeguimientoTramos
+        seguimiento={seguimiento}
+        hoy={new Date().toISOString().slice(0, 10)}
+        entrada={compania.entry_state ? nombreEstadoEntrada(compania.entry_state) : null}
+        horas={{ imputadas: ruta.horasImputadas, previstas: ruta.horasPrevistas }}
+        actualizarFirma={permisos.esIwl ? `/cartera/${compania.slug}/programa?paso=1#asistente-hoja` : null}
+      />
 
       <ol className="flex flex-col gap-4">
         {ruta.etapas.map((etapa) => (
@@ -228,19 +159,14 @@ export async function VistaRuta({
               permisos={permisos}
               contexto={contexto}
               // Y la que tiene algo entregado: el aviso lleva a ese hito, y plegado no se ve
-              abierta={etapa.id === ruta.etapaActual?.id || etapa.hitos.some((h) => h.estado === "entregado")}
+              // El mismo tramo en curso que dice el resumen: el primero sin cerrar
+              abierta={etapa.id === enCurso || etapa.hitos.some((h) => h.estado === "entregado")}
             />
           </li>
         ))}
       </ol>
 
-      {permisos.esIwl ? (
-        <NuevaEtapa
-          slug={compania.slug}
-          companyId={compania.id}
-          siguienteOrden={Math.max(...ruta.etapas.map((e) => e.orden), -1) + 1}
-        />
-      ) : null}
+      {/* Los tramos son cuatro y fijos: no se añaden (REVISION, 23 nov) */}
 
       {ruta.sueltos.length > 0 ? (
         <Bloque>
@@ -308,8 +234,11 @@ function TarjetaEtapa({
   /** El tramo en el que está el proyecto se abre solo */
   abierta: boolean;
 }) {
-  const cumplidos = etapa.hitos.filter((h) => h.estado === "cumplido").length;
-  const estado = estadoVisual("etapa", { estado: etapa.estado, fin: etapa.fin });
+  // Antes de la firma las fechas son orientativas: un tramo no vence
+  const estado = estadoVisual("etapa", { estado: etapa.estado, fin: contexto.firmado ? etapa.fin : null });
+  // Primero lo que queda por hacer; lo cumplido al entrar, plegado al final
+  const delTramo = etapa.hitos.filter((h) => !h.alEntrar);
+  const alEntrar = etapa.hitos.filter((h) => h.alEntrar);
 
   /*
    * La tarjeta del tramo con el patrón de Administración (REVISION, 23
@@ -332,15 +261,17 @@ function TarjetaEtapa({
           motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
         />
         <span className="flex flex-1 flex-wrap items-center justify-end gap-2">
-          <span className="pastilla">
-            {etapa.hitos.length === 0 ? "Sin hitos" : `${cumplidos} de ${etapa.hitos.length} hitos`}
+          <span className="pastilla tabular-nums">
+            {delTramo.length === 0
+              ? "Sin hitos"
+              : `${delTramo.filter((h) => h.estado === "cumplido").length} de ${delTramo.length} hitos`}
           </span>
-          <span className="pastilla">
+          <span className="pastilla tabular-nums">
             {etapa.horasPrevistas === null
               ? `${numero(etapa.horasImputadas)} h`
               : `${numero(etapa.horasImputadas)} de ${numero(etapa.horasPrevistas)} h`}
           </span>
-          <span className="pastilla cifra">
+          <span className="pastilla tabular-nums">
             {etapa.inicio && etapa.fin ? `${fecha(etapa.inicio)} → ${fecha(etapa.fin)}` : "Sin fechas"}
           </span>
           {permisos.esIwl ? (
@@ -348,6 +279,8 @@ function TarjetaEtapa({
               slug={slug}
               companyId={companyId}
               esDireccion={permisos.esAdmin}
+              // Los cuatro tramos son fijos; solo se borra una etapa de antes
+              borrable={etapa.tramo === null}
               etapa={{
                 id: etapa.id,
                 tramo: etapa.tramo,
@@ -369,7 +302,7 @@ function TarjetaEtapa({
 
       <details open={abierta}>
         <summary className="desplegable-titulo cursor-pointer border-t border-filete px-4 py-2.5 text-sm">
-          <span className="accion">{abierta ? "Hitos y diario del tramo" : "Ver los hitos y el diario"}</span>
+          <span className="accion">Hitos y diario del tramo</span>
         </summary>
 
         <div className="flex flex-col gap-2 border-y border-filete px-4 py-3">
@@ -387,7 +320,7 @@ function TarjetaEtapa({
           {etapa.notas ? <p className="text-xs text-secundario">{etapa.notas}</p> : null}
         </div>
 
-        {etapa.hitos.length === 0 ? (
+        {delTramo.length === 0 ? (
           <SinDatos>
             {permisos.esIwl
               ? "Este tramo no tiene hitos. Pulsa «Añadir hito»: sin hitos con criterio de éxito, cerrarlo es una opinión."
@@ -395,7 +328,7 @@ function TarjetaEtapa({
           </SinDatos>
         ) : (
           <ol className="divide-y divide-filete">
-            {etapa.hitos.map((h, i) => (
+            {delTramo.map((h, i) => (
               <li key={h.id} className="px-4 py-3" data-fila-hito={h.titulo}>
                 <Hito
                   hito={h}
@@ -410,6 +343,28 @@ function TarjetaEtapa({
             ))}
           </ol>
         )}
+
+        {alEntrar.length ? (
+          <details className="border-t border-filete" data-plegados-al-entrar="">
+            <summary className="desplegable-titulo cursor-pointer px-4 py-2.5 text-sm text-secundario">
+              <span className="accion">
+                {alEntrar.length === 1 ? "1 hito cumplido al entrar" : `${alEntrar.length} hitos cumplidos al entrar`}
+              </span>
+            </summary>
+            <ul className="divide-y divide-filete">
+              {alEntrar.map((h) => (
+                <li key={h.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-sm" data-al-entrar={h.titulo}>
+                  <Estado valor="hecho" soloIcono />
+                  <span className="min-w-0 flex-1 text-titular">{h.titulo}</span>
+                  {h.deTramo ? <span className="pastilla">del tramo {h.deTramo}</span> : null}
+                  <span className="text-xs tabular-nums text-metadato">
+                    {h.completadoEl ? `Verificado el ${fecha(h.completadoEl)}` : "Verificado al entrar"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
 
         <Diario
           avances={avances}
@@ -472,12 +427,14 @@ function Hito({
   const revisa =
     hito.estado === "entregado" &&
     (permisos.coordina || (hito.revisorId !== null && hito.revisorId === permisos.personaId));
-  const visual = estadoVisual("hito", {
+  const visualBase = estadoVisual("hito", {
     estado: hito.estado,
     fecha: hito.fecha,
     entregadoEl: hito.entregadoEl,
     revisa,
   });
+  // Antes de la firma las fechas son orientativas: nada vence (REVISION, 23 nov)
+  const visual = !contexto.firmado && visualBase === "vencido" ? "pendiente" : visualBase;
   const vencido = visual === "vencido";
   const evidencias = contexto.evidencias.get(hito.id) ?? [];
   const historial = contexto.revisiones.get(hito.id) ?? [];
@@ -496,10 +453,6 @@ function Hito({
     .join(" · ");
   const rotulo =
     hito.estado === "entregado" ? "Entregado · por revisar" : ESTADOS_HITO[hito.estado] ?? hito.estado;
-  // El selector de estado: no para lo entregado, que se revisa, ni para lo cumplido de ella
-  const conSelector =
-    hito.estado !== "entregado" &&
-    (permisos.coordina || (permisos.puedeEscribir && hito.estado !== "cumplido"));
   // El historial y los ajustes, en el panel del menú ⋯ (REVISION, 23 nov)
   const hayAjustes = historial.length > 0 || permisos.coordina || permisos.acompana || permisos.esAdmin;
   const ajustes = hayAjustes
@@ -582,7 +535,7 @@ function Hito({
       */}
       <div className="flex items-start gap-3">
         {orden ? (
-          <span className="cifra w-6 shrink-0 pt-0.5 text-right text-sm text-metadato">{orden}</span>
+          <span className="w-6 shrink-0 pt-0.5 text-right text-sm tabular-nums text-metadato">{orden}</span>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="flex min-w-0 flex-col gap-1">
@@ -591,8 +544,9 @@ function Hito({
               <p className="text-xs text-secundario">{hito.criterio}</p>
             ) : null}
             {hito.evidencia ? <p className="text-xs text-metadato">Se espera: {hito.evidencia}</p> : null}
-            {hito.condicionaInvertible || hito.financiacion !== null || !hito.requiereValidacion ? (
+            {hito.deTramo || hito.condicionaInvertible || hito.financiacion !== null || !hito.requiereValidacion ? (
               <div className="mt-0.5 flex flex-wrap gap-1.5">
+                {hito.deTramo ? <span className="pastilla">del tramo {hito.deTramo}</span> : null}
                 {hito.condicionaInvertible ? <span className="pastilla">Condiciona invertible</span> : null}
                 {hito.financiacion !== null ? <span className="pastilla">Libera {euros(hito.financiacion)}</span> : null}
                 {!hito.requiereValidacion ? <span className="pastilla">Sin validación</span> : null}
@@ -601,7 +555,7 @@ function Hito({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-3">
-            <span className={cn("cifra text-xs", vencido ? "es-vencido texto-estado" : "text-metadato")}>
+            <span className={cn("text-xs tabular-nums", vencido ? "es-vencido texto-estado" : "text-metadato")}>
               {hito.estado === "cumplido" && hito.completadoEl
                 ? fecha(hito.completadoEl)
                 : hito.estado === "entregado" && hito.entregadoEl
@@ -611,25 +565,12 @@ function Hito({
                     : "Sin fecha"}
             </span>
             {/*
-              El estado se ve siempre, se pueda tocar o no. Con el control
-              delante va solo el icono, que si no la fila dice «Cumplido» dos
-              veces.
+              El estado se lee, no se elige (REVISION, 23 nov). Había un
+              desplegable que dejaba dar un hito por cumplido sin evidencia y
+              sin validación; ahora se avanza con las acciones de cada uno:
+              ella «Entregar», quien revisa «Validar» o «Pedir cambios».
             */}
-            {conSelector ? (
-              <>
-                <Estado valor={visual} soloIcono />
-                <EstadoHito
-                  slug={slug}
-                  id={hito.id}
-                  estado={hito.estado}
-                  visual={visual}
-                  // Con efecto económico, cumplido solo por «Validar»
-                  puedeConfirmar={permisos.coordina && !economico}
-                />
-              </>
-            ) : (
-              <Estado valor={visual} rotulo={rotulo} />
-            )}
+            <Estado valor={visual} rotulo={rotulo} />
             {/*
               Tras la firma, uno fundamental solo lo toca dirección, con
               motivo (REVISION, 23 nov); la base lo exige igual.
@@ -808,7 +749,7 @@ function Tarjeta({
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm text-titular">{avance.titulo}</span>
-        <span className="cifra shrink-0 text-xs text-metadato">
+        <span className="shrink-0 text-xs tabular-nums text-metadato">
           {fecha(avance.fecha)}
         </span>
       </div>
@@ -818,7 +759,7 @@ function Tarjeta({
       ) : null}
 
       <div className="mt-1.5 flex flex-wrap items-baseline gap-3">
-        <span className="cifra text-[11px] uppercase tracking-wide text-metadato">
+        <span className="text-xs text-metadato">
           {avance.lado === "iwl" ? "IWL" : "La compañía"}
           {avance.autor ? ` · ${avance.autor}` : ""}
         </span>

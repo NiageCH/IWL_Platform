@@ -70,3 +70,19 @@ export function estadioYPrograma(e: Estadio | null | undefined): string {
   if (!e) return "Sin estadio";
   return `${ESTADIOS[e]} · ${PROGRAMAS[programaDe(e)!]}`;
 }
+
+/**
+ * La etiqueta de etapa de una compañía, para la cabecera y la cartera
+ * (REVISION, 23 nov). Sale del estadio, no de las fases antiguas del
+ * programa: hasta firmar el Acuerdo, su revisión de entrada (Diagnóstico o
+ * Due diligence); firmado, su programa (Incubación o Aceleración).
+ */
+export function etiquetaEtapa(e: Estadio | null | undefined, firmado: boolean): string {
+  if (!e) return "Sin estadio";
+  return firmado ? PROGRAMAS[programaDe(e)!] : REVISIONES[revisionDe(e)!];
+}
+
+/** Si alguno de sus Anexos está firmado (o cerrado tras firmarse) */
+export function conAcuerdoFirmado(anexos: Array<{ status: string }> | null | undefined): boolean {
+  return Boolean(anexos?.some((a) => a.status === "firmado" || a.status === "cerrado"));
+}

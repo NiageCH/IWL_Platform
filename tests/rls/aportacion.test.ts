@@ -393,7 +393,7 @@ describe("anexo", () => {
 });
 
 describe("hitos", () => {
-  it("la compañía mueve el hito pero no lo da por cumplido", async () => {
+  it("nadie da un hito por cumplido a mano: ni la compañía ni IWL", async () => {
     const { data: hito } = await servicio
       .from("milestones")
       .insert({
@@ -418,24 +418,28 @@ describe("hitos", () => {
       .eq("id", hito!.id);
 
     expect(cumplido.error).not.toBeNull();
-    expect(cumplido.error?.message).toMatch(/IWL/);
+    expect(cumplido.error?.message).toMatch(/validando su entrega/);
 
+    /*
+     * IWL tampoco lo da por cumplido a mano (REVISION, 23 nov): un hito se
+     * cumple validando su entrega. El circuito entero se prueba en
+     * hitos.test.ts.
+     */
     const porIwl = await equipoIwl
       .from("milestones")
       .update({ status: "cumplido" })
       .eq("id", hito!.id);
 
-    expect(porIwl.error).toBeNull();
+    expect(porIwl.error?.message).toMatch(/validando su entrega/);
 
-    // Y queda sellado quién y cuándo
-    const { data } = await servicio
-      .from("milestones")
-      .select("confirmed_by, confirmed_at, completed_on")
-      .eq("id", hito!.id)
-      .single();
-
-    expect(data?.confirmed_by).not.toBeNull();
-    expect(data?.completed_on).not.toBeNull();
+    // Ni creándolo ya cumplido: eso solo vale para lo verificado al entrar
+    const nuevo = await equipoIwl.from("milestones").insert({
+      company_id: COMPANIAS.marea,
+      title: "Hito que nace cumplido",
+      success_criteria: "No debería poder crearse así.",
+      status: "cumplido",
+    });
+    expect(nuevo.error?.message).toMatch(/validando su entrega/);
 
     await servicio.from("milestones").delete().eq("id", hito!.id);
   });

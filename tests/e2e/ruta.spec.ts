@@ -87,17 +87,19 @@ test("la fundadora no puede rediseñar el plan", async ({ page }) => {
   await expect(page.getByRole("button", { name: /^Acciones del tramo/ })).toHaveCount(0);
 });
 
-test("la fundadora sí mueve sus hitos, pero no los da por cumplidos", async ({
-  page,
-}) => {
+test("el estado de un hito se lee, no se elige: se avanza entregando y validando", async ({ page }) => {
+  /*
+   * Había un desplegable Pendiente / En curso / Cumplido que dejaba dar un
+   * hito por cumplido sin evidencia y sin validación (REVISION, 23 nov). Ya
+   * no está, ni para ella ni para IWL: ella entrega, quien revisa valida.
+   * El circuito entero se prueba en hitos.spec.ts.
+   */
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
+  await expect(page.locator('li[data-fila-hito] select[name="status"]')).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Entregar «/ }).first()).toBeVisible();
 
-  // En el tramo en curso, que es el único abierto: en los plegados el
-  // desplegable existe en el marcado pero no se ve
-  const estado = page.locator('select[name="status"]:visible').first();
-  await expect(estado).toBeVisible();
-  await expect(estado.locator('option[value="en_curso"]')).toHaveCount(1);
-  await expect(estado.locator('option[value="cumplido"]')).toHaveCount(0);
+  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/ruta");
+  await expect(page.locator('li[data-fila-hito] select[name="status"]')).toHaveCount(0);
 });
 
 test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
@@ -109,7 +111,6 @@ test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   await expect(tramo.getByRole("button", { name: "Añadir hito" })).toBeVisible();
   await tramo.getByRole("button", { name: /^Acciones del tramo/ }).click();
   await expect(page.getByRole("menuitem", { name: "Editar el tramo" })).toBeVisible();
-  await expect(page.getByRole("menuitem", { name: "Borrar el tramo" })).toBeVisible();
   await page.keyboard.press("Escape");
 
   // Añadir un hito se hace en el panel, y el acuse es el hito en su tramo
@@ -132,9 +133,11 @@ test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   await quitar.getByRole("button", { name: "Quitar el hito" }).click();
   await expect(page.locator(`li[data-fila-hito="${titulo}"]`)).toHaveCount(0);
 
-  // Y sí puede confirmar un hito
-  const estado = page.locator('select[name="status"]').first();
-  await expect(estado.locator('option[value="cumplido"]')).toHaveCount(1);
+  // Los tramos son cuatro y fijos: ni se añaden ni se borran
+  await expect(page.getByText("Añadir un tramo")).toHaveCount(0);
+  await tramo.getByRole("button", { name: /^Acciones del tramo/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Borrar el tramo" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
 });
 
 test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su tramo", async ({ page }) => {
@@ -161,22 +164,35 @@ test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su t
   await page.goto("/cartera/vega-predictiva/ruta");
   await expect(page.getByRole("heading", { name: "Tramo 1 · De idea a MVP" })).toBeVisible();
   await expect(page.getByText("Entró en Idea")).toBeVisible();
-  await expect(page.locator("#seguimiento").getByText(/borrador, hasta la firma/)).toBeVisible();
+  const seguimiento = page.locator("#seguimiento");
+  await expect(seguimiento.getByText(/borrador, hasta la firma/)).toBeVisible();
+
+  /*
+   * Antes de firmar, las fechas son orientativas (REVISION, 23 nov): ni
+   * retraso ni vencidos. Y como la fecha prevista de firma (6 abr 2026) ya
+   * ha pasado, se dice que hay que actualizarla.
+   */
+  await expect(seguimiento.getByText("Borrador: las fechas son orientativas hasta la firma.", { exact: false })).toBeVisible();
+  await expect(seguimiento.getByText("La fecha prevista de firma ya ha pasado: actualízala.")).toBeVisible();
+  await expect(seguimiento.getByRole("link", { name: "Cambiar la fecha prevista" })).toBeVisible();
+  await expect(page.getByText(/de retraso sobre su duración/)).toHaveCount(0);
+  await expect(page.locator("li[data-fila-hito]").getByText("Vencido", { exact: true })).toHaveCount(0);
+  // Un solo resumen: sin «tramo que toca por calendario»
+  await expect(page.getByText(/Tramo que toca|Por calendario/)).toHaveCount(0);
 });
 
-test("añadir una etapa exige decir qué se persigue en ella", async ({ page }) => {
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/ruta");
-
-  await page.getByText("Añadir un tramo").click();
-
-  const alta = page.locator("form", {
-    has: page.locator('input[name="order_index"]'),
-  });
-  await alta.locator('input[name="name"]').fill("Etapa sin rumbo");
-  await alta.locator('textarea[name="objective"]').fill("Corto");
-  await alta.getByRole("button", { name: "Añadir tramo" }).click();
-
-  await expect(page.getByText(/Sin objetivo, un tramo es solo un plazo/)).toBeVisible();
+test("lo cumplido al entrar va plegado al final de su tramo", async ({ page }) => {
+  // Raíz entró facturando: trae verificados los hitos de los tramos 1 a 3
+  await entrarComo(page, USUARIOS.admin, "/cartera/raiz-sensorica/ruta");
+  const tramo = tramoDe(page, "Tramo 4 · De facturación a invertible");
+  const plegados = tramo.locator("details[data-plegados-al-entrar]");
+  await expect(plegados).toHaveCount(1);
+  await expect(plegados.locator("summary")).toHaveText(/9 hitos cumplidos al entrar/);
+  await expect(plegados.locator("[data-al-entrar]").first()).toBeHidden();
+  // Lo que queda por hacer va primero, en filas con su menú
+  await expect(tramo.locator("li[data-fila-hito]").first()).toBeVisible();
+  await plegados.locator("summary").click();
+  await expect(plegados.locator("[data-al-entrar]").first()).toBeVisible();
 });
 
 test("los textos de la hoja de ruta se cambian desde administración", async ({ page }) => {
@@ -328,36 +344,3 @@ test("un hito del plan sin cumplir bloquea el estado invertible", async ({
   }
 });
 
-test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
-  /*
-   * `borrarEtapa` existía desde el principio y **no tenía botón**: desde la
-   * pantalla, una etapa mal creada se quedaba ahí para siempre. Lo mismo con
-   * `moverHito`.
-   */
-  await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/ruta");
-
-  const nombre = `Etapa de prueba ${Date.now()}`;
-  await page.getByText("Añadir un tramo").click();
-  const alta = page.locator("form", {
-    has: page.locator('textarea[name="objective"]'),
-  });
-  await alta.locator('input[name="name"]').fill(nombre);
-  await alta
-    .locator('textarea[name="objective"]')
-    .fill("Comprobar que una etapa se puede borrar.");
-  await alta.getByRole("button", { name: "Añadir tramo" }).click();
-
-  /* Nace plegada: no es el tramo en curso. Se abre como la abriría
-     cualquiera, pulsando su línea */
-  const etapa = page.locator("section[id^='etapa-']").filter({ hasText: nombre }).last();
-  await expect(etapa).toBeVisible();
-
-  // Y ahora se borra, que es lo que no se podía: desde el menú del tramo, en el panel
-  await etapa.getByRole("button", { name: /^Acciones del tramo/ }).click();
-  await page.getByRole("menuitem", { name: "Borrar el tramo" }).click();
-  const panel = page.getByRole("dialog", { name: "Borrar el tramo" });
-  await expect(panel.getByText(/No tiene hitos/)).toBeVisible();
-  await panel.getByRole("button", { name: "Borrar el tramo" }).click();
-
-  await expect(page.getByText(nombre)).toHaveCount(0);
-});

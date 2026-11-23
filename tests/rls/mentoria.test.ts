@@ -159,15 +159,26 @@ describe("lo que puede el mentor que coordina", () => {
       .select()
       .single();
 
-    const propio = await producto
-      .from("milestones")
-      .update({ status: "cumplido" })
-      .eq("id", suyo!.id)
-      .select();
+    // Se confirma validando la entrega (REVISION, 23 nov): se deja entregado, con su evidencia
+    await servicio.from("evidence_links").insert({
+      company_id: COMPANIAS.marea,
+      entity: "milestone",
+      entity_id: suyo!.id,
+      kind: "enlace",
+      url: "https://ejemplo.test/entrega",
+      label: "Entrega de prueba",
+    });
+    await servicio.from("milestones").update({ status: "entregado" }).eq("id", suyo!.id);
 
+    const propio = await producto.rpc("validar_hito", { p_hito: suyo!.id });
     expect(propio.error).toBeNull();
-    expect(propio.data).toHaveLength(1);
-    expect(propio.data![0].confirmed_by).not.toBeNull();
+    const { data: validado } = await servicio
+      .from("milestones")
+      .select("status, confirmed_by")
+      .eq("id", suyo!.id)
+      .single();
+    expect(validado!.status).toBe("cumplido");
+    expect(validado!.confirmed_by).not.toBeNull();
 
     /*
      * En el proyecto donde solo apoya no llega ni al trigger: la política de
@@ -191,6 +202,8 @@ describe("lo que puede el mentor que coordina", () => {
     expect(sigue!.status).toBe("pendiente");
     expect(sigue!.confirmed_by).toBeNull();
 
+    await servicio.from("milestone_reviews").delete().eq("milestone_id", suyo!.id);
+    await servicio.from("evidence_links").delete().eq("entity_id", suyo!.id);
     await servicio.from("milestones").delete().in("id", [suyo!.id, ajeno!.id]);
   });
 });

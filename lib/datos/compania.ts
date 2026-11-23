@@ -40,6 +40,7 @@ export async function leerCompania(slug: string) {
        situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social, cif,
        tramo, situacion_confirmada_at, archived_at, archive_reason,
        phases ( code, name, order_index ),
+       annexes ( status ),
        cohorts ( name )`,
     )
     .eq("slug", slug)

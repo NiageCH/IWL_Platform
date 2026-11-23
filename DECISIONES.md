@@ -2145,3 +2145,13 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 
 - **Las pestañas iban en la fila de la marca con desbordamiento horizontal**, y en un móvil salían recortadas y montadas sobre la cabecera. Ahora, por debajo de `lg`, un botón «Menú» las despliega enteras debajo de la barra, en las filas que hagan falta, y se cierra al cambiar de página. El botón lleva la suma de los contadores de pendientes.
 - **Las pantallas de IWL y de la fundadora solo enseñan la barra de arriba por debajo de `md`**, donde manda la lateral. A partir de `lg` las que la tienen siempre (guía, perfil, sin compañía) siguen con las pestañas en línea.
+
+## 2026-11-23 · La hoja de ruta de la compañía: un resumen, borrador sin vencidos, cumplido solo validando
+
+- **Un solo resumen arriba**: los cuatro tramos, una línea de avance, el plazo y las horas de IWL. El bloque «Hoja de ruta» con su recorrido, el «tramo que toca por calendario», los cuadritos y la barra se quitó: decía cosas distintas que el seguimiento. El tramo que se abre solo es el mismo que el resumen da por en curso, el primero sin cerrar. `components/linea-recorrido.tsx` se borró, porque ya no lo usaba nadie.
+- **Antes de la firma, nada vence ni va con retraso.** Las fechas salen de la fecha prevista de firma y son orientativas. Si esa fecha ya pasó, se avisa para actualizarla, con enlace al asistente para IWL.
+- **Lo cumplido al entrar va plegado al final de su tramo.** Lo que viene de tramos anteriores lleva la etiqueta «del tramo N».
+- **Un hito se cumple validando su entrega, y lo impone la base.** El desplegable de estado se quitó, junto con `cambiarEstadoHito`. Con sesión, `cumplido` solo llega por el circuito: validar algo entregado, o entregar algo que no pide validación. Hay dos salvedades: lo cumplido al entrar (`met_on_entry`, verificado en la lista de entrada) y el hito societario cuando la compañía ya consta constituida, que lo cierra la propia base. Sin sesión no aplica, para la semilla y las pruebas. El hito societario también se cumple ahora entregando la escritura y validándola.
+- **Los cuatro tramos son fijos**: ni «Añadir un tramo» (se quitaron `NuevaEtapa` y `crearEtapa`) ni «Borrar el tramo». Este último solo queda para una etapa antigua, sin número de tramo.
+- **La etiqueta de etapa sale del estadio** (`etiquetaEtapa`): hasta firmar, la revisión de entrada (Diagnóstico o Due diligence); firmado, el programa (Incubación o Aceleración). Así en la cabecera, en la cartera y en Programa. La tabla de fases antigua sigue moviendo el bloque «Fase del programa» de la pestaña Programa.
+- **Las casillas se dibujan como los radios**: vacías sin marcar y rellenas con la marca y un visto.

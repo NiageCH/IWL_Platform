@@ -109,24 +109,6 @@ const esquemaEtapa = z.object({
   notes: textoOpcional,
 });
 
-export async function crearEtapa(formData: FormData): Promise<Resultado> {
-  const { datos, fallo } = validar(esquemaEtapa, formData);
-  if (fallo) return fallo;
-
-  if (datos.starts_on && datos.ends_on && datos.ends_on < datos.starts_on) {
-    return error("El tramo no puede terminar antes de empezar.", { ends_on: "Antes del inicio." });
-  }
-
-  const supabase = await clienteServidor();
-  const { slug, ...fila } = datos;
-
-  const { error: falloBase } = await supabase.from("roadmap_stages").insert(fila);
-  if (falloBase) return traducirError(falloBase);
-
-  refrescar(slug);
-  return ok("Tramo añadido.");
-}
-
 const esquemaEditarEtapa = esquemaEtapa
   .omit({ company_id: true })
   .extend({ id: uuid, status: z.enum(["planificada", "en_curso", "completada", "cancelada"]) });

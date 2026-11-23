@@ -918,6 +918,50 @@ input[type="radio"]:focus-visible {
   outline-offset: 2px;
 }
 
+/*
+ * Las casillas, igual que los radios (REVISION, 23 nov): «Condiciona
+ * invertible» salía como un cuadrado negro relleno y parecía marcada sin
+ * estarlo. Sin marcar, un cuadrado vacío; marcada, relleno en el color de
+ * la marca con su visto en blanco.
+ */
+input[type="checkbox"] {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  border-radius: 0.3rem;
+  border: 1.5px solid var(--color-filete-fuerte);
+  background-color: var(--color-papel);
+  cursor: pointer;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  background-color: white;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+input[type="checkbox"]:checked {
+  border-color: var(--color-acento-solido);
+  background-color: var(--color-acento-solido);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-acento-solido);
+  outline-offset: 2px;
+}
+
 /* Lo que no tiene vuelta atrás se tiñe al acercarse, no antes */
 .accion-riesgo:hover {
   border-color: color-mix(in oklab, var(--color-mal) 55%, transparent);

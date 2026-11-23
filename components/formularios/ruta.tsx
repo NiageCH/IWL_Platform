@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   borrarAvance,
   borrarEtapa,
-  crearEtapa,
   crearHito,
   disenarHojaDeRuta,
   editarEtapa,
@@ -213,47 +212,6 @@ function CamposEtapa({
         <AreaTexto name="notes" rows={2} defaultValue={valores?.notas ?? ""} />
       </Campo>
     </>
-  );
-}
-
-export function NuevaEtapa({
-  slug,
-  companyId,
-  siguienteOrden,
-}: {
-  slug: string;
-  companyId: string;
-  siguienteOrden: number;
-}) {
-  return (
-    <Bloque>
-      <Desplegable titulo="Añadir un tramo">
-        <Formulario accion={crearEtapa}>
-          {(resultado) => (
-            <>
-              <input type="hidden" name="slug" value={slug} />
-              <input type="hidden" name="company_id" value={companyId} />
-              <CamposEtapa
-                resultado={resultado}
-                valores={{
-                  nombre: "",
-                  objetivo: "",
-                  orden: siguienteOrden,
-                  inicio: null,
-                  fin: null,
-                  horasPrevistas: null,
-                  cajaPrevista: null,
-                  notas: null,
-                }}
-              />
-              <div>
-                <Boton>Añadir tramo</Boton>
-              </div>
-            </>
-          )}
-        </Formulario>
-      </Desplegable>
-    </Bloque>
   );
 }
 

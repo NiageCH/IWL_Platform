@@ -17,7 +17,7 @@ import {
   tramoDeEntrada,
   type NumeroTramo,
 } from "@/lib/tramos";
-import { fecha } from "@/lib/utils";
+import { fecha, numero } from "@/lib/utils";
 
 /*
  * La hoja de ruta en cuatro tramos (REVISION, 22 y 23 nov · bloque 5): la
@@ -374,7 +374,7 @@ function PasoAjustar({
                   Tramo {t.tramo} · {t.nombre}
                 </span>
                 <span className="flex flex-1 flex-wrap items-center justify-end gap-2">
-                  <span className="pastilla cifra">
+                  <span className="pastilla tabular-nums">
                     {t.inicio ? fecha(t.inicio) : "—"} a {t.fin ? fecha(t.fin) : "—"}
                   </span>
                   <AnadirHito slug={slug} companyId={companyId} stageId={t.id} tramo={t.tramo} esDireccion={esDireccion} />
@@ -405,7 +405,7 @@ function PasoAjustar({
                         <span className="pastilla">{h.fundamental ? "Fundamental" : "Propio"}</span>
                       </span>
                     </div>
-                    <span className="cifra shrink-0 pt-0.5 text-xs text-metadato">{h.fecha ? fecha(h.fecha) : "Sin fecha"}</span>
+                    <span className="shrink-0 pt-0.5 text-xs tabular-nums text-metadato">{h.fecha ? fecha(h.fecha) : "Sin fecha"}</span>
                     <MenuHito
                       slug={slug}
                       hito={{ id: h.id, titulo: h.titulo, fecha: h.fecha, fundamental: h.fundamental }}
@@ -471,49 +471,75 @@ export function ResumenTramos({ seguimiento }: { seguimiento: Seguimiento }) {
 }
 
 /**
- * El seguimiento, arriba de la hoja de ruta (REVISION, 23 nov): los tramos
- * en una línea con el actual marcado, «dónde estamos» en una frase, el plazo
- * que queda y si el tramo va con retraso.
+ * El resumen de la hoja de ruta, uno solo (REVISION, 23 nov). Había dos —el
+ * seguimiento y debajo «Hoja de ruta» con su recorrido, «tramo que toca por
+ * calendario», cuadritos y barra— y se contradecían: en Vega uno decía
+ * tramo 1 en curso y el otro «De MVP a piloto, por calendario». Queda este:
+ * los cuatro tramos, una línea de avance, el plazo y las horas de IWL.
+ *
+ * Antes de la firma es un borrador: ni retraso ni vencidos, y si la fecha
+ * prevista de firma ya pasó, se dice que hay que actualizarla.
  */
-export function SeguimientoTramos({ seguimiento, hoy }: { seguimiento: Seguimiento; hoy: string }) {
+export function SeguimientoTramos({
+  seguimiento,
+  hoy,
+  entrada,
+  horas,
+  actualizarFirma,
+}: {
+  seguimiento: Seguimiento;
+  hoy: string;
+  /** «Entró en Idea», en la cabecera */
+  entrada?: string | null;
+  horas?: { imputadas: number; previstas: number };
+  /** Dónde se cambia la fecha prevista de firma, para quien puede */
+  actualizarFirma?: string | null;
+}) {
   const { tramos, firma, estadio } = seguimiento;
   if (!tramos.length) return null;
   const actual = tramos.find((t) => !t.cerrado) ?? null;
   const p = firma && estadio ? plazo(firma, estadio, hoy) : null;
-  const retraso = actual ? retrasoTramo({ fin: actual.fin, cerrado: actual.cerrado }, hoy) : null;
+  // Sin firma, las fechas son orientativas: no hay retraso que contar
+  const retraso = firma && actual ? retrasoTramo({ fin: actual.fin, cerrado: actual.cerrado }, hoy) : null;
+  const firmaPrevista = firma ? null : (tramos[0]?.inicio ?? null);
+  const firmaPasada = Boolean(firmaPrevista && firmaPrevista < hoy);
 
   return (
     <Bloque id="seguimiento" className="mb-6" elevacion={2}>
       <TituloBloque
         accion={
-          <Metadato>
-            {actual ? `Tramo ${actual.tramo} de 4` : "Todos los tramos cerrados"}
-            {firma ? "" : " · borrador, hasta la firma"}
-          </Metadato>
+          <span className="flex flex-wrap items-center justify-end gap-2">
+            {entrada ? <span className="pastilla">Entró en {entrada}</span> : null}
+            <Metadato>
+              {actual ? `Tramo ${actual.tramo} de 4` : "Todos los tramos cerrados"}
+              {firma ? "" : " · borrador, hasta la firma"}
+            </Metadato>
+          </span>
         }
       >
-        {actual ? actual.nombre : "Hoja de ruta cumplida"}
+        Hoja de ruta
       </TituloBloque>
       {/*
         Los cuatro tramos de un vistazo, como en Administración → Hoja de
-        ruta (REVISION, 23 nov): número grande, nombre, estado y hitos.
-        Pulsar uno baja a su tarjeta.
+        ruta: número grande, nombre, estado e hitos. Pulsar uno baja a su
+        tarjeta.
       */}
       <ol className="grid grid-cols-2 gap-3 px-4 pt-4 lg:grid-cols-4" aria-label="Los tramos">
         {([1, 2, 3, 4] as NumeroTramo[]).map((n) => {
           const t = tramos.find((x) => x.tramo === n);
           const valor: EstadoVisual = !t ? "no_aplica" : t.cerrado ? "hecho" : t === actual ? "curso" : "pendiente";
           const rotulo = !t ? "Antes de su entrada" : t.cerrado ? "Cerrado" : t === actual ? "En curso" : "Por hacer";
+          const c = t ? cuentaTramo(t.hitos) : null;
           const contenido = (
             <>
               <span className="flex items-start justify-between gap-2">
-                <span className="cifra text-3xl font-semibold leading-none text-titular">{n}</span>
+                <span className="text-3xl font-semibold leading-none tabular-nums text-titular">{n}</span>
                 <Estado valor={valor} rotulo={rotulo} />
               </span>
               <span className="text-sm font-medium text-titular">{TRAMOS[n].nombre}</span>
-              <span className="text-xs text-secundario">
-                {t
-                  ? `${t.hitos.filter((h) => h.estado === "cumplido").length} de ${t.hitos.length} hitos`
+              <span className="text-xs tabular-nums text-secundario">
+                {c
+                  ? `${c.hechos} de ${c.pendientes.length} hitos${c.alEntrar ? ` · ${c.alEntrar} al entrar` : ""}`
                   : "Entró después de este tramo"}
               </span>
             </>
@@ -533,15 +559,44 @@ export function SeguimientoTramos({ seguimiento, hoy }: { seguimiento: Seguimien
           );
         })}
       </ol>
-      <div className="flex flex-col gap-1 px-4 py-4 text-sm">
-        {actual ? <p className="text-titular">{dondeEstamos(actual.hitos)}</p> : null}
+      <div className="flex flex-col gap-1 px-4 py-4 text-sm tabular-nums">
+        {actual ? (
+          <p className="text-titular">
+            Tramo {actual.tramo} · {actual.nombre}. {dondeEstamos(actual.hitos)}
+          </p>
+        ) : (
+          <p className="text-titular">Hoja de ruta cumplida: los cuatro tramos cerrados.</p>
+        )}
         {p ? (
           <p className={p.vencido ? "es-vencido texto-estado" : "text-secundario"}>
             {textoPlazo(p)}: plazo máximo de {p.meses} meses desde la firma, hasta el {fecha(p.vence)}.
           </p>
         ) : (
-          <p className="text-secundario">El plazo empieza a contar con la firma del Acuerdo.</p>
+          <>
+            <p className="text-secundario">
+              Borrador: las fechas son orientativas hasta la firma. El plazo empieza a contar con la firma del Acuerdo.
+            </p>
+            {firmaPasada ? (
+              <p className="es-atencion texto-estado" role="status">
+                La fecha prevista de firma ya ha pasado: actualízala.
+                {actualizarFirma ? (
+                  <>
+                    {" "}
+                    <Link href={actualizarFirma} className="enlace">
+                      Cambiar la fecha prevista
+                    </Link>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+          </>
         )}
+        {horas ? (
+          <p className="text-secundario">
+            Horas de IWL: {numero(horas.imputadas)}
+            {horas.previstas > 0 ? ` de ${numero(horas.previstas)} previstas` : " imputadas, sin previsión por tramo"}.
+          </p>
+        ) : null}
         {retraso ? (
           <p className="es-atencion texto-estado">
             Este tramo va con {retraso === 1 ? "1 semana" : `${retraso} semanas`} de retraso sobre su duración.

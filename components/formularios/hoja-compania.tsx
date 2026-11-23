@@ -54,11 +54,14 @@ export function AccionesTramo({
   companyId,
   etapa,
   esDireccion,
+  borrable,
 }: {
   slug: string;
   companyId: string;
   etapa: EtapaEditable;
   esDireccion: boolean;
+  /** Los cuatro tramos de la hoja IWL son fijos: no se borran */
+  borrable: boolean;
 }) {
   const [panel, setPanel] = useState<"anadir" | "editar" | "borrar" | null>(null);
   const cerrar = useCallback(() => setPanel(null), []);
@@ -73,7 +76,7 @@ export function AccionesTramo({
         rotulo={`Acciones del tramo «${etapa.nombre}»`}
         acciones={[
           { texto: "Editar el tramo", alPulsar: () => setPanel("editar") },
-          { texto: "Borrar el tramo", riesgo: true, alPulsar: () => setPanel("borrar") },
+          ...(borrable ? [{ texto: "Borrar el tramo", riesgo: true, alPulsar: () => setPanel("borrar") }] : []),
         ]}
       />
       <PanelLateral abierto={panel !== null} titulo={titulo} onCerrar={cerrar}>

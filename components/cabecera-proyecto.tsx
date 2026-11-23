@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { conAcuerdoFirmado, esEstadio, etiquetaEtapa } from "@/lib/estadios";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import { Metadato, Semaforo } from "@/components/ui/primitivas";
 import { Movimiento } from "@/components/evolucion";
@@ -88,7 +89,8 @@ export function CabeceraProyecto({
             {compania.is_demo ? <DistintivoDemo compacto /> : null}
           </div>
 
-          <Metadato>{compania.phases?.name ?? "Sin fase"}</Metadato>
+          {/* Del estadio, no de las fases antiguas (REVISION, 23 nov) */}
+          <Metadato>{etiquetaEtapa(esEstadio(compania.entry_state) ? compania.entry_state : null, conAcuerdoFirmado(compania.annexes))}</Metadato>
           {/* Desde dónde parte: un dato, no una alerta */}
           {describirSituacion(compania) ? (
             <Metadato>{describirSituacion(compania)}</Metadato>

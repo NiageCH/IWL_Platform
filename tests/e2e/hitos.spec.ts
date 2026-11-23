@@ -76,8 +76,8 @@ test("ella entrega con un enlace; el mentor pide cambios y después lo valida", 
     await mentor.reload();
     await delMentor.getByRole("button", { name: `Validar «${titulo}»` }).click();
     await delMentor.getByRole("button", { name: "Validar el hito" }).click();
-    // Quien coordina lo ve en su selector, que puede reabrirlo
-    await expect(delMentor.locator("select[name=status]")).toHaveValue("cumplido");
+    // Cumplido, con su estado escrito: ya no hay selector (REVISION, 23 nov)
+    await expect(delMentor.getByText("Cumplido", { exact: true })).toBeVisible();
 
     const [hecho] = await consultar<{ status: string; confirmed_by: string | null }>(
       "milestones",

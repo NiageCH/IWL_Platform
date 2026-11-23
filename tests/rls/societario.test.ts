@@ -75,7 +75,7 @@ describe("la situación societaria", () => {
     ]);
   });
 
-  it("quien coordina cumple el hito, y la sociedad queda constituida", async () => {
+  it("validado el hito, la sociedad queda constituida", async () => {
     const servicio = clienteServicio();
     await servicio
       .from("companies")
@@ -96,8 +96,25 @@ describe("la situación societaria", () => {
       .eq("id", MAREA);
     expect(aMano?.message).toMatch(/la fija el equipo de IWL/);
 
-    // Cumpliendo el hito, sí
-    const { error } = await mentor.from("milestones").update({ status: "cumplido" }).eq("id", hito!.id);
+    // Marcándolo cumplido a mano, tampoco: se cumple validando su entrega (REVISION, 23 nov)
+    const { error: directo } = await mentor.from("milestones").update({ status: "cumplido" }).eq("id", hito!.id);
+    expect(directo?.message).toMatch(/validando su entrega/);
+
+    // Entregado con su evidencia y validado, sí
+    const { data: prueba } = await servicio
+      .from("evidence_links")
+      .insert({
+        company_id: MAREA,
+        entity: "milestone",
+        entity_id: hito!.id,
+        kind: "enlace",
+        url: "https://ejemplo.test/escritura",
+        label: "Escritura de constitución",
+      })
+      .select("id")
+      .single();
+    await servicio.from("milestones").update({ status: "entregado" }).eq("id", hito!.id);
+    const { error } = await mentor.rpc("validar_hito", { p_hito: hito!.id });
     expect(error).toBeNull();
 
     const { data: compania } = await servicio
@@ -106,6 +123,10 @@ describe("la situación societaria", () => {
       .eq("id", MAREA)
       .single();
     expect(compania!.situacion_societaria).toBe("constituida");
+
+    // Lo que creó, fuera; el hito vuelve a como estaba en la semilla
+    await servicio.from("milestone_reviews").delete().eq("milestone_id", hito!.id);
+    await servicio.from("evidence_links").delete().eq("id", prueba!.id);
   });
 });
 

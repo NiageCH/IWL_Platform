@@ -25,7 +25,9 @@ async function asegurarHoja(page: Page, slug: string, id: string): Promise<boole
   if (etapas.length) return false;
   await entrarComo(page, USUARIOS.equipoIwl, `/cartera/${slug}/programa`);
   const asistente = page.locator("#asistente-hoja");
-  await asistente.locator('input[name="inicio"]').fill("2026-04-06");
+  // Firma prevista dentro de dos semanas: un borrador como los de verdad
+  const firma = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
+  await asistente.locator('input[name="inicio"]').fill(firma);
   await asistente.getByRole("button", { name: "Generar la hoja de ruta" }).click();
   await asistente.getByText("Tramo 1 · De idea a MVP").waitFor();
   return true;
@@ -48,6 +50,7 @@ for (const c of CASOS) {
         await page.getByRole("button", { name: "Añadir hito" }).first().click();
         await page.getByRole("dialog").waitFor();
         await page.screenshot({ path: `${DIR}/compania-hoja-${FASE}-panel.png` });
+        await page.keyboard.press("Escape");
       }
     } finally {
       if (creada) {

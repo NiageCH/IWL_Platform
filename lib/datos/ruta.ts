@@ -57,6 +57,10 @@ export interface HitoDeEtapa {
   confirmadoEl: string | null;
   /** De la hoja de ruta IWL: tras la firma lo cambia solo dirección, con motivo */
   fundamental: boolean;
+  /** Ya cumplido al entrar: se verificó en la lista de entrada */
+  alEntrar: boolean;
+  /** Si viene de un tramo anterior al de entrada, cuál */
+  deTramo: number | null;
 }
 
 export interface Etapa {
@@ -119,6 +123,8 @@ function hito(fila: {
   delivered_at: string | null;
   confirmed_at: string | null;
   fundamental?: boolean | null;
+  met_on_entry?: boolean | null;
+  from_tramo?: number | null;
 }): HitoDeEtapa {
   return {
     id: fila.id,
@@ -138,11 +144,13 @@ function hito(fila: {
     entregadoEl: fila.delivered_at,
     confirmadoEl: fila.confirmed_at,
     fundamental: Boolean(fila.fundamental),
+    alEntrar: Boolean(fila.met_on_entry),
+    deTramo: fila.from_tramo ?? null,
   };
 }
 
 const CAMPOS_HITO =
-  "id, title, success_criteria, description, due_date, status, gates_investable, origin, evidence, completed_on, stage_id, requires_validation, accrues_equity_pct, releases_funding, reviewer_id, delivered_at, confirmed_at, fundamental";
+  "id, title, success_criteria, description, due_date, status, gates_investable, origin, evidence, completed_on, stage_id, requires_validation, accrues_equity_pct, releases_funding, reviewer_id, delivered_at, confirmed_at, fundamental, met_on_entry, from_tramo";
 
 export async function leerHojaDeRuta(
   companyId: string,
