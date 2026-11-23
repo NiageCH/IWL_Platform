@@ -161,12 +161,13 @@ test("los textos de la hoja de ruta se cambian desde administración", async ({ 
   await entrarComo(page, USUARIOS.admin, "/admin/rutas");
 
   await expect(page.getByRole("heading", { name: "Hoja de ruta del programa" })).toBeVisible();
-  // Una sola hoja de ruta, en cuatro tramos (REVISION, 22 nov)
+  // Una sola hoja de ruta, en cuatro tramos, con su resumen arriba (REVISION, 22 y 23 nov)
   await expect(page.getByRole("heading", { name: "Tramo 1 · De idea a MVP" })).toBeVisible();
-  // Y se explica por qué tocarlos aquí no rompe nada en marcha
-  await expect(page.getByText(/nada de esto toca las que están en marcha ni las firmadas/)).toBeVisible();
+  await expect(page.locator("[data-resumen-tramo]")).toHaveCount(4);
+  // Y se dice en una línea por qué tocarlos aquí no rompe nada en marcha
+  await expect(page.getByText(/no para las que están en marcha ni para las firmadas/)).toBeVisible();
 
-  // Cambiar el texto de un hito, y dejarlo como estaba
+  // Editar en el panel lateral, y dejarlo como estaba
   const [hito] = await consultar<{ id: string; title: string }>(
     "roadmap_template_milestones",
     { title: "eq.Data room completo" },
@@ -174,10 +175,13 @@ test("los textos de la hoja de ruta se cambian desde administración", async ({ 
   );
   try {
     const fila = page.locator('li[data-hito="Data room completo"]');
-    await fila.getByText("Editar el texto").click();
-    await fila.locator('input[name="title"]').fill("Data room completo y ordenado");
-    await fila.getByRole("button", { name: "Guardar el texto" }).click();
-    await expect(page.getByText("Data room completo y ordenado").first()).toBeVisible();
+    await fila.getByRole("button", { name: /Acciones de/ }).click();
+    await page.getByRole("menuitem", { name: "Editar" }).click();
+    const panel = page.getByRole("dialog", { name: "Editar el hito" });
+    await panel.locator('input[name="title"]').fill("Data room completo y ordenado");
+    await panel.getByRole("button", { name: "Guardar" }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('li[data-hito="Data room completo y ordenado"]')).toBeVisible();
   } finally {
     await actualizar("roadmap_template_milestones", { id: `eq.${hito.id}` }, { title: hito.title });
   }
@@ -195,22 +199,35 @@ test("los hitos fundamentales se añaden, se ordenan y se retiran desde administ
   await entrarComo(page, USUARIOS.admin, "/admin/rutas");
   const tramo = page.locator("#tramo-4");
   try {
-    await tramo.getByText("Añadir un hito a este tramo").click();
-    await tramo.locator('input[name="title"]').last().fill(titulo);
-    await tramo.locator('textarea[name="success_criteria"]').last().fill("Algo que se pueda comprobar");
-    await tramo.getByRole("button", { name: "Añadir el hito" }).click();
+    // La acción principal del tramo abre el panel
+    await tramo.getByRole("button", { name: "Añadir hito" }).click();
+    const panel = page.getByRole("dialog", { name: "Añadir un hito al tramo 4" });
+    await panel.locator('input[name="title"]').fill(titulo);
+    await panel.locator('textarea[name="success_criteria"]').fill("Algo que se pueda comprobar");
+    await panel.locator('textarea[name="expected_evidence"]').fill("Un documento");
+    await panel.getByRole("button", { name: "Guardar" }).click();
+    await expect(panel).toHaveCount(0);
+
     const fila = page.locator(`li[data-hito="${titulo}"]`);
     await expect(fila).toBeVisible();
-    // Va al final: se puede subir, no bajar
-    await expect(fila.getByRole("button", { name: "Bajar" })).toHaveCount(0);
-    await fila.getByRole("button", { name: "Subir" }).click();
-    await expect(fila.getByRole("button", { name: "Bajar" })).toBeVisible();
+    await expect(fila.getByText("Evidencia", { exact: true })).toBeVisible();
+    const menu = fila.getByRole("button", { name: /Acciones de/ });
 
-    // Retirarlo no lo borra: queda entre los retirados, y se puede volver a usar
-    await fila.getByRole("button", { name: "Retirar" }).click();
+    // Va al final: se puede subir, no bajar
+    await menu.click();
+    await expect(page.getByRole("menuitem", { name: "Bajar" })).toHaveCount(0);
+    await page.getByRole("menuitem", { name: "Subir" }).click();
+    await menu.click();
+    await expect(page.getByRole("menuitem", { name: "Bajar" })).toBeVisible();
+
+    // Retirar pide confirmación en la propia fila, y no lo borra
+    await page.getByRole("menuitem", { name: "Retirar" }).click();
+    await fila.getByRole("alertdialog").getByRole("button", { name: "Retirar" }).click();
     await expect(fila).toHaveCount(0);
     await tramo.getByText(/hitos? retirados?/).click();
-    await tramo.locator(`li[data-retirado="${titulo}"]`).getByRole("button", { name: "Volver a usarlo" }).click();
+    const retirado = tramo.locator(`li[data-retirado="${titulo}"]`);
+    await expect(retirado.getByText("Retirado", { exact: true })).toBeVisible();
+    await retirado.getByRole("button", { name: "Recuperar" }).click();
     await expect(fila).toBeVisible();
   } finally {
     const [nuevo] = await consultar<{ id: string }>("roadmap_template_milestones", { title: `eq.${titulo}` }, "id");

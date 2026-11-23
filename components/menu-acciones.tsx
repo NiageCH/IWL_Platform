@@ -6,7 +6,10 @@ import { MoreHorizontal } from "lucide-react";
 
 export interface AccionMenu {
   texto: string;
-  href: string;
+  /** Lleva a otra página… */
+  href?: string;
+  /** …o hace algo aquí mismo, como abrir un panel */
+  alPulsar?: () => void;
   /** Lo que no tiene vuelta atrás se tiñe al acercarse */
   riesgo?: boolean;
 }
@@ -23,7 +26,14 @@ export interface AccionMenu {
  * Así la cabecera cabe en una línea y las acciones tienen un sitio fijo en
  * el que buscarlas, siempre el mismo.
  */
-export function MenuAcciones({ acciones }: { acciones: AccionMenu[] }) {
+export function MenuAcciones({
+  acciones,
+  rotulo,
+}: {
+  acciones: AccionMenu[];
+  /** En una fila: solo «⋯», con este nombre para quien no ve el icono */
+  rotulo?: string;
+}) {
   const [abierto, setAbierto] = useState(false);
   const caja = useRef<HTMLDivElement>(null);
 
@@ -61,10 +71,11 @@ export function MenuAcciones({ acciones }: { acciones: AccionMenu[] }) {
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
         aria-haspopup="menu"
+        aria-label={rotulo}
         className="accion text-xs"
       >
         <MoreHorizontal aria-hidden="true" className="size-4 text-acento-texto" />
-        Acciones
+        {rotulo ? null : "Acciones"}
       </button>
 
       {abierto ? (
@@ -72,21 +83,33 @@ export function MenuAcciones({ acciones }: { acciones: AccionMenu[] }) {
           role="menu"
           className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-md border border-filete bg-papel py-1 shadow-lg"
         >
-          {acciones.map((a) => (
-            <Link
-              key={a.href + a.texto}
-              href={a.href}
-              role="menuitem"
-              onClick={() => setAbierto(false)}
-              className={
-                a.riesgo
-                  ? "block px-3 py-2 text-sm text-secundario transition-colors hover:bg-mal/10 hover:text-mal"
-                  : "block px-3 py-2 text-sm text-secundario transition-colors hover:bg-elevado hover:text-titular"
-              }
-            >
-              {a.texto}
-            </Link>
-          ))}
+          {acciones.map((a) => {
+            // Lo destructivo que se hace aquí mismo va en rojo desde el principio
+            // (REVISION, 23 nov); el enlace de riesgo, como estaba: se tiñe al acercarse
+            const clase = a.riesgo
+              ? a.href
+                ? "block w-full px-3 py-2 text-left text-sm text-secundario transition-colors hover:bg-mal/10 hover:text-mal"
+                : "block w-full px-3 py-2 text-left text-sm text-mal transition-colors hover:bg-mal/10"
+              : "block w-full px-3 py-2 text-left text-sm text-secundario transition-colors hover:bg-elevado hover:text-titular";
+            return a.href ? (
+              <Link key={a.href + a.texto} href={a.href} role="menuitem" onClick={() => setAbierto(false)} className={clase}>
+                {a.texto}
+              </Link>
+            ) : (
+              <button
+                key={a.texto}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setAbierto(false);
+                  a.alPulsar?.();
+                }}
+                className={clase}
+              >
+                {a.texto}
+              </button>
+            );
+          })}
         </div>
       ) : null}
     </div>

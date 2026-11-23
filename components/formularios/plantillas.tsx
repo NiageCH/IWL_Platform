@@ -6,11 +6,7 @@ import {
   crearEtapaPlantilla,
   crearHitoPlantilla,
   crearPlantilla,
-  anadirHitoFundamental,
-  editarHitoPlantilla,
   fijarEstadoEntrada,
-  moverHitoFundamental,
-  retirarHitoFundamental,
 } from "@/lib/acciones/ruta";
 import {
   AreaTexto,
@@ -289,129 +285,6 @@ export function EstadoEntrada({
               </option>
             ))}
           </Seleccion>
-        </>
-      )}
-    </Formulario>
-  );
-}
-
-/**
- * El texto de un hito de la hoja de ruta IWL (REVISION, 23 nov): título,
- * criterio y lo que se espera como evidencia. Cambiarlo vale para las
- * hojas de ruta que se generen desde ahora; las que ya existen, y las
- * firmadas, llevan su copia.
- */
-export function EditarHitoPlantilla({
-  hito,
-}: {
-  hito: { id: string; titulo: string; criterio: string; evidencia: string | null };
-}) {
-  return (
-    <Desplegable titulo="Editar el texto">
-      <Formulario accion={editarHitoPlantilla} className="gap-3 px-4 py-3">
-        {(r) => {
-          const e = (n: string) => (r.ok ? undefined : r.campos?.[n]);
-          return (
-            <>
-              <input type="hidden" name="id" value={hito.id} />
-              <Campo etiqueta="Título" obligatorio error={e("title")}>
-                <Texto name="title" defaultValue={hito.titulo} required />
-              </Campo>
-              <Campo
-                etiqueta="Criterio de cumplimiento"
-                obligatorio
-                error={e("success_criteria")}
-                ayuda="Qué tiene que pasar para darlo por cumplido, de forma que se pueda comprobar"
-              >
-                <AreaTexto name="success_criteria" rows={2} defaultValue={hito.criterio} required />
-              </Campo>
-              <Campo etiqueta="Evidencia esperada" error={e("expected_evidence")} ayuda="Lo que se pide como prueba">
-                <AreaTexto name="expected_evidence" rows={2} defaultValue={hito.evidencia ?? ""} />
-              </Campo>
-              <div>
-                <Boton variante="secundario">Guardar el texto</Boton>
-              </div>
-            </>
-          );
-        }}
-      </Formulario>
-    </Desplegable>
-  );
-}
-
-/**
- * Añadir un hito fundamental a un tramo de la hoja de ruta del programa
- * (REVISION, 23 nov). Va al final del tramo; se ordena después.
- */
-export function NuevoHitoFundamental({ tramoId }: { tramoId: string }) {
-  return (
-    <Desplegable titulo="Añadir un hito a este tramo">
-      <Formulario accion={anadirHitoFundamental} className="gap-3 px-4 py-3">
-        {(r) => {
-          const e = (n: string) => (r.ok ? undefined : r.campos?.[n]);
-          return (
-            <>
-              <input type="hidden" name="template_stage_id" value={tramoId} />
-              <Campo etiqueta="Título" obligatorio error={e("title")}>
-                <Texto name="title" required />
-              </Campo>
-              <Campo
-                etiqueta="Criterio de cumplimiento"
-                obligatorio
-                error={e("success_criteria")}
-                ayuda="Qué tiene que pasar para darlo por cumplido, de forma que se pueda comprobar"
-              >
-                <AreaTexto name="success_criteria" rows={2} required />
-              </Campo>
-              <Campo etiqueta="Evidencia esperada" error={e("expected_evidence")} ayuda="Lo que se pide como prueba">
-                <AreaTexto name="expected_evidence" rows={2} />
-              </Campo>
-              <div>
-                <Boton variante="secundario">Añadir el hito</Boton>
-              </div>
-            </>
-          );
-        }}
-      </Formulario>
-    </Desplegable>
-  );
-}
-
-/** Subir o bajar un hito dentro de su tramo */
-export function MoverHitoFundamental({ id, arriba, abajo }: { id: string; arriba: boolean; abajo: boolean }) {
-  return (
-    <>
-      {(["arriba", "abajo"] as const).map((sentido) =>
-        (sentido === "arriba" ? arriba : abajo) ? (
-          <Formulario key={sentido} accion={moverHitoFundamental} className="gap-0">
-            {() => (
-              <>
-                <input type="hidden" name="id" value={id} />
-                <input type="hidden" name="sentido" value={sentido} />
-                <button className="accion text-xs">{sentido === "arriba" ? "Subir" : "Bajar"}</button>
-              </>
-            )}
-          </Formulario>
-        ) : null,
-      )}
-    </>
-  );
-}
-
-/**
- * Retirar un hito, o volver a usarlo. Retirar no lo borra: deja de salir en
- * las listas de entrada y en las hojas de ruta nuevas.
- */
-export function RetirarHitoFundamental({ id, volver }: { id: string; volver?: boolean }) {
-  return (
-    <Formulario accion={retirarHitoFundamental} className="gap-0">
-      {() => (
-        <>
-          <input type="hidden" name="id" value={id} />
-          <input type="hidden" name="volver" value={volver ? "si" : "no"} />
-          <button className={volver ? "accion text-xs" : "accion accion-riesgo text-xs"}>
-            {volver ? "Volver a usarlo" : "Retirar"}
-          </button>
         </>
       )}
     </Formulario>
