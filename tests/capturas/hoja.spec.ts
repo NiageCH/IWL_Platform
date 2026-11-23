@@ -59,6 +59,12 @@ async function hitos(tramo: number) {
   );
 }
 
+/** Quien verifica en las capturas: un mentor de la semilla */
+async function mentor() {
+  const [m] = await consultar<{ id: string }>("profiles", { email: "eq.mentor@iwl.test" }, "id");
+  return m.id;
+}
+
 type Respuesta = "verificado" | "por_verificar" | "no_basta" | "todavia_no" | null;
 
 async function contestar(compania: string, tramo: number, respuestas: Respuesta[]) {
@@ -76,6 +82,7 @@ async function contestar(compania: string, tramo: number, respuestas: Respuesta[
       verification: r === "verificado" ? "verificado" : r === "no_basta" ? "no_basta" : null,
       review_comment: r === "no_basta" ? "Son tres entrevistas: hacen falta al menos diez con quien firma la compra." : null,
       verified_at: r === "verificado" || r === "no_basta" ? new Date().toISOString() : null,
+      verified_by: r === "verificado" || r === "no_basta" ? await mentor() : null,
     });
   }
 }
@@ -83,6 +90,12 @@ async function contestar(compania: string, tramo: number, respuestas: Respuesta[
 /** La misma pantalla en claro y en oscuro: cambiando el tema de su marco */
 async function capturar(page: Page, zona: Locator, nombre: string) {
   const dispositivo = test.info().project.name;
+  // Que quepa entera: si es más alta que la ventana, la captura salía cortada
+  const caja = await zona.boundingBox();
+  const ventana = page.viewportSize();
+  if (caja && ventana && caja.height + 200 > ventana.height) {
+    await page.setViewportSize({ width: ventana.width, height: Math.ceil(caja.height) + 200 });
+  }
   await zona.scrollIntoViewIfNeeded();
   await zona.screenshot({ path: `${DIR}/IWL_HojaDeRuta_${nombre}_${dispositivo}_claro.png` });
   await page.evaluate(() => {

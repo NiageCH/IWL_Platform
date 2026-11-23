@@ -13,7 +13,14 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "line",
-  use: { baseURL: BASE, navigationTimeout: 30_000 },
+  // En castellano: si no, los campos de fecha salen como 04/30/2027
+  use: {
+    baseURL: BASE,
+    navigationTimeout: 30_000,
+    locale: "es-ES",
+    timezoneId: "Europe/Madrid",
+    launchOptions: { args: ["--lang=es-ES"] },
+  },
   projects: [
     { name: "escritorio", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } } },
     { name: "movil", use: { ...devices["Pixel 7"] } },

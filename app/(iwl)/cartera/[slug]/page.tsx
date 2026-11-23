@@ -25,7 +25,11 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
   const altas = esIwl(persona?.role) ? await leerAltaCompania(resumen.compania.id) : null;
   const enEntrada = resumen.compania.tramo === "entrada" && esIwl(persona?.role);
   const entrada = enEntrada ? await leerEntrada(resumen.compania.id) : null;
-  const lista = enEntrada ? await leerListaEntrada(resumen.compania.id) : null;
+  // La lista la ve también el mentor principal, que es quien la verifica
+  // (REVISION, 23 nov). La ficha de entrada —candidatura y decisión— sigue
+  // siendo de IWL: son datos del embudo que el mentor no lee.
+  const listaVisible = resumen.compania.tramo === "entrada" && resumen.permisos.coordina;
+  const lista = listaVisible ? await leerListaEntrada(resumen.compania.id) : null;
   // Los correos de la compañía —el Acuerdo propuesto, las respuestas—, para IWL
   const correos = esIwl(persona?.role) ? await leerCorreos({ companyId: resumen.compania.id }) : null;
 

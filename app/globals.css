@@ -876,6 +876,48 @@ select {
   color: var(--color-titular);
 }
 
+/*
+ * Los radios, dibujados aquí (REVISION, 23 nov): el del navegador salía
+ * relleno de negro sin estar elegido, y no se distinguía cuál lo estaba.
+ * Sin elegir, un círculo vacío; elegido, un punto en el color de la marca.
+ */
+input[type="radio"] {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-filete-fuerte);
+  background-color: var(--color-papel);
+  cursor: pointer;
+}
+
+input[type="radio"]::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-acento-solido);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+input[type="radio"]:checked {
+  border-color: var(--color-acento-solido);
+}
+
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+input[type="radio"]:focus-visible {
+  outline: 2px solid var(--color-acento-solido);
+  outline-offset: 2px;
+}
+
 /* Lo que no tiene vuelta atrás se tiñe al acercarse, no antes */
 .accion-riesgo:hover {
   border-color: color-mix(in oklab, var(--color-mal) 55%, transparent);

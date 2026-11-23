@@ -310,6 +310,84 @@ describe("la hoja de ruta en cuatro tramos", () => {
     await limpiarVega();
   });
 
+  it("ningún hito más allá del plazo del programa, salvo que lo guarde dirección", async () => {
+    await limpiarVega();
+    try {
+      // Una idea, prevista para firmar el 2 de febrero: 18 meses, hasta el 1 de agosto de 2027
+      expect((await equipoIwl.rpc("generar_hoja_de_ruta", { p_company: COMPANIAS.vega, p_inicio: "2026-02-02" })).error).toBeNull();
+      const { data: hito } = await servicio
+        .from("milestones")
+        .select("id")
+        .eq("company_id", COMPANIAS.vega)
+        .eq("fundamental", true)
+        .limit(1)
+        .single();
+      expect((await equipoIwl.from("milestones").update({ due_date: "2027-08-01" }).eq("id", hito!.id)).error).toBeNull();
+      expect((await equipoIwl.from("milestones").update({ due_date: "2027-08-02" }).eq("id", hito!.id)).error?.message).toMatch(
+        /Fuera del plazo del programa: acaba el 01\/08\/2027/,
+      );
+      // Ni uno propio nuevo
+      const { data: etapa } = await servicio.from("roadmap_stages").select("id").eq("company_id", COMPANIAS.vega).eq("tramo", 4).single();
+      expect(
+        (await equipoIwl
+          .from("milestones")
+          .insert({ company_id: COMPANIAS.vega, stage_id: etapa!.id, title: "Tarde", success_criteria: "x", origin: "acordado", due_date: "2028-01-01" })).error
+          ?.message,
+      ).toMatch(/Fuera del plazo/);
+      // Dirección sí
+      expect((await admin.from("milestones").update({ due_date: "2027-09-01" }).eq("id", hito!.id)).error).toBeNull();
+    } finally {
+      await limpiarVega();
+    }
+  });
+
+  it("no se propone el Acuerdo con algo de la lista por verificar", async () => {
+    await limpiarVega();
+    const { data: anexo } = await admin
+      .from("annexes")
+      .insert({ company_id: COMPANIAS.vega, duration_months: 18, committed_hours: 40, firmantes: [{ nombre: "Fundadora", apellidos: "De Prueba" }] })
+      .select("id")
+      .single();
+    try {
+      const uno = await hitoDelTramo(1, 1);
+      await servicio.from("entry_checks").insert({
+        company_id: COMPANIAS.vega,
+        template_milestone_id: uno,
+        answer: "si",
+        evidence_path: `${COMPANIAS.vega}/evidencia/x.pdf`,
+        evidence_name: "x.pdf",
+      });
+      expect((await admin.from("annexes").update({ status: "propuesto" }).eq("id", anexo!.id)).error?.message).toMatch(
+        /Faltan 1 por verificar/,
+      );
+    } finally {
+      await servicio.from("annexes").delete().eq("id", anexo!.id);
+      await limpiarVega();
+    }
+  });
+
+  it("en entrada, el mentor principal ve la lista pero no el due diligence; después, todo", async () => {
+    const { data: mentor } = await servicio.from("profiles").select("id").eq("email", USUARIOS.mentorProducto).single();
+    const { data: antes } = await servicio.from("companies").select("tramo").eq("id", COMPANIAS.vega).single();
+    await servicio.from("company_members").insert({ company_id: COMPANIAS.vega, profile_id: mentor!.id, member_role: "mentor_principal" });
+    const uno = await hitoDelTramo(1, 1);
+    await servicio.from("entry_checks").insert({ company_id: COMPANIAS.vega, template_milestone_id: uno, answer: "no" });
+    try {
+      await servicio.from("companies").update({ tramo: "entrada" }).eq("id", COMPANIAS.vega);
+      const elMentor = await entrarComo(USUARIOS.mentorProducto);
+      expect((await elMentor.from("entry_checks").select("id").eq("company_id", COMPANIAS.vega)).data).toHaveLength(1);
+      expect((await elMentor.from("dd_items").select("id").eq("company_id", COMPANIAS.vega)).data).toEqual([]);
+      expect((await elMentor.from("documents").select("id").eq("company_id", COMPANIAS.vega)).data).toEqual([]);
+      // Ya incorporada, el due diligence es de quien acompaña la compañía
+      await servicio.from("companies").update({ tramo: "incubacion" }).eq("id", COMPANIAS.vega);
+      expect((await elMentor.from("dd_items").select("id").eq("company_id", COMPANIAS.vega)).data!.length).toBeGreaterThan(0);
+    } finally {
+      await servicio.from("companies").update({ tramo: antes!.tramo }).eq("id", COMPANIAS.vega);
+      await servicio.from("company_members").delete().eq("company_id", COMPANIAS.vega).eq("profile_id", mentor!.id);
+      await servicio.from("entry_checks").delete().eq("company_id", COMPANIAS.vega);
+    }
+  });
+
   it("MVP sin piloto: los del tramo 1 que faltan van dentro de su tramo 2, marcados", async () => {
     const { data: tramos } = await servicio
       .from("roadmap_stages")
@@ -357,9 +435,12 @@ describe("la hoja de ruta en cuatro tramos", () => {
   it("vencido el plazo, no se cierra nada: aviso a dirección, una vez, y solo lo llama el cron", async () => {
     expect((await admin.rpc("avisar_plazos_vencidos")).error).not.toBeNull();
     try {
-      await servicio.rpc("avisar_plazos_vencidos");
-      await servicio.rpc("avisar_plazos_vencidos");
-      // Raíz firmó en enero, facturando: cinco meses, ya vencidos. Marea, doce desde marzo: no
+      // Hoy, con la semilla, ninguna está fuera de plazo
+      expect((await servicio.rpc("avisar_plazos_vencidos")).data).toBe(0);
+      // El 1 de marzo de 2027: Raíz firmó el 1 de sept, facturando, cinco meses, y ya
+      // vencieron; Marea, doce desde el 6 de marzo de 2026, acaba el 5: todavía no
+      await servicio.rpc("avisar_plazos_vencidos", { p_hoy: "2027-03-01" });
+      await servicio.rpc("avisar_plazos_vencidos", { p_hoy: "2027-03-01" });
       const { data: raiz } = await servicio.from("avisos").select("id").eq("company_id", COMPANIAS.raiz).eq("tipo", "plazo_vencido");
       expect(raiz).toHaveLength(1);
       const { data: marea } = await servicio.from("avisos").select("id").eq("company_id", COMPANIAS.marea).eq("tipo", "plazo_vencido");

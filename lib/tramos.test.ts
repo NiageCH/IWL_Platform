@@ -18,9 +18,10 @@ describe("los tramos de la hoja de ruta (REVISION, 22 y 23 nov)", () => {
 
   it("el plazo cuenta desde la firma, y no se cierra nada solo al vencer", () => {
     const p = plazo("2026-01-15", "facturando", "2026-06-20");
-    expect(p.vence).toBe("2026-06-15");
+    // El último día es el anterior al aniversario, como en la base
+    expect(p.vence).toBe("2026-06-14");
     expect(p.vencido).toBe(true);
-    expect(textoPlazo(p)).toBe("El plazo venció hace 5 días");
+    expect(textoPlazo(p)).toBe("El plazo venció hace 6 días");
     expect(textoPlazo(plazo("2026-11-01", "idea", "2026-11-23"))).toMatch(/^Quedan 1[78] meses de plazo$/);
   });
 
@@ -38,5 +39,16 @@ describe("los tramos de la hoja de ruta (REVISION, 22 y 23 nov)", () => {
         { titulo: "Data room completo", estado: "pendiente", fecha: "2027-01-31" },
       ]),
     ).toBe("1 de 3 hitos de este tramo cumplidos. Siguiente: «Margen por cliente conocido», para el 10 ene 2027.");
+  });
+
+  it("lo cumplido al entrar va aparte de lo hecho en el programa", () => {
+    expect(
+      dondeEstamos([
+        { titulo: "Problema validado", estado: "cumplido", fecha: null, alEntrar: true },
+        { titulo: "MVP funcionando", estado: "cumplido", fecha: null, alEntrar: true },
+        { titulo: "Clientes que repiten", estado: "cumplido", fecha: "2026-10-20" },
+        { titulo: "Data room completo", estado: "pendiente", fecha: "2027-01-31" },
+      ]),
+    ).toBe("2 cumplidos al entrar · 1 de 2 pendientes hecho. Siguiente: «Data room completo», para el 31 ene 2027.");
   });
 });

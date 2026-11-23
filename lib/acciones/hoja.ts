@@ -166,3 +166,33 @@ export async function quitarHito(formData: FormData): Promise<Resultado> {
   refrescar(datos.slug);
   return ok();
 }
+
+/**
+ * Cambiar la fecha de un hito, al ajustar la hoja de ruta. Más allá del
+ * plazo del programa solo la guarda dirección: lo dice la base
+ * (`milestones_guard_plazo`) y su mensaje llega tal cual.
+ */
+export async function fecharHito(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      id: uuid,
+      slug: z.string(),
+      due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pon una fecha."),
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+  const sinSesion = await conSesion();
+  if (sinSesion) return sinSesion;
+
+  const supabase = await clienteServidor();
+  const { data, error: falloBase } = await supabase
+    .from("milestones")
+    .update({ due_date: datos.due_date })
+    .eq("id", datos.id)
+    .select("id");
+  if (falloBase) return error(falloBase.message, { due_date: falloBase.message });
+  if (!data?.length) return error("No puedes cambiar la fecha de este hito.");
+  refrescar(datos.slug);
+  return ok();
+}

@@ -25,6 +25,7 @@ export function BloqueComite({
   startup,
   abierta,
   esDireccion = false,
+  mentores = [],
 }: {
   actas: Acta[];
   candidaturaId: string;
@@ -38,6 +39,7 @@ export function BloqueComite({
   abierta: boolean;
   /** Regenerar el PDF de un acta cerrada es de dirección */
   esDireccion?: boolean;
+  mentores?: { id: string; nombre: string }[];
 }) {
   return (
     <Bloque id="comite" className="scroll-mt-48">
@@ -64,6 +66,7 @@ export function BloqueComite({
                   />
                 </div>
                 <p className="whitespace-pre-wrap text-secundario [overflow-wrap:anywhere]">{a.resumen}</p>
+                {a.mentor ? <p className="text-xs text-metadato">Mentor principal: {a.mentor}</p> : null}
                 {a.estadioMotivo ? <p className="text-xs text-metadato">Otro estadio porque: {a.estadioMotivo}</p> : null}
                 {a.motivo ? <p className="text-xs text-metadato">Motivo: {a.motivo}</p> : null}
                 {a.revisionOn ? <p className="text-xs text-metadato">Se revisa el {fecha(a.revisionOn)}</p> : null}
@@ -94,6 +97,7 @@ export function BloqueComite({
           estadioPropuesto={estadioPropuesto}
           contacto={contacto}
           startup={startup}
+          mentores={mentores}
         />
       ) : null}
     </Bloque>

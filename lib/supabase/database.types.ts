@@ -1390,13 +1390,13 @@ isOneToOne: false
                   ]
                 },"comite_actas": {
                   Row: {
-                    "candidatura_id": string,"cerrada_at": string | null,"contenido_hash": string | null,"created_at": string,"created_by": string | null,"decision": string,"documento_id": string | null,"estadio": Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo": string | null,"estadio_propuesto": Database["public"]['Enums']["estado_entrada"] | null,"fecha": string,"id": string,"mensaje": string | null,"motivo": string | null,"puede_volver": boolean | null,"resumen": string,"revision_on": string | null
+                    "candidatura_id": string,"cerrada_at": string | null,"contenido_hash": string | null,"created_at": string,"created_by": string | null,"decision": string,"documento_id": string | null,"estadio": Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo": string | null,"estadio_propuesto": Database["public"]['Enums']["estado_entrada"] | null,"fecha": string,"id": string,"mensaje": string | null,"mentor_principal_id": string | null,"motivo": string | null,"puede_volver": boolean | null,"resumen": string,"revision_on": string | null
                   }
                   Insert: {
-                    "candidatura_id": string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision": string,"documento_id"?: string | null,"estadio"?: Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo"?: string | null,"estadio_propuesto"?: Database["public"]['Enums']["estado_entrada"] | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen": string,"revision_on"?: string | null
+                    "candidatura_id": string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision": string,"documento_id"?: string | null,"estadio"?: Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo"?: string | null,"estadio_propuesto"?: Database["public"]['Enums']["estado_entrada"] | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"mentor_principal_id"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen": string,"revision_on"?: string | null
                   }
                   Update: {
-                    "candidatura_id"?: string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision"?: string,"documento_id"?: string | null,"estadio"?: Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo"?: string | null,"estadio_propuesto"?: Database["public"]['Enums']["estado_entrada"] | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen"?: string,"revision_on"?: string | null
+                    "candidatura_id"?: string,"cerrada_at"?: string | null,"contenido_hash"?: string | null,"created_at"?: string,"created_by"?: string | null,"decision"?: string,"documento_id"?: string | null,"estadio"?: Database["public"]['Enums']["estado_entrada"] | null,"estadio_motivo"?: string | null,"estadio_propuesto"?: Database["public"]['Enums']["estado_entrada"] | null,"fecha"?: string,"id"?: string,"mensaje"?: string | null,"mentor_principal_id"?: string | null,"motivo"?: string | null,"puede_volver"?: boolean | null,"resumen"?: string,"revision_on"?: string | null
                   }
                   Relationships: [
                     {
@@ -1446,6 +1446,24 @@ isOneToOne: false
       columns: ["documento_id"]
 isOneToOne: false
       referencedRelation: "documentos_de_seleccion"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comite_actas_mentor_principal_id_fkey"
+      columns: ["mentor_principal_id"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comite_actas_mentor_principal_id_fkey"
+      columns: ["mentor_principal_id"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comite_actas_mentor_principal_id_fkey"
+      columns: ["mentor_principal_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -3287,13 +3305,13 @@ isOneToOne: false
                   ]
                 },"milestones": {
                   Row: {
-                    "accrues_equity_pct": number | null,"annex_id": string | null,"company_id": string,"completed_on": string | null,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"created_by": string | null,"delivered_at": string | null,"delivered_by": string | null,"description": string | null,"due_date": string | null,"evidence": string | null,"from_tramo": number | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"origin": Database["public"]['Enums']["origen_hito"],"phase_id": string | null,"plan_item_id": string | null,"releases_funding": number | null,"requires_validation": boolean,"reviewer_id": string | null,"stage_id": string | null,"status": Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id": string | null,"title": string,"updated_at": string
+                    "accrues_equity_pct": number | null,"annex_id": string | null,"company_id": string,"completed_on": string | null,"confirmed_at": string | null,"confirmed_by": string | null,"created_at": string,"created_by": string | null,"delivered_at": string | null,"delivered_by": string | null,"description": string | null,"due_date": string | null,"evidence": string | null,"from_tramo": number | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"met_on_entry": boolean,"origin": Database["public"]['Enums']["origen_hito"],"phase_id": string | null,"plan_item_id": string | null,"releases_funding": number | null,"requires_validation": boolean,"reviewer_id": string | null,"stage_id": string | null,"status": Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id": string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id"?: string | null,"title": string,"updated_at"?: string
+                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id": string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"met_on_entry"?: boolean,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria": string,"template_milestone_id"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id"?: string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria"?: string,"template_milestone_id"?: string | null,"title"?: string,"updated_at"?: string
+                    "accrues_equity_pct"?: number | null,"annex_id"?: string | null,"company_id"?: string,"completed_on"?: string | null,"confirmed_at"?: string | null,"confirmed_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"delivered_at"?: string | null,"delivered_by"?: string | null,"description"?: string | null,"due_date"?: string | null,"evidence"?: string | null,"from_tramo"?: number | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"met_on_entry"?: boolean,"origin"?: Database["public"]['Enums']["origen_hito"],"phase_id"?: string | null,"plan_item_id"?: string | null,"releases_funding"?: number | null,"requires_validation"?: boolean,"reviewer_id"?: string | null,"stage_id"?: string | null,"status"?: Database["public"]['Enums']["estado_hito"],"success_criteria"?: string,"template_milestone_id"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -5310,7 +5328,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "avisar_plazos_vencidos":
-{ Args: Record<PropertyKey, never>; Returns: number
+{ Args: { "p_hoy"?: string }; Returns: number
                            },
 "avisar_reuniones_caducadas":
 { Args: Record<PropertyKey, never>; Returns: number

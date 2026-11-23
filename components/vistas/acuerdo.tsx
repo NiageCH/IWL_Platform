@@ -66,11 +66,14 @@ export async function PropuestaAcuerdo({
   compania,
   esIwl,
   esFundadora,
+  bloqueo,
 }: {
   anexo: AnexoLeido;
   compania: Compania;
   esIwl: boolean;
   esFundadora: boolean;
+  /** Por qué todavía no se puede proponer, si hay algo que lo impide */
+  bloqueo?: string | null;
 }) {
   const supabase = await clienteServidor();
   const enEntrada = compania.tramo === "entrada";
@@ -183,7 +186,13 @@ export async function PropuestaAcuerdo({
         />
       ) : null}
 
-      {borrador && (fundadoras.data ?? []).length ? (
+      {borrador && bloqueo ? (
+        <p className="es-atencion texto-estado text-sm" role="status">
+          {bloqueo}
+        </p>
+      ) : null}
+
+      {borrador && !bloqueo && (fundadoras.data ?? []).length ? (
         <div className="-mx-4 -mb-4">
           <ProponerAnexo
             id={anexo.id}

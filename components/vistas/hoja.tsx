@@ -3,15 +3,19 @@ import { Estado } from "@/components/ui/estado";
 import { Bloque, Metadato, SinDatos, TituloBloque } from "@/components/ui/primitivas";
 import {
   ContestarHito,
+  FechaHito,
   GenerarHoja,
+  QuitarHito,
   RehacerHoja,
   VerificarHito,
 } from "@/components/formularios/lista-entrada";
+import { NuevoHito } from "@/components/formularios/ruta";
 import { resumenLista, type ItemLista, type ListaEntrada, type Seguimiento } from "@/lib/datos/hoja";
 import type { EstadoVisual } from "@/lib/estados";
 import {
   TRAMOS,
   dondeEstamos,
+  finDelPlazo,
   plazo,
   plazoMaximoMeses,
   retrasoTramo,
@@ -110,6 +114,11 @@ export function ListaDeEntrada({
                     {i.verificacion === "no_basta" && i.comentario ? (
                       <p className="text-xs text-cuerpo">No basta: {i.comentario}</p>
                     ) : null}
+                    {i.verificacion && i.verificadoPor && verifica ? (
+                      <p className="text-xs text-metadato">
+                        {i.verificacion === "verificado" ? "Verificado" : "Revisado"} por {i.verificadoPor}
+                      </p>
+                    ) : null}
                     {contesta && abierta && i.verificacion !== "verificado" ? (
                       <ContestarHito
                         companyId={companyId}
@@ -131,9 +140,29 @@ export function ListaDeEntrada({
   );
 }
 
+const PASOS = ["Punto de partida", "Ajustar", "Revisar y proponer"] as const;
+
+/** Hasta qué paso se puede llegar, y en cuál se está si nadie pide otro */
+export function pasosDelAsistente({
+  hay,
+  anexoEnBorrador,
+  porVerificar,
+}: {
+  hay: boolean;
+  anexoEnBorrador: boolean;
+  porVerificar: number;
+}): { porDefecto: 1 | 2 | 3; maximo: 1 | 2 | 3 } {
+  if (!hay) return { porDefecto: 1, maximo: 1 };
+  if (!anexoEnBorrador) return { porDefecto: 3, maximo: 3 };
+  return { porDefecto: 2, maximo: porVerificar ? 2 : 3 };
+}
+
 /**
- * El asistente para preparar la hoja de ruta, en tres pasos, con el Anexo
- * en borrador (REVISION, 20 nov): punto de partida, ajustar y proponer.
+ * El asistente para preparar la hoja de ruta, con el Anexo en borrador:
+ * punto de partida, ajustar y proponer. Solo se ve el paso en el que se
+ * está (REVISION, 23 nov); los anteriores quedan en una línea con su
+ * botón para volver. El paso va en la dirección (`?paso=`), así que
+ * volver atrás no borra nada.
  */
 export function AsistenteHoja({
   lista,
@@ -142,6 +171,8 @@ export function AsistenteHoja({
   slug,
   hoy,
   anexoEnBorrador,
+  paso: pasoPedido,
+  esDireccion,
 }: {
   lista: ListaEntrada;
   seguimiento: Seguimiento;
@@ -149,83 +180,267 @@ export function AsistenteHoja({
   slug: string;
   hoy: string;
   anexoEnBorrador: boolean;
+  /** El que viene en la dirección, si viene */
+  paso?: number;
+  esDireccion: boolean;
 }) {
   const r = resumenLista(lista.items);
   const entrada = tramoDeEntrada(lista.estadio);
   const hay = seguimiento.tramos.length > 0;
-  const paso = !hay ? 1 : 2;
-  const pendientes = r.sinContestar + r.porVerificar;
+  const { porDefecto, maximo } = pasosDelAsistente({ hay, anexoEnBorrador, porVerificar: r.porVerificar });
+  const paso = pasoPedido && pasoPedido >= 1 && pasoPedido <= maximo ? pasoPedido : porDefecto;
+  const aqui = `/cartera/${slug}/programa`;
+  const irA = (n: number) => `${aqui}?paso=${n}#asistente-hoja`;
+  const cumplidos = seguimiento.tramos.flatMap((t) => t.hitos).filter((h) => h.alEntrar).length;
+
+  // Lo que dice cada paso cuando ya se ha pasado por él
+  const resumenes = [
+    `Tramo ${entrada}, ${plazoMaximoMeses(lista.estadio)} meses de plazo. ${lista.nombre}: ${r.verificados} verificados${
+      r.porVerificar ? `, ${r.porVerificar} por verificar` : ""
+    }.`,
+    hay ? `${seguimiento.tramos.length} tramos, ${seguimiento.tramos.flatMap((t) => t.hitos).length} hitos, ${cumplidos} cumplidos al entrar.` : "",
+  ];
+
   return (
     <Bloque id="asistente-hoja" className="mb-8 scroll-mt-48" elevacion={2}>
-      <TituloBloque accion={<Metadato>Paso {hay ? (anexoEnBorrador ? 2 : 3) : 1} de 3</Metadato>}>
-        Preparar la hoja de ruta
-      </TituloBloque>
+      <TituloBloque accion={<Metadato>Paso {paso} de 3</Metadato>}>Preparar la hoja de ruta</TituloBloque>
 
-      <ol className="flex flex-wrap gap-1 border-b border-filete px-5 py-3 text-xs">
-        {["Punto de partida", "Ajustar", "Revisar y proponer"].map((nombre, i) => (
-          <li
-            key={nombre}
-            className={
-              i + 1 === paso || (hay && !anexoEnBorrador && i === 2)
-                ? "rounded-md bg-acento-solido px-2.5 py-1 font-semibold text-white"
-                : "rounded-md px-2.5 py-1 text-secundario"
-            }
-          >
-            {i + 1}. {nombre}
-          </li>
-        ))}
+      <ol className="flex flex-col divide-y divide-filete">
+        {PASOS.map((nombre, i) => {
+          const n = i + 1;
+          if (n < paso) {
+            return (
+              <li key={nombre} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-2.5 text-sm">
+                <span className="min-w-0">
+                  <span className="mr-2 inline-flex">
+                    <Estado valor="hecho" soloIcono />
+                  </span>
+                  <span className="font-medium text-titular">
+                    {n}. {nombre}
+                  </span>
+                  <span className="text-secundario"> · {resumenes[i]}</span>
+                </span>
+                <Link href={irA(n)} className="accion text-xs">
+                  Volver
+                </Link>
+              </li>
+            );
+          }
+          if (n > paso) {
+            return (
+              <li key={nombre} className="px-5 py-2.5 text-sm text-metadato">
+                {n}. {nombre}
+              </li>
+            );
+          }
+          return (
+            <li key={nombre} className="flex flex-col gap-3 px-5 py-4 text-sm" aria-current="step">
+              <h3 className="font-semibold text-titular">
+                {n}. {nombre}
+              </h3>
+              {n === 1 ? (
+                <PasoPartida
+                  lista={lista}
+                  hay={hay}
+                  companyId={companyId}
+                  slug={slug}
+                  hoy={hoy}
+                  anexoEnBorrador={anexoEnBorrador}
+                  siguiente={irA(2)}
+                />
+              ) : n === 2 ? (
+                <PasoAjustar
+                  lista={lista}
+                  seguimiento={seguimiento}
+                  companyId={companyId}
+                  slug={slug}
+                  esDireccion={esDireccion}
+                  porVerificar={r.porVerificar}
+                  siguiente={irA(3)}
+                />
+              ) : (
+                <p className="text-cuerpo">
+                  {anexoEnBorrador
+                    ? "La hoja de ruta va en la propuesta de Acuerdo, en su sección I. Repasa las cifras del Anexo aquí debajo y, cuando esté a punto, proponle el Acuerdo: la verá con su hoja de ruta y la aceptará con él."
+                    : "Ya va en la propuesta de Acuerdo. Al firmar, las fechas se corren a la de la firma y lo firmado queda congelado en la versión del Anexo."}{" "}
+                  <a href="#anexo" className="enlace text-acento-texto">
+                    Ir al Anexo
+                  </a>
+                </p>
+              )}
+            </li>
+          );
+        })}
       </ol>
-
-      <section className="flex flex-col gap-2 border-b border-filete px-5 py-4 text-sm" aria-label="Punto de partida">
-        <h3 className="font-semibold text-titular">1. Punto de partida</h3>
-        <p className="text-cuerpo">
-          Entra en el <strong>tramo {entrada}</strong>, {TRAMOS[entrada].nombre.toLowerCase()}, con un plazo máximo de{" "}
-          <strong>{plazoMaximoMeses(lista.estadio)} meses</strong> desde la firma.
-        </p>
-        <p className="text-secundario">
-          {lista.nombre}: {r.verificados} verificados, {r.noBasta} «no basta», {r.todaviaNo} «todavía no»
-          {r.porVerificar ? `, ${r.porVerificar} por verificar` : ""}
-          {r.sinContestar ? `, ${r.sinContestar} sin contestar` : ""}. Lo verificado entra como cumplido; lo demás, como
-          pendiente.
-        </p>
-        {pendientes && !hay ? (
-          <p className="text-cuerpo" role="status">
-            Antes de generarla conviene que esté contestada y verificada: lo que quede sin verificar entrará como
-            pendiente.
-          </p>
-        ) : null}
-      </section>
-
-      <section className="flex flex-col gap-3 border-b border-filete px-5 py-4 text-sm" aria-label="Ajustar">
-        <h3 className="font-semibold text-titular">2. Ajustar</h3>
-        {!hay ? (
-          <GenerarHoja companyId={companyId} slug={slug} hoy={hoy} />
-        ) : (
-          <>
-            <ResumenTramos seguimiento={seguimiento} />
-            <p className="text-secundario">
-              Las fechas, los textos y los hitos propios se ajustan en{" "}
-              <Link href={`/cartera/${slug}/ruta`} className="enlace text-acento-texto">
-                Hoja de ruta
-              </Link>
-              . Un hito fundamental solo lo quita dirección, con motivo.
-            </p>
-            {anexoEnBorrador ? <RehacerHoja companyId={companyId} slug={slug} /> : null}
-          </>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-2 px-5 py-4 text-sm" aria-label="Revisar y proponer">
-        <h3 className="font-semibold text-titular">3. Revisar y proponer</h3>
-        <p className="text-secundario">
-          {hay
-            ? anexoEnBorrador
-              ? "La hoja de ruta va en la propuesta de Acuerdo, en su sección I. Cuando esté a punto, proponle el Acuerdo aquí debajo: la verá con el Anexo y la aceptará con él."
-              : "Va en la propuesta de Acuerdo. Al firmar queda viva, y lo firmado queda congelado en la versión del Anexo."
-            : "Cuando la hayas generado y ajustado, irá en la propuesta de Acuerdo, en su sección I."}
-        </p>
-      </section>
     </Bloque>
+  );
+}
+
+function PasoPartida({
+  lista,
+  hay,
+  companyId,
+  slug,
+  hoy,
+  anexoEnBorrador,
+  siguiente,
+}: {
+  lista: ListaEntrada;
+  hay: boolean;
+  companyId: string;
+  slug: string;
+  hoy: string;
+  anexoEnBorrador: boolean;
+  siguiente: string;
+}) {
+  const r = resumenLista(lista.items);
+  const entrada = tramoDeEntrada(lista.estadio);
+  return (
+    <>
+      <p className="text-cuerpo">
+        Entra en el <strong>tramo {entrada}</strong>, {TRAMOS[entrada].nombre.toLowerCase()}, con un plazo máximo de{" "}
+        <strong>{plazoMaximoMeses(lista.estadio)} meses</strong> desde la firma.
+      </p>
+      <p className="text-secundario">
+        {lista.nombre}: {r.verificados} verificados, {r.noBasta} «no basta», {r.todaviaNo} «todavía no»
+        {r.porVerificar ? `, ${r.porVerificar} por verificar` : ""}
+        {r.sinContestar ? `, ${r.sinContestar} sin contestar` : ""}. Lo verificado entra como cumplido; lo demás, como
+        pendiente.
+      </p>
+      {hay ? (
+        <>
+          <p className="text-cuerpo">La hoja de ruta ya está generada.</p>
+          <div className="flex flex-wrap items-start gap-3">
+            <Link href={siguiente} className="boton-marca px-4 py-2 text-xs">
+              Seguir: ajustar
+            </Link>
+          </div>
+          {anexoEnBorrador ? <RehacerHoja companyId={companyId} slug={slug} /> : null}
+        </>
+      ) : (
+        <>
+          {r.sinContestar + r.porVerificar ? (
+            <p className="text-cuerpo" role="status">
+              Conviene que la lista esté contestada y verificada antes: lo que quede sin verificar entra como pendiente.
+            </p>
+          ) : null}
+          <GenerarHoja companyId={companyId} slug={slug} hoy={hoy} />
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * Ajustar, aquí mismo (REVISION, 23 nov): mover la fecha de un hito,
+ * añadir uno propio y quitar uno —un fundamental solo dirección, con
+ * motivo—. Con las mismas piezas que la pestaña Hoja de ruta.
+ */
+function PasoAjustar({
+  lista,
+  seguimiento,
+  companyId,
+  slug,
+  esDireccion,
+  porVerificar,
+  siguiente,
+}: {
+  lista: ListaEntrada;
+  seguimiento: Seguimiento;
+  companyId: string;
+  slug: string;
+  esDireccion: boolean;
+  porVerificar: number;
+  siguiente: string;
+}) {
+  const entrada = tramoDeEntrada(lista.estadio);
+  // Antes de firmar, el plazo cuenta desde la fecha prevista: el inicio del primer tramo
+  const desde = seguimiento.firma ?? seguimiento.tramos[0]?.inicio ?? null;
+  const fin = desde ? finDelPlazo(desde, lista.estadio) : null;
+  return (
+    <>
+      <p className="text-secundario">
+        Mueve las fechas, añade los hitos propios de esta compañía y quita lo que no aplique.
+        {fin ? ` Todo dentro del plazo del programa, que acaba el ${fecha(fin)}.` : ""}
+      </p>
+      <div className="flex flex-col gap-5">
+        {seguimiento.tramos.map((t) => {
+          const alEntrar = t.hitos.filter((h) => h.alEntrar);
+          // Primero los que vienen de tramos anteriores, con su etiqueta; luego los del tramo
+          const pendientes = t.hitos
+            .filter((h) => !h.alEntrar)
+            .sort((a, b) => (a.deTramo ?? 9) - (b.deTramo ?? 9));
+          return (
+            <section key={t.id} className="rounded-md border border-filete" aria-label={`Tramo ${t.tramo}`}>
+              <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-filete px-4 py-2.5">
+                <span className="font-medium text-titular">
+                  Tramo {t.tramo} · {t.nombre}
+                </span>
+                <span className="cifra text-xs text-metadato">
+                  {t.inicio ? fecha(t.inicio) : "—"} a {t.fin ? fecha(t.fin) : "—"}
+                </span>
+              </header>
+              {t.tramo === entrada && alEntrar.length ? (
+                <details className="border-b border-filete px-4 py-2.5">
+                  <summary className="cursor-pointer text-secundario">
+                    {alEntrar.length === 1 ? "1 hito ya cumplido al entrar" : `${alEntrar.length} hitos ya cumplidos al entrar`}
+                  </summary>
+                  <ul className="mt-2 flex flex-col gap-1 text-xs text-cuerpo">
+                    {alEntrar.map((h) => (
+                      <li key={h.id} className="flex flex-wrap gap-x-2">
+                        <span>✓ {h.titulo}</span>
+                        {h.deTramo ? <span className="text-metadato">del tramo {h.deTramo}</span> : null}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+              <ul className="divide-y divide-filete">
+                {pendientes.map((h) => (
+                  <li
+                    key={h.id}
+                    data-hito={h.titulo}
+                    className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="text-titular">{h.titulo}</span>
+                      <span className="flex flex-wrap gap-x-2 text-xs text-metadato">
+                        {h.deTramo ? <span>Pendiente del tramo {h.deTramo}</span> : null}
+                        {h.fundamental ? <span>Fundamental</span> : <span>Propio</span>}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                      <FechaHito id={h.id} slug={slug} actual={h.fecha} finPlazo={fin} esDireccion={esDireccion} />
+                      {!h.fundamental || esDireccion ? (
+                        <QuitarHito id={h.id} slug={slug} fundamental={h.fundamental} />
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="border-t border-filete px-4 py-2.5">
+                <NuevoHito slug={slug} companyId={companyId} stageId={t.id} />
+              </div>
+            </section>
+          );
+        })}
+      </div>
+      {porVerificar ? (
+        <p className="es-atencion texto-estado" role="status">
+          Faltan {porVerificar} por verificar en {lista.nombre === "Diagnóstico" ? "el diagnóstico" : "«Lo que ya tenéis»"}: sin eso no se puede
+          proponer.{" "}
+          <Link href={`/cartera/${slug}#lista-entrada`} className="enlace">
+            Ir a la lista
+          </Link>
+        </p>
+      ) : (
+        <div>
+          <Link href={siguiente} className="boton-marca inline-block px-4 py-2 text-xs">
+            Seguir: revisar y proponer
+          </Link>
+        </div>
+      )}
+    </>
   );
 }
 

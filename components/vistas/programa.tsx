@@ -1,5 +1,5 @@
 import { AsistenteHoja, ResumenTramos } from "@/components/vistas/hoja";
-import { leerListaEntrada, leerSeguimiento } from "@/lib/datos/hoja";
+import { leerListaEntrada, leerSeguimiento, resumenLista } from "@/lib/datos/hoja";
 import { plazoMaximoMeses } from "@/lib/tramos";
 import Link from "next/link";
 import { clienteServidor } from "@/lib/supabase/servidor";
@@ -27,8 +27,11 @@ import { tarifaAnexo } from "@/lib/anexo";
 
 export async function VistaPrograma({
   resumen,
+  paso,
 }: {
   resumen: NonNullable<ResumenCompania>;
+  /** El paso del asistente de la hoja de ruta, si viene en la dirección */
+  paso?: number;
 }) {
   const base = resumen.permisos.esIwl
     ? `/cartera/${resumen.compania.slug}`
@@ -37,6 +40,8 @@ export async function VistaPrograma({
   const companyId = resumen.compania.id;
   const { compania } = resumen;
   const esIwl = resumen.permisos.esIwl;
+  // El mentor principal prepara la hoja de ruta en entrada (REVISION, 23 nov)
+  const coordina = resumen.permisos.coordina;
 
   const [anexo, hitos, fases, pilares, ajusteTarifa, versiones] = await Promise.all([
     supabase
@@ -66,10 +71,12 @@ export async function VistaPrograma({
 
   const [seguimiento, lista] = await Promise.all([
     leerSeguimiento(companyId),
-    esIwl ? leerListaEntrada(companyId) : Promise.resolve(null),
+    coordina ? leerListaEntrada(companyId) : Promise.resolve(null),
   ]);
 
   const listaHitos = hitos.data ?? [];
+  // La base no deja proponer con la lista a medio verificar (`annexes_guard_lista`)
+  const porVerificar = lista ? resumenLista(lista.items).porVerificar : 0;
   const cumplidos = listaHitos.filter((h) => h.status === "cumplido").length;
   const queCondicionan = listaHitos.filter((h) => h.gates_investable);
 
@@ -121,7 +128,7 @@ export async function VistaPrograma({
 
       {/* Preparar la hoja de ruta, con el Anexo en borrador (REVISION, 22 y 23 nov) */}
       {/* Mientras el Acuerdo no esté firmado: en entrada, o una compañía sin hoja de ruta todavía */}
-      {esIwl && lista && (compania.tramo === "entrada" || !seguimiento.tramos.length || !seguimiento.firma) ? (
+      {coordina && lista && (compania.tramo === "entrada" || !seguimiento.tramos.length || !seguimiento.firma) ? (
         <AsistenteHoja
           lista={lista}
           seguimiento={seguimiento}
@@ -129,6 +136,8 @@ export async function VistaPrograma({
           slug={compania.slug}
           hoy={new Date().toISOString().slice(0, 10)}
           anexoEnBorrador={!anexo.data || anexo.data.status === "borrador"}
+          paso={paso}
+          esDireccion={resumen.permisos.esAdmin}
         />
       ) : null}
 
@@ -240,6 +249,7 @@ export async function VistaPrograma({
               compania={compania}
               esIwl={esIwl}
               esFundadora={resumen.permisos.esFundadora}
+              bloqueo={porVerificar ? `Faltan ${porVerificar} por verificar en la lista de entrada: hasta entonces no se puede proponer.` : null}
             />
           </div>
 

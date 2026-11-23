@@ -2072,3 +2072,19 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **La semilla genera las hojas de ruta con la función interna** (`app.copiar_hoja_iwl`), sin sesión. La pública (`generar_hoja_de_ruta`) pide ser quien coordina.
 - **Las capturas de una propuesta tienen su propia configuración** (`playwright.capturas.config.ts`), fuera de la suite. Dejan las imágenes en `docs/constancia/`.
 
+
+## 2026-11-23 · Bloque 5: los diez arreglos de la primera revisión
+
+- **Sin botón de Guardar en la lista de entrada.** «Todavía no» se guarda al elegirlo y «Ya lo tenemos» al terminar de subir el archivo; sin archivo no se guarda y dice «Falta el archivo». El acuse es un «Guardado» pequeño y la lista cambiada.
+- **Los radios se dibujan en `globals.css`**, para toda la plataforma: el del navegador salía relleno de negro sin estar elegido. Sin elegir, un círculo vacío; elegido, un punto en el color de la marca. Es la acción, no un dato, así que el magenta vale.
+- **El control de archivo es `<SelectorArchivo>`** (`components/ui/subida.tsx`), en castellano. El del navegador habla el idioma del sistema y no se traduce. Lo usan la lista y la evidencia de un hito.
+- **«Verificar» y «No basta», los dos iguales.** «No basta» abre el comentario, obligatorio. Se guarda quién verificó y se enseña («Verificado por …») a quien verifica: dirección puede hacerlo en lugar del mentor y queda dicho.
+- **El asistente enseña solo el paso en el que se está.** Los anteriores, en una línea con «Volver». El paso va en la dirección (`?paso=`): volver no borra nada y se puede enlazar.
+- **Ajustar es aquí mismo:** la fecha de cada hito (`fecharHito`), un hito propio (`NuevoHito`, el de la pestaña Hoja de ruta) y quitar uno (un fundamental, solo dirección con motivo). Las fechas de los tramos no se ajustan desde el asistente: salen de la firma.
+- **El paso 3 se bloquea con algo por verificar**, en pantalla y en la base (`annexes_guard_lista`). Proponer el Acuerdo también desaparece mientras tanto.
+- **Las fechas salen de la firma.** Antes de firmar, de la fecha prevista de firma, que es lo que pide «Generar». Al firmar se corre todo a la fecha de verdad (`app.al_firmar_abrir_tramo`), **solo en la primera firma**: renovar el Anexo después no mueve una hoja de ruta en marcha.
+- **Ningún hito más allá del plazo** (`milestones_guard_plazo`): «Fuera del plazo del programa», y solo dirección lo guarda. Es un guardián de autorización: sin sesión no se aplica, y tampoco cuando lo corre la propia firma.
+- **El último día del plazo es la firma más sus meses menos uno**, y la misma cuenta está en `app.fin_del_plazo` y en `finDelPlazo` (`lib/tramos.ts`). El aviso de plazo vencido usa la de la base y recibe el día como parámetro, para probarlo sin tocar un Anexo firmado.
+- **Lo cumplido al entrar va aparte** (`milestones.met_on_entry`): «6 cumplidos al entrar · 3 de 9 pendientes hechos». Ya estaba hecho; no es avance del programa.
+- **El mentor principal se elige en el acta del comité** al preseleccionar, y entra con la compañía. En entrada ve la ficha, la lista y el asistente, y verifica. **El due diligence (puntos y documentos) es solo de IWL mientras la compañía está en entrada** (`app.ve_diligencia`). Lo que se hizo cuelga de la compañía, no de la persona: si se cambia el mentor, el nuevo lo hereda sin más.
+- **La ficha de entrada (candidatura y decisión) sigue siendo de IWL.** El mentor no lee el embudo: ve la ficha de la compañía con la lista.

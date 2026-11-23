@@ -46,9 +46,12 @@ export function RedactarActa({
   estadioPropuesto,
   contacto,
   startup,
+  mentores = [],
 }: {
   candidaturaId: string;
   personas: Persona[];
+  /** Entre quién se elige el mentor principal, si se preselecciona */
+  mentores?: Persona[];
   porDefecto: string[];
   /** El que declaró ella: el comité lo confirma o lo cambia */
   estadioPropuesto: Estadio | null;
@@ -117,6 +120,20 @@ export function RedactarActa({
                       {Object.entries(ESTADIOS).map(([v, n]) => (
                         <option key={v} value={v}>
                           {n}
+                        </option>
+                      ))}
+                    </Seleccion>
+                  </Campo>
+                  <Campo
+                    etiqueta="Mentor principal"
+                    error={e("mentor_principal_id")}
+                    ayuda="Entra con la compañía: verifica su lista y prepara la hoja de ruta. Se puede cambiar en la decisión"
+                  >
+                    <Seleccion name="mentor_principal_id" defaultValue="">
+                      <option value="">Sin asignar todavía</option>
+                      {mentores.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nombre}
                         </option>
                       ))}
                     </Seleccion>

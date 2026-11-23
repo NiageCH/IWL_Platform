@@ -52,6 +52,10 @@ const esquemaActa = z
     revision_on: texto,
     puede_volver: z.string().optional(),
     mensaje: texto,
+    mentor_principal_id: z
+      .union([z.string().uuid(), z.literal(""), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
   })
   .superRefine((d, ctx) => {
     if (d.decision === "preseleccionada" && !d.estadio) {
@@ -107,6 +111,8 @@ export async function redactarActa(formData: FormData): Promise<Resultado> {
       revision_on: datos.decision === "aplazada" ? datos.revision_on : null,
       puede_volver: datos.decision === "descartada" ? datos.puede_volver === "si" : null,
       mensaje: datos.decision === "descartada" ? datos.mensaje : null,
+      // El mentor principal se asigna al preseleccionar: entra con la compañía
+      mentor_principal_id: datos.decision === "preseleccionada" ? datos.mentor_principal_id : null,
       created_by: persona!.id,
     })
     .select("id")

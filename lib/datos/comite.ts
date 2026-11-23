@@ -16,6 +16,18 @@ export const leerPersonasIwl = cache(async () => {
   return (data ?? []).map((p) => ({ id: p.id, nombre: nombrePersona(p) }));
 });
 
+/** Los mentores, para elegir el principal al preseleccionar (REVISION, 23 nov) */
+export const leerMentores = cache(async () => {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, last_name, email")
+    .eq("role", "mentor")
+    .is("archived_at", null)
+    .order("full_name");
+  return (data ?? []).map((p) => ({ id: p.id, nombre: nombrePersona(p) }));
+});
+
 export const leerComiteDefecto = cache(async (): Promise<string[]> => {
   const supabase = await clienteServidor();
   const { data } = await supabase
@@ -31,7 +43,7 @@ export async function leerActas(candidaturaId: string) {
   const { data } = await supabase
     .from("comite_actas")
     .select(
-      "id, fecha, resumen, decision, estadio, estadio_propuesto, estadio_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, last_name, email))",
+      "id, fecha, resumen, decision, estadio, estadio_propuesto, estadio_motivo, motivo, revision_on, puede_volver, mensaje, cerrada_at, documento_id, mentor:profiles!comite_actas_mentor_principal_id_fkey(full_name, last_name, email), candidatura_documentos(nombre, storage_path, bytes, created_at), comite_firmas(profile_id, firmado_at, profiles(full_name, last_name, email))",
     )
     .eq("candidatura_id", candidaturaId)
     .order("created_at", { ascending: false });
@@ -49,6 +61,7 @@ export async function leerActas(candidaturaId: string) {
     puedeVolver: a.puede_volver,
     mensaje: a.mensaje,
     cerradaAt: a.cerrada_at,
+    mentor: a.mentor ? nombrePersona(a.mentor as { full_name: string | null; last_name: string | null; email: string | null }) : null,
     documento: a.candidatura_documentos as unknown as {
       nombre: string;
       storage_path: string;

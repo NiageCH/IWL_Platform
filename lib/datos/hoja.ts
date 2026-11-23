@@ -19,6 +19,8 @@ export interface ItemLista {
   evidencia: { nombre: string; url: string | null; ruta: string } | null;
   verificacion: "verificado" | "no_basta" | null;
   comentario: string | null;
+  /** Quién lo verificó o dijo «no basta»: el mentor, o dirección en su lugar */
+  verificadoPor: string | null;
 }
 
 export interface ListaEntrada {
@@ -45,7 +47,7 @@ export async function leerListaEntrada(companyId: string): Promise<ListaEntrada 
       .in("roadmap_template_stages.tramo", tramos),
     supabase
       .from("entry_checks")
-      .select("id, template_milestone_id, answer, evidence_path, evidence_name, verification, review_comment")
+      .select("id, template_milestone_id, answer, evidence_path, evidence_name, verification, review_comment, verificador:profiles!entry_checks_verified_by_fkey(full_name)")
       .eq("company_id", companyId),
     supabase.from("roadmap_stages").select("id", { count: "exact", head: true }).eq("company_id", companyId),
   ]);
@@ -70,6 +72,7 @@ export async function leerListaEntrada(companyId: string): Promise<ListaEntrada 
           : null,
         verificacion: (r?.verification ?? null) as ItemLista["verificacion"],
         comentario: r?.review_comment ?? null,
+        verificadoPor: (r?.verificador as { full_name: string | null } | null)?.full_name ?? null,
       };
     })
     .sort((a, b) => a.tramo - b.tramo || a.orden - b.orden)
@@ -82,6 +85,7 @@ export async function leerListaEntrada(companyId: string): Promise<ListaEntrada 
       evidencia: i.evidencia,
       verificacion: i.verificacion,
       comentario: i.comentario,
+      verificadoPor: i.verificadoPor,
     }));
 
   return { estadio, nombre: nombreLista(estadio), items, hayHoja: (count ?? 0) > 0 };
@@ -113,6 +117,8 @@ export interface TramoSeguimiento {
     fecha: string | null;
     fundamental: boolean;
     deTramo: number | null;
+    /** Verificado en la lista de entrada: no es avance hecho en el programa */
+    alEntrar: boolean;
   }>;
 }
 
@@ -129,7 +135,7 @@ export async function leerSeguimiento(companyId: string): Promise<Seguimiento> {
     supabase.from("companies").select("entry_state").eq("id", companyId).maybeSingle(),
     supabase
       .from("roadmap_stages")
-      .select("id, tramo, name, starts_on, ends_on, status, closed_at, order_index, milestones(id, title, status, due_date, fundamental, from_tramo)")
+      .select("id, tramo, name, starts_on, ends_on, status, closed_at, order_index, milestones(id, title, status, due_date, fundamental, from_tramo, met_on_entry)")
       .eq("company_id", companyId)
       .not("tramo", "is", null)
       .order("order_index"),
@@ -160,6 +166,7 @@ export async function leerSeguimiento(companyId: string): Promise<Seguimiento> {
         due_date: string | null;
         fundamental: boolean;
         from_tramo: number | null;
+        met_on_entry: boolean;
       }>)
         .map((m) => ({
           id: m.id,
@@ -168,6 +175,7 @@ export async function leerSeguimiento(companyId: string): Promise<Seguimiento> {
           fecha: m.due_date,
           fundamental: m.fundamental,
           deTramo: m.from_tramo,
+          alEntrar: m.met_on_entry,
         }))
         .sort((a, b) => (a.deTramo ?? 9) - (b.deTramo ?? 9) || (a.fecha ?? "").localeCompare(b.fecha ?? "")),
     })),

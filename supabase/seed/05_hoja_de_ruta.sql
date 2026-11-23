@@ -7,7 +7,8 @@
 --   · Marea, MVP sin piloto: tramos 2 a 4. De su lista «Lo que ya tenéis»
 --     (los hitos del tramo 1) tiene verificados cuatro; el quinto queda
 --     pendiente dentro de su tramo 2, marcado como del tramo 1.
---   · Raíz, facturando: solo el tramo 4, con lo que le faltaba de antes.
+--   · Raíz, facturando, firmó el 1 sept: solo el tramo 4 (cinco meses), con
+--     lo que le faltaba de antes y dos hitos ya hechos en el programa.
 --
 -- Vega se queda sin hoja de ruta a propósito: así se ve en pantalla el
 -- estado «sin hoja de ruta» con su invitación a prepararla.
@@ -62,7 +63,7 @@ join roadmap_templates t on t.id = s.template_id and t.code = 'hoja_iwl'
 where c.slug = 'raiz-sensorica'
 on conflict do nothing;
 
-select app.copiar_hoja_iwl((select id from companies where slug = 'marea-clinica'), date '2026-03-09');
+select app.copiar_hoja_iwl((select id from companies where slug = 'marea-clinica'), date '2026-03-06');
 select app.copiar_hoja_iwl((select id from companies where slug = 'raiz-sensorica'), date '2026-09-01');
 
 -- Lo que ya pasó: los tramos cuyo plazo terminó están cerrados y el que
@@ -97,6 +98,13 @@ where m.stage_id = s.id and s.status = 'en_curso' and m.status = 'pendiente'
     where m2.stage_id = s.id and m2.status = 'pendiente'
     order by m2.due_date, m2.title limit 1
   );
+
+-- Raíz, en su tramo 4 a medias: dos de lo pendiente ya hechos en el programa
+update milestones m
+set status = 'cumplido', completed_on = date '2026-10-20'
+from companies c
+where m.company_id = c.id and c.slug = 'raiz-sensorica'
+  and m.title in ('Empresa en regla para facturar: contratos, protección de datos y contabilidad', 'Clientes que repiten');
 
 alter table milestones enable trigger milestones_cerrar_tramo;
 alter table milestones enable trigger milestones_guard_cumplido;

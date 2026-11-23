@@ -48,9 +48,11 @@ async function nacerEnEntrada(nombre: string, estadio: string) {
   return { candidatura: c.id, compania: con.company_id, slug: co.slug };
 }
 
+/** Sin botón de Guardar: «Todavía no» se guarda al elegirlo y «Ya lo tenemos» al subir el archivo */
 async function contestar(page: Page, titulo: string, respuesta: "Ya lo tenemos" | "Todavía no", archivo?: string) {
   const fila = page.locator("#lista-entrada li").filter({ hasText: titulo });
   await fila.getByLabel(respuesta).check();
+  if (respuesta === "Ya lo tenemos" && !archivo) return fila;
   if (archivo) {
     await fila.locator('input[name="evidencia"]').setInputFiles({
       name: archivo,
@@ -58,7 +60,7 @@ async function contestar(page: Page, titulo: string, respuesta: "Ya lo tenemos" 
       buffer: Buffer.from("%PDF-1.4 evidencia de prueba"),
     });
   }
-  await fila.getByRole("button", { name: "Guardar" }).click();
+  await expect(fila.getByText("Guardado")).toBeVisible();
   return fila;
 }
 
@@ -79,6 +81,11 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     await expect(lista.getByRole("heading", { name: "Diagnóstico" })).toBeVisible();
     await expect(lista.locator("li")).toHaveCount(5);
 
+    // «Ya lo tenemos» sin archivo no se guarda, y lo dice
+    const sinArchivo = await contestar(page, "Problema validado con entrevistas", "Ya lo tenemos");
+    await expect(sinArchivo.getByText(/Falta el archivo/)).toBeVisible();
+    await expect(sinArchivo.getByText("Sin contestar")).toBeVisible();
+
     const hecho = await contestar(page, "Problema validado con entrevistas", "Ya lo tenemos", "entrevistas.pdf");
     await expect(hecho.getByText("Por verificar")).toBeVisible();
     await expect(hecho.getByRole("link", { name: "entrevistas.pdf" })).toBeVisible();
@@ -88,15 +95,31 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     // IWL lo verifica desde la ficha
     await entrarComo(page, USUARIOS.equipoIwl, `/cartera/${nueva.slug}`);
     const fila = page.locator("#lista-entrada li").filter({ hasText: "Problema validado con entrevistas" });
-    await fila.getByRole("button", { name: "Verificado" }).click();
+    await fila.getByRole("button", { name: "Verificar" }).click();
     await expect(fila.getByText("Verificado", { exact: true })).toBeVisible();
+    await expect(fila.getByText(/^Verificado por /)).toBeVisible();
 
     // Y genera la hoja de ruta desde ahí, en Programa
     await page.goto(`/cartera/${nueva.slug}/programa`);
     const asistente = page.locator("#asistente-hoja");
     await expect(asistente.getByText(/1 verificados, 0 «no basta», 1 «todavía no»/)).toBeVisible();
+    await asistente.getByLabel("Fecha prevista de firma").fill("2026-12-01");
     await asistente.getByRole("button", { name: "Generar la hoja de ruta" }).click();
+    // Pasa solo al paso 2, ajustar; el 1 queda en una línea con su «Volver»
+    await expect(asistente.getByRole("heading", { name: "2. Ajustar" })).toBeVisible();
+    await expect(asistente.getByRole("link", { name: "Volver" })).toBeVisible();
     await expect(asistente.getByText("Tramo 4 · De facturación a invertible")).toBeVisible();
+    await expect(asistente.getByText("1 hito ya cumplido al entrar")).toBeVisible();
+
+    // Una fecha más allá del plazo: lo avisa, y sin ser dirección no se guarda
+    const pendiente = asistente.locator('li[data-hito^="Sociedad constituida y pacto de socias"]');
+    await pendiente.locator('input[name="due_date"]').fill("2029-01-01");
+    await expect(pendiente.getByText(/Fuera del plazo del programa: acaba el/)).toBeVisible();
+    await expect(pendiente.getByRole("button", { name: "Cambiar la fecha" })).toBeDisabled();
+
+    // Paso 3: no queda nada por verificar, así que se puede seguir
+    await asistente.getByRole("link", { name: "Seguir: revisar y proponer" }).click();
+    await expect(asistente.getByRole("heading", { name: "3. Revisar y proponer" })).toBeVisible();
     // La sección I del Anexo, con su plazo máximo
     await expect(page.locator("#anexo-hoja").getByText("Plazo máximo: 18 meses desde la firma")).toBeVisible();
     // Lo verificado entra cumplido
@@ -105,7 +128,7 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     // Hecha la hoja de ruta, ella ya no cambia la lista
     await entrarComo(page, correo, "/proyecto");
     await expect(page.locator("#lista-entrada").getByText(/La hoja de ruta ya está hecha/)).toBeVisible();
-    await expect(page.locator("#lista-entrada").getByRole("button", { name: "Guardar" })).toHaveCount(0);
+    await expect(page.locator("#lista-entrada").getByRole("radio")).toHaveCount(0);
   } finally {
     await quitarFicheros("data-room", nueva.compania);
     await borrar("candidaturas", { id: nueva.candidatura });

@@ -50,13 +50,23 @@ function diasEntre(desde: string, hasta: string): number {
 }
 
 /** El plazo: cuándo vence, y cuánto queda o cuánto hace que venció */
+/**
+ * El último día del plazo: la firma más sus meses, menos uno. Es la misma
+ * cuenta que `app.fin_del_plazo`, que es la que manda al guardar un hito.
+ */
+export function finDelPlazo(desde: string, e: Estadio): string {
+  const f = new Date(`${sumarMeses(desde, plazoMaximoMeses(e))}T00:00:00Z`);
+  f.setUTCDate(f.getUTCDate() - 1);
+  return f.toISOString().slice(0, 10);
+}
+
 export function plazo(
   firma: string,
   e: Estadio,
   hoy: string,
 ): { vence: string; meses: number; dias: number; vencido: boolean } {
   const meses = plazoMaximoMeses(e);
-  const vence = sumarMeses(firma, meses);
+  const vence = finDelPlazo(firma, e);
   const dias = diasEntre(hoy, vence);
   return { vence, meses, dias, vencido: dias < 0 };
 }
@@ -81,6 +91,8 @@ export interface HitoResumido {
   titulo: string;
   estado: string;
   fecha: string | null;
+  /** Verificado en la lista de entrada: ya estaba hecho, no es avance del programa */
+  alEntrar?: boolean;
 }
 
 /**
@@ -89,11 +101,17 @@ export interface HitoResumido {
  */
 export function dondeEstamos(hitos: HitoResumido[]): string {
   if (!hitos.length) return "Este tramo todavía no tiene hitos.";
-  const cumplidos = hitos.filter((h) => h.estado === "cumplido").length;
-  const siguiente = hitos
+  // Lo verificado al entrar no es avance en el programa: va aparte
+  // (REVISION, 23 nov). «9 de 15 cumplidos» mezclaba las dos cosas.
+  const alEntrar = hitos.filter((h) => h.alEntrar).length;
+  const pendientes = hitos.filter((h) => !h.alEntrar);
+  const hechos = pendientes.filter((h) => h.estado === "cumplido").length;
+  const siguiente = pendientes
     .filter((h) => h.estado !== "cumplido")
     .sort((a, b) => (a.fecha ?? "9999").localeCompare(b.fecha ?? "9999"))[0];
-  const base = `${cumplidos} de ${hitos.length} hitos de este tramo cumplidos.`;
+  const base = alEntrar
+    ? `${alEntrar} ${alEntrar === 1 ? "cumplido" : "cumplidos"} al entrar · ${hechos} de ${pendientes.length} pendientes ${hechos === 1 ? "hecho" : "hechos"}.`
+    : `${hechos} de ${pendientes.length} hitos de este tramo cumplidos.`;
   if (!siguiente) return `${base} Falta que se cierre.`;
   return `${base} Siguiente: «${siguiente.titulo}»${siguiente.fecha ? `, para el ${fechaCorta(siguiente.fecha)}` : ""}.`;
 }

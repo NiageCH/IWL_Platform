@@ -16,7 +16,7 @@ import { leerReuniones } from "@/lib/datos/reuniones";
 import { BloqueComite } from "@/components/vistas/comite";
 import { BloqueCorreos } from "@/components/vistas/correos";
 import { leerCorreos } from "@/lib/datos/correos";
-import { leerActas, leerComiteDefecto, leerPersonasIwl } from "@/lib/datos/comite";
+import { leerActas, leerComiteDefecto, leerMentores, leerPersonasIwl } from "@/lib/datos/comite";
 import { ESTADIOS, type Estadio } from "@/lib/estadios";
 import { leerNda } from "@/lib/datos/nda";
 import { ExpedienteCandidata } from "@/components/vistas/expediente-candidata";
@@ -70,7 +70,7 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos, filtro] = await Promise.all([
+  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos, filtro, mentores] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
     supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
@@ -81,6 +81,7 @@ export default async function FichaCandidatura({
     leerComiteDefecto(),
     leerCorreos({ candidaturaId: id }),
     leerFiltro(id),
+    leerMentores(),
   ]);
 
   const indice = PASOS_ABIERTOS.findIndex((p) => p.codigo === estado);
@@ -255,6 +256,7 @@ export default async function FichaCandidatura({
             startup={c.nombre ?? ""}
             abierta={estado !== "firmada" && estado !== "descartada"}
             esDireccion={persona.role === "admin_iwl"}
+            mentores={mentores}
           />
 
           <Bloque>

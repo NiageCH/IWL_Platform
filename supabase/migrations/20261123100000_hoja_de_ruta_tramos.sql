@@ -42,7 +42,11 @@ alter table roadmap_stages
 alter table milestones
   add column if not exists fundamental boolean not null default false,
   add column if not exists template_milestone_id uuid references roadmap_template_milestones (id) on delete set null,
-  add column if not exists from_tramo smallint check (from_tramo between 1 and 4);
+  add column if not exists from_tramo smallint check (from_tramo between 1 and 4),
+  add column if not exists met_on_entry boolean not null default false;
+
+comment on column milestones.met_on_entry is
+  'Cumplido al entrar: verificado en la lista de entrada. No cuenta como avance hecho en el programa.';
 
 comment on column milestones.from_tramo is
   'Si es un hito fundamental de un tramo anterior a la entrada que quedó pendiente: de qué tramo viene. Va dentro del tramo de entrada.';
@@ -320,11 +324,12 @@ begin
     loop
       insert into milestones (company_id, annex_id, stage_id, title, success_criteria, evidence, due_date,
                               origin, gates_investable, fundamental, template_milestone_id, status,
-                              completed_on, created_by)
+                              completed_on, met_on_entry, created_by)
       values (p_company, v_anexo, v_id, h.title, h.success_criteria, h.expected_evidence, v_fin,
               'anexo', h.gates_investable, true, h.id,
               case when h.verification = 'verificado' then 'cumplido'::estado_hito else 'pendiente'::estado_hito end,
               case when h.verification = 'verificado' then h.verified_at::date end,
+              coalesce(h.verification = 'verificado', false),
               auth.uid());
     end loop;
 
@@ -343,11 +348,12 @@ begin
   loop
     insert into milestones (company_id, annex_id, stage_id, title, success_criteria, evidence, due_date,
                             origin, gates_investable, fundamental, template_milestone_id, from_tramo, status,
-                            completed_on, created_by)
+                            completed_on, met_on_entry, created_by)
     select p_company, v_anexo, v_primera, h.title, h.success_criteria, h.expected_evidence, st.ends_on,
            'anexo', h.gates_investable, true, h.id, h.de_tramo,
            case when h.verification = 'verificado' then 'cumplido'::estado_hito else 'pendiente'::estado_hito end,
            case when h.verification = 'verificado' then h.verified_at::date end,
+           coalesce(h.verification = 'verificado', false),
            auth.uid()
     from roadmap_stages st where st.id = v_primera;
   end loop;
@@ -521,15 +527,38 @@ create trigger milestones_cerrar_tramo
   after update of status on milestones
   for each row execute function app.al_cumplir_hito_tramo();
 
--- Firmado el Acuerdo, el primer tramo abierto pasa a en curso
+-- Firmado el Acuerdo, las fechas salen de la firma (REVISION, 23 nov): se
+-- generó con la fecha prevista y, si se firma otro día, todo se corre lo
+-- mismo. Y el primer tramo abierto pasa a en curso.
 create or replace function app.al_firmar_abrir_tramo()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_inicio date;
+  v_dias integer;
 begin
-  if new.status = 'firmado' and old.status is distinct from 'firmado' then
+  if new.status = 'firmado' and old.status is distinct from 'firmado' and new.signed_on is not null then
+    select min(starts_on) into v_inicio from roadmap_stages where company_id = new.company_id and tramo is not null;
+    -- Solo la primera firma corre las fechas: renovar el Anexo después no
+    -- puede mover una hoja de ruta que ya está en marcha
+    v_dias := case
+      when exists (
+        select 1 from annexes a
+        where a.company_id = new.company_id and a.id <> new.id and a.status in ('firmado', 'cerrado')
+      ) then 0
+      else coalesce(new.signed_on - v_inicio, 0)
+    end;
+    if v_dias <> 0 then
+      perform set_config('app.motivo_hito', 'Las fechas salen de la firma del Acuerdo', true);
+      perform set_config('app.correr_por_firma', 'si', true);
+      update roadmap_stages set starts_on = starts_on + v_dias, ends_on = ends_on + v_dias
+      where company_id = new.company_id and tramo is not null;
+      update milestones set due_date = due_date + v_dias
+      where company_id = new.company_id and stage_id is not null and due_date is not null and status <> 'cumplido';
+    end if;
     update roadmap_stages set status = 'en_curso'
     where id = (
       select id from roadmap_stages
@@ -547,10 +576,82 @@ create trigger annexes_abrir_tramo
   for each row execute function app.al_firmar_abrir_tramo();
 
 -- -----------------------------------------------------------------------------
+-- Ningún hito más allá del plazo del programa (REVISION, 23 nov)
+--
+-- El plazo cuenta desde la firma o, antes, desde el inicio del primer
+-- tramo, que es la fecha prevista de firma. Pasarse solo lo guarda
+-- dirección; sin sesión (la semilla, el cron) no se comprueba.
+-- -----------------------------------------------------------------------------
+
+create or replace function app.fin_del_plazo(p_company uuid)
+returns date language sql stable security definer set search_path = public as $$
+  select (coalesce(
+            (select min(signed_on) from annexes where company_id = p_company and status in ('firmado', 'cerrado')),
+            (select min(starts_on) from roadmap_stages where company_id = p_company and tramo is not null)
+          ) + make_interval(months => app.plazo_maximo_meses(c.entry_state)))::date - 1
+  from companies c where c.id = p_company and c.entry_state is not null
+$$;
+
+create or replace function app.guard_hito_en_plazo()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_fin date;
+begin
+  if new.due_date is null or new.stage_id is null then return new; end if;
+  if tg_op = 'UPDATE' and new.due_date is not distinct from old.due_date then return new; end if;
+  if auth.uid() is null or app.is_admin() then return new; end if;
+  if coalesce(current_setting('app.correr_por_firma', true), '') = 'si' then return new; end if;
+  v_fin := app.fin_del_plazo(new.company_id);
+  if v_fin is not null and new.due_date > v_fin then
+    raise exception 'Fuera del plazo del programa: acaba el %. Solo dirección puede guardar un hito más allá.',
+      to_char(v_fin, 'DD/MM/YYYY') using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists milestones_guard_plazo on milestones;
+create trigger milestones_guard_plazo
+  before insert or update of due_date on milestones
+  for each row execute function app.guard_hito_en_plazo();
+
+-- -----------------------------------------------------------------------------
+-- No se propone el Acuerdo con la lista por verificar (REVISION, 23 nov):
+-- un «ya lo tenemos» sin mirar entraría como pendiente sin que nadie lo
+-- haya visto
+-- -----------------------------------------------------------------------------
+
+create or replace function app.guard_lista_al_proponer()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_faltan integer;
+begin
+  if new.status = 'propuesto' and old.status is distinct from 'propuesto' then
+    select count(*) into v_faltan from entry_checks
+    where company_id = new.company_id and answer = 'si' and verification is null;
+    if v_faltan > 0 then
+      raise exception 'Faltan % por verificar en la lista de entrada: verifícalos antes de proponer el Acuerdo.', v_faltan
+        using errcode = 'P0001';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists annexes_guard_lista on annexes;
+create trigger annexes_guard_lista
+  before update of status on annexes
+  for each row execute function app.guard_lista_al_proponer();
+
+-- -----------------------------------------------------------------------------
 -- El plazo: si vence, no se cierra nada solo; se avisa a dirección (bloque 8)
 -- -----------------------------------------------------------------------------
 
-create or replace function public.avisar_plazos_vencidos()
+create or replace function public.avisar_plazos_vencidos(p_hoy date default current_date)
 returns integer
 language plpgsql
 security definer
@@ -562,24 +663,25 @@ begin
   if auth.uid() is not null then
     raise exception 'Esto lo llama el cron.' using errcode = '42501';
   end if;
+  -- Vencido es pasado el último día: la misma cuenta que el guardián de
+  -- las fechas (`app.fin_del_plazo`). El día entra como parámetro para
+  -- poder probarlo sin tocar un Anexo firmado, que no se edita.
   insert into avisos (tipo, company_id, para)
   select 'plazo_vencido', c.id, null
   from companies c
-  join lateral (
-    select min(a.signed_on) as firma from annexes a where a.company_id = c.id and a.status in ('firmado', 'cerrado')
-  ) f on f.firma is not null
   where c.archived_at is null
     and c.tramo = 'incubacion'
     and c.entry_state is not null
-    and (f.firma + make_interval(months => app.plazo_maximo_meses(c.entry_state)))::date < current_date
+    and exists (select 1 from annexes a where a.company_id = c.id and a.status in ('firmado', 'cerrado'))
+    and app.fin_del_plazo(c.id) < p_hoy
     and not exists (select 1 from avisos v where v.company_id = c.id and v.tipo = 'plazo_vencido');
   get diagnostics v_creados = row_count;
   return v_creados;
 end;
 $$;
 
-revoke all on function public.avisar_plazos_vencidos() from public, anon, authenticated;
-grant execute on function public.avisar_plazos_vencidos() to service_role;
+revoke all on function public.avisar_plazos_vencidos(date) from public, anon, authenticated;
+grant execute on function public.avisar_plazos_vencidos(date) to service_role;
 
 -- -----------------------------------------------------------------------------
 -- Los avisos nuevos

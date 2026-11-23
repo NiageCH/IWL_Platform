@@ -21,14 +21,14 @@ select
   v.horas::numeric, v.valor::numeric, v.caja::numeric, v.seniors::smallint,
   v.equity::numeric, v.otros, v.notas
 from (values
-  ('marea-clinica', '2026-03-06', '2026-03-09', '2026-12-13', 9,
+  ('marea-clinica', '2026-03-06', '2026-03-06', '2027-03-05', 12,
    350, 26250, 8000, 3, 7.00,
    'Espacio de trabajo para tres personas y acceso a la red de centros sanitarios de IWL.',
-   'Recorrido «Desde el MVP». El compromiso de horas es la suma de lo previsto por etapa en la hoja de ruta.'),
-  ('raiz-sensorica', '2026-01-26', '2026-01-28', '2026-10-27', 9,
+   'Hoja de ruta IWL desde el tramo 2: entra con el MVP y sin piloto, doce meses de plazo.'),
+  ('raiz-sensorica', '2026-09-01', '2026-09-01', '2027-01-31', 5,
    360, 27000, 10000, 3, 6.00,
    'Banco de pruebas de hardware y acompañamiento en la ronda institucional.',
-   'Recorrido «Con facturación». Entra facturando, así que el peso está en escalado y unit economics.')
+   'Hoja de ruta IWL desde el tramo 4: entra facturando, cinco meses de plazo hasta ser invertible.')
 ) as v(slug, firma, inicio, fin, meses, horas, valor, caja, seniors, equity, otros, notas)
 join companies c on c.slug = v.slug
 on conflict (company_id, version) do nothing;

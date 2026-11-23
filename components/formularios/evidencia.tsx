@@ -11,7 +11,7 @@ import {
   Seleccion,
   Texto,
 } from "@/components/ui/formulario";
-import { BarraSubida, useSubidas, type CampoSubida } from "@/components/ui/subida";
+import { BarraSubida, SelectorArchivo, useSubidas, type CampoSubida } from "@/components/ui/subida";
 import { textoLimite } from "@/lib/subidas";
 import { fecha } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -203,11 +203,7 @@ export function Evidencia({
                     etiqueta="El archivo"
                     ayuda={`${textoLimite("evidencia")} Queda en el data room de la compañía, no suelto aquí`}
                   >
-                    <input
-                      type="file"
-                      name="fichero"
-                      className="block w-full text-sm text-secundario file:mr-3 file:rounded-full file:border file:border-filete file:bg-papel file:px-3 file:py-1.5 file:text-xs file:text-cuerpo"
-                    />
+                    <SelectorArchivo name="fichero" />
                   </Campo>
                 ) : null}
 

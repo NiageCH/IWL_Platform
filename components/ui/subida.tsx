@@ -113,6 +113,48 @@ export function useSubidas() {
   return { progreso, conSubidas };
 }
 
+/**
+ * Elegir un archivo, en castellano (REVISION, 23 nov). El control del
+ * navegador dice «Choose File / No file chosen» en el idioma del sistema,
+ * no en el de la plataforma, y no se puede traducir: se esconde y se
+ * dibuja un botón con su etiqueta. El `<input>` sigue ahí, con su nombre,
+ * así que el formulario lo envía igual.
+ */
+export function SelectorArchivo({
+  name,
+  required,
+  accept,
+  texto = "Elegir archivo",
+  onElegir,
+}: {
+  name: string;
+  required?: boolean;
+  accept?: string;
+  texto?: string;
+  /** Para quien quiere hacer algo en cuanto se elige, como guardar */
+  onElegir?: (fichero: File | null, input: HTMLInputElement) => void;
+}) {
+  const [nombre, setNombre] = useState<string | null>(null);
+  return (
+    <label className="flex flex-wrap items-center gap-3 text-sm">
+      <input
+        type="file"
+        name={name}
+        required={required}
+        accept={accept}
+        className="peer sr-only"
+        onChange={(e) => {
+          const f = e.currentTarget.files?.[0] ?? null;
+          setNombre(f?.name ?? null);
+          onElegir?.(f, e.currentTarget);
+        }}
+      />
+      <span className="accion cursor-pointer text-xs peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-acento-solido">{texto}</span>
+      <span className="truncate text-secundario">{nombre ?? "Ningún archivo elegido"}</span>
+    </label>
+  );
+}
+
 /** La barra de la subida en curso. No ocupa sitio si no hay ninguna */
 export function BarraSubida({ progreso }: { progreso: Progreso | null }) {
   if (!progreso) return null;
