@@ -564,3 +564,84 @@ export async function editarHitoPlantilla(formData: FormData): Promise<Resultado
   refrescarPlantillas();
   return ok();
 }
+
+/**
+ * Los hitos fundamentales de la hoja de ruta del programa (REVISION, 23
+ * nov): dirección los añade, los retira y los ordena. Todo vale para las
+ * hojas de ruta que se generen desde ahora: las que existen, y las
+ * firmadas, llevan su copia.
+ */
+export async function anadirHitoFundamental(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      template_stage_id: uuid,
+      title: textoObligatorio(5, "Ponle un título que se entienda solo."),
+      success_criteria: textoObligatorio(10, "Di qué tiene que pasar para darlo por cumplido."),
+      expected_evidence: z
+        .string()
+        .optional()
+        .transform((v) => (v ?? "").trim() || null),
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  // Al final del tramo, detrás también de los retirados: el orden es único
+  const { data: ultimo } = await supabase
+    .from("roadmap_template_milestones")
+    .select("order_index")
+    .eq("template_stage_id", datos.template_stage_id)
+    .order("order_index", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { error: falloBase } = await supabase.from("roadmap_template_milestones").insert({
+    ...datos,
+    fundamental: true,
+    order_index: (ultimo?.order_index ?? 0) + 1,
+  });
+  if (falloBase) return traducirError(falloBase);
+
+  refrescarPlantillas();
+  return ok();
+}
+
+/** Retirar no borra: deja de salir en las listas de entrada y en las hojas nuevas */
+export async function retirarHitoFundamental(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ id: uuid, volver: z.enum(["si", "no"]).default("no") }), formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data, error: falloBase } = await supabase
+    .from("roadmap_template_milestones")
+    .update(
+      datos.volver === "si"
+        ? { retired_at: null, retired_by: null }
+        : { retired_at: new Date().toISOString(), retired_by: user?.id ?? null },
+    )
+    .eq("id", datos.id)
+    .select("id");
+  if (falloBase) return traducirError(falloBase);
+  if (!data?.length) return error("La hoja de ruta del programa la cambia dirección.");
+
+  refrescarPlantillas();
+  return ok();
+}
+
+export async function moverHitoFundamental(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(z.object({ id: uuid, sentido: z.enum(["arriba", "abajo"]) }), formData);
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("mover_hito_fundamental", {
+    p_hito: datos.id,
+    p_sentido: datos.sentido === "arriba" ? -1 : 1,
+  });
+  if (falloBase) return traducirError(falloBase);
+
+  refrescarPlantillas();
+  return ok();
+}

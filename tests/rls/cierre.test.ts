@@ -7,8 +7,7 @@ import { USUARIOS, clienteServicio, entrarComo } from "./clientes";
  *
  * Se prueba con una compañía recién creada, no con las de la semilla:
  * cerrar no tiene vuelta atrás, y una de la semilla cerrada dejaría sin
- * datos a las demás pruebas. Al acabar se borra entera, que es lo único que
- * la base deja hacer con una cerrada.
+ * datos a las demás pruebas. Al acabar se borra entera.
  */
 
 const servicio = clienteServicio();
@@ -130,5 +129,49 @@ describe("cerrar una compañía", () => {
     } finally {
       await servicio.from("companies").update({ tramo: vega!.tramo }).eq("id", vega!.id);
     }
+  });
+
+  it("dirección la reabre, con motivo, y vuelve como estaba; sus avisos no", async () => {
+    const motivo = { p_company: compania, p_motivo: "Se cerró por error: sigue en el programa." };
+    expect((await equipo.rpc("reabrir_compania", motivo)).error?.message).toMatch(/de dirección/);
+    expect((await mentor.rpc("reabrir_compania", motivo)).error).not.toBeNull();
+    expect((await admin.rpc("reabrir_compania", { ...motivo, p_motivo: "corto" })).error?.message).toMatch(/por qué se reabre/);
+    // La clave de servicio tampoco le quita el cierre a mano: solo la función
+    expect((await servicio.from("companies").update({ cierre: null }).eq("id", compania)).error?.message).toMatch(/cerrada: solo se lee/);
+
+    expect((await admin.rpc("reabrir_compania", motivo)).error).toBeNull();
+    expect((await admin.rpc("reabrir_compania", motivo)).error?.message).toMatch(/No está cerrada/);
+
+    const { data: c } = await admin.from("companies").select("cierre, cerrada_on, archived_at, tramo").eq("id", compania).single();
+    expect(c).toMatchObject({ cierre: null, cerrada_on: null, archived_at: null, tramo: "incubacion" });
+    // Su equipo y sus accesos, de vuelta
+    for (const quien of [equipo, mentor, fundadora]) {
+      expect((await quien.from("companies").select("id").eq("id", compania)).data).toHaveLength(1);
+    }
+    expect((await mentor.from("milestones").select("id").eq("id", hito)).data).toHaveLength(1);
+    // Se edita otra vez
+    expect((await servicio.from("milestones").update({ title: "Un hito suelto" }).eq("id", hito)).error).toBeNull();
+    // Los avisos que se cerraron con ella siguen cerrados
+    const { data: abiertos } = await servicio.from("avisos").select("id").eq("company_id", compania).is("cerrado_at", null);
+    expect(abiertos).toEqual([]);
+    // Y queda en el registro, con lo que fue el cierre
+    const { data: log } = await servicio
+      .from("activity_log")
+      .select("detail")
+      .eq("company_id", compania)
+      .eq("action", "compania_reabierta")
+      .single();
+    expect(log!.detail).toMatchObject({ cierre: "graduada", motivo: motivo.p_motivo });
+  });
+
+  it("si ya estaba archivada antes de cerrarla, sigue archivada al reabrirla", async () => {
+    const archivada = "2026-10-01T10:00:00+00:00";
+    await servicio.from("companies").update({ archived_at: archivada, archive_reason: "Pausa acordada" }).eq("id", compania);
+    const args = { p_company: compania, p_cierre: "baja", p_fecha: "2026-11-20", p_motivo: "No sigue: prueba del archivo previo." };
+    expect((await admin.rpc("cerrar_compania", args)).error).toBeNull();
+    expect((await admin.rpc("reabrir_compania", { p_company: compania, p_motivo: "Otra vez por error, en la prueba." })).error).toBeNull();
+    const { data: c } = await servicio.from("companies").select("archived_at, archive_reason").eq("id", compania).single();
+    expect(new Date(c!.archived_at!).toISOString()).toBe(new Date(archivada).toISOString());
+    expect(c!.archive_reason).toBe("Pausa acordada");
   });
 });

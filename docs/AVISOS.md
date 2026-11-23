@@ -26,7 +26,8 @@ tramos, actas y cierre.
    - la candidatura está descartada;
    - la compañía está archivada;
    - la compañía está cerrada (graduada o finalizada): al cerrarla se cierran
-     todos sus avisos abiertos, y no se crea ninguno más.
+     todos sus avisos abiertos, y no se crea ninguno más. Si dirección la
+     reabre, esos avisos siguen cerrados.
 6. **Lo que viene después de una fecha se avisa al llegar la fecha.**
 7. **El aviso dice de dónde viene y qué va después.** Lo saca del recorrido,
    no de un texto escrito a mano en cada aviso.

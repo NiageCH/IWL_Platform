@@ -5,6 +5,7 @@ import { nombreCierre } from "@/lib/cierre";
 import { estadioYPrograma, type Estadio } from "@/lib/estadios";
 import { nombrePersona } from "@/lib/etiquetas";
 import { fecha } from "@/lib/utils";
+import { ReabrirCompania } from "@/components/formularios/cierre";
 
 export const metadata = { title: "Histórico · Administración" };
 
@@ -13,7 +14,8 @@ export const metadata = { title: "Histórico · Administración" };
  * finalizadas por salida y dadas de baja. Solo las ve dirección, y en solo
  * lectura: la base ya no acepta cambios en ellas. Es lo único que queda de
  * ellas en la plataforma, así que dice cómo terminaron, cuándo, quién las
- * cerró y por qué, y deja el Anexo firmado a mano.
+ * cerró y por qué, y deja el Anexo firmado a mano. Desde aquí se reabre
+ * una cerrada por error.
  */
 export default async function Historico({
   searchParams,
@@ -37,7 +39,7 @@ export default async function Historico({
         <TituloBloque accion={<Metadato>{cerradas.length} cerradas</Metadato>}>Histórico</TituloBloque>
         <p className="px-4 py-3 text-sm text-secundario">
           Las compañías que terminaron en el programa. No salen en ninguna lista, menú, aviso ni resumen, y nadie las
-          puede editar: esto es lo que queda de ellas, para consultarlo.
+          puede editar: esto es lo que queda de ellas, para consultarlo. Si se cerró una por error, se reabre desde aquí.
         </p>
         {cerrada ? (
           <p className="border-t border-filete px-4 py-3 text-sm text-titular" role="status">
@@ -101,6 +103,9 @@ export default async function Historico({
                 </dd>
               </div>
             </dl>
+            <div className="border-t border-filete px-4 py-3">
+              <ReabrirCompania companyId={c.id} slug={c.slug} nombre={c.name} />
+            </div>
           </Bloque>
         );
       })}

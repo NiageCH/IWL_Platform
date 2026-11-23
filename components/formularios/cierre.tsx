@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { cerrarCompania } from "@/lib/acciones/cierre";
+import { cerrarCompania, reabrirCompania } from "@/lib/acciones/cierre";
 import { CIERRES, type Cierre } from "@/lib/cierre";
 import { AreaTexto, Boton, Campo, Desplegable, Formulario, Texto } from "@/components/ui/formulario";
 
 /**
  * Cerrar la compañía, desde su ficha, para dirección (REVISION, 22 nov ·
- * bloque 8). Tres salidas, con motivo y fecha. No tiene vuelta atrás en
- * pantalla: se dice antes de pulsar.
+ * bloque 8). Tres salidas, con motivo y fecha. Si fue un error, dirección
+ * la reabre desde el Histórico.
  */
 export function CerrarCompania({
   companyId,
@@ -66,8 +66,8 @@ export function CerrarCompania({
               <p className="es-atencion texto-estado text-sm">
                 Al cerrarla, {nombre} desaparece de la cartera, de los menús, de los avisos y de los resúmenes para todo
                 el mundo, mentores y equipo incluidos. Sus avisos abiertos se cierran, y nadie la puede editar. Solo
-                dirección la ve, en Administración → Histórico. La fundadora pierde el acceso y conserva la descarga de
-                sus documentos firmados.
+                dirección la ve, en Administración → Histórico, y desde allí puede reabrirla si fue un error. La
+                fundadora pierde el acceso y conserva la descarga de sus documentos firmados.
               </p>
               <div>
                 <Boton disabled={!cierre}>Cerrar la compañía</Boton>
@@ -75,6 +75,41 @@ export function CerrarCompania({
             </>
           );
         }}
+      </Formulario>
+    </Desplegable>
+  );
+}
+
+/**
+ * Reabrir una compañía cerrada (REVISION, 23 nov): dirección, con motivo.
+ * Vuelve con su hoja de ruta, su equipo y sus accesos; los avisos que se
+ * cerraron con ella siguen cerrados.
+ */
+export function ReabrirCompania({ companyId, slug, nombre }: { companyId: string; slug: string; nombre: string }) {
+  return (
+    <Desplegable titulo="Reabrir la compañía">
+      <Formulario accion={reabrirCompania} className="gap-4 px-4 py-4">
+        {(r) => (
+          <>
+            <input type="hidden" name="company_id" value={companyId} />
+            <input type="hidden" name="slug" value={slug} />
+            <Campo
+              etiqueta="Por qué se reabre"
+              obligatorio
+              error={r.ok ? undefined : r.campos?.motivo}
+              ayuda="Queda en el registro, junto a cómo estaba cerrada"
+            >
+              <AreaTexto name="motivo" rows={2} required minLength={10} />
+            </Campo>
+            <p className="text-sm text-secundario">
+              {nombre} vuelve a la cartera como estaba al cerrarse, con su hoja de ruta, su equipo y sus accesos. Los
+              avisos que se cerraron al cerrarla no se reabren.
+            </p>
+            <div>
+              <Boton variante="secundario">Reabrir la compañía</Boton>
+            </div>
+          </>
+        )}
       </Formulario>
     </Desplegable>
   );

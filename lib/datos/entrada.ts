@@ -68,6 +68,10 @@ export interface FichaEntrada {
   socios: Array<{ nombre: string; pct: number; mujer: boolean }>;
   equipo_personas: number | null;
   prueba: string | null;
+  /** Dónde está la prueba en el almacén; la lectura la cambia por un enlace firmado */
+  prueba_ruta: string | null;
+  /** Enlace para abrir la prueba: el mentor la necesita para verificar (REVISION, 23 nov) */
+  pruebaUrl: string | null;
   comite: { fecha: string; decision: string; estadio: Estadio | null; estadio_propuesto: Estadio | null } | null;
 }
 
@@ -75,7 +79,12 @@ export async function leerFichaEntrada(companyId: string): Promise<FichaEntrada 
   const supabase = await clienteServidor();
   const { data, error } = await supabase.rpc("ficha_entrada", { p_company: companyId });
   if (error || !data) return null;
-  return data as unknown as FichaEntrada;
+  const ficha = data as unknown as FichaEntrada;
+  // Firmado con su sesión: el almacén le deja leerlo porque es de la compañía
+  const { data: firmada } = ficha.prueba_ruta
+    ? await supabase.storage.from("candidaturas").createSignedUrl(ficha.prueba_ruta, 600)
+    : { data: null };
+  return { ...ficha, pruebaUrl: firmada?.signedUrl ?? null };
 }
 
 /** El mentor principal de una compañía, para enseñarlo en la decisión */

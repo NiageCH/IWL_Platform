@@ -43,6 +43,7 @@ export async function leerListaEntrada(companyId: string): Promise<ListaEntrada 
       .from("roadmap_template_milestones")
       .select("id, title, order_index, roadmap_template_stages!inner(tramo, roadmap_templates!inner(code))")
       .eq("fundamental", true)
+      .is("retired_at", null)
       .eq("roadmap_template_stages.roadmap_templates.code", "hoja_iwl")
       .in("roadmap_template_stages.tramo", tramos),
     supabase
@@ -188,7 +189,40 @@ export interface TramoPlantilla {
   nombre: string;
   objetivo: string;
   meses: number | null;
-  hitos: Array<{ id: string; titulo: string; criterio: string; evidencia: string | null; condicionaInvertible: boolean }>;
+  hitos: HitoPlantillaIwl[];
+  /** Retirados por dirección: ya no salen en las hojas nuevas, y se pueden volver a usar */
+  retirados: HitoPlantillaIwl[];
+}
+
+export interface HitoPlantillaIwl {
+  id: string;
+  titulo: string;
+  criterio: string;
+  evidencia: string | null;
+  condicionaInvertible: boolean;
+}
+
+type FilaHitoPlantilla = {
+  id: string;
+  title: string;
+  success_criteria: string;
+  expected_evidence: string | null;
+  gates_investable: boolean;
+  order_index: number;
+  retired_at: string | null;
+};
+
+function ordenados(filas: FilaHitoPlantilla[] | null, retirados: boolean): HitoPlantillaIwl[] {
+  return [...(filas ?? [])]
+    .filter((h) => (h.retired_at !== null) === retirados)
+    .sort((a, b) => a.order_index - b.order_index)
+    .map((h) => ({
+      id: h.id,
+      titulo: h.title,
+      criterio: h.success_criteria,
+      evidencia: h.expected_evidence,
+      condicionaInvertible: h.gates_investable,
+    }));
 }
 
 /**
@@ -201,7 +235,7 @@ export async function leerHojaIwl(): Promise<TramoPlantilla[]> {
   const { data } = await supabase
     .from("roadmap_template_stages")
     .select(
-      "id, tramo, name, objective, planned_months, roadmap_templates!inner(code), roadmap_template_milestones(id, title, success_criteria, expected_evidence, gates_investable, order_index, fundamental)",
+      "id, tramo, name, objective, planned_months, roadmap_templates!inner(code), roadmap_template_milestones(id, title, success_criteria, expected_evidence, gates_investable, order_index, fundamental, retired_at)",
     )
     .eq("roadmap_templates.code", "hoja_iwl")
     .order("tramo");
@@ -211,14 +245,7 @@ export async function leerHojaIwl(): Promise<TramoPlantilla[]> {
     nombre: e.name,
     objetivo: e.objective,
     meses: e.planned_months,
-    hitos: [...(e.roadmap_template_milestones ?? [])]
-      .sort((a, b) => a.order_index - b.order_index)
-      .map((h) => ({
-        id: h.id,
-        titulo: h.title,
-        criterio: h.success_criteria,
-        evidencia: h.expected_evidence,
-        condicionaInvertible: h.gates_investable,
-      })),
+    hitos: ordenados(e.roadmap_template_milestones, false),
+    retirados: ordenados(e.roadmap_template_milestones, true),
   }));
 }

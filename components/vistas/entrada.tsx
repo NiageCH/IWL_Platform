@@ -236,7 +236,15 @@ export function FichaEntradaMentor({ ficha }: { ficha: FichaEntrada }) {
         </div>
         <div>
           <dt className="text-metadato">Prueba del estadio</dt>
-          <dd className="text-titular">{ficha.prueba ?? "No adjuntó"}</dd>
+          <dd className="text-titular">
+            {ficha.prueba && ficha.pruebaUrl ? (
+              <a href={ficha.pruebaUrl} target="_blank" rel="noreferrer" className="enlace text-acento-texto">
+                {ficha.prueba}
+              </a>
+            ) : (
+              (ficha.prueba ?? "No adjuntó")
+            )}
+          </dd>
         </div>
         <div>
           <dt className="text-metadato">Comité</dt>

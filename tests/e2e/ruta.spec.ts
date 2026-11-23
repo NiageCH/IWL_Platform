@@ -164,7 +164,7 @@ test("los textos de la hoja de ruta se cambian desde administración", async ({ 
   // Una sola hoja de ruta, en cuatro tramos (REVISION, 22 nov)
   await expect(page.getByRole("heading", { name: "Tramo 1 · De idea a MVP" })).toBeVisible();
   // Y se explica por qué tocarlos aquí no rompe nada en marcha
-  await expect(page.getByText(/no toca ninguna hoja de ruta en marcha ni las firmadas/)).toBeVisible();
+  await expect(page.getByText(/nada de esto toca las que están en marcha ni las firmadas/)).toBeVisible();
 
   // Cambiar el texto de un hito, y dejarlo como estaba
   const [hito] = await consultar<{ id: string; title: string }>(
@@ -180,6 +180,42 @@ test("los textos de la hoja de ruta se cambian desde administración", async ({ 
     await expect(page.getByText("Data room completo y ordenado").first()).toBeVisible();
   } finally {
     await actualizar("roadmap_template_milestones", { id: `eq.${hito.id}` }, { title: hito.title });
+  }
+});
+
+test("los hitos fundamentales se añaden, se ordenan y se retiran desde administración", async ({ page }) => {
+  const titulo = `Hito E2E ${test.info().project.name} ${Date.now()}`;
+  const [{ id: tramoId }] = await consultar<{ id: string }>("roadmap_template_stages", { tramo: "eq.4" }, "id");
+  // El orden de antes, para dejarlo como estaba
+  const antes = await consultar<{ id: string; order_index: number }>(
+    "roadmap_template_milestones",
+    { template_stage_id: `eq.${tramoId}` },
+    "id,order_index",
+  );
+  await entrarComo(page, USUARIOS.admin, "/admin/rutas");
+  const tramo = page.locator("#tramo-4");
+  try {
+    await tramo.getByText("Añadir un hito a este tramo").click();
+    await tramo.locator('input[name="title"]').last().fill(titulo);
+    await tramo.locator('textarea[name="success_criteria"]').last().fill("Algo que se pueda comprobar");
+    await tramo.getByRole("button", { name: "Añadir el hito" }).click();
+    const fila = page.locator(`li[data-hito="${titulo}"]`);
+    await expect(fila).toBeVisible();
+    // Va al final: se puede subir, no bajar
+    await expect(fila.getByRole("button", { name: "Bajar" })).toHaveCount(0);
+    await fila.getByRole("button", { name: "Subir" }).click();
+    await expect(fila.getByRole("button", { name: "Bajar" })).toBeVisible();
+
+    // Retirarlo no lo borra: queda entre los retirados, y se puede volver a usar
+    await fila.getByRole("button", { name: "Retirar" }).click();
+    await expect(fila).toHaveCount(0);
+    await tramo.getByText(/hitos? retirados?/).click();
+    await tramo.locator(`li[data-retirado="${titulo}"]`).getByRole("button", { name: "Volver a usarlo" }).click();
+    await expect(fila).toBeVisible();
+  } finally {
+    const [nuevo] = await consultar<{ id: string }>("roadmap_template_milestones", { title: `eq.${titulo}` }, "id");
+    if (nuevo) await borrar("roadmap_template_milestones", { id: nuevo.id });
+    for (const h of antes) await actualizar("roadmap_template_milestones", { id: `eq.${h.id}` }, { order_index: h.order_index });
   }
 });
 

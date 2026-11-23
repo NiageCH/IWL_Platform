@@ -5,8 +5,8 @@ import { USUARIOS, borrar, borrarCuenta, crearCuenta, actualizar, entrarComo, in
  * El cierre (REVISION, 22 nov · bloque 8), con una compañía recién creada:
  * dirección la cierra desde su ficha, desaparece de la cartera y queda en
  * el Histórico; ella pierde el acceso y se queda con sus documentos.
- * Cerrar no tiene vuelta atrás, así que la compañía se borra entera al
- * acabar, con su cuenta.
+ * Al final dirección la reabre desde el Histórico. La compañía se borra
+ * entera al acabar, con su cuenta.
  */
 
 const ORGANIZACION = "00000000-0000-0000-0001-000000000001";
@@ -59,6 +59,19 @@ test("dirección cierra una compañía: sale de la cartera, queda en el Históri
     await expect(page).toHaveURL(/\/sin-compania/);
     await expect(page.getByRole("heading", { name: "Tu paso por el programa ha terminado" })).toBeVisible();
     await expect(page.getByText(nombre)).toBeVisible();
+
+    // Dirección la reabre desde el Histórico, con motivo: vuelve a la cartera
+    await entrarComo(page, USUARIOS.admin, "/admin/historico");
+    const enHistorico = page.locator(`[id="${c.slug}"]`);
+    await enHistorico.getByText("Reabrir la compañía").first().click();
+    await enHistorico.getByLabel("Por qué se reabre").fill("Se cerró por error: sigue en el programa.");
+    await enHistorico.getByRole("button", { name: "Reabrir la compañía" }).click();
+    await expect(page).toHaveURL(new RegExp(`/cartera/${c.slug}$`));
+    await expect(page.getByRole("heading", { name: nombre }).first()).toBeVisible();
+
+    // Y ella vuelve a entrar en su proyecto
+    await entrarComo(page, correo, "/proyecto");
+    await expect(page).not.toHaveURL(/\/sin-compania/);
   } finally {
     await borrar("activity_log", { company_id: c.id });
     await borrar("companies", { id: c.id });

@@ -52,7 +52,7 @@ Después, cada acuerdo se puede **Pasar a tarea** o **Enlazar a un hito**. Si te
 
 ### Verificar su lista de entrada (mentor principal)
 
-1. Entra en la compañía. En su ficha está la lista, con lo que ella ha contestado.
+1. Entra en la compañía. En su ficha está la lista, con lo que ella ha contestado. Arriba, en **Ficha de entrada**, lo que presentó: el nombre de la prueba del estadio es un enlace para abrirla.
 2. En cada «Ya lo tenemos», abre el archivo y pulsa **Verificar**, o **No basta**: escribe qué falta y pulsa **Enviar «no basta»**. El comentario es obligatorio, es lo que ella va a completar.
 
 ### Preparar la hoja de ruta (mentor principal)

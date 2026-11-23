@@ -50,8 +50,9 @@ Decides, firmas y vigilas lo vencido. Tu inicio es la [Cartera](/cartera): arrib
 
 1. En su ficha, al final, abre **Cerrar la compañía**.
 2. Elige cómo termina: **Graduada**, si es invertible; **Finalizada · Salida**, si acabó el plazo sin serlo; **Finalizada · Baja**, si no sigue.
-3. Pon la fecha y el motivo y pulsa **Cerrar la compañía**. No tiene vuelta atrás.
+3. Pon la fecha y el motivo y pulsa **Cerrar la compañía**.
 4. Desaparece de todas las listas, avisos y resúmenes, para todo el mundo. Queda en **Administración → Histórico**, para consultarla. Ella conserva sus documentos firmados.
+5. Si fue un error, en el **Histórico** abre **Reabrir la compañía**, escribe por qué y pulsa **Reabrir la compañía**. Vuelve como estaba, con su hoja de ruta, su equipo y sus accesos. Sus avisos no se reabren.
 
 ### Decidir una sesión que llega a dirección
 
@@ -65,8 +66,8 @@ En [Administración](/admin):
 
 - **Compañías y cohortes**: dar de alta compañías y cohortes.
 - **Personas y accesos**: dar de alta a alguien y darle acceso.
-- **Hoja de ruta**: los textos de los hitos de los cuatro tramos. Cambiarlos no toca ninguna hoja de ruta ya hecha.
+- **Hoja de ruta**: los hitos fundamentales de los cuatro tramos. Se añaden, se retiran, se ordenan con **Subir** y **Bajar** y se cambian sus textos. Nada de esto toca las hojas de ruta ya hechas ni las firmadas. Retirar un hito no lo borra: deja de salir en las nuevas, y se puede volver a usar.
 - **Evaluación técnica**: los criterios del due diligence técnico.
 - **Programa y umbrales**: el NDA, la tarifa, la horquilla de equity, el tope de entrada y los días del avance del mes.
 - **Correos**: los que no salieron, con **Reintentar**.
-- **Histórico**: las compañías cerradas, en solo lectura.
+- **Histórico**: las compañías cerradas, en solo lectura, con **Reabrir la compañía** por si se cerró una por error.

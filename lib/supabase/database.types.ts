@@ -4033,16 +4033,34 @@ isOneToOne: false
                   ]
                 },"roadmap_template_milestones": {
                   Row: {
-                    "expected_evidence": string | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"offset_weeks": number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
+                    "expected_evidence": string | null,"fundamental": boolean,"gates_investable": boolean,"id": string,"offset_weeks": number | null,"order_index": number,"retired_at": string | null,"retired_by": string | null,"success_criteria": string,"template_stage_id": string,"title": string
                   }
                   Insert: {
-                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index": number,"success_criteria": string,"template_stage_id": string,"title": string
+                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index": number,"retired_at"?: string | null,"retired_by"?: string | null,"success_criteria": string,"template_stage_id": string,"title": string
                   }
                   Update: {
-                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index"?: number,"success_criteria"?: string,"template_stage_id"?: string,"title"?: string
+                    "expected_evidence"?: string | null,"fundamental"?: boolean,"gates_investable"?: boolean,"id"?: string,"offset_weeks"?: number | null,"order_index"?: number,"retired_at"?: string | null,"retired_by"?: string | null,"success_criteria"?: string,"template_stage_id"?: string,"title"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "roadmap_template_milestones_retired_by_fkey"
+      columns: ["retired_by"]
+isOneToOne: false
+      referencedRelation: "admin_personas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "roadmap_template_milestones_retired_by_fkey"
+      columns: ["retired_by"]
+isOneToOne: false
+      referencedRelation: "personas_asignables"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "roadmap_template_milestones_retired_by_fkey"
+      columns: ["retired_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "roadmap_template_milestones_template_stage_id_fkey"
       columns: ["template_stage_id"]
 isOneToOne: false
@@ -5500,6 +5518,9 @@ isOneToOne: false
               "area": string,"detalle": string,"entregados": number,"id": string,"obligatoria": boolean,"titulo": string
             }[]
                            },
+"mover_hito_fundamental":
+{ Args: { "p_hito": string,"p_sentido": number }; Returns: undefined
+                           },
 "pedir_cambios_hito":
 { Args: { "p_comentario": string,"p_hito": string }; Returns: undefined
                            },
@@ -5522,6 +5543,9 @@ isOneToOne: false
                            },
 "quitar_modo_pruebas":
 { Args: { "p_confirmacion": string }; Returns: undefined
+                           },
+"reabrir_compania":
+{ Args: { "p_company": string,"p_motivo": string }; Returns: undefined
                            },
 "reabrir_update":
 { Args: { "target_update": string }; Returns: undefined
