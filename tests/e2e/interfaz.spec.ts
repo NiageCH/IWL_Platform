@@ -258,6 +258,11 @@ test("hay un solo menú a la vista, nunca los dos ni ninguno", async ({
 
   for (const w of [390, 760, 768, 1024, 1440]) {
     await page.setViewportSize({ width: w, height: 900 });
+    // Por debajo de la barra lateral, el menú va plegado en «Menú»: se abre
+    const menu = page.getByRole("button", { name: /Menú/ });
+    if (await menu.isVisible()) {
+      if ((await menu.getAttribute("aria-expanded")) !== "true") await menu.click();
+    }
 
     const visibles = await page
       .getByRole("link", { name: ENTRADA_CARTERA })

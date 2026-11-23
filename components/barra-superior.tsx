@@ -5,6 +5,7 @@ import { contarPendientesDireccion } from "@/lib/datos/onboarding";
 import { BotonSalir } from "./boton-salir";
 import { Oscuro } from "./marco";
 import { NavSecciones } from "./nav-secciones";
+import { MenuMovil } from "./menu-movil";
 
 const ROLES: Record<string, string> = {
   admin_iwl: "Dirección IWL",
@@ -37,15 +38,14 @@ export async function BarraSuperior() {
   }
 
   return (
-    <Oscuro className="sticky top-0 z-20 border-b border-filete bg-lienzo text-cuerpo">
+    <Oscuro className="barra-superior sticky top-0 z-20 border-b border-filete bg-lienzo text-cuerpo">
       {/*
-        Envuelve en dos líneas cuando hace falta.
-        
-        En una línea, a 390 px la marca más tres pastillas de menú más el
-        botón de salir sumaban más que la pantalla y empujaban el documento
-        entero hacia la derecha.
+        Por debajo de `lg` el menú no cabe en la fila de la marca: va en un
+        botón que lo despliega debajo (`MenuMovil`). Antes se metía en la
+        misma línea con desbordamiento horizontal y en un móvil salía
+        recortado y montado sobre la cabecera.
       */}
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-x-4 px-4 py-3 sm:px-6">
         {/* La marca, como en inceptionwomanlab.es: la W en un cuadro y el
             nombre en la tipografía expandida, en mayúsculas */}
         <Link href="/" className="flex items-center gap-3">
@@ -57,7 +57,7 @@ export async function BarraSuperior() {
           </span>
         </Link>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 overflow-x-auto">
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
           {/*
             El menú se lee como un control, no como texto suelto: cambiar
             solo el color al pasar por encima no dice que se pueda pulsar, y
@@ -71,7 +71,12 @@ export async function BarraSuperior() {
             ve qué se decide por capacidad en un solo sitio.
           */}
           {persona ? (
-            <NavSecciones className="mb-0" secciones={secciones} />
+            <>
+              <NavSecciones className="mb-0 hidden lg:flex" secciones={secciones} />
+              <span className="lg:hidden">
+                <MenuMovil secciones={secciones} />
+              </span>
+            </>
           ) : null}
           {/* Quién eres, y la puerta a cambiar tu contraseña */}
           {persona ? (

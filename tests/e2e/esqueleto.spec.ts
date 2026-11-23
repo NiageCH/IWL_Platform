@@ -42,7 +42,8 @@ test("el menú sale de una sola lista, no de dos", async ({ page }) => {
   const escritorio = await page.getByRole("link", { name: /Cartera|Embudo|Administración/ }).allInnerTexts();
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(400);
+  // En móvil el menú va plegado en «Menú» (REVISION, 23 nov)
+  await page.getByRole("button", { name: /Menú/ }).click();
   const movil = await page.getByRole("link", { name: /Cartera|Embudo|Administración/ }).allInnerTexts();
 
   expect(new Set(movil)).toEqual(new Set(escritorio));
