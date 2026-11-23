@@ -2,7 +2,7 @@
 
 ## Qué es la plataforma
 
-Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que firma el Acuerdo hasta que se gradúa.
+Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que firma el Acuerdo hasta que termina el programa: graduado o finalizado.
 Tienes acceso de lectura a una compañía: ves lo mismo que su equipo, sin poder cambiar nada.
 Todo se mide contra la etapa en la que está la compañía, no contra un ideal.
 
@@ -22,5 +22,5 @@ Todo está en [la compañía](/proyecto), en sus pestañas: **Resumen**, **Hoja 
 ### Ver cómo va la compañía
 
 1. En **Resumen**, el estado general y el movimiento reciente.
-2. En **Hoja de ruta**, en qué etapa está y qué hitos ha cumplido.
+2. En **Hoja de ruta**, en qué tramo está, cuánto plazo le queda y qué hitos ha cumplido.
 3. En **KPI y updates**, la evolución mes a mes y lo que cuenta cada update.

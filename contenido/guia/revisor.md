@@ -2,7 +2,7 @@
 
 ## Qué es la plataforma
 
-Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que firma el Acuerdo hasta que se gradúa.
+Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que firma el Acuerdo hasta que termina el programa: graduado o finalizado.
 El due diligence técnico, que haces tú, es el módulo central: su resultado entra en el score de preparación de cada compañía.
 Se evalúa contra la etapa de cada compañía, no contra un ideal.
 

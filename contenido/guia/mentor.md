@@ -2,7 +2,7 @@
 
 ## Qué es la plataforma
 
-Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que firma el Acuerdo hasta que se gradúa.
+Es donde Inception Woman Lab sigue cada proyecto de la cohorte, desde que el comité lo preselecciona hasta que termina: graduado o finalizado.
 Tú ves las compañías que acompañas; la fundadora ve la suya, con los mismos datos que tú.
 Todo se mide contra la etapa de cada compañía, no contra un ideal.
 
@@ -10,7 +10,7 @@ Todo se mide contra la etapa de cada compañía, no contra un ideal.
 
 Acompañas a las compañías que tienes asignadas. Tu inicio es la [Cartera](/cartera), solo con las tuyas, y arriba están **Avisos para ti** y **Hitos por revisar**.
 
-- **Al principio, si eres mentor principal**: planifica la hoja de ruta, con sus etapas e hitos.
+- **En la entrada, si eres mentor principal**: el comité te asigna al preseleccionar. Ves lo que presentó ella, verificas su lista (**Diagnóstico** en idea, **Lo que ya tenéis** en el resto) y preparas la hoja de ruta. El due diligence de documentos es de dirección.
 - **Después de cada sesión**: regístrala con su acta y las horas de cada persona. El acta la levantas siempre tú, como mentor; el equipo de IWL no. Lo mismo con el trabajo fuera de sesión, con su entregable.
 - **Cuando ella entregue un hito**: revísalo, valídalo o pide cambios. Te sale en **Hitos por revisar**.
 - **Cuando ella diga que unas horas no cuadran**: respóndele. Te llega en **Avisos para ti**.
@@ -18,7 +18,8 @@ Acompañas a las compañías que tienes asignadas. Tu inicio es la [Cartera](/ca
 
 ## De qué dependes y quién depende de ti
 
-- **Ella depende de ti para tener hoja de ruta**: si no la planificas, no verá hitos que entregar, y nada de lo que el Anexo ata a hitos se mueve.
+- **Ella depende de ti para tener hoja de ruta**: sin tu lista verificada no se puede proponer el Acuerdo, y la hoja de ruta va dentro.
+- **Un tramo se cierra cuando validas su último hito**: se abre el siguiente, y a ella y a dirección les llega el aviso. Al cerrar el tramo 4, dirección valora si es invertible.
 - **Ella depende de ti para avanzar**: un hito entregado espera tu revisión. A los 7 días sin revisar, avisa a dirección.
 - **Tus horas cuentan cuando ella las confirma**: el compromiso del Anexo se mide con las confirmadas. Un acta clara ahorra discusiones.
 - **Dependes de ella** para el avance del mes y las entregas. Si no llegan, díselo en la sesión: es lo que mira dirección.
@@ -49,11 +50,19 @@ Después, cada acuerdo se puede **Pasar a tarea** o **Enlazar a un hito**. Si te
 2. Mira la evidencia contra el criterio de cumplido.
 3. Pulsa **Validar** y luego **Validar el hito**, o **Pedir cambios**, diciendo cuáles. El comentario es obligatorio: es lo que ella va a rehacer.
 
-### Planificar la hoja de ruta (mentor principal)
+### Verificar su lista de entrada (mentor principal)
 
-1. Entra en la compañía, pestaña **Hoja de ruta**.
-2. Si no tiene, pulsa **Crear la hoja de ruta**, desde un recorrido.
-3. Ajusta las etapas con **Añadir una etapa** y los hitos con **Añadir un hito a esta etapa**. Cada hito, con su criterio de cumplido y su fecha.
+1. Entra en la compañía. En su ficha está la lista, con lo que ella ha contestado.
+2. En cada «Ya lo tenemos», abre el archivo y pulsa **Verificar**, o **No basta**: escribe qué falta y pulsa **Enviar «no basta»**. El comentario es obligatorio, es lo que ella va a completar.
+
+### Preparar la hoja de ruta (mentor principal)
+
+1. Entra en la compañía, pestaña **Programa y Anexo**. Arriba está **Preparar la hoja de ruta**, en tres pasos.
+2. **Punto de partida**: pon la **Fecha prevista de firma** y pulsa **Generar la hoja de ruta**. Sale con los cuatro tramos desde el de su estadio, lo verificado como cumplido y las fechas repartidas por tramo.
+3. **Ajustar**: mueve las fechas, añade hitos propios con **Añadir un hito a este tramo** y quita los que no apliquen con **Quitar**. Un hito fundamental solo lo quita dirección, con motivo. Ninguna fecha puede pasar del plazo del programa.
+4. **Revisar y proponer**: se abre cuando no queda nada por verificar. Desde ahí, dirección le propone el Acuerdo con la hoja de ruta dentro.
+
+Al firmar, las fechas se corren a la de la firma. Después, un hito propio lo cambias tú; uno fundamental, solo dirección, con motivo.
 
 ### Encargar una tarea
 

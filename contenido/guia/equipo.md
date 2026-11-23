@@ -2,8 +2,8 @@
 
 ## Qué es la plataforma
 
-Es donde Inception Woman Lab sigue la cohorte, desde que una startup se presenta hasta que se gradúa.
-Antes de la cartera está el embudo: convocatoria, candidaturas, comité, NDA, entrada y Acuerdo.
+Es donde Inception Woman Lab sigue la cohorte, desde que una startup se presenta hasta que termina el programa: graduada o finalizada.
+Antes de la cartera está el embudo: candidaturas con el NDA ya aceptado, filtro, reunión, comité, entrada y Acuerdo.
 Cada compañía ve lo suyo; tú ves todas.
 
 ## Tu papel
@@ -11,11 +11,11 @@ Cada compañía ve lo suyo; tú ves todas.
 Mueves el día a día del programa: candidaturas, reuniones, documentos y seguimiento. Tu inicio es la [Cartera](/cartera): arriba, **Avisos para ti** y **En entrada**.
 
 - **Cada día**: mira **Avisos para ti**. Cada aviso dice qué pasó, qué te toca y lleva al botón exacto.
-- **Cuando llegue una candidatura**: revísala y muévela por el [Embudo](/embudo).
+- **Cuando llegue una candidatura**: mira qué dijo el filtro y muévela por el [Embudo](/embudo). Si alguien te elige en **Recomendada por**, te toca confirmarla o no.
 - **Cuando una compañía entregue un documento**: valídalo o pide cambios.
 - **Las sesiones las registra el mentor**, con su acta y las horas de cada persona, también las tuyas si estuviste. Tú apuntas el trabajo que hagas fuera de sesión, con su entregable.
 
-Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas y las sesiones en discusión.
+Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas, las sesiones en discusión y el cierre. Una compañía cerrada deja de verse para ti: queda en el Histórico de dirección.
 
 ## De qué dependes y quién depende de ti
 
@@ -30,6 +30,11 @@ Lo que decide dirección no te toca, pero lo ves: la incorporación, las firmas 
 1. En **Avisos para ti**, pulsa **Abrir** en el aviso de la candidatura.
 2. Revísala y, en la franja, pulsa **Pasar a en revisión**.
 3. Para proponerle una reunión, abre **Proponer reunión**. Cuando haya pasado, abre **Anotar esta reunión** y pulsa **Anotar**.
+
+### Responder a una recomendación
+
+1. Te llega el aviso cuando una candidata en idea te elige como quien la recomienda.
+2. En su candidatura, pulsa **Confirmar la recomendación** o **No la recomiendo**. Hasta que respondes, espera.
 
 ### Validar un documento entregado
 

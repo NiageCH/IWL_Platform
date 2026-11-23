@@ -4,7 +4,9 @@ REVISION, 18 nov: «cada aviso lleva al botón exacto, caduca cuando ya no toca
 y enlaza con el paso siguiente». **Revisado y aprobado por Rodrigo el 19 nov**,
 con seis avisos que faltaban, ya añadidos, y la sección «Lo que le toca a
 ella». **El 20 nov**, «Lo que le toca a ella» aprobada con dos filas más, y
-«Proponerle el Acuerdo» como aviso calculado.
+«Proponerle el Acuerdo» como aviso calculado. **El 23 nov**, puesto al día
+con el modelo nuevo (bloques 1 a 8): NDA al inicio, filtro, estadios,
+tramos, actas y cierre.
 
 ## Las reglas
 
@@ -22,7 +24,9 @@ ella». **El 20 nov**, «Lo que le toca a ella» aprobada con dos filas más, y
    o cuando la acción ya no tiene sentido:
    - la fecha ha pasado;
    - la candidatura está descartada;
-   - la compañía está archivada.
+   - la compañía está archivada;
+   - la compañía está cerrada (graduada o finalizada): al cerrarla se cierran
+     todos sus avisos abiertos, y no se crea ninguno más.
 6. **Lo que viene después de una fecha se avisa al llegar la fecha.**
 7. **El aviso dice de dónde viene y qué va después.** Lo saca del recorrido,
    no de un texto escrito a mano en cada aviso.
@@ -34,15 +38,13 @@ acción. Si pone «— », solo lo cierra la acción.
 
 | Aviso | Lo recibe | Qué pasó | Qué te toca · botón | Lleva a | Se cierra cuando | Después |
 |---|---|---|---|---|---|---|
-| **NDA firmado** (`nda_firmado`) | Dirección | «Ana firmó el NDA el 10 nov» | Contrafirmarlo · **Contrafirmar** | `/embudo/<id>#nda` | Dirección contrafirma; la candidatura se descarta | Ella dice su situación societaria (lo hace ella) |
-| **Comentario al NDA** (`nda_comentario`) | Dirección | «Ana comentó el NDA el 10 nov» | Responderle · **Responder** | `/embudo/<id>#nda` | Alguien de IWL responde; la candidatura se descarta | Ella firma el NDA |
-| **Situación dicha** (`situacion_dicha`) | Dirección | «Alba dijo su situación: sin constituir, el 10 nov» | Confirmarla · **Confirmar** / **Cambiarla** | `/cartera/<slug>#situacion` | Alguien la confirma; la compañía se archiva | Según el recorrido de entrada: due diligence o decidir la incorporación |
+| **Situación dicha** (`situacion_dicha`) | Dirección | «Alba dijo su situación: sin constituir, el 10 nov» | Confirmarla · **Confirmar** / **Cambiarla** | `/cartera/<slug>#situacion` | Alguien la confirma; la compañía se archiva | Según su estadio: el diagnóstico en idea o el due diligence en el resto, y decidir la incorporación |
 | **Comentario al Acuerdo** (`anexo_comentario`) | Dirección | «Alba comentó la propuesta de Acuerdo el 12 nov» | Responderle · **Responder** | `/cartera/<slug>/programa#anexo` | Alguien de IWL responde; la compañía se archiva | Ella acepta la propuesta |
 | **Otras fechas** (`reunion_contrapropuesta`) | Dirección | «Marta propone otras fechas: 3 franjas, el 12 nov» | Aceptar una o proponer otras · **Elegir fecha** | `/embudo/<id>#reunion` | IWL acepta o propone; pasan todas sus fechas (sale «sin fecha»); la candidatura se descarta | Se celebra la reunión y se anota |
 | **Reunión sin fecha** (`reunion_caducada`) | Dirección | «Pasaron todas las fechas con Marta sin elegir ninguna» | Proponer otras · **Proponer fechas** | `/embudo/<id>#reunion` | IWL propone otras o cancela; la candidatura se descarta | Ella elige fecha |
 | **Anota la reunión** (`reunion_anotar`), **nuevo** | Quien la propuso y quien fue de IWL | «La reunión del 13 nov con Tarulo ya pasó» | Anotarla · **Anotar** | `/embudo/<id>#reunion` | Alguien la anota; la candidatura se descarta | Moverla a comité, si toca |
-| **Hito entregado** (`hito_entregado`) | Mentor principal y revisor encargado; sin ninguno, dirección | «Alba entregó el hito "20 entrevistas" el 18 nov» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Alguien lo valida o pide cambios; la compañía se archiva | Siguiente hito de la etapa |
-| **Cambio de vía** (`cambio_via`) | Mentor principal | «Siren pasó de Construcción a Aceleración el 12 nov» | Revisar lo que pasa a por entregar · **Revisar** y, en la franja, **Revisado** | `/cartera/<slug>/diligencia#puntos` | Lo marca «Revisado» quien lo revisa (no hay otro hecho que lo cierre); la compañía se archiva | Ella entrega lo que falta |
+| **Hito entregado** (`hito_entregado`) | Mentor principal y revisor encargado; sin ninguno, dirección | «Alba entregó el hito "20 entrevistas" el 18 nov» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Alguien lo valida o pide cambios; la compañía se archiva | Siguiente hito del tramo; si era el último, se cierra el tramo |
+| **Cambio de estadio** (`cambio_estadio`; antes `cambio_via`) | Mentor principal | «Siren pasó de idea a MVP sin piloto el 12 nov» | Revisar lo que pasa a por entregar · **Revisar** y, en la franja, **Revisado** | `/cartera/<slug>/diligencia#puntos` | Lo marca «Revisado» quien lo revisa (no hay otro hecho que lo cierre); la compañía se archiva | Ella entrega lo que falta |
 | **Hito sin revisar** (`hito_sin_revisar`) | Dirección, a los 7 días de entregado | «"20 entrevistas" lleva más de 7 días entregado sin revisar» | Revisarlo · **Validar** / **Pedir cambios** | `/cartera/<slug>/ruta#hito-<id>` | Igual que el anterior | Igual que el anterior |
 | **Candidatura nueva** (`candidatura_nueva`), **19 nov**; desde el **22 nov**, solo si pasa el filtro o va a revisión manual | Dirección y equipo | «Marta presentó Tarulo el 14 nov» | Revisarla · **Abrir**; en la franja, **Pasar a en revisión** | `/embudo/<id>#pasos` | Pasa a «En revisión» o a cualquier otro paso; la candidatura se descarta; en revisión manual, se decide que no pasa | Tener la reunión |
 | **Confirmar la recomendación** (`recomendacion_pendiente`), **22 nov** | La persona de IWL que eligió ella como quien la recomienda (una idea) | «Tarulo se presenta como idea y te pone como quien la recomienda, el 14 nov» | Confirmarla o decir que no · **Responder**; en la franja, **Confirmar la recomendación** / **No la recomiendo** | `/embudo/<id>#filtro` | Responde | Si la confirma, pasa el filtro y llega a IWL como candidatura nueva; si no, no pasa y a ella le llega el motivo |
@@ -55,8 +57,8 @@ acción. Si pone «— », solo lo cierra la acción.
 | **Horas en dirección** (`sesion_en_direccion`), **20 nov** | Dirección | «Las horas de "Precios" con Marea no cuadran y han llegado a dirección» | Decidir y cerrar · **Decidir** | `/cartera/<slug>/sesiones#sesion-<id>` | Dirección decide, o se anula | Cuentan para el Anexo; a ella le llega un correo con la decisión |
 
 | **Tramo cerrado** (`tramo_cerrado`, a dirección; `tramo_cerrado_ella`, a ella), **23 nov** | Dirección y las fundadoras de la compañía | «Raíz cerró un tramo de su hoja de ruta el 3 dic» | Ver cómo sigue · **Ver** | `/cartera/<slug>/ruta#seguimiento` · ella, `/proyecto/ruta#seguimiento` | Lo cierra quien lo lee | El tramo siguiente |
-| **Listo para valorar si es invertible** (`listo_para_invertible`), **23 nov** | Dirección | «Raíz cerró el tramo 4 el 3 dic: proyecto listo para valorar si es invertible» | Valorar si es invertible · **Valorar** | `/cartera/<slug>/ruta#seguimiento` | Lo cierra quien lo lee | El cierre (bloque 8) |
-| **Plazo vencido** (`plazo_vencido`), **23 nov** | Dirección, una vez por compañía | «A Raíz se le ha acabado el plazo máximo de su hoja de ruta» | Decidir el cierre · **Revisar** | `/cartera/<slug>/ruta#seguimiento` | Lo cierra quien lo lee | El cierre (bloque 8). No se cierra nada solo |
+| **Listo para valorar si es invertible** (`listo_para_invertible`), **23 nov** | Dirección | «Raíz cerró el tramo 4 el 3 dic: proyecto listo para valorar si es invertible» | Valorar si es invertible · **Valorar** | `/cartera/<slug>#cierre` | Lo cierra quien lo lee; se cierra la compañía | Si es invertible, se gradúa: **Cerrar la compañía** |
+| **Plazo vencido** (`plazo_vencido`), **23 nov** | Dirección, una vez por compañía | «A Raíz se le ha acabado el plazo máximo de su hoja de ruta» | Decidir el cierre · **Revisar** | `/cartera/<slug>#cierre` | Lo cierra quien lo lee; se cierra la compañía | **Cerrar la compañía**: graduada, salida o baja. No se cierra nada solo |
 
 ## Los calculados
 
@@ -73,7 +75,7 @@ revisión en comité y el alta detenida no van.
 | Aviso | Lo recibe | Qué te toca · botón | Lleva a | Desaparece cuando |
 |---|---|---|---|---|
 | **Revisión en comité** | Dirección | Volver a mirarla · **Redactar el acta** | `/embudo/<id>#comite` | Hay acta nueva o se descarta |
-| **Decidir la incorporación**, **19 nov**: en Aceleración con lo obligatorio validado; en Construcción con la situación confirmada, sin esperar al tope. Si ha pasado el tope, lo dice («lleva 15 días en entrada sin Acuerdo») y no sale un segundo aviso | Dirección | Decidir · **Decidir la incorporación** | `/cartera/<slug>#incorporacion` | Hay decisión o se archiva |
+| **Decidir la incorporación**, **19 nov**: con MVP o facturando, con lo obligatorio del due diligence validado; en idea, con la situación confirmada, sin esperar al tope. Si ha pasado el tope, lo dice («lleva 15 días en entrada sin Acuerdo») y no sale un segundo aviso | Dirección | Decidir · **Decidir la incorporación** | `/cartera/<slug>#incorporacion` | Hay decisión o se archiva |
 | **Proponerle el Acuerdo**, **20 nov**: la incorporación es «sí» y no hay Anexo propuesto | Dirección (el botón, a cualquiera de IWL) | Proponerlo · **Proponer el Acuerdo** | `/cartera/<slug>/programa?aviso=proponer#anexo` | Se propone o se archiva |
 | **Hito vencido sin entregar**, **20 nov** | Mentor principal de la compañía | Hablar con ella · **Ver el hito** | `/cartera/<slug>/ruta#hito-<id>` | Ella lo entrega, se cumple o cambia la fecha |
 | **Alta detenida** | Dirección | Recordárselo · **Recordar** (ahí mismo) | — | Ella da el paso |
@@ -84,6 +86,8 @@ revisión en comité y el alta detenida no van.
 |---|---|---|
 | **Primer acceso** (`primer_acceso`) | No pide nada: es un hecho. | En «Altas en curso» y en el recorrido de la candidata |
 | **Ha elegido fecha** (`reunion_elegida`) | La reunión quedó confirmada al elegir, y el correo con la invitación ya llega a IWL. Lo que toca después es anotarla, y eso es «Anota la reunión». | En «Qué ha pasado» de la candidatura |
+| **NDA firmado** (`nda_firmado`), **22 nov** | El NDA se acepta con una casilla al presentarse, sin contrafirma de IWL: no queda nada que hacer. | En la candidatura, con el PDF del NDA aceptado |
+| **Comentario al NDA** (`nda_comentario`), **22 nov** | Ya no se comenta: se acepta antes de presentar nada. Si tiene dudas, escribe antes de aceptarlo. | — |
 
 Los avisos de estos dos tipos que estaban abiertos se cierran con la
 migración `20261118120000_avisos_con_accion`. También se cierran los que ya
@@ -112,3 +116,12 @@ cuántos de cada tipo.
 - **Proponerle el Acuerdo**: aviso calculado a dirección, en «Los calculados».
 - **La firma del Acuerdo** se queda en Programa (`#anexo`), donde está el
   botón.
+
+## Lo que quedó decidido el 23 nov
+
+- **El cierre cierra los avisos**: al cerrar una compañía, graduada o
+  finalizada, se cierran todos sus avisos abiertos. La compañía desaparece
+  para todos menos dirección, así que un aviso suyo no podría llevar a
+  ningún sitio.
+- **«Listo para valorar si es invertible» y «Plazo vencido» llevan al cierre**
+  (`#cierre`, en la ficha), que es donde se decide.
