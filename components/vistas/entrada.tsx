@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Bloque, Metadato, TituloBloque } from "@/components/ui/primitivas";
 import { Estado } from "@/components/ui/estado";
-import { ConfirmarSituacion, DecidirIncorporacion, DecirSituacion } from "@/components/formularios/entrada";
+import { ConfirmarSituacion, DecidirIncorporacion, DecirSituacion, MentorPrincipal } from "@/components/formularios/entrada";
 import { estadioYPrograma, type Estadio } from "@/lib/estadios";
 import { BASES, siguientePasoEntrada } from "@/lib/entrada";
 import { describirSituacion, type DatosSocietarios } from "@/lib/societario";
-import type { DecisionLeida } from "@/lib/datos/entrada";
+import type { DecisionLeida, FichaEntrada } from "@/lib/datos/entrada";
+import { ESTADIOS } from "@/lib/estadios";
+import { DECISIONES } from "@/lib/comite";
 import { fecha } from "@/lib/utils";
 import { EnviarMensajeDescarte } from "@/components/formularios/correo";
 
@@ -105,12 +107,16 @@ export function EntradaIwl({
   candidatura,
   esDireccion,
   archivada,
+  mentor = null,
+  mentores = [],
 }: {
   compania: CompaniaEnEntrada;
   decision: DecisionLeida | null;
   candidatura: { id: string; contacto: string; correo: string } | null;
   esDireccion: boolean;
   archivada: boolean;
+  mentor?: { id: string; nombre: string } | null;
+  mentores?: { id: string; nombre: string }[];
 }) {
   const estadio = compania.entry_state as Estadio | null;
 
@@ -141,6 +147,15 @@ export function EntradaIwl({
           ) : !compania.situacion_confirmada_at ? (
             <ConfirmarSituacion companyId={compania.id} />
           ) : null}
+        </div>
+
+        <div className="border-t border-filete pt-4">
+          <MentorPrincipal
+            companyId={compania.id}
+            actual={mentor}
+            mentores={mentores}
+            puedeCambiar={esDireccion && decision?.decision !== "no"}
+          />
         </div>
 
         {decision ? (
@@ -181,6 +196,59 @@ export function EntradaIwl({
           <p className="text-xs text-metadato">La incorporación la decide dirección.</p>
         )}
       </div>
+    </Bloque>
+  );
+}
+
+/**
+ * Lo que el mentor ve de la candidatura mientras la compañía está en
+ * entrada (REVISION, 23 nov): lo que presentó ella y el resultado del
+ * comité con el estadio confirmado. Ni las notas de las reuniones, ni la
+ * deliberación, ni el due diligence: eso sigue siendo de IWL.
+ */
+export function FichaEntradaMentor({ ficha }: { ficha: FichaEntrada }) {
+  const sector = ficha.sector === "Otro" && ficha.sector_otro ? ficha.sector_otro : ficha.sector;
+  return (
+    <Bloque id="ficha-entrada" className="mb-8 scroll-mt-48">
+      <TituloBloque accion={<Metadato>Lo que presentó</Metadato>}>Ficha de entrada</TituloBloque>
+      <dl className="grid gap-x-6 gap-y-3 px-5 py-4 text-sm sm:grid-cols-2">
+        {ficha.one_liner ? (
+          <div className="sm:col-span-2">
+            <dt className="text-metadato">Qué hacen</dt>
+            <dd className="text-titular">{ficha.one_liner}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt className="text-metadato">Sector</dt>
+          <dd className="text-titular">{sector ?? "Sin decir"}</dd>
+        </div>
+        <div>
+          <dt className="text-metadato">Estadio que declaró</dt>
+          <dd className="text-titular">{ficha.estadio_declarado ? ESTADIOS[ficha.estadio_declarado] : "Sin declarar"}</dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-metadato">Socios</dt>
+          <dd className="text-titular">
+            {ficha.socios.length
+              ? ficha.socios.map((x) => `${x.nombre} (${x.pct} %${x.mujer ? ", mujer" : ""})`).join(" · ")
+              : "Sin decir"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-metadato">Prueba del estadio</dt>
+          <dd className="text-titular">{ficha.prueba ?? "No adjuntó"}</dd>
+        </div>
+        <div>
+          <dt className="text-metadato">Comité</dt>
+          <dd className="text-titular">
+            {ficha.comite
+              ? `${DECISIONES[ficha.comite.decision as keyof typeof DECISIONES] ?? ficha.comite.decision} el ${fecha(ficha.comite.fecha)}${
+                  ficha.comite.estadio ? ` · estadio confirmado: ${ESTADIOS[ficha.comite.estadio]}` : ""
+                }`
+              : "Sin acta cerrada"}
+          </dd>
+        </div>
+      </dl>
     </Bloque>
   );
 }

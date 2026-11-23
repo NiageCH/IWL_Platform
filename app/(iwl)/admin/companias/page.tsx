@@ -219,7 +219,7 @@ export default async function AdminCompanias() {
                           }
                         >
                           {(c.etapas ?? 0) > 0
-                            ? `${numero(c.etapas ?? 0, 0)} etapas`
+                            ? `${numero(c.etapas ?? 0, 0)} tramos`
                             : "Diseñarla"}
                         </Link>
                       </dd>

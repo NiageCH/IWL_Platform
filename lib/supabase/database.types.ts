@@ -5348,6 +5348,9 @@ isOneToOne: false
 "cambiar_estadio":
 { Args: { "p_company": string,"p_estadio": Database["public"]['Enums']["estado_entrada"],"p_motivo": string }; Returns: undefined
                            },
+"cambiar_mentor_principal":
+{ Args: { "p_company": string,"p_mentor": string }; Returns: undefined
+                           },
 "comentar_hito":
 { Args: { "p_hito": string,"p_nota": string }; Returns: undefined
                            },
@@ -5418,6 +5421,12 @@ isOneToOne: false
                            },
 "estado_nda":
 { Args: { "p_candidatura": string }; Returns: string
+                           },
+"fechar_hito":
+{ Args: { "p_fecha": string,"p_hito": string,"p_motivo"?: string }; Returns: undefined
+                           },
+"ficha_entrada":
+{ Args: { "p_company": string }; Returns: Json
                            },
 "ficheros_sueltos":
 { Args: { "p_antes": string }; Returns: {

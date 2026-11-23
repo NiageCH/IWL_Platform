@@ -21,7 +21,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
   const secciones: Seccion[] = [
     { icono: "companias", href: "/admin/companias", nombre: "Compañías y cohortes" },
     { icono: "personas", href: "/admin/personas", nombre: "Personas y accesos" },
-    { icono: "ruta", href: "/admin/rutas", nombre: "Recorridos" },
+    { icono: "ruta", href: "/admin/rutas", nombre: "Hoja de ruta" },
     { icono: "evaluacion", href: "/admin/evaluacion", nombre: "Evaluación técnica" },
     { icono: "umbrales", href: "/admin/programa", nombre: "Programa y umbrales" },
     { icono: "correos", href: "/admin/correos", nombre: "Correos" },

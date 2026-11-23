@@ -6,6 +6,7 @@ import {
   crearEtapaPlantilla,
   crearHitoPlantilla,
   crearPlantilla,
+  editarHitoPlantilla,
   fijarEstadoEntrada,
 } from "@/lib/acciones/ruta";
 import {
@@ -98,7 +99,7 @@ export function NuevaEtapaPlantilla({
   siguienteOrden: number;
 }) {
   return (
-    <Desplegable titulo="Añadir una etapa a este recorrido">
+    <Desplegable titulo="Añadir un tramo a este recorrido">
       <Formulario accion={crearEtapaPlantilla}>
         {(resultado) => {
           const campo = (n: string) =>
@@ -124,7 +125,7 @@ export function NuevaEtapaPlantilla({
 
               <Campo
                 etiqueta="Objetivo"
-                ayuda="Sin objetivo, una etapa es solo un plazo"
+                ayuda="Sin objetivo, un tramo es solo un plazo"
                 error={campo("objective")}
               >
                 <AreaTexto name="objective" rows={2} required />
@@ -152,7 +153,7 @@ export function NuevaEtapaPlantilla({
               </div>
 
               <div>
-                <Boton>Añadir etapa</Boton>
+                <Boton>Añadir tramo</Boton>
               </div>
             </>
           );
@@ -170,7 +171,7 @@ export function NuevoHitoPlantilla({
   siguienteOrden: number;
 }) {
   return (
-    <Desplegable titulo="Añadir un hito a esta etapa">
+    <Desplegable titulo="Añadir un hito a este tramo">
       <Formulario accion={crearHitoPlantilla}>
         {(resultado) => {
           const campo = (n: string) =>
@@ -204,7 +205,7 @@ export function NuevoHitoPlantilla({
                 </Campo>
                 <Campo
                   etiqueta="Semanas desde el inicio"
-                  ayuda="De la etapa"
+                  ayuda="Del tramo"
                   error={campo("offset_weeks")}
                 >
                   <Texto type="number" name="offset_weeks" min={0} />
@@ -288,5 +289,49 @@ export function EstadoEntrada({
         </>
       )}
     </Formulario>
+  );
+}
+
+/**
+ * El texto de un hito de la hoja de ruta IWL (REVISION, 23 nov): título,
+ * criterio y lo que se espera como evidencia. Cambiarlo vale para las
+ * hojas de ruta que se generen desde ahora; las que ya existen, y las
+ * firmadas, llevan su copia.
+ */
+export function EditarHitoPlantilla({
+  hito,
+}: {
+  hito: { id: string; titulo: string; criterio: string; evidencia: string | null };
+}) {
+  return (
+    <Desplegable titulo="Editar el texto">
+      <Formulario accion={editarHitoPlantilla} className="gap-3 px-4 py-3">
+        {(r) => {
+          const e = (n: string) => (r.ok ? undefined : r.campos?.[n]);
+          return (
+            <>
+              <input type="hidden" name="id" value={hito.id} />
+              <Campo etiqueta="Título" obligatorio error={e("title")}>
+                <Texto name="title" defaultValue={hito.titulo} required />
+              </Campo>
+              <Campo
+                etiqueta="Criterio de cumplimiento"
+                obligatorio
+                error={e("success_criteria")}
+                ayuda="Qué tiene que pasar para darlo por cumplido, de forma que se pueda comprobar"
+              >
+                <AreaTexto name="success_criteria" rows={2} defaultValue={hito.criterio} required />
+              </Campo>
+              <Campo etiqueta="Evidencia esperada" error={e("expected_evidence")} ayuda="Lo que se pide como prueba">
+                <AreaTexto name="expected_evidence" rows={2} defaultValue={hito.evidencia ?? ""} />
+              </Campo>
+              <div>
+                <Boton variante="secundario">Guardar el texto</Boton>
+              </div>
+            </>
+          );
+        }}
+      </Formulario>
+    </Desplegable>
   );
 }

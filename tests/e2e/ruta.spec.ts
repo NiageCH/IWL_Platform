@@ -81,8 +81,8 @@ test("la fundadora ve su hoja de ruta con el objetivo de cada etapa", async ({
 test("la fundadora no puede rediseñar el plan", async ({ page }) => {
   await entrarComo(page, USUARIOS.fundadoraMarea, "/proyecto/ruta");
 
-  await expect(page.getByText("Añadir una etapa")).toHaveCount(0);
-  await expect(page.getByText("Editar la etapa")).toHaveCount(0);
+  await expect(page.getByText("Añadir un tramo")).toHaveCount(0);
+  await expect(page.getByText("Editar el tramo")).toHaveCount(0);
   await expect(page.getByText(/Añadir un hito/)).toHaveCount(0);
 });
 
@@ -105,9 +105,9 @@ test("el equipo de IWL diseña y edita el plan", async ({ page }) => {
   /* En el tramo en curso, que es el único que nace abierto. En los demás
      los botones existen igual, a un clic */
   const tramo = tramoDe(page, "Tramo 4 · De facturación a invertible");
-  await expect(tramo.getByText("Editar la etapa").first()).toBeVisible();
+  await expect(tramo.getByText("Editar el tramo").first()).toBeVisible();
   await expect(
-    tramo.getByText("Añadir un hito a esta etapa").first(),
+    tramo.getByText("Añadir un hito a este tramo").first(),
   ).toBeVisible();
 
   // Y sí puede confirmar un hito
@@ -145,33 +145,42 @@ test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su t
 test("añadir una etapa exige decir qué se persigue en ella", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/marea-clinica/ruta");
 
-  await page.getByText("Añadir una etapa").click();
+  await page.getByText("Añadir un tramo").click();
 
   const alta = page.locator("form", {
     has: page.locator('input[name="order_index"]'),
   });
   await alta.locator('input[name="name"]').fill("Etapa sin rumbo");
   await alta.locator('textarea[name="objective"]').fill("Corto");
-  await alta.getByRole("button", { name: "Añadir etapa" }).click();
+  await alta.getByRole("button", { name: "Añadir tramo" }).click();
 
-  await expect(page.getByText(/Sin objetivo, una etapa es solo un plazo/)).toBeVisible();
+  await expect(page.getByText(/Sin objetivo, un tramo es solo un plazo/)).toBeVisible();
 });
 
-test("los recorridos se configuran desde administración", async ({ page }) => {
+test("los textos de la hoja de ruta se cambian desde administración", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/admin/rutas");
 
-  await expect(
-    page.getByRole("heading", { name: "Recorridos del programa" }),
-  ).toBeVisible();
-
+  await expect(page.getByRole("heading", { name: "Hoja de ruta del programa" })).toBeVisible();
   // Una sola hoja de ruta, en cuatro tramos (REVISION, 22 nov)
-  await expect(page.getByRole("heading", { name: "Hoja de ruta IWL" })).toBeVisible();
-  await expect(page.getByText("De idea a MVP").first()).toBeVisible();
-
+  await expect(page.getByRole("heading", { name: "Tramo 1 · De idea a MVP" })).toBeVisible();
   // Y se explica por qué tocarlos aquí no rompe nada en marcha
-  await expect(
-    page.getByText(/no toca ninguna hoja de ruta en marcha/),
-  ).toBeVisible();
+  await expect(page.getByText(/no toca ninguna hoja de ruta en marcha ni las firmadas/)).toBeVisible();
+
+  // Cambiar el texto de un hito, y dejarlo como estaba
+  const [hito] = await consultar<{ id: string; title: string }>(
+    "roadmap_template_milestones",
+    { title: "eq.Data room completo" },
+    "id,title",
+  );
+  try {
+    const fila = page.locator('li[data-hito="Data room completo"]');
+    await fila.getByText("Editar el texto").click();
+    await fila.locator('input[name="title"]').fill("Data room completo y ordenado");
+    await fila.getByRole("button", { name: "Guardar el texto" }).click();
+    await expect(page.getByText("Data room completo y ordenado").first()).toBeVisible();
+  } finally {
+    await actualizar("roadmap_template_milestones", { id: `eq.${hito.id}` }, { title: hito.title });
+  }
 });
 
 test("el equipo de IWL no llega a configurar los recorridos", async ({ page }) => {
@@ -253,7 +262,7 @@ test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
   await entrarComo(page, USUARIOS.admin, "/cartera/marea-clinica/ruta");
 
   const nombre = `Etapa de prueba ${Date.now()}`;
-  await page.getByText("Añadir una etapa").click();
+  await page.getByText("Añadir un tramo").click();
   const alta = page.locator("form", {
     has: page.locator('textarea[name="objective"]'),
   });
@@ -261,7 +270,7 @@ test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
   await alta
     .locator('textarea[name="objective"]')
     .fill("Comprobar que una etapa se puede borrar.");
-  await alta.getByRole("button", { name: "Añadir etapa" }).click();
+  await alta.getByRole("button", { name: "Añadir tramo" }).click();
 
   /* Nace plegada: no es el tramo en curso. Se abre como la abriría
      cualquiera, pulsando su línea */
@@ -270,7 +279,7 @@ test("una etapa se borra y sus hitos no se pierden", async ({ page }) => {
   await etapa.locator("summary").first().click();
 
   // Y ahora se borra, que es lo que no se podía
-  await etapa.getByRole("button", { name: "Borrar la etapa" }).click();
+  await etapa.getByRole("button", { name: "Borrar el tramo" }).click();
   await expect(page.getByText(/No tiene hitos/)).toBeVisible();
   await page.getByRole("button", { name: "Borrar", exact: true }).click();
 

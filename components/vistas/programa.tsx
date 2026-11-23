@@ -228,6 +228,13 @@ export async function VistaPrograma({
             />
           </div>
 
+          {/* El Anexo con su sección I, en PDF: propuesto o firmado, tal como se propuso o firmó */}
+          <p className="border-t border-filete px-4 py-3 text-sm">
+            <a href={`/anexo/${anexo.data.id}`} className="enlace text-acento-texto" target="_blank" rel="noreferrer">
+              Descargar el Anexo en PDF
+            </a>
+          </p>
+
           {anexo.data.other_commitments ? (
             <p className="border-t border-filete px-4 py-3 text-sm text-secundario">
               {anexo.data.other_commitments}

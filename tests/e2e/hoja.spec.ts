@@ -115,7 +115,9 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     const pendiente = asistente.locator('li[data-hito^="Sociedad constituida y pacto de socias"]');
     await pendiente.locator('input[name="due_date"]').fill("2029-01-01");
     await expect(pendiente.getByText(/Fuera del plazo del programa: acaba el/)).toBeVisible();
-    await expect(pendiente.getByRole("button", { name: "Cambiar la fecha" })).toBeDisabled();
+    await expect(pendiente.getByRole("button", { name: "Cambiar", exact: true })).toBeDisabled();
+    // Título, fecha y nada más: un fundamental no lo quita el equipo
+    await expect(pendiente.getByRole("button", { name: "Quitar" })).toHaveCount(0);
 
     // Paso 3: no queda nada por verificar, así que se puede seguir
     await asistente.getByRole("link", { name: "Seguir: revisar y proponer" }).click();
@@ -135,4 +137,19 @@ test("una idea contesta su diagnóstico, IWL lo verifica y la hoja de ruta sale 
     await borrar("companies", { id: nueva.compania });
     await borrarCuenta(correo);
   }
+});
+
+test("el Anexo sale en PDF con su sección I, para quien lo puede ver", async ({ page }) => {
+  const [raiz] = await consultar<{ id: string }>("companies", { slug: "eq.raiz-sensorica" }, "id");
+  const [anexo] = await consultar<{ id: string }>("annexes", { company_id: `eq.${raiz.id}`, order: "version.desc" }, "id");
+  await entrarComo(page, "fundadora@raiz.test", "/proyecto/programa");
+  await expect(page.getByRole("link", { name: "Descargar el Anexo en PDF" })).toBeVisible();
+  const respuesta = await page.request.get(`/anexo/${anexo.id}`);
+  expect(respuesta.status()).toBe(200);
+  expect(respuesta.headers()["content-type"]).toBe("application/pdf");
+  expect((await respuesta.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
+  // Una fundadora de otra compañía no lo saca
+  await entrarComo(page, "fundadora@vega.test", "/proyecto");
+  expect((await page.request.get(`/anexo/${anexo.id}`)).status()).toBe(404);
 });

@@ -168,9 +168,10 @@ export async function quitarHito(formData: FormData): Promise<Resultado> {
 }
 
 /**
- * Cambiar la fecha de un hito, al ajustar la hoja de ruta. Más allá del
- * plazo del programa solo la guarda dirección: lo dice la base
- * (`milestones_guard_plazo`) y su mensaje llega tal cual.
+ * Cambiar la fecha de un hito. Más allá del plazo del programa solo la
+ * guarda dirección (`milestones_guard_plazo`); con el Acuerdo firmado, la
+ * de un hito fundamental pide dirección y motivo (`milestones_guard_tras_firma`).
+ * Lo dice la base y su mensaje llega tal cual.
  */
 export async function fecharHito(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
@@ -178,6 +179,7 @@ export async function fecharHito(formData: FormData): Promise<Resultado> {
       id: uuid,
       slug: z.string(),
       due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pon una fecha."),
+      motivo: z.string().trim().optional(),
     }),
     formData,
   );
@@ -186,13 +188,15 @@ export async function fecharHito(formData: FormData): Promise<Resultado> {
   if (sinSesion) return sinSesion;
 
   const supabase = await clienteServidor();
-  const { data, error: falloBase } = await supabase
-    .from("milestones")
-    .update({ due_date: datos.due_date })
-    .eq("id", datos.id)
-    .select("id");
-  if (falloBase) return error(falloBase.message, { due_date: falloBase.message });
-  if (!data?.length) return error("No puedes cambiar la fecha de este hito.");
+  const { error: falloBase } = await supabase.rpc("fechar_hito", {
+    p_hito: datos.id,
+    p_fecha: datos.due_date,
+    p_motivo: datos.motivo ?? "",
+  });
+  if (falloBase) {
+    const enMotivo = /motivo|por qué/i.test(falloBase.message);
+    return error(falloBase.message, enMotivo ? { motivo: falloBase.message } : { due_date: falloBase.message });
+  }
   refrescar(datos.slug);
   return ok();
 }

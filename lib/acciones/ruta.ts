@@ -85,7 +85,7 @@ export async function disenarHojaDeRuta(formData: FormData): Promise<Resultado> 
 
   refrescar(datos.slug);
   return ok(
-    `Hoja de ruta creada con ${data} ${data === 1 ? "etapa" : "etapas"}. A partir de aquí es de este proyecto: edítala como haga falta.`,
+    `Hoja de ruta creada con ${data} ${data === 1 ? "tramo" : "tramos"}. A partir de aquí es de este proyecto: edítala como haga falta.`,
   );
 }
 
@@ -96,10 +96,10 @@ export async function disenarHojaDeRuta(formData: FormData): Promise<Resultado> 
 const esquemaEtapa = z.object({
   slug: textoObligatorio(),
   company_id: uuid,
-  name: textoObligatorio(3, "Ponle nombre a la etapa."),
+  name: textoObligatorio(3, "Ponle nombre al tramo."),
   objective: textoObligatorio(
     10,
-    "Escribe qué se persigue en esta etapa. Sin objetivo, una etapa es solo un plazo.",
+    "Escribe qué se persigue en este tramo. Sin objetivo, un tramo es solo un plazo.",
   ),
   order_index: z.coerce.number().int().min(0),
   starts_on: fechaOpcional,
@@ -114,7 +114,7 @@ export async function crearEtapa(formData: FormData): Promise<Resultado> {
   if (fallo) return fallo;
 
   if (datos.starts_on && datos.ends_on && datos.ends_on < datos.starts_on) {
-    return error("La etapa no puede terminar antes de empezar.", { ends_on: "Antes del inicio." });
+    return error("El tramo no puede terminar antes de empezar.", { ends_on: "Antes del inicio." });
   }
 
   const supabase = await clienteServidor();
@@ -124,7 +124,7 @@ export async function crearEtapa(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(slug);
-  return ok("Etapa añadida.");
+  return ok("Tramo añadido.");
 }
 
 const esquemaEditarEtapa = esquemaEtapa
@@ -136,7 +136,7 @@ export async function editarEtapa(formData: FormData): Promise<Resultado> {
   if (fallo) return fallo;
 
   if (datos.starts_on && datos.ends_on && datos.ends_on < datos.starts_on) {
-    return error("La etapa no puede terminar antes de empezar.", { ends_on: "Antes del inicio." });
+    return error("El tramo no puede terminar antes de empezar.", { ends_on: "Antes del inicio." });
   }
 
   const supabase = await clienteServidor();
@@ -150,7 +150,7 @@ export async function editarEtapa(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(slug);
-  return ok("Etapa guardada.");
+  return ok("Tramo guardado.");
 }
 
 const esquemaBorrarEtapa = z.object({ slug: textoObligatorio(), id: uuid });
@@ -175,7 +175,7 @@ export async function borrarEtapa(formData: FormData): Promise<Resultado> {
   if (falloBase) return traducirError(falloBase);
 
   refrescar(datos.slug);
-  return ok("Etapa eliminada. Sus hitos siguen ahí, sin etapa asignada.");
+  return ok("Tramo eliminado. Sus hitos siguen ahí, sin tramo asignado.");
 }
 
 // -----------------------------------------------------------------------------
@@ -529,4 +529,38 @@ export async function registrarAportacion(formData: FormData): Promise<Resultado
 
   refrescar(slug);
   return ok("Aportación registrada.");
+}
+
+/**
+ * El texto de un hito de la hoja de ruta IWL, desde Administración
+ * (REVISION, 23 nov). Es de dirección: lo dice la política de la
+ * plantilla. No toca ninguna hoja de ruta ya generada, ni firmada: cada
+ * una lleva su copia.
+ */
+export async function editarHitoPlantilla(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      id: uuid,
+      title: textoObligatorio(5, "Ponle un título que se entienda solo."),
+      success_criteria: textoObligatorio(10, "Di qué tiene que pasar para darlo por cumplido."),
+      expected_evidence: z
+        .string()
+        .optional()
+        .transform((v) => (v ?? "").trim() || null),
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+
+  const supabase = await clienteServidor();
+  const { data, error: falloBase } = await supabase
+    .from("roadmap_template_milestones")
+    .update({ title: datos.title, success_criteria: datos.success_criteria, expected_evidence: datos.expected_evidence })
+    .eq("id", datos.id)
+    .select("id");
+  if (falloBase) return traducirError(falloBase);
+  if (!data?.length) return error("Los textos de la hoja de ruta los cambia dirección.");
+
+  refrescarPlantillas();
+  return ok();
 }

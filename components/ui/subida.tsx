@@ -125,12 +125,15 @@ export function SelectorArchivo({
   required,
   accept,
   texto = "Elegir archivo",
+  sinNombre = false,
   onElegir,
 }: {
   name: string;
   required?: boolean;
   accept?: string;
   texto?: string;
+  /** Cuando ya se ve el archivo que hay al lado: «Ningún archivo elegido» lo contradiría */
+  sinNombre?: boolean;
   /** Para quien quiere hacer algo en cuanto se elige, como guardar */
   onElegir?: (fichero: File | null, input: HTMLInputElement) => void;
 }) {
@@ -150,7 +153,9 @@ export function SelectorArchivo({
         }}
       />
       <span className="accion cursor-pointer text-xs peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-acento-solido">{texto}</span>
-      <span className="truncate text-secundario">{nombre ?? "Ningún archivo elegido"}</span>
+      {sinNombre && !nombre ? null : (
+        <span className="truncate text-secundario">{nombre ?? "Ningún archivo elegido"}</span>
+      )}
     </label>
   );
 }

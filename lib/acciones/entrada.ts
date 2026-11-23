@@ -224,3 +224,25 @@ export async function guardarHorquilla(formData: FormData): Promise<Resultado> {
     "Guardada. Al proponer un Anexo se enseña como referencia, y salirse pide el motivo.",
   );
 }
+
+/**
+ * Cambiar el mentor principal desde la decisión de incorporación
+ * (REVISION, 23 nov): la decisión enseña el actual con un «Cambiar». Es de
+ * dirección, y lo dice la base (`cambiar_mentor_principal`).
+ */
+export async function cambiarMentorPrincipal(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({ company_id: uuid, mentor_id: z.string().uuid({ message: "Elige quién." }) }),
+    formData,
+  );
+  if (fallo) return fallo;
+  if (!(await personaActual())) return error("Tu sesión ha caducado. Vuelve a entrar.");
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("cambiar_mentor_principal", {
+    p_company: datos.company_id,
+    p_mentor: datos.mentor_id,
+  });
+  if (falloBase) return traducirError(falloBase);
+  refrescar();
+  return ok();
+}

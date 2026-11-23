@@ -1,14 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { COMPANIAS, USUARIOS, borrar, entrarComo } from "./entrada";
+import { COMPANIAS, USUARIOS, borrar, entrarComo, insertar } from "./entrada";
 
 /*
- * Raíz es la compañía sin Anexo firmado, que es lo que hace falta para probar
- * que la aportación se ve igual sin él. Otras pruebas le crean uno al pasar,
- * así que se quita antes de empezar en vez de depender del orden.
+ * Aquí se borraba el Anexo de Raíz antes de empezar, para tener una
+ * compañía sin Anexo firmado. Desde el bloque 5 la semilla le da uno, y
+ * borrarlo dejaba sin Anexo a las pruebas que vienen después. La prueba
+ * que lo necesita crea ahora su propia condición en Vega, que no tiene
+ * Anexo, y la deshace al acabar.
  */
-test.beforeAll(async () => {
-  await borrar("annexes", { company_id: COMPANIAS.raiz });
-});
 
 /**
  * Avances y aportación no horaria.
@@ -127,14 +126,26 @@ test("la fundadora no registra aportación de IWL", async ({ page }) => {
 test("sin Anexo firmado se sigue viendo lo que IWL ya ha puesto", async ({
   page,
 }) => {
-  // Raíz no tiene Anexo. Antes esto escondía la pantalla entera
-  await entrarComo(page, USUARIOS.equipoIwl, "/cartera/raiz-sensorica/aportacion");
-
-  await expect(page.getByText(/no hay Anexo de Programa firmado/)).toBeVisible();
-
-  // Y aun así se ven las horas y las compras
-  await expect(page.getByText("Lote de sensores para banco de pruebas")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Detalle de horas" })).toBeVisible();
+  // Vega no tiene Anexo. Antes esto escondía la pantalla entera
+  const titulo = `Compra de prueba sin Anexo ${Date.now()}`;
+  const compra = await insertar<{ id: string }>("contribution_items", {
+    company_id: COMPANIAS.vega,
+    kind: "compra",
+    occurred_on: "2026-10-01",
+    title: titulo,
+    description: "Una compra de IWL antes de firmar nada.",
+    amount: 300,
+    market_value: 300,
+  });
+  try {
+    await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva/aportacion");
+    await expect(page.getByText(/no hay Anexo de Programa firmado/)).toBeVisible();
+    // Y aun así se ve lo que IWL ha puesto
+    await expect(page.getByText(titulo)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Detalle de horas" })).toBeVisible();
+  } finally {
+    await borrar("contribution_items", { id: compra.id });
+  }
 });
 
 test.afterAll(async () => {

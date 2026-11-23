@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { SeguimientoTramos } from "@/components/vistas/hoja";
+import { FechaHito, QuitarHito } from "@/components/formularios/lista-entrada";
+import { finDelPlazo } from "@/lib/tramos";
 import { leerSeguimiento } from "@/lib/datos/hoja";
 import type { ResumenCompania } from "@/lib/datos/compania";
 import {
@@ -100,6 +102,11 @@ export async function VistaRuta({
     revisiones,
     acompanantes,
     reparto,
+    firmado: Boolean(seguimiento.firma),
+    finPlazo:
+      seguimiento.estadio && (seguimiento.firma ?? seguimiento.tramos[0]?.inicio)
+        ? finDelPlazo((seguimiento.firma ?? seguimiento.tramos[0]?.inicio)!, seguimiento.estadio)
+        : null,
   };
 
   if (ruta.etapas.length === 0) {
@@ -167,10 +174,10 @@ export async function VistaRuta({
           />
           <Cifra
             valor={ruta.etapaActual ? ruta.etapaActual.nombre : "—"}
-            etiqueta={ruta.etapaAbierta ? "Etapa en curso" : "Etapa que toca"}
+            etiqueta={ruta.etapaAbierta ? "Tramo en curso" : "Tramo que toca"}
             nota={
               !ruta.etapaActual
-                ? "Ninguna etapa abierta ni en plazo"
+                ? "Ningún tramo abierto ni en plazo"
                 : ruta.etapaAbierta
                   ? ruta.etapaActual.fin
                     ? `Hasta el ${fecha(ruta.etapaActual.fin)}`
@@ -189,12 +196,12 @@ export async function VistaRuta({
             nota={
               ruta.horasPrevistas > 0
                 ? "previstas en el plan"
-                : "sin previsión por etapa"
+                : "sin previsión por tramo"
             }
           />
           <Cifra
             valor={`${ruta.etapas.filter((e) => e.estado === "completada").length} / ${ruta.etapas.length}`}
-            etiqueta="Etapas cerradas"
+            etiqueta="Tramos cerrados"
           />
         </div>
 
@@ -453,6 +460,10 @@ export interface ContextoHitos {
   revisiones: Map<string, RevisionHito[]>;
   acompanantes: Acompanante[];
   reparto: RepartoAnexo;
+  /** Con el Acuerdo firmado, cambiar un hito fundamental pide dirección y motivo */
+  firmado: boolean;
+  /** El último día del plazo del programa, para avisar antes de guardar */
+  finPlazo: string | null;
 }
 
 const TEXTO_REVISION: Record<RevisionHito["tipo"], string> = {
@@ -565,6 +576,28 @@ function Hito({
           ) : null}
         </div>
       </div>
+
+      {/*
+        Ajustar el hito: su fecha y quitarlo, para quien coordina. Tras la
+        firma, uno fundamental solo lo toca dirección, con motivo
+        (REVISION, 23 nov); la base lo exige igual.
+      */}
+      {permisos.coordina && stageId && hito.estado !== "cumplido" && (!hito.fundamental || !contexto.firmado || permisos.esAdmin) ? (
+        <div className="flex flex-wrap items-start gap-x-3 gap-y-2 text-xs">
+          <span className="pt-1.5 text-metadato">Fecha prevista</span>
+          <FechaHito
+            id={hito.id}
+            slug={slug}
+            actual={hito.fecha}
+            finPlazo={contexto.finPlazo}
+            esDireccion={permisos.esAdmin}
+            pideMotivo={hito.fundamental && contexto.firmado}
+          />
+          {!hito.fundamental || permisos.esAdmin ? (
+            <QuitarHito id={hito.id} slug={slug} fundamental={hito.fundamental} />
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Lo último que dijo quien revisa, cuando ella tiene que volver a entregar */}
       {cambiosPendientes?.tipo === "cambios" ? (

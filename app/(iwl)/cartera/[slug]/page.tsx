@@ -9,8 +9,9 @@ import { esIwl, personaActual } from "@/lib/supabase/servidor";
 import { leerAltaCompania } from "@/lib/datos/onboarding";
 import { BloqueAlta } from "@/components/vistas/alta";
 import { direccionBase } from "@/lib/direccion";
-import { EntradaIwl } from "@/components/vistas/entrada";
-import { leerEntrada } from "@/lib/datos/entrada";
+import { EntradaIwl, FichaEntradaMentor } from "@/components/vistas/entrada";
+import { leerEntrada, leerFichaEntrada, leerMentorPrincipal } from "@/lib/datos/entrada";
+import { leerMentores } from "@/lib/datos/comite";
 import { leerCorreos } from "@/lib/datos/correos";
 import { BloqueCorreos } from "@/components/vistas/correos";
 
@@ -30,6 +31,11 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
   // siendo de IWL: son datos del embudo que el mentor no lee.
   const listaVisible = resumen.compania.tramo === "entrada" && resumen.permisos.coordina;
   const lista = listaVisible ? await leerListaEntrada(resumen.compania.id) : null;
+  // El mentor, sin ser de IWL, ve lo que presentó ella y el comité: no el embudo entero
+  const ficha = listaVisible && !enEntrada ? await leerFichaEntrada(resumen.compania.id) : null;
+  const [mentor, mentores] = enEntrada
+    ? await Promise.all([leerMentorPrincipal(resumen.compania.id), leerMentores()])
+    : [null, []];
   // Los correos de la compañía —el Acuerdo propuesto, las respuestas—, para IWL
   const correos = esIwl(persona?.role) ? await leerCorreos({ companyId: resumen.compania.id }) : null;
 
@@ -50,8 +56,11 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
             candidatura={entrada.candidatura}
             esDireccion={persona?.role === "admin_iwl"}
             archivada={Boolean(resumen.compania.archived_at)}
+            mentor={mentor}
+            mentores={mentores}
           />
         ) : null}
+        {ficha ? <FichaEntradaMentor ficha={ficha} /> : null}
         {lista ? (
           <ListaDeEntrada
             lista={lista}

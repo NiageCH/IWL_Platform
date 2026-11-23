@@ -99,13 +99,25 @@ export interface HitoResumido {
  * «Dónde estamos», en una frase: cuántos hitos del tramo actual están
  * cumplidos y cuál es el siguiente, con su fecha.
  */
+/**
+ * La cuenta de un tramo: lo cumplido al entrar, lo pendiente y lo hecho de
+ * lo pendiente. Una sola función para el asistente y el seguimiento, que
+ * tienen que decir lo mismo de la misma compañía (REVISION, 23 nov).
+ */
+export function cuentaTramo<H extends HitoResumido>(hitos: H[]) {
+  const pendientes = hitos.filter((h) => !h.alEntrar);
+  return {
+    alEntrar: hitos.length - pendientes.length,
+    pendientes,
+    hechos: pendientes.filter((h) => h.estado === "cumplido").length,
+  };
+}
+
 export function dondeEstamos(hitos: HitoResumido[]): string {
   if (!hitos.length) return "Este tramo todavía no tiene hitos.";
   // Lo verificado al entrar no es avance en el programa: va aparte
   // (REVISION, 23 nov). «9 de 15 cumplidos» mezclaba las dos cosas.
-  const alEntrar = hitos.filter((h) => h.alEntrar).length;
-  const pendientes = hitos.filter((h) => !h.alEntrar);
-  const hechos = pendientes.filter((h) => h.estado === "cumplido").length;
+  const { alEntrar, pendientes, hechos } = cuentaTramo(hitos);
   const siguiente = pendientes
     .filter((h) => h.estado !== "cumplido")
     .sort((a, b) => (a.fecha ?? "9999").localeCompare(b.fecha ?? "9999"))[0];

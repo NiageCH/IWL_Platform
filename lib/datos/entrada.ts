@@ -56,6 +56,43 @@ export const leerEntrada = cache(async (companyId: string) => {
   };
 });
 
+/** Lo que el mentor ve de la candidatura en entrada (`ficha_entrada`, REVISION 23 nov) */
+export interface FichaEntrada {
+  nombre: string;
+  sector: string | null;
+  sector_otro: string | null;
+  one_liner: string | null;
+  web: string | null;
+  pais: string | null;
+  estadio_declarado: Estadio | null;
+  socios: Array<{ nombre: string; pct: number; mujer: boolean }>;
+  equipo_personas: number | null;
+  prueba: string | null;
+  comite: { fecha: string; decision: string; estadio: Estadio | null; estadio_propuesto: Estadio | null } | null;
+}
+
+export async function leerFichaEntrada(companyId: string): Promise<FichaEntrada | null> {
+  const supabase = await clienteServidor();
+  const { data, error } = await supabase.rpc("ficha_entrada", { p_company: companyId });
+  if (error || !data) return null;
+  return data as unknown as FichaEntrada;
+}
+
+/** El mentor principal de una compañía, para enseñarlo en la decisión */
+export async function leerMentorPrincipal(companyId: string): Promise<{ id: string; nombre: string } | null> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("company_members")
+    .select("profile_id, profiles(full_name, last_name, email)")
+    .eq("company_id", companyId)
+    .eq("member_role", "mentor_principal")
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  const p = data.profiles as unknown as { full_name: string | null; last_name: string | null; email: string | null } | null;
+  return { id: data.profile_id, nombre: p ? nombrePersona(p) : "Mentor" };
+}
+
 export interface FilaEntrada {
   id: string;
   nombre: string;

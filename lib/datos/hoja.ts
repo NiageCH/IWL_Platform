@@ -181,3 +181,44 @@ export async function leerSeguimiento(companyId: string): Promise<Seguimiento> {
     })),
   };
 }
+
+export interface TramoPlantilla {
+  id: string;
+  tramo: NumeroTramo;
+  nombre: string;
+  objetivo: string;
+  meses: number | null;
+  hitos: Array<{ id: string; titulo: string; criterio: string; evidencia: string | null; condicionaInvertible: boolean }>;
+}
+
+/**
+ * La hoja de ruta IWL tal como la define dirección, para Administración:
+ * los cuatro tramos con sus hitos fundamentales. Editarlos no toca ninguna
+ * hoja de ruta ya generada: se copian al generarla.
+ */
+export async function leerHojaIwl(): Promise<TramoPlantilla[]> {
+  const supabase = await clienteServidor();
+  const { data } = await supabase
+    .from("roadmap_template_stages")
+    .select(
+      "id, tramo, name, objective, planned_months, roadmap_templates!inner(code), roadmap_template_milestones(id, title, success_criteria, expected_evidence, gates_investable, order_index, fundamental)",
+    )
+    .eq("roadmap_templates.code", "hoja_iwl")
+    .order("tramo");
+  return (data ?? []).map((e) => ({
+    id: e.id,
+    tramo: e.tramo as NumeroTramo,
+    nombre: e.name,
+    objetivo: e.objective,
+    meses: e.planned_months,
+    hitos: [...(e.roadmap_template_milestones ?? [])]
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((h) => ({
+        id: h.id,
+        titulo: h.title,
+        criterio: h.success_criteria,
+        evidencia: h.expected_evidence,
+        condicionaInvertible: h.gates_investable,
+      })),
+  }));
+}

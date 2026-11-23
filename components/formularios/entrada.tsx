@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  cambiarMentorPrincipal,
   confirmarSituacion,
   decidirIncorporacion,
   decirSituacion,
@@ -218,5 +219,66 @@ export function HorquillaEquity({ horquillas }: { horquillas: Partial<Horquillas
         </>
       )}
     </Formulario>
+  );
+}
+
+/**
+ * El mentor principal, en la decisión de incorporación (REVISION, 23 nov):
+ * el actual con un «Cambiar» al lado, para que dirección lo confirme a la
+ * vez que decide. El acuse es el nombre cambiado.
+ */
+export function MentorPrincipal({
+  companyId,
+  actual,
+  mentores,
+  puedeCambiar,
+}: {
+  companyId: string;
+  actual: { id: string; nombre: string } | null;
+  mentores: { id: string; nombre: string }[];
+  puedeCambiar: boolean;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <div className="flex flex-col gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="text-metadato">Mentor principal</span>
+        <span className="text-titular">{actual?.nombre ?? "Sin asignar"}</span>
+        {puedeCambiar && !abierto ? (
+          <button type="button" className="accion text-xs" onClick={() => setAbierto(true)}>
+            {actual ? "Cambiar" : "Asignar"}
+          </button>
+        ) : null}
+      </div>
+      {abierto ? (
+        <Formulario accion={cambiarMentorPrincipal} onOk={() => setAbierto(false)} className="gap-3">
+          {(r) => (
+            <>
+              <input type="hidden" name="company_id" value={companyId} />
+              <Campo
+                etiqueta="Quién"
+                ayuda="Lo que ya se hizo es de la compañía: el nuevo lo hereda tal cual"
+                error={r.ok ? undefined : r.campos?.mentor_id}
+              >
+                <Seleccion name="mentor_id" defaultValue={actual?.id ?? ""} required>
+                  <option value="">Elige…</option>
+                  {mentores.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nombre}
+                    </option>
+                  ))}
+                </Seleccion>
+              </Campo>
+              <div className="flex flex-wrap gap-2">
+                <Boton variante="secundario">Guardar</Boton>
+                <button type="button" className="accion text-xs" onClick={() => setAbierto(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </>
+          )}
+        </Formulario>
+      ) : null}
+    </div>
   );
 }

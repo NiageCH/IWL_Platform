@@ -14,6 +14,7 @@ import { resumenLista, type ItemLista, type ListaEntrada, type Seguimiento } fro
 import type { EstadoVisual } from "@/lib/estados";
 import {
   TRAMOS,
+  cuentaTramo,
   dondeEstamos,
   finDelPlazo,
   plazo,
@@ -99,7 +100,8 @@ export function ListaDeEntrada({
                       <span className="text-sm text-titular">{i.titulo}</span>
                       <Estado valor={e.valor} rotulo={e.rotulo} />
                     </div>
-                    {i.evidencia ? (
+                    {/* Quien contesta ve su archivo en el control, con «Cambiar»: aquí no se repite */}
+                    {i.evidencia && !(contesta && abierta && i.verificacion !== "verificado" && i.respuesta === "si") ? (
                       <p className="text-xs text-secundario">
                         Archivo:{" "}
                         {i.evidencia.url ? (
@@ -124,7 +126,9 @@ export function ListaDeEntrada({
                         companyId={companyId}
                         hitoId={i.hitoId}
                         respuesta={i.respuesta}
-                        actual={i.evidencia ? { ruta: i.evidencia.ruta, nombre: i.evidencia.nombre } : null}
+                        actual={
+                          i.evidencia ? { ruta: i.evidencia.ruta, nombre: i.evidencia.nombre, url: i.evidencia.url } : null
+                        }
                       />
                     ) : null}
                     {verifica && abierta && i.checkId && i.respuesta === "si" && !i.verificacion ? (
@@ -191,7 +195,7 @@ export function AsistenteHoja({
   const paso = pasoPedido && pasoPedido >= 1 && pasoPedido <= maximo ? pasoPedido : porDefecto;
   const aqui = `/cartera/${slug}/programa`;
   const irA = (n: number) => `${aqui}?paso=${n}#asistente-hoja`;
-  const cumplidos = seguimiento.tramos.flatMap((t) => t.hitos).filter((h) => h.alEntrar).length;
+  const cumplidos = seguimiento.tramos.reduce((n, t) => n + cuentaTramo(t.hitos).alEntrar, 0);
 
   // Lo que dice cada paso cuando ya se ha pasado por él
   const resumenes = [
@@ -367,16 +371,16 @@ function PasoAjustar({
         {seguimiento.tramos.map((t) => {
           const alEntrar = t.hitos.filter((h) => h.alEntrar);
           // Primero los que vienen de tramos anteriores, con su etiqueta; luego los del tramo
-          const pendientes = t.hitos
-            .filter((h) => !h.alEntrar)
-            .sort((a, b) => (a.deTramo ?? 9) - (b.deTramo ?? 9));
+          const pendientes = [...cuentaTramo(t.hitos).pendientes].sort(
+            (a, b) => (a.deTramo ?? 9) - (b.deTramo ?? 9) || (a.fecha ?? "").localeCompare(b.fecha ?? ""),
+          );
           return (
             <section key={t.id} className="rounded-md border border-filete" aria-label={`Tramo ${t.tramo}`}>
               <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-filete px-4 py-2.5">
                 <span className="font-medium text-titular">
                   Tramo {t.tramo} · {t.nombre}
                 </span>
-                <span className="cifra text-xs text-metadato">
+                <span className="text-xs text-metadato">
                   {t.inicio ? fecha(t.inicio) : "—"} a {t.fin ? fecha(t.fin) : "—"}
                 </span>
               </header>
@@ -400,21 +404,19 @@ function PasoAjustar({
                   <li
                     key={h.id}
                     data-hito={h.titulo}
-                    className="flex flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-start sm:justify-between"
+                    className="flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-2.5"
                   >
-                    <div className="flex min-w-0 flex-col gap-0.5">
+                    <div className="flex min-w-0 flex-1 basis-60 flex-col gap-0.5">
                       <span className="text-titular">{h.titulo}</span>
                       <span className="flex flex-wrap gap-x-2 text-xs text-metadato">
                         {h.deTramo ? <span>Pendiente del tramo {h.deTramo}</span> : null}
                         {h.fundamental ? <span>Fundamental</span> : <span>Propio</span>}
                       </span>
                     </div>
-                    <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                      <FechaHito id={h.id} slug={slug} actual={h.fecha} finPlazo={fin} esDireccion={esDireccion} />
-                      {!h.fundamental || esDireccion ? (
-                        <QuitarHito id={h.id} slug={slug} fundamental={h.fundamental} />
-                      ) : null}
-                    </div>
+                    <FechaHito id={h.id} slug={slug} actual={h.fecha} finPlazo={fin} esDireccion={esDireccion} />
+                    {!h.fundamental || esDireccion ? (
+                      <QuitarHito id={h.id} slug={slug} fundamental={h.fundamental} />
+                    ) : null}
                   </li>
                 ))}
               </ul>

@@ -112,7 +112,7 @@ export function DisenarHojaDeRuta({
               <Campo
                 etiqueta="Fecha de arranque"
                 error={!resultado.ok ? resultado.campos?.starts_on : undefined}
-                ayuda="Desde aquí se encadenan los plazos de cada etapa."
+                ayuda="Desde aquí se encadenan los plazos de cada tramo."
               >
                 <Texto type="date" name="starts_on" defaultValue={HOY()} required />
               </Campo>
@@ -156,7 +156,7 @@ function CamposEtapa({
       <Campo
         etiqueta="Objetivo"
         error={campo("objective")}
-        ayuda="Qué se persigue en este tramo. Sin objetivo, una etapa es solo un plazo."
+        ayuda="Qué se persigue en este tramo. Sin objetivo, un tramo es solo un plazo."
       >
         <AreaTexto
           name="objective"
@@ -227,7 +227,7 @@ export function NuevaEtapa({
 }) {
   return (
     <Bloque>
-      <Desplegable titulo="Añadir una etapa">
+      <Desplegable titulo="Añadir un tramo">
         <Formulario accion={crearEtapa}>
           {(resultado) => (
             <>
@@ -247,7 +247,7 @@ export function NuevaEtapa({
                 }}
               />
               <div>
-                <Boton>Añadir etapa</Boton>
+                <Boton>Añadir tramo</Boton>
               </div>
             </>
           )}
@@ -284,7 +284,7 @@ export function EditorEtapa({
         onClick={() => setAbierto(true)}
         className="accion text-xs text-secundario"
       >
-        Editar la etapa
+        Editar el tramo
       </button>
     );
   }
@@ -341,7 +341,7 @@ export function NuevoHito({
         onClick={() => setAbierto(true)}
         className="accion text-xs text-secundario"
       >
-        Añadir un hito a esta etapa
+        Añadir un hito a este tramo
       </button>
     );
   }
@@ -462,7 +462,7 @@ export function NuevoAvance({
               <AreaTexto
                 name="body"
                 rows={3}
-                placeholder="Lo que conviene recordar dentro de seis meses cuando se mire esta etapa."
+                placeholder="Lo que conviene recordar dentro de seis meses cuando se mire este tramo."
               />
             </Campo>
 
@@ -594,11 +594,11 @@ export function NuevaAportacion({
 
               {etapas.length > 0 ? (
                 <Campo
-                  etiqueta="Etapa de la hoja de ruta"
+                  etiqueta="Tramo de la hoja de ruta"
                   ayuda="Para poder ver qué se puso en cada tramo"
                 >
                   <Seleccion name="stage_id" defaultValue="">
-                    <option value="">Sin etapa</option>
+                    <option value="">Sin tramo</option>
                     {etapas.map((e) => (
                       <option key={e.id} value={e.id}>
                         {e.nombre}
@@ -655,7 +655,7 @@ export function BorrarEtapa({
         onClick={() => setAbierto(true)}
         className="accion accion-riesgo self-start text-xs"
       >
-        Borrar la etapa
+        Borrar el tramo
       </button>
     );
   }
@@ -671,8 +671,8 @@ export function BorrarEtapa({
             {hitos === 0
               ? "No tiene hitos."
               : hitos === 1
-                ? "Su hito no se borra: se queda sin etapa, en «Hitos ya acordados»."
-                : `Sus ${hitos} hitos no se borran: se quedan sin etapa, en «Hitos ya acordados».`}
+                ? "Su hito no se borra: se queda sin tramo, en «Hitos ya acordados»."
+                : `Sus ${hitos} hitos no se borran: se quedan sin tramo, en «Hitos ya acordados».`}
           </p>
           <div className="flex gap-2">
             <Boton>Borrar</Boton>
@@ -721,9 +721,9 @@ export function MoverHito({
             defaultValue={stageId ?? ""}
             onChange={(e) => e.currentTarget.form?.requestSubmit()}
             className="py-1 text-xs"
-            aria-label="Mover a otra etapa"
+            aria-label="Mover a otro tramo"
           >
-            <option value="">Sin etapa</option>
+            <option value="">Sin tramo</option>
             {etapas.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.nombre}

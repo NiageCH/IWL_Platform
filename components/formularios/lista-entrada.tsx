@@ -25,7 +25,7 @@ export function ContestarHito({
   hitoId: string;
   respuesta: "si" | "no" | null;
   /** El archivo que ya subió, si lo hay */
-  actual: { ruta: string; nombre: string } | null;
+  actual: { ruta: string; nombre: string; url: string | null } | null;
 }) {
   const [eleccion, setEleccion] = useState<"si" | "no" | null>(respuesta);
   const [estado, setEstado] = useState<"guardado" | null>(null);
@@ -79,9 +79,35 @@ export function ContestarHito({
 
       {eleccion === "si" ? (
         <div className="flex flex-col gap-1.5">
+          {/* Con archivo ya subido: su nombre y «Cambiar». Subir otro lo devuelve a «Por verificar» */}
+          {actual && respuesta === "si" ? (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              {actual.url ? (
+                <a href={actual.url} className="enlace text-acento-texto" target="_blank" rel="noreferrer">
+                  {actual.nombre}
+                </a>
+              ) : (
+                <span className="text-cuerpo">{actual.nombre}</span>
+              )}
+              <span aria-hidden="true" className="text-metadato">
+                ·
+              </span>
+              <SelectorArchivo
+                name="evidencia"
+                texto="Cambiar"
+                sinNombre
+                onElegir={(f, input) => {
+                  if (!f) return;
+                  guardar("si", f);
+                  input.value = "";
+                }}
+              />
+            </div>
+          ) : null}
+          {actual && respuesta === "si" ? null : (
           <SelectorArchivo
             name="evidencia"
-            texto={actual && respuesta === "si" ? "Cambiar el archivo" : "Subir el archivo"}
+            texto="Subir el archivo"
             onElegir={(f, input) => {
               if (!f) return;
               guardar("si", f);
@@ -89,6 +115,7 @@ export function ContestarHito({
               input.value = "";
             }}
           />
+          )}
           {faltaArchivo && !guardando ? (
             <p className="es-atencion texto-estado text-xs">
               Falta el archivo: sin él no se guarda. {textoLimite("evidencia")}
@@ -216,41 +243,72 @@ export function RehacerHoja({ companyId, slug }: { companyId: string; slug: stri
   );
 }
 
-/** Quitar un hito: uno propio, sin más; uno fundamental, solo dirección y con motivo */
+/**
+ * Quitar un hito, en la misma línea que su título (REVISION, 23 nov). Uno
+ * propio se quita al pulsar; uno fundamental abre el motivo debajo, a lo
+ * ancho de la fila, y solo lo ve dirección. Va dentro de una fila con
+ * `flex-wrap`: el panel ocupa la línea entera con `basis-full`.
+ */
 export function QuitarHito({ id, slug, fundamental }: { id: string; slug: string; fundamental: boolean }) {
-  return (
-    <Desplegable titulo="Quitar el hito">
-      <Formulario accion={quitarHito} className="gap-3 px-4 py-3">
-        {(r) => (
+  const [abierto, setAbierto] = useState(false);
+  if (!fundamental) {
+    return (
+      <Formulario accion={quitarHito} className="gap-1">
+        {() => (
           <>
             <input type="hidden" name="id" value={id} />
             <input type="hidden" name="slug" value={slug} />
-            {fundamental ? (
-              <Campo
-                etiqueta="Por qué se quita"
-                ayuda="Es un hito fundamental: solo lo quita dirección, y el motivo queda en el registro"
-                obligatorio
-                error={r.ok ? undefined : r.campos?.motivo}
-              >
-                <AreaTexto name="motivo" rows={2} required />
-              </Campo>
-            ) : (
-              <p className="text-xs text-secundario">Es un hito propio de esta hoja de ruta: se quita sin más.</p>
-            )}
-            <div>
-              <Boton variante="secundario">Quitar el hito</Boton>
-            </div>
+            <button className="accion accion-riesgo text-xs">Quitar</button>
           </>
         )}
       </Formulario>
-    </Desplegable>
+    );
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className="accion accion-riesgo text-xs"
+        aria-expanded={abierto}
+        onClick={() => setAbierto((a) => !a)}
+      >
+        Quitar
+      </button>
+      {abierto ? (
+        <div className="basis-full">
+          <Formulario accion={quitarHito} className="gap-3 rounded-md border border-filete bg-hundido px-3 py-3">
+            {(r) => (
+              <>
+                <input type="hidden" name="id" value={id} />
+                <input type="hidden" name="slug" value={slug} />
+                <Campo
+                  etiqueta="Por qué se quita"
+                  ayuda="Es un hito fundamental: el motivo queda en el registro"
+                  obligatorio
+                  error={r.ok ? undefined : r.campos?.motivo}
+                >
+                  <AreaTexto name="motivo" rows={2} required minLength={10} />
+                </Campo>
+                <div className="flex flex-wrap gap-2">
+                  <Boton variante="secundario">Quitar el hito</Boton>
+                  <button type="button" className="accion text-xs" onClick={() => setAbierto(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            )}
+          </Formulario>
+        </div>
+      ) : null}
+    </>
   );
 }
 
 /**
- * La fecha de un hito, al ajustar (REVISION, 23 nov). Si cae más allá del
- * plazo del programa lo avisa antes de guardar; la base solo la acepta de
- * dirección.
+ * La fecha de un hito (REVISION, 23 nov). Si cae más allá del plazo del
+ * programa lo avisa antes de guardar; la base solo la acepta de dirección.
+ * Con el Acuerdo firmado, la de un hito fundamental pide motivo, que queda
+ * en el registro.
  */
 export function FechaHito({
   id,
@@ -258,18 +316,21 @@ export function FechaHito({
   actual,
   finPlazo,
   esDireccion,
+  pideMotivo = false,
 }: {
   id: string;
   slug: string;
   actual: string | null;
   finPlazo: string | null;
   esDireccion: boolean;
+  pideMotivo?: boolean;
 }) {
   const [valor, setValor] = useState(actual ?? "");
   const fuera = Boolean(finPlazo && valor && valor > finPlazo);
+  const cambiada = valor !== (actual ?? "");
   return (
     <Formulario accion={fecharHito} className="gap-1.5">
-      {() => (
+      {(r) => (
         <>
           <input type="hidden" name="id" value={id} />
           <input type="hidden" name="slug" value={slug} />
@@ -285,14 +346,24 @@ export function FechaHito({
               onChange={(e) => setValor(e.currentTarget.value)}
               className="w-40 py-1 text-xs"
             />
-            {valor !== (actual ?? "") ? (
+            {cambiada ? (
               <Boton variante="secundario" className="px-3 py-1 text-xs" disabled={fuera && !esDireccion}>
-                Cambiar la fecha
+                Cambiar
               </Boton>
             ) : null}
           </div>
+          {cambiada && pideMotivo ? (
+            <Campo
+              etiqueta="Por qué cambia"
+              ayuda="El Acuerdo está firmado: queda en el registro"
+              obligatorio
+              error={r.ok ? undefined : r.campos?.motivo}
+            >
+              <AreaTexto name="motivo" rows={2} required minLength={10} />
+            </Campo>
+          ) : null}
           {fuera ? (
-            <p className="es-atencion texto-estado text-xs">
+            <p className="es-atencion texto-estado max-w-64 text-xs">
               Fuera del plazo del programa: acaba el {fecha(finPlazo)}.{" "}
               {esDireccion ? "Como dirección, puedes guardarla igual." : "Solo dirección puede guardarla."}
             </p>

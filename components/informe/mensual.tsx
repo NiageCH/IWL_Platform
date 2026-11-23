@@ -85,7 +85,7 @@ export async function InformeMensual({
         datos={[
           { etiqueta: "Etapa", valor: etapa(compania.stage) },
           {
-            etiqueta: "Etapa del plan",
+            etiqueta: "Tramo de la hoja de ruta",
             valor: ruta.etapaActual?.nombre ?? "Sin hoja de ruta",
           },
           {
@@ -249,7 +249,7 @@ export async function InformeMensual({
           titulo="Hitos"
           descripcion="Los hitos que vencían o se cerraron en el periodo. Los que condicionan el estado invertible van marcados: son los que bloquean una ronda mientras sigan abiertos."
         >
-          <Tabla cabeceras={["Hito", "Etapa", "Fecha", "Estado"]}>
+          <Tabla cabeceras={["Hito", "Tramo", "Fecha", "Estado"]}>
             {mes.hitos.map((h) => (
               <tr key={`${h.titulo}-${h.fecha}`}>
                 <Celda>
@@ -260,7 +260,7 @@ export async function InformeMensual({
                     </span>
                   ) : null}
                 </Celda>
-                <Celda>{h.etapa ?? "Sin etapa"}</Celda>
+                <Celda>{h.etapa ?? "Sin tramo"}</Celda>
                 <Celda>{h.fecha ? fecha(h.fecha) : "Sin fecha"}</Celda>
                 <Celda>{ESTADOS_HITO[h.estado] ?? h.estado}</Celda>
               </tr>

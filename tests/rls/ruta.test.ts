@@ -237,6 +237,19 @@ describe("la hoja de ruta en cuatro tramos", () => {
     expect((await fundadoraVega.rpc("verificar_lista_entrada", { p_check: check!.id, p_verificado: true })).error).not.toBeNull();
     // «No basta» pide comentario
     expect((await equipoIwl.rpc("verificar_lista_entrada", { p_check: check!.id, p_verificado: false })).error?.message).toMatch(/por qué no basta/);
+    // «No basta», y ella sube otro: vuelve a «por verificar»
+    expect(
+      (await equipoIwl.rpc("verificar_lista_entrada", { p_check: check!.id, p_verificado: false, p_comentario: "Faltan entrevistas." })).error,
+    ).toBeNull();
+    await fundadoraVega.rpc("responder_lista_entrada", {
+      p_company: COMPANIAS.vega,
+      p_hito: uno,
+      p_respuesta: "si",
+      p_ruta: `${COMPANIAS.vega}/evidencia/entrevistas-2.pdf`,
+      p_nombre: "entrevistas-2.pdf",
+    });
+    const { data: otraVez } = await servicio.from("entry_checks").select("verification, review_comment").eq("id", check!.id).single();
+    expect(otraVez).toEqual({ verification: null, review_comment: null });
     expect((await equipoIwl.rpc("verificar_lista_entrada", { p_check: check!.id, p_verificado: true })).error).toBeNull();
   });
 
@@ -449,6 +462,132 @@ describe("la hoja de ruta en cuatro tramos", () => {
       expect(c).toEqual({ tramo: "incubacion", archived_at: null });
     } finally {
       await servicio.from("avisos").delete().eq("tipo", "plazo_vencido");
+    }
+  });
+});
+
+describe("la hoja de ruta, segunda parte (REVISION, 23 nov)", () => {
+  async function limpiarVega() {
+    await servicio.from("milestones").delete().eq("company_id", COMPANIAS.vega).not("stage_id", "is", null);
+    await servicio.from("roadmap_stages").delete().eq("company_id", COMPANIAS.vega);
+    await servicio.from("entry_checks").delete().eq("company_id", COMPANIAS.vega);
+  }
+
+  it("las fechas se reparten a lo largo de cada tramo, y el último hito cae en su fin", async () => {
+    await limpiarVega();
+    try {
+      expect((await equipoIwl.rpc("generar_hoja_de_ruta", { p_company: COMPANIAS.vega, p_inicio: "2026-02-02" })).error).toBeNull();
+      const { data: tramo } = await servicio
+        .from("roadmap_stages")
+        .select("starts_on, ends_on, milestones(due_date)")
+        .eq("company_id", COMPANIAS.vega)
+        .eq("tramo", 1)
+        .single();
+      const fechas = (tramo!.milestones as Array<{ due_date: string }>).map((m) => m.due_date).sort();
+      expect(new Set(fechas).size).toBe(fechas.length);
+      expect(fechas[0] > tramo!.starts_on!).toBe(true);
+      expect(fechas.at(-1)).toBe(tramo!.ends_on);
+    } finally {
+      await limpiarVega();
+    }
+  });
+
+  it("tras la firma, un fundamental lo cambia solo dirección y con motivo; uno propio, quien coordina", async () => {
+    const { data: fundamental } = await servicio
+      .from("milestones")
+      .select("id, due_date")
+      .eq("company_id", COMPANIAS.marea)
+      .eq("fundamental", true)
+      .neq("status", "cumplido")
+      .not("due_date", "is", null)
+      .limit(1)
+      .single();
+    const mentor = await entrarComo(USUARIOS.mentorProducto);
+    let propio: string | null = null;
+    try {
+      // Ni el equipo, ni el mentor que coordina
+      expect((await equipoIwl.rpc("fechar_hito", { p_hito: fundamental!.id, p_fecha: "2026-12-20", p_motivo: "Se retrasa el piloto." })).error?.message).toMatch(
+        /solo dirección, con motivo/,
+      );
+      expect((await mentor.rpc("fechar_hito", { p_hito: fundamental!.id, p_fecha: "2026-12-20", p_motivo: "Se retrasa el piloto." })).error).not.toBeNull();
+      // Dirección, sin motivo, tampoco
+      expect((await admin.rpc("fechar_hito", { p_hito: fundamental!.id, p_fecha: "2026-12-20" })).error?.message).toMatch(/por qué cambia/);
+      expect((await admin.rpc("fechar_hito", { p_hito: fundamental!.id, p_fecha: "2026-12-20", p_motivo: "El piloto empieza en diciembre." })).error).toBeNull();
+      const { data: registro } = await servicio
+        .from("activity_log")
+        .select("detail")
+        .eq("entity_id", fundamental!.id)
+        .eq("action", "hito_fundamental_cambiado")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      expect(registro!.detail).toMatchObject({ fecha_despues: "2026-12-20", motivo: "El piloto empieza en diciembre." });
+
+      // Uno propio: lo añade y lo cambia el mentor que coordina; ella no
+      const { data: etapa } = await servicio.from("roadmap_stages").select("id").eq("company_id", COMPANIAS.marea).eq("tramo", 4).single();
+      expect(
+        (await fundadoraMarea.from("milestones").insert({ company_id: COMPANIAS.marea, stage_id: etapa!.id, title: "Mío", success_criteria: "Algo comprobable", origin: "acordado" })).error,
+      ).not.toBeNull();
+      const { data: nuevo, error } = await mentor
+        .from("milestones")
+        .insert({ company_id: COMPANIAS.marea, stage_id: etapa!.id, title: "Hito propio tras la firma", success_criteria: "Algo comprobable", origin: "acordado" })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+      propio = nuevo!.id;
+      expect((await mentor.rpc("fechar_hito", { p_hito: propio, p_fecha: "2026-12-15" })).error).toBeNull();
+      const { data: acciones } = await servicio.from("activity_log").select("action").eq("entity_id", propio);
+      expect(new Set(acciones!.map((a) => a.action))).toEqual(new Set(["hito_propio_anadido", "hito_propio_cambiado"]));
+    } finally {
+      await servicio.from("milestones").update({ due_date: fundamental!.due_date }).eq("id", fundamental!.id);
+      await servicio.from("activity_log").delete().eq("entity_id", fundamental!.id).eq("action", "hito_fundamental_cambiado");
+      if (propio) {
+        await servicio.from("milestones").delete().eq("id", propio);
+        await servicio.from("activity_log").delete().eq("entity_id", propio);
+      }
+    }
+  });
+
+  it("la copia del Anexo lleva la sección I", async () => {
+    const { data: copia } = await servicio
+      .from("anexo_versiones")
+      .select("contenido")
+      .eq("company_id", COMPANIAS.raiz)
+      .eq("momento", "firmado")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    const c = copia!.contenido as { plazo_meses: number; hoja_de_ruta: Array<{ tramo: number; hitos: unknown[] }> };
+    expect(c.plazo_meses).toBe(5);
+    expect(c.hoja_de_ruta.map((t) => t.tramo)).toEqual([4]);
+    expect(c.hoja_de_ruta[0].hitos.length).toBeGreaterThan(0);
+  });
+
+  it("en entrada, el mentor que coordina ve lo que presentó ella y el comité; nadie más fuera de IWL", async () => {
+    const { data: mentorId } = await servicio.from("profiles").select("id").eq("email", USUARIOS.mentorComercial).single();
+    const { data: antes } = await servicio.from("companies").select("tramo").eq("id", COMPANIAS.vega).single();
+    const mentor = await entrarComo(USUARIOS.mentorComercial);
+    try {
+      // Sin ser quien coordina, no
+      expect((await mentor.rpc("ficha_entrada", { p_company: COMPANIAS.vega })).error).not.toBeNull();
+      expect((await fundadoraVega.rpc("ficha_entrada", { p_company: COMPANIAS.vega })).error).not.toBeNull();
+
+      // Cambiarlo es de dirección
+      expect((await equipoIwl.rpc("cambiar_mentor_principal", { p_company: COMPANIAS.vega, p_mentor: mentorId!.id })).error).not.toBeNull();
+      expect((await admin.rpc("cambiar_mentor_principal", { p_company: COMPANIAS.vega, p_mentor: mentorId!.id })).error).toBeNull();
+
+      await servicio.from("companies").update({ tramo: "entrada" }).eq("id", COMPANIAS.vega);
+      const { data: ficha, error } = await mentor.rpc("ficha_entrada", { p_company: COMPANIAS.vega });
+      expect(error).toBeNull();
+      // Lo de la candidatura que presentó ella, sin notas ni deliberación
+      if (ficha) {
+        expect(Object.keys(ficha as object)).not.toContain("notas");
+        expect(Object.keys(ficha as object)).not.toContain("resumen");
+      }
+    } finally {
+      await servicio.from("companies").update({ tramo: antes!.tramo }).eq("id", COMPANIAS.vega);
+      await servicio.from("company_members").delete().eq("company_id", COMPANIAS.vega).eq("member_role", "mentor_principal");
+      await servicio.from("activity_log").delete().eq("company_id", COMPANIAS.vega).eq("action", "mentor_principal_cambiado");
     }
   });
 });
