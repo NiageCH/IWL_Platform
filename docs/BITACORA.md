@@ -7,6 +7,38 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Administración → Hoja de ruta, que no parezca un Word · commit aa75327
+
+**Qué cambió**
+- Arriba, los cuatro tramos en tarjetas: número grande, nombre, meses e hitos. Pulsar una baja a su tramo.
+- La explicación queda en una línea; el resto, plegado en «Cómo funciona».
+- Cada tramo es una tarjeta con su cabecera, chips de meses y de hitos, y «Añadir hito» como único botón principal, relleno y con el color de la marca.
+- Cada hito es una fila: número de orden, título en negrita, criterio en una línea gris (recortado) y el chip «Evidencia» si la tiene. A la derecha, el menú «⋯» con Editar, Subir, Bajar y Retirar.
+- Retirar va en rojo y pide confirmación en la propia fila. Los retirados quedan plegados al final del tramo, con el chip «Retirado» y «Recuperar».
+- Editar y añadir se abren en el panel lateral, con «Guardar» y «Cancelar».
+- Ya no quedan formularios en línea, botones sueltos ni enlaces de texto haciendo de botón.
+- Capturas de antes y después, en escritorio y en móvil, más el menú abierto y el panel, en `docs/constancia/admin-hoja-*.png`.
+
+**Qué decidí yo**
+- Usé `MenuAcciones`, `PanelLateral` (es su primer uso), `.pastilla`, `.tarjeta` y `boton-marca`, sin estilos nuevos.
+- A `MenuAcciones` le añadí acciones que se hacen en la propia página y un disparador que es solo «⋯», con nombre para lectores de pantalla.
+- Lo destructivo de esas acciones va en rojo desde el principio. El enlace «Archivar o dar de baja» de la cabecera de una compañía sigue como estaba, para no tocar otra pantalla.
+- La cabecera de cada tramo pasa a dos líneas cuando no cabe: en el móvil el título se quedaba en una columna estrecha.
+- Cuando el criterio solo repite el título no lo enseño en la fila. Pasa con casi todos los de la semilla; entero sigue en el panel.
+- En el móvil, el menú general de arriba de la página sale cortado («rtera», «bundo»). Ya pasaba antes del cambio y es del menú general, así que no lo he tocado. Lo señalo por si quieres que lo mire.
+
+**Qué necesito que decidas**
+1. ¿Apruebas las capturas? Si es que sí, aplico el mismo criterio a la pestaña Hoja de ruta de cada compañía.
+
+**Estado**
+- Unitarias 340; RLS 354, dos veces; interfaz 478, dos veces, con 4 saltadas; tsc y lint limpios.
+- Sin desplegar, a la espera de tu visto bueno. El arreglo de la guía (1e20210) sí se puede desplegar ya, por separado.
+
+**Siguiente**
+- Tu revisión de las capturas.
+
+---
+
 ## 2026-11-23 · Urgente: la guía de dirección salía vacía en producción · commit 1e20210
 
 **Qué cambió**
