@@ -7,6 +7,40 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Urgente: la guía de dirección salía vacía en producción · commit 1e20210
+
+**Qué cambió**
+- **La guía ya no se lee del disco.** Al compilar, `scripts/guia-generar.mjs` mete los siete Markdown en `lib/guia-textos.generado.ts`; corre en `prebuild` y en `predev`. Para cambiar la guía basta, como antes, con corregir el Markdown y desplegar.
+- **Ya no hay `catch` silencioso.** Si un rol debería tener guía y no se carga, la pantalla dice «No hemos podido cargar la guía» y queda un error en el registro del servidor. «Tu papel no tiene guía» sale solo cuando el rol de verdad no la tiene.
+- **Sin guía para un rol, no se ofrece:** ni la franja «¿Es tu primera vez?» ni la entrada por `/` la proponen.
+- **Pruebas nuevas:**
+  - una de interfaz sobre la compilación de producción: cada uno de los siete roles abre /guia y ve el título de su guía;
+  - una unitaria que falla si el módulo generado no coincide con los Markdown.
+- Quité de `next.config.ts` la inclusión de `contenido/guia`, que ya no hace falta.
+
+**Qué decidí yo**
+- **La causa no está confirmada.** En una compilación local los Markdown sí entraban en el paquete de `/guia`, así que no he podido reproducir el fallo. La otra posibilidad era tu rol. No pude consultarlo en producción: el control de permisos me paró la consulta a la base de la nube. El arreglo quita la dependencia del disco sea cual sea la causa. Si después de desplegar sigues viendo «Tu papel no tiene guía», la causa es el rol: compruébalo en el SQL de Supabase con `select role from profiles where email = '<tu correo>';`, que debe dar `admin_iwl`.
+- El módulo generado se versiona, para que tsc y las pruebas lo tengan sin compilar.
+
+**Lecturas del disco en tiempo de ejecución revisadas**
+- `lib/datos/guia.ts`: era la de la guía. Ya no lee del disco.
+- `lib/pdf.ts`: las fuentes del PDF (NDA, actas, Anexo, informes). Siguen leyéndose del disco, porque meter 1,5 MB de fuentes en el código no compensa. Viajan por `outputFileTracingIncludes` en todas las rutas, y si faltan el PDF falla con error, no en silencio. Lo comprueba el punto 4 de tu lista después de desplegar, el PDF del NDA.
+- No hay ninguna otra: busqué `node:fs`, `readFile` y `process.cwd()` en `app`, `lib` y `components`. Las plantillas del NDA y de los correos están en la base o en el código.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Unitarias 340; RLS 354, dos veces; tsc y lint limpios.
+- Interfaz: 478, dos veces seguidas, con 4 saltadas y 8 minutos por pasada.
+- Antes, dos verificaciones fallaron por tiempo agotado en pruebas sin relación con la guía, con pasadas de 1,1 y 2,6 horas. La causa era el servicio de registros de la base local (analytics), que gastaba más del 120 % de CPU y arrastraba a la base. Reinicié solo ese contenedor y la verificación salió limpia.
+- Sin migración. Para desplegarlo: `git merge --ff-only worktree-limpiar-cuentas-nube`, `git push`, `npx vercel --prod`.
+
+**Siguiente**
+- El rediseño de Administración → Hoja de ruta, con capturas de antes y después.
+
+---
+
 ## 2026-11-23 · Reabrir, cerradas en la base, hitos fundamentales y la prueba del estadio · commit 0d81436
 
 **Qué cambió**
