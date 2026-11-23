@@ -7,6 +7,34 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Reabrir, cerradas en la base, hitos fundamentales y la prueba del estadio · commit 0d81436
+
+**Qué cambió**
+- **Reabrir:** en Administración → Histórico, cada compañía cerrada tiene «Reabrir la compañía», con motivo. Es solo de dirección. Vuelve a la cartera como estaba, con su hoja de ruta, su equipo y sus accesos. Los avisos que se cerraron no se reabren. Queda en el registro con el motivo y lo que fue el cierre.
+- **Cerrada, solo dirección, en la base:** una política restrictiva en cada tabla que cuelga de una compañía o de su candidatura (Anexos, decisiones, candidaturas, actas, NDA, correos, avisos…) y en el almacén de candidaturas. Se suma a las de antes, así que no se ha reescrito ninguna. Hay una prueba RLS por tabla: 21 tablas y el archivo.
+- **Hitos fundamentales en Administración → Hoja de ruta:** «Añadir un hito a este tramo», «Subir» y «Bajar», «Retirar» y, en los retirados, «Volver a usarlo». Retirar no borra: deja de salir en la lista de entrada y en las hojas nuevas. Las hojas que ya existen y las firmadas no cambian.
+- **La prueba del estadio:** en la ficha de entrada, su nombre es un enlace y el mentor la abre.
+- Guías de dirección y de mentor, `docs/AVISOS.md` y `DECISIONES.md`, al día.
+
+**Qué decidí yo**
+- Al reabrir, si la compañía ya estaba archivada antes de cerrarla, sigue archivada. Solo se quita el archivo que puso el cierre.
+- Quitar el cierre a mano sigue fallando, también con la clave de servicio. Solo lo hace la función de reabrir.
+- La política se pone recorriendo las tablas con `company_id`. Una tabla nueva necesita volver a correr ese bloque o una política igual a mano. Está en `DECISIONES.md`.
+- Un hito nuevo es siempre fundamental y va al final de su tramo.
+- El mentor ya podía leer el archivo por la política del almacén. Lo que faltaba era el enlace.
+
+**Qué necesito que decidas**
+- Nada nuevo.
+
+**Estado**
+- Verificado sobre este commit: unitarias 339; RLS 354, dos veces; interfaz 464, dos veces, con 4 saltadas; tsc y lint limpios.
+- Sin desplegar. Va todo junto: bloques 1 a 9, modo pruebas y estos cuatro puntos. Son 16 migraciones, de `20261121100000` a `20261126100000`.
+
+**Siguiente**
+- El despliegue conjunto y la comprobación en producción.
+
+---
+
 ## 2026-11-23 · Bloque 9: la guía y los avisos · commit 093591a
 **Qué cambió**
 - Las siete guías de `contenido/guia/`, al día con el modelo nuevo:
