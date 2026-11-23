@@ -7,6 +7,48 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-23 · Bloque 5, segunda parte · commit 3435a79
+**Qué cambió**
+- Los cuatro retoques:
+  1. Las fechas se reparten a lo largo de cada tramo, en el orden de la lista. El último hito cae en el fin del tramo.
+  2. Cada fila de «Ajustar» va en una línea: título, fecha y «Quitar». En un hito fundamental, «Quitar» abre el motivo debajo. «Etapa» pasa a «tramo» en todo lo que es hoja de ruta. El rango de fechas del tramo va en letra normal.
+  3. Con archivo ya subido, la lista dice «Evidencia 1.2.pdf · Cambiar». Si sube otro tras un «No basta», vuelve a «Por verificar»; ahora hay una prueba que lo comprueba.
+  4. El asistente y el seguimiento cuentan con la misma función (`cuentaTramo`). El 6 y el 9 de las capturas eran dos compañías distintas: Cardo y Raíz.
+- Tus dos respuestas:
+  - el mentor que coordina ve una ficha de entrada recortada (lo que presentó ella y el resultado del comité con el estadio);
+  - la decisión de incorporación enseña el mentor principal con «Cambiar», que es solo de dirección.
+- Las tres piezas que faltaban:
+  - tras la firma, un hito fundamental lo cambia solo dirección, con motivo, y uno propio quien coordina; todo queda en el registro, con el antes y el después;
+  - la sección I va en la copia del Anexo, y el Anexo sale en PDF desde Programa («Descargar el Anexo en PDF»), congelado al firmar;
+  - los textos de los hitos se editan en Administración → Hoja de ruta, que sustituye a «Recorridos».
+- Arreglo de una prueba: la de aportación sin Anexo borraba el Anexo firmado de Raíz antes de empezar, y dejaba sin Anexo a las pruebas posteriores. Ahora crea su propia condición en Vega y la deshace al acabar.
+
+**Qué decidí yo**
+- «Etapa» se queda donde significa otra cosa: la etapa de inversión de la compañía (pre-semilla, semilla, serie A), contra la que se mide el score técnico. Los nombres internos tampoco cambian.
+- Tras la firma, cuenta como cambio de un hito su título, su criterio, su fecha o su tramo. El estado no, que es el trabajo de cada día.
+- El Anexo en PDF no se guarda en Storage: se genera al pedirlo, con la sesión de quien lo pide. Si el Anexo está propuesto o firmado, sale de la copia de la base; si es borrador, de lo que hay hoy.
+- En Administración solo se editan los textos de los hitos. Añadir o quitar hitos fundamentales del programa no se pidió. Los recorridos de antes, inactivos, ya no se enseñan.
+- De la prueba del estadio, el mentor ve el nombre del archivo, no el archivo: abrirlo pediría darle acceso al almacén de candidaturas.
+- Lo cumplido al entrar se queda sin fecha prevista: no hay nada que cumplir.
+- Cambiar el mentor principal sustituye al que hubiera. Si había dos principales (pasa en la semilla local), quedan en uno.
+
+**Qué necesito que decidas**
+1. ¿Quieres poder añadir o quitar hitos fundamentales del programa desde Administración, o basta con editar sus textos?
+2. ¿El mentor debe poder abrir el archivo de la prueba del estadio, o le basta con el nombre?
+
+**Estado**
+- Unitarias: 339.
+- RLS: 298, dos veces.
+- Interfaz: 460 dos veces, con 4 saltadas.
+- tsc y lint limpios.
+- Sin desplegar, como pediste. Hay tres migraciones pendientes: `20261123100000`, `20261123110000` y `20261124100000`.
+- El modo pruebas del correo **está hecho pero no desplegado**: commit 9c026aa, migración `20261122100000`. Va con el despliegue conjunto, así que no hace falta adelantarlo salvo que quieras probar correos en la nube antes.
+
+**Siguiente**
+- Bloque 8: cierre (Graduada o Finalizada) e Histórico.
+
+---
+
 ## 2026-11-23 · Bloque 5: la hoja de ruta en cuatro tramos y los diez arreglos · commit e95647e, 57f6277
 **Qué cambió**
 - e95647e, primera parte. Una sola hoja de ruta en cuatro tramos con sus hitos fundamentales. La lista de entrada («Diagnóstico» / «Lo que ya tenéis») sale de ahí. Lleva el asistente, el seguimiento, el cierre de tramo con avisos y el aviso de plazo vencido.
