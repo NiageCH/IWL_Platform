@@ -95,18 +95,20 @@ test("el semáforo y las severidades llevan texto, no solo color", async ({ page
   await expect(page.getByText("Crítico").first()).toBeVisible();
 });
 
-test("un hallazgo crítico abierto impide el estado invertible", async ({ page }) => {
+test("un hallazgo crítico abierto sale como paso recomendado, y no decide invertible", async ({ page }) => {
+  /*
+   * Fue «impide el estado invertible». Desde el 23 nov, invertible son los
+   * hitos marcados validados y graduarla (REVISION, 24 nov): el hallazgo
+   * crítico se queda como señal, «Recomendado», y el estado no dice «No».
+   */
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera/vega-predictiva");
 
-  // La cifra de la cabecera: etiqueta «Invertible» y su valor
-  const invertible = page
-    .locator("div", { has: page.getByText("Invertible", { exact: true }) })
-    .last();
-  await expect(invertible).toContainText("No");
+  const invertible = page.getByText("Invertible", { exact: true }).locator("xpath=..");
+  await expect(invertible).not.toContainText("No");
 
-  await expect(
-    page.getByText(/Resolver el hallazgo crítico/).first(),
-  ).toBeVisible();
+  const paso = page.locator("li", { hasText: /Resolver el hallazgo crítico/ }).first();
+  await expect(paso).toBeVisible();
+  await expect(paso.getByText("Recomendado")).toBeVisible();
 });
 
 test("el score técnico se lee contra el objetivo de la etapa", async ({ page }) => {

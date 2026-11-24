@@ -80,7 +80,7 @@ test("pero sale de la comparativa", async ({ page }) => {
   }
 });
 
-test("y sale del embudo hacia invertible", async ({ page }) => {
+test("y sale del reparto por bandas de preparación", async ({ page }) => {
   const restaurar = await fijarDemo(COMPANIAS.marea, false);
 
   try {
@@ -91,7 +91,8 @@ test("y sale del embudo hacia invertible", async ({ page }) => {
      * por el nombre y no por un total: un total baja también si se cae otra
      * cosa, y entonces la prueba pasaría por el motivo equivocado.
      */
-    const embudo = page.locator("section", { hasText: "Camino a invertible" }).first();
+    // Se llamaba «Camino a invertible»; es una señal de preparación (REVISION, 24 nov)
+    const embudo = page.locator("section", { hasText: "Preparación de la cohorte" }).first();
     await expect(embudo.getByRole("link", { name: "Marea Clínica" })).toBeVisible();
 
     await actualizar("companies", { id: `eq.${COMPANIAS.marea}` }, { is_demo: true });
