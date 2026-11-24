@@ -26,7 +26,7 @@ export async function leerCartera() {
 
   const { data: filas } = await supabase
     .from("companies")
-    .select("slug, cohorts ( name, investable_target )")
+    .select("slug, cohort_id, cohorts ( name, investable_target )")
     /*
      * Las archivadas no salen en la cartera.
      *
@@ -59,6 +59,15 @@ export async function leerCartera() {
     }));
 
   const cohorte = filas?.[0]?.cohorts ?? null;
+  /*
+   * Invertibles: las graduadas de la cohorte (REVISION, 24 nov). Graduadas
+   * están cerradas y fuera de esta lista, así que la cuenta la da la base.
+   */
+  const cohortId = filas?.[0]?.cohort_id ?? null;
+  const { data: graduadas } = cohortId
+    ? await supabase.rpc("invertibles_de_cohorte", { p_cohort: cohortId })
+    : { data: null };
+  const invertibles = typeof graduadas === "number" ? graduadas : 0;
 
   /*
    * Lo que se enseña y lo que cuenta no son la misma lista.
@@ -141,11 +150,13 @@ export async function leerCartera() {
         };
       })
       .filter((c) => c.slug !== ""),
+    invertibles,
     lectura: lecturaDeCohorte(
       reales,
       movimientos,
       mapa,
       cohorte?.investable_target ?? null,
+      invertibles,
     ),
   };
 }

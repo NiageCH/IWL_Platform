@@ -26,13 +26,12 @@ export function Embudo({
       <TituloBloque
         accion={
           <Metadato>
-            {objetivo
-              ? `Objetivo de cohorte: ${objetivo} invertibles`
-              : "Sin objetivo fijado"}
+            {/* Una señal: invertible ya no sale del score, sino de graduarse (REVISION, 24 nov) */}
+            {objetivo ? `Señal, no decide · objetivo de cohorte: ${objetivo} invertibles` : "Señal, no decide"}
           </Metadato>
         }
       >
-        Camino a invertible
+        Preparación de la cohorte
       </TituloBloque>
 
       {total === 0 ? (

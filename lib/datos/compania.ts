@@ -4,6 +4,7 @@ import { calcularScorePreparacion } from "@/lib/scoring/score-preparacion";
 import {
   UMBRALES_INVERTIBLE,
   calcularSemaforo,
+  estadoInvertible,
   evaluarInvertible,
 } from "@/lib/scoring/invertible";
 import { calcularDerivados } from "@/lib/scoring/kpi-derivados";
@@ -38,7 +39,7 @@ export async function leerCompania(slug: string) {
       `id, name, slug, sector, one_liner, stage, tech_profile, entry_state,
        female_leadership_pct, founded_on, website, logo_path, is_demo,
        situacion_societaria, constitucion_prevista, forma_juridica, denominacion_social, cif,
-       tramo, situacion_confirmada_at, archived_at, archive_reason,
+       tramo, situacion_confirmada_at, archived_at, archive_reason, cierre,
        annexes ( status ),
        cohorts ( name )`,
     )
@@ -84,7 +85,10 @@ export async function leerCompania(slug: string) {
     hallazgos,
     kpis,
     semaforo: calcularSemaforo(entrada, umbrales),
+    // Las señales de antes: lo que falta, con los hitos marcados como de invertible y lo demás recomendado
     invertible: evaluarInvertible(entrada, umbrales),
+    // Invertible de verdad, con la regla del 23 nov: graduada, o cuántos hitos marcados lleva (REVISION, 24 nov)
+    estadoInvertible: estadoInvertible({ graduada: compania.cierre === "graduada", hitos }),
   };
 }
 

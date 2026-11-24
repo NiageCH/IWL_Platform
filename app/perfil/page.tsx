@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { Marco } from "@/components/marco";
-import { BarraSuperior } from "@/components/barra-superior";
+import { MarcoDeRol } from "@/components/marco-con-menu";
 import { CambiarContrasena, MisDatos, ResumenAvisos } from "@/components/formularios/perfil";
 import { MiFoto } from "@/components/formularios/foto";
 import { firmarFotos } from "@/lib/datos/logos";
@@ -34,8 +33,8 @@ export default async function Perfil() {
     : null;
 
   return (
-    <Marco tema="claro">
-      <BarraSuperior />
+    // Se llega desde el menú: dentro del marco de su rol (REVISION, 24 nov)
+    <MarcoDeRol>
 
       <main className="mx-auto w-full max-w-2xl px-6 py-8">
         <div className="relative mb-6 pl-4">
@@ -108,6 +107,6 @@ export default async function Perfil() {
           </div>
         </Bloque>
       </main>
-    </Marco>
+    </MarcoDeRol>
   );
 }

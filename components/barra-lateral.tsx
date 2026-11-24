@@ -68,7 +68,7 @@ export async function BarraLateral() {
     : null;
 
   return (
-    <Oscuro className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-filete bg-lienzo text-cuerpo md:flex">
+    <Oscuro className="barra-lateral sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-filete bg-lienzo text-cuerpo md:flex">
       {/* La marca: la W en su cuadro y el nombre en la tipografía expandida */}
       <Link
         href="/"

@@ -98,6 +98,7 @@ export default async function Cartera() {
     radares,
     runway,
     compromisos,
+    invertibles,
   } = await leerCartera();
 
   /*
@@ -149,7 +150,6 @@ export default async function Cartera() {
     );
   }
 
-  const invertibles = companias.filter((c) => c.invertible.invertible).length;
   const conCriticos = companias.filter((c) =>
     c.hallazgos.some((h) => h.severidad === "critico"),
   ).length;
@@ -189,11 +189,12 @@ export default async function Cartera() {
             icono={Target}
             tono="acento"
             etiqueta="Invertibles"
-            valor={`${invertibles} de ${companias.length}`}
+            // Las graduadas de la cohorte: invertible desde el 23 nov (REVISION, 24 nov)
+            valor={String(invertibles)}
             nota={
               cohorte?.investable_target
-                ? `Objetivo de cohorte: ${cohorte.investable_target}`
-                : "Sin objetivo fijado"
+                ? `Graduadas · objetivo de cohorte: ${cohorte.investable_target}`
+                : "Graduadas · sin objetivo fijado"
             }
           />
         </Bloque>
@@ -452,19 +453,24 @@ export default async function Cartera() {
                     {c.compania.name}
                   </Link>
 
+                  {/*
+                    Invertible, con la regla del 23 nov: los hitos marcados que
+                    lleva validados. Con todos, está lista para graduar.
+                  */}
                   <span
                     className={cn(
-                      "pastilla shrink-0",
-                      c.invertible.invertible
+                      "pastilla shrink-0 tabular-nums",
+                      c.estadoInvertible.marcados > 0 && c.estadoInvertible.validados === c.estadoInvertible.marcados
                         ? "[--tono:var(--color-bien)]"
                         : "[--tono:var(--color-metadato)]",
                     )}
+                    title="Hitos que condicionan invertible, validados"
                   >
-                    {c.invertible.invertible
-                      ? "Invertible"
-                      : c.invertible.siguientesPasos.length === 1
-                        ? "Un paso"
-                        : `${c.invertible.siguientesPasos.length} pasos`}
+                    {c.estadoInvertible.marcados > 0 && c.estadoInvertible.validados === c.estadoInvertible.marcados
+                      ? "Lista para graduar"
+                      : c.estadoInvertible.marcados > 0
+                        ? `Invertible: ${c.estadoInvertible.texto}`
+                        : c.estadoInvertible.texto}
                   </span>
 
                   {/* Decorativa: la fila entera ya es el enlace */}
@@ -478,7 +484,11 @@ export default async function Cartera() {
 
                 {c.invertible.siguientesPasos.length > 0 ? (
                   <ol className="mt-2 flex flex-col gap-1 pl-11">
-                    {c.invertible.siguientesPasos.slice(0, 3).map((paso, i) => (
+                    {/* Primero lo que decide invertible (los hitos marcados); después, lo recomendado */}
+                    {[...c.invertible.siguientesPasos]
+                      .sort((a, b) => Number(b.paraInvertible) - Number(a.paraInvertible))
+                      .slice(0, 3)
+                      .map((paso, i) => (
                       <li
                         key={paso.texto}
                         className="flex gap-2 text-sm text-secundario"
@@ -494,6 +504,7 @@ export default async function Cartera() {
                         >
                           {paso.texto}
                         </Link>
+                        {paso.paraInvertible ? null : <span className="shrink-0 text-xs text-metadato">Recomendado</span>}
                       </li>
                     ))}
                   </ol>

@@ -135,6 +135,25 @@ export type SeccionFicha =
 export interface PasoPendiente {
   texto: string;
   seccion: SeccionFicha;
+  /**
+   * Si de él depende que sea invertible (REVISION, 24 nov): solo los hitos
+   * marcados «Condiciona invertible». Lo demás —scores, runway, hallazgos,
+   * bloqueantes— son señales recomendadas que no deciden nada.
+   */
+  paraInvertible: boolean;
+}
+
+/**
+ * El estado invertible, con la regla del 23 nov: invertible es la compañía
+ * graduada, que solo se puede graduar con todos sus hitos marcados
+ * validados. Mientras tanto, cuántos de esos hitos lleva.
+ */
+export interface EstadoInvertible {
+  invertible: boolean;
+  marcados: number;
+  validados: number;
+  /** «Sí», «2 de 4 hitos» o «Sin hitos marcados» */
+  texto: string;
 }
 
 export interface ResultadoInvertible {

@@ -113,7 +113,11 @@ export interface TramoEmbudo {
   companias: Array<{ nombre: string; slug: string; valor: number }>;
 }
 
-/** Embudo hacia invertible: cuántas compañías hay en cada banda (§4.7) */
+/**
+ * Cuántas compañías hay en cada banda de preparación (§4.7). Se llamó
+ * «embudo hacia invertible»; desde el 23 nov invertible no sale del score,
+ * así que es una señal de preparación y se lee como tal.
+ */
 export function embudo(companias: Compania[], bandas: Banda[]): TramoEmbudo[] {
   return bandas.map((banda) => ({
     banda,
@@ -140,10 +144,10 @@ export function lecturaDeCohorte(
   movimientos: Map<string, { deltaPreparacion: number | null }>,
   mapa: DemandaDimension[],
   objetivoCohorte: number | null,
+  /** Las graduadas de la cohorte: invertible desde el 23 nov (REVISION, 24 nov) */
+  invertibles: number,
 ): string {
   if (companias.length === 0) return "No hay compañías en seguimiento todavía.";
-
-  const invertibles = companias.filter((c) => c.invertible.invertible).length;
 
   const deltas = companias
     .map((c) => movimientos.get(c.compania.id)?.deltaPreparacion)
@@ -179,8 +183,8 @@ export function lecturaDeCohorte(
   const meta = objetivoCohorte ? ` de un objetivo de ${objetivoCohorte}` : "";
   frases.push(
     invertibles === 0
-      ? `ninguna alcanza todavía el estado invertible${meta}`
-      : `${invertibles} de ${companias.length} alcanzan el estado invertible${meta}`,
+      ? `ninguna se ha graduado todavía como invertible${meta}`
+      : `${invertibles === 1 ? "una se ha graduado" : `${invertibles} se han graduado`} como invertible${meta}`,
   );
 
   return `${frases.join(", y ")}.`;

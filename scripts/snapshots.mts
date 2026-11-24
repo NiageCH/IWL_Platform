@@ -16,7 +16,7 @@ import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { calcularScoreTecnico } from "../lib/scoring/score-tecnico";
 import { calcularScorePreparacion } from "../lib/scoring/score-preparacion";
-import { evaluarInvertible } from "../lib/scoring/invertible";
+import { estadoInvertible } from "../lib/scoring/invertible";
 import { calcularRunway } from "../lib/scoring/kpi-derivados";
 import type {
   AreaDd,
@@ -33,7 +33,7 @@ const db = createClient(url, clave, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-const companias = await tabla("companies", "id, name, slug, stage, tech_profile");
+const companias = await tabla("companies", "id, name, slug, stage, tech_profile, cierre");
 const dimensiones = await tabla(
   "tech_dimensions",
   "id, code, name, applicability, order_index, is_active",
@@ -121,18 +121,9 @@ for (const compania of companias) {
     const criticos = criticosAbiertosA(compania.id, fecha);
     const runway = runwayA(compania.id, fecha);
 
-    const estado = evaluarInvertible({
-      scoreTecnico,
-      scorePreparacion,
-      hallazgosAbiertos: criticos.map((h, i) => ({
-        id: `h${i}`,
-        severidad: "critico" as const,
-        titulo: "Hallazgo crítico abierto",
-        origen: h,
-      })),
-      hitos: [],
-      runwayMeses: runway,
-    });
+    // Invertible, con la regla del 23 nov: la graduada (REVISION, 24 nov).
+    // Los umbrales de antes ya no deciden; son señales y no se guardan aquí.
+    const estado = estadoInvertible({ graduada: compania.cierre === "graduada", hitos: [] });
 
     const { error } = await db.from("readiness_snapshots").upsert(
       {

@@ -186,6 +186,13 @@ test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su t
   const tramo1 = tramoDe(page, "Tramo 1 · De idea a MVP");
   await expect(tramo1.locator("header").getByText("Borrador", { exact: true })).toBeVisible();
   await expect(tramo1.locator("header").getByText("Planificada")).toHaveCount(0);
+
+  // Y el Resumen dice lo mismo: las tarjetas del borrador, no «no tiene» (REVISION, 24 nov)
+  await page.goto("/cartera/vega-predictiva");
+  const corto = page.locator("[data-tramos-en-corto]");
+  await expect(corto.locator("ol[aria-label='Los tramos'] > li")).toHaveCount(4);
+  await expect(corto.getByText("Borrador hasta la firma")).toBeVisible();
+  await expect(page.getByText(/Todavía no tiene hoja de ruta/)).toHaveCount(0);
 });
 
 test("un hito cumplido se reabre desde su menú, con motivo, y vuelve a pendiente", async ({ page }) => {
@@ -427,4 +434,31 @@ test("el Resumen dice por dónde va en tramos, con las mismas cifras que la Hoja
   await page.goto("/admin/companias");
   await expect(page.getByText("Fase del programa")).toHaveCount(0);
   await expect(page.locator("dt", { hasText: /^Fase$/ })).toHaveCount(0);
+});
+
+test("invertible es la regla nueva; los umbrales de antes son recomendados", async ({ page }) => {
+  /*
+   * Desde el 23 nov, invertible son los hitos marcados validados y la
+   * confirmación de dirección al graduar (REVISION, 24 nov). Raíz lleva 1 de
+   * sus 4 hitos del tramo 4 validado.
+   */
+  await entrarComo(page, USUARIOS.admin, "/cartera/raiz-sensorica");
+  const invertible = page.getByText("Invertible", { exact: true }).locator("xpath=..");
+  await expect(invertible).toContainText("1 de 4 hitos");
+
+  const queFalta = page.locator("section", { has: page.getByRole("heading", { name: "Qué falta" }) });
+  // Los hitos marcados, para invertible; lo demás, recomendado
+  const hito = queFalta.locator("li", { hasText: "Cumplir el hito del Anexo: Data room completo" });
+  await expect(hito.getByText("Para invertible")).toBeVisible();
+  const bloqueante = queFalta.locator("li", { hasText: /Desbloquear/ }).first();
+  await expect(bloqueante.getByText("Recomendado")).toBeVisible();
+
+  // Con coma decimal: Vega tiene la preparación baja
+  await page.goto("/cartera/vega-predictiva");
+  await expect(page.getByText(/Subir el score de preparación de \d+,\d a 80/)).toBeVisible();
+  await expect(page.getByText(/Subir el score de preparación de \d+\.\d/)).toHaveCount(0);
+
+  // En la cartera, la fila dice cuántos hitos marcados lleva
+  await page.goto("/cartera");
+  await expect(page.locator("li", { hasText: "Raíz Sensórica" }).getByText("Invertible: 1 de 4 hitos")).toBeVisible();
 });

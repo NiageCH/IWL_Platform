@@ -671,7 +671,7 @@ export function TramosEnCorto({
   if (!r.hay) {
     return (
       <p className="px-4 py-3 text-sm text-secundario">
-        Todavía no tiene hoja de ruta: se prepara con el Acuerdo.{" "}
+        Todavía no tiene hoja de ruta generada: se prepara con el Acuerdo.{" "}
         <Link href={ruta} className="enlace text-acento-texto">
           Ver la hoja de ruta
         </Link>
@@ -701,6 +701,11 @@ export function TramosEnCorto({
         ))}
       </ol>
       <div className="flex flex-col gap-1 text-sm tabular-nums">
+        {r.firmado ? null : (
+          <p>
+            <span className="pastilla">Borrador hasta la firma</span>
+          </p>
+        )}
         <p className="text-titular">{r.avance}</p>
         <LineasPlazo r={r} />
       </div>

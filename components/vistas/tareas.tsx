@@ -57,7 +57,8 @@ export async function VistaQueFalta({
 }: {
   resumen: NonNullable<ResumenCompania>;
   /** Lo que falta para ser invertible, con la pantalla donde se hace */
-  pasos?: Array<{ texto: string; href: string }>;
+  /** `paraInvertible`: un hito marcado; lo demás es una señal recomendada (REVISION, 24 nov) */
+  pasos?: Array<{ texto: string; href: string; paraInvertible: boolean }>;
 }) {
   const { compania, permisos } = resumen;
 
@@ -208,7 +209,7 @@ export async function VistaQueFalta({
                 {paso.texto}
               </Link>
               <Metadato>Sin encargar</Metadato>
-              <Estado valor="pendiente" rotulo="Para invertible" />
+              <Estado valor="pendiente" rotulo={paso.paraInvertible ? "Para invertible" : "Recomendado"} />
               <span aria-hidden="true" className="flecha cifra shrink-0 text-acento-texto">
                 →
               </span>

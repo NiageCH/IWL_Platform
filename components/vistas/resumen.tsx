@@ -32,7 +32,7 @@ export async function VistaResumen({
 }: {
   resumen: NonNullable<ResumenCompania>;
 }) {
-  const { compania, invertible, kpis, hallazgos, scoreTecnico, semaforo } = resumen;
+  const { compania, invertible, estadoInvertible, kpis, hallazgos, scoreTecnico, semaforo } = resumen;
   // Por dónde va, en tramos: lo mismo que el resumen de la Hoja de ruta (REVISION, 24 nov)
   const seguimiento = await leerSeguimiento(compania.id);
 
@@ -93,9 +93,8 @@ export async function VistaResumen({
 
           <span className="flex items-baseline gap-2 text-xs">
             <span className="text-metadato">Invertible</span>
-            <span className="cifra text-sm text-titular">
-              {invertible.invertible ? "Sí" : "No"}
-            </span>
+            {/* La regla del 23 nov: «Sí» graduada; antes, sus hitos marcados validados */}
+            <span className="text-sm tabular-nums text-titular">{estadoInvertible.texto}</span>
           </span>
 
           {scoreTecnico.evaluadas === 0 ? (
@@ -125,6 +124,7 @@ export async function VistaResumen({
         pasos={invertible.siguientesPasos.map((p) => ({
           texto: p.texto,
           href: `${base}/${p.seccion}`,
+          paraInvertible: p.paraInvertible,
         }))}
       />
 

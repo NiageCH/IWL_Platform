@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularSemaforo, evaluarInvertible } from "./invertible";
+import { calcularSemaforo, estadoInvertible, evaluarInvertible } from "./invertible";
 import { calcularScoreTecnico } from "./score-tecnico";
 import { calcularScorePreparacion } from "./score-preparacion";
 import type { EntradaInvertible } from "./tipos";
@@ -213,5 +213,57 @@ describe("calcularSemaforo", () => {
         paso.seccion,
       );
     }
+  });
+});
+
+/**
+ * Invertible con la regla del 23 nov (REVISION, 24 nov): «Sí» solo
+ * graduada; antes, cuántos hitos marcados lleva validados. Los umbrales de
+ * antes se quedan como señales recomendadas.
+ */
+describe("estadoInvertible", () => {
+  const hitos = [
+    { id: "a", titulo: "Clientes que repiten", estado: "cumplido" as const, condicionaInvertible: true },
+    { id: "b", titulo: "Data room completo", estado: "pendiente" as const, condicionaInvertible: true },
+    { id: "c", titulo: "Un hito propio", estado: "cumplido" as const, condicionaInvertible: false },
+  ];
+
+  it("sin graduar, cuenta solo los hitos marcados", () => {
+    expect(estadoInvertible({ graduada: false, hitos })).toEqual({
+      invertible: false,
+      marcados: 2,
+      validados: 1,
+      texto: "1 de 2 hitos",
+    });
+  });
+
+  it("con todos validados, todavía no es invertible: falta que dirección la gradúe", () => {
+    const todos = hitos.map((h) => ({ ...h, estado: "cumplido" as const }));
+    expect(estadoInvertible({ graduada: false, hitos: todos }).invertible).toBe(false);
+  });
+
+  it("graduada, sí", () => {
+    expect(estadoInvertible({ graduada: true, hitos })).toMatchObject({ invertible: true, texto: "Sí" });
+  });
+
+  it("sin hitos marcados lo dice", () => {
+    expect(estadoInvertible({ graduada: false, hitos: [] }).texto).toBe("Sin hitos marcados");
+  });
+});
+
+describe("los pasos: de invertible o recomendados", () => {
+  it("solo los hitos marcados son de invertible; scores y runway, recomendados, con coma decimal", () => {
+    const entrada = entradaLimpia();
+    entrada.hitos[0].estado = "pendiente";
+    entrada.scorePreparacion.valor = 26.7;
+    entrada.runwayMeses = 3.9;
+    const pasos = evaluarInvertible(entrada).siguientesPasos;
+
+    const hito = pasos.find((p) => p.texto.startsWith("Cumplir el hito del Anexo"));
+    expect(hito?.paraInvertible).toBe(true);
+    for (const p of pasos.filter((p) => p !== hito)) expect(p.paraInvertible, p.texto).toBe(false);
+
+    expect(pasos.map((p) => p.texto)).toContain("Subir el score de preparación de 26,7 a 80");
+    expect(pasos.map((p) => p.texto)).toContain("Llevar el runway de 3,9 a 6 meses");
   });
 });

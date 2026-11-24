@@ -102,3 +102,23 @@ for (const [rol, titulo] of Object.entries(TITULOS)) {
     }
   });
 }
+
+/**
+ * La guía se abre dentro del marco del rol (REVISION, 24 nov): con su menú
+ * lateral y «Guía» marcada. Antes pintaba su propio marco, con solo la
+ * barra de arriba, y el menú desaparecía. Mi cuenta, igual.
+ */
+test("la guía y Mi cuenta se abren dentro del marco de cada rol", async ({ page }) => {
+  test.skip(test.info().project.name.startsWith("movil"), "En móvil el menú lateral no se ve");
+  for (const [quien, inicio] of [
+    [USUARIOS.admin, "Cartera"],
+    [USUARIOS.fundadoraMarea, "Mi compañía"],
+  ] as const) {
+    await entrarComo(page, quien, "/guia");
+    const lateral = page.locator(".barra-lateral");
+    await expect(lateral.getByRole("link", { name: new RegExp(`^${inicio}`) })).toBeVisible();
+    await expect(lateral.getByRole("link", { name: "Guía" })).toHaveAttribute("aria-current", "page");
+    await page.goto("/perfil");
+    await expect(page.locator(".barra-lateral").getByRole("link", { name: new RegExp(`^${inicio}`) })).toBeVisible();
+  }
+});

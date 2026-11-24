@@ -15,7 +15,8 @@ test("el dashboard abre con una lectura de la cohorte en una frase", async ({
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera");
 
   await expect(page.getByText(/La cohorte (avanza|retrocede|no se ha movido)/)).toBeVisible();
-  await expect(page.getByText(/alcanzan el estado invertible|ninguna alcanza/)).toBeVisible();
+  // Invertibles son las graduadas (REVISION, 24 nov)
+  await expect(page.getByText(/graduado como invertible|ninguna se ha graduado todavía/)).toBeVisible();
 });
 
 test("cada compañía enseña su recorrido desde la medición de partida", async ({
@@ -34,7 +35,9 @@ test("cada compañía enseña su recorrido desde la medición de partida", async
 test("el embudo reparte la cohorte por bandas", async ({ page }) => {
   await entrarComo(page, USUARIOS.equipoIwl, "/cartera");
 
-  const embudo = page.locator("section", { hasText: "Camino a invertible" }).last();
+  // Una señal de preparación: invertible ya no sale del score (REVISION, 24 nov)
+  const embudo = page.locator("section", { hasText: "Preparación de la cohorte" }).last();
+  await expect(embudo.getByText(/Señal, no decide/)).toBeVisible();
 
   for (const banda of ["Inicio", "En desarrollo", "Consolidada", "Preparada"]) {
     await expect(embudo.getByText(banda, { exact: true })).toBeVisible();

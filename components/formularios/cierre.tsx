@@ -15,6 +15,7 @@ export function CerrarCompania({
   nombre,
   sugerida,
   paraGraduar,
+  senales = [],
   hoy,
 }: {
   companyId: string;
@@ -23,6 +24,12 @@ export function CerrarCompania({
   sugerida: Cierre | null;
   /** Los hitos que condicionan invertible: sin todos validados no se gradúa */
   paraGraduar: HitosParaGraduar | null;
+  /**
+   * Las señales de antes —scores, runway, hallazgos—, que ya no deciden si es
+   * invertible: se enseñan al elegir Graduada para que dirección las revise
+   * (REVISION, 24 nov). No bloquean.
+   */
+  senales?: string[];
   hoy: string;
 }) {
   const [cierre, setCierre] = useState<Cierre | "">(sugerida ?? "");
@@ -70,6 +77,17 @@ export function CerrarCompania({
                 })}
                 {e("cierre") ? <p className="text-xs text-mal">{e("cierre")}</p> : null}
               </fieldset>
+              {cierre === "graduada" && senales.length ? (
+                <div className="rounded-md border border-filete bg-hundido px-3 py-2 text-sm" data-antes-de-graduar="">
+                  <p className="text-titular">Antes de graduar, revisa:</p>
+                  <ul className="mt-1 list-disc pl-5 text-secundario">
+                    {senales.map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-1 text-xs text-metadato">Son señales: no impiden graduarla.</p>
+                </div>
+              ) : null}
               <Campo etiqueta="Fecha del cierre" obligatorio error={e("fecha")}>
                 <Texto type="date" name="fecha" defaultValue={hoy} max={hoy} required className="w-48" />
               </Campo>

@@ -1,8 +1,35 @@
 import type {
   EntradaInvertible,
+  EstadoInvertible,
+  HitoAnexo,
   ResultadoInvertible,
   Semaforo,
   Umbrales, PasoPendiente } from "./tipos";
+
+/** Una cifra como se escribe en castellano: 26,7 y no 26.7 */
+function cifra(n: number): string {
+  return String(n).replace(".", ",");
+}
+
+/**
+ * Invertible, con la regla del 23 nov (REVISION, 24 nov). Un proyecto es
+ * invertible cuando tiene validados los hitos marcados «Condiciona
+ * invertible» y dirección lo confirma al graduarlo: «Sí» solo graduada.
+ * Antes de eso, cuántos de sus hitos marcados lleva validados.
+ */
+export function estadoInvertible(entrada: { graduada: boolean; hitos: HitoAnexo[] }): EstadoInvertible {
+  const marcados = entrada.hitos.filter((h) => h.condicionaInvertible);
+  const validados = marcados.filter((h) => h.estado === "cumplido").length;
+  if (entrada.graduada) {
+    return { invertible: true, marcados: marcados.length, validados, texto: "Sí" };
+  }
+  return {
+    invertible: false,
+    marcados: marcados.length,
+    validados,
+    texto: marcados.length ? `${validados} de ${marcados.length} hitos` : "Sin hitos marcados",
+  };
+}
 
 /**
  * Umbrales del estado invertible. Se exponen para que la administración los
@@ -15,15 +42,14 @@ export const UMBRALES_INVERTIBLE: Umbrales = {
 };
 
 /**
- * Proyecto invertible · sección 3.
+ * Lo que falta, como siguientes pasos (§8).
  *
- * «Ha superado su due diligence, cumple los hitos de producto y tracción de su
- * Anexo y está en condiciones reales de levantar una ronda institucional o de
- * sostenerse financieramente.» La plataforma lo calcula; no lo marca nadie a
- * mano.
- *
- * Devuelve lo que falta redactado como siguiente paso, que es como la interfaz
- * habla con la fundadora (§8).
+ * Fue el cálculo del estado invertible: umbrales de score, runway y
+ * hallazgos críticos. Desde el 23 nov invertible es otra cosa
+ * (`estadoInvertible`), y esto se queda como **señales**: los hitos
+ * marcados son de invertible (`paraInvertible`), y lo demás, recomendado.
+ * No decide nada; al graduar se le enseña a dirección para que lo revise.
+ * `invertible` aquí solo dice que no queda ningún paso.
  */
 export function evaluarInvertible(
   entrada: EntradaInvertible,
@@ -39,6 +65,7 @@ export function evaluarInvertible(
     siguientesPasos.push({
       texto: `Resolver el hallazgo crítico: ${hallazgo.titulo}`,
       seccion: "tecnico",
+      paraInvertible: false,
     });
   }
 
@@ -51,18 +78,21 @@ export function evaluarInvertible(
           ? "Completar la puntuación de la dimensión técnica que queda sin evaluar"
           : `Completar la puntuación de las ${pendientes} dimensiones técnicas sin evaluar`,
       seccion: "tecnico",
+      paraInvertible: false,
     });
   } else if (entrada.scoreTecnico.valor < umbrales.scoreTecnicoMinimo) {
     siguientesPasos.push({
-      texto: `Subir el score técnico de ${entrada.scoreTecnico.valor} a ${umbrales.scoreTecnicoMinimo}, el mínimo para la etapa`,
+      texto: `Subir el score técnico de ${cifra(entrada.scoreTecnico.valor)} a ${cifra(umbrales.scoreTecnicoMinimo)}, el mínimo para la etapa`,
       seccion: "tecnico",
+      paraInvertible: false,
     });
   }
 
   if (entrada.scorePreparacion.valor < umbrales.scorePreparacionMinimo) {
     siguientesPasos.push({
-      texto: `Subir el score de preparación de ${entrada.scorePreparacion.valor} a ${umbrales.scorePreparacionMinimo}`,
+      texto: `Subir el score de preparación de ${cifra(entrada.scorePreparacion.valor)} a ${cifra(umbrales.scorePreparacionMinimo)}`,
       seccion: "diligencia",
+      paraInvertible: false,
     });
   }
 
@@ -73,6 +103,7 @@ export function evaluarInvertible(
     siguientesPasos.push({
       texto: `Desbloquear ${area.bloqueantes === 1 ? "el punto bloqueante" : `los ${area.bloqueantes} puntos bloqueantes`} de ${area.nombre}`,
       seccion: "diligencia",
+      paraInvertible: false,
     });
   }
 
@@ -84,6 +115,7 @@ export function evaluarInvertible(
     siguientesPasos.push({
       texto: `Cumplir el hito del Anexo: ${hito.titulo}`,
       seccion: "programa",
+      paraInvertible: true,
     });
   }
 
@@ -93,8 +125,9 @@ export function evaluarInvertible(
     entrada.runwayMeses < umbrales.runwayMinimoMeses
   ) {
     siguientesPasos.push({
-      texto: `Llevar el runway de ${entrada.runwayMeses} a ${umbrales.runwayMinimoMeses} meses`,
+      texto: `Llevar el runway de ${cifra(entrada.runwayMeses)} a ${cifra(umbrales.runwayMinimoMeses)} meses`,
       seccion: "kpi",
+      paraInvertible: false,
     });
   }
 

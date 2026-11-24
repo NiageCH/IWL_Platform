@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Marco } from "@/components/marco";
-import { BarraSuperior } from "@/components/barra-superior";
+import { MarcoDeRol } from "@/components/marco-con-menu";
 import { Bloque } from "@/components/ui/primitivas";
 import { TextoGuia } from "@/components/vistas/guia";
 import { leerGuiaDe } from "@/lib/datos/guia";
@@ -27,8 +26,8 @@ export default async function Guia({ searchParams }: { searchParams: Promise<{ p
   const inicio = inicioDe(persona.role);
 
   return (
-    <Marco tema="claro">
-      <BarraSuperior />
+    // Dentro del marco de su rol, con su menú y «Guía» marcada (REVISION, 24 nov)
+    <MarcoDeRol>
       <main className="mx-auto w-full max-w-2xl px-6 py-8">
         <div className="relative mb-6 pl-4">
           <span className="filete-acento absolute inset-y-0 left-0 w-0.5 rounded-full" />
@@ -73,6 +72,6 @@ export default async function Guia({ searchParams }: { searchParams: Promise<{ p
           </p>
         )}
       </main>
-    </Marco>
+    </MarcoDeRol>
   );
 }

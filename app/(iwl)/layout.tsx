@@ -1,10 +1,5 @@
 import type { ReactNode } from "react";
-import { BarraLateral } from "@/components/barra-lateral";
-import { BarraSuperior } from "@/components/barra-superior";
-import { Marco } from "@/components/marco";
-import { PrimeraVez } from "@/components/vistas/primera-vez";
-import { FranjaModoPruebas } from "@/components/vistas/franja-modo-pruebas";
-import { personaActual } from "@/lib/supabase/servidor";
+import { MarcoConMenu } from "@/components/marco-con-menu";
 
 /*
  * La consola de IWL: columna oscura a la izquierda, trabajo sobre papel.
@@ -22,21 +17,9 @@ import { personaActual } from "@/lib/supabase/servidor";
  * dos menús: las dos salen de la misma lista.
  */
 export default async function LayoutIwl({ children }: { children: ReactNode }) {
-  const persona = await personaActual();
   return (
-    <Marco tema="claro">
-      <div className="flex min-h-screen w-full">
-        <BarraLateral />
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="md:hidden">
-            <BarraSuperior />
-          </div>
-          <FranjaModoPruebas rol={persona?.role} />
-          <PrimeraVez vista={!persona || Boolean(persona.guia_vista_at)} rol={persona?.role} />
-          {children}
-        </div>
-      </div>
-    </Marco>
+    <MarcoConMenu franjaPruebas primeraVez>
+      {children}
+    </MarcoConMenu>
   );
 }

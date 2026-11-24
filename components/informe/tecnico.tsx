@@ -47,7 +47,7 @@ export async function InformeTecnico({
   resumen: NonNullable<ResumenCompania>;
   paraInversor: boolean;
 }) {
-  const { compania, scoreTecnico, semaforo, invertible } = resumen;
+  const { compania, scoreTecnico, semaforo, invertible, estadoInvertible } = resumen;
   const [datos, generadoPor] = await Promise.all([
     leerDatosTecnicos(compania.id),
     quienGenera(),
@@ -301,26 +301,39 @@ export async function InformeTecnico({
         )}
       </Seccion>
 
+      {/*
+        Invertible con la regla del 23 nov (REVISION, 24 nov): los hitos
+        marcados validados y la confirmación de dirección al graduarla. Lo de
+        antes —scores, runway, hallazgos— va como recomendado, sin decidir.
+      */}
       <Seccion
         titulo="Estado invertible"
-        descripcion="La definición del programa: due diligence superado, sin hallazgos críticos abiertos, hitos de producto y tracción cumplidos y en condiciones reales de levantar ronda o sostenerse."
+        descripcion="Un proyecto es invertible cuando tiene validados los hitos de su hoja de ruta que condicionan invertible y la dirección lo confirma al graduarlo."
       >
-        {invertible.invertible ? (
-          <p className="border-l-2 border-bien pl-3 text-sm text-cuerpo">
-            La compañía cumple la definición de proyecto invertible del programa.
-          </p>
-        ) : (
+        <p className="mb-3 text-sm text-cuerpo">
+          {estadoInvertible.invertible
+            ? "Graduada: la dirección confirmó que es invertible."
+            : estadoInvertible.marcados
+              ? `Hitos que condicionan invertible: ${estadoInvertible.texto} validados.`
+              : "Su hoja de ruta no tiene hitos que condicionen invertible."}
+        </p>
+        {invertible.siguientesPasos.length ? (
           <ol className="flex flex-col gap-2">
-            {invertible.siguientesPasos.map((paso, i) => (
-              <li key={paso.texto} className="flex gap-3 text-sm text-cuerpo">
-                <span className="cifra text-xs text-metadato">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {paso.texto}
-              </li>
-            ))}
+            {[...invertible.siguientesPasos]
+              .sort((a, b) => Number(b.paraInvertible) - Number(a.paraInvertible))
+              .map((paso, i) => (
+                <li key={paso.texto} className="flex gap-3 text-sm text-cuerpo">
+                  <span className="text-xs tabular-nums text-metadato">{String(i + 1).padStart(2, "0")}</span>
+                  <span>
+                    {paso.texto}
+                    <span className="text-xs text-metadato">
+                      {paso.paraInvertible ? " · para invertible" : " · recomendado"}
+                    </span>
+                  </span>
+                </li>
+              ))}
           </ol>
-        )}
+        ) : null}
       </Seccion>
 
       {!paraInversor && datos.sesiones.length > 0 ? (

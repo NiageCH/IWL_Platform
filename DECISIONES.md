@@ -2179,3 +2179,12 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Se retiran la tabla `phases` y las columnas `companies.phase_id` y `milestones.phase_id`** (`20261129100000_fuera_fases`). Se recrean sin ellas, desde su definición actual en la base, el alta (`crear_compania`), las dos firmas del Acuerdo (`firmar_acuerdo` y `firmar_candidatura`, sin el argumento `p_phase_code`), el guardián de lo que fija IWL y la vista `admin_companias`.
 - **«Por dónde va», en el Resumen, sale de los tramos** con `resumenDeTramos`, la misma función que el resumen de la pestaña Hoja de ruta: las cifras coinciden por construcción. Se borraron `lib/datos/avance.ts` y `components/avance-programa.tsx`.
 - **La etiqueta de etapa** (Diagnóstico, Due diligence, Incubación, Aceleración) sale del estadio y de si hay Acuerdo firmado (`etiquetaEtapa`, 23 nov).
+
+## 2026-11-24 · Un solo «invertible», y la guía dentro de su marco · SUSTITUYE al cálculo de invertible por umbrales
+
+- **Invertible es la regla del 23 nov** (`estadoInvertible`, en `lib/scoring`): «Sí» solo graduada. Antes de eso, cuántos hitos marcados lleva validados («2 de 4 hitos»), o «Sin hitos marcados». Lo enseñan el Resumen, la fila de la Cartera (con «Lista para graduar» cuando están todos) y el informe técnico en PDF.
+- **El contador «Invertibles» de la Cartera y la frase de la cohorte cuentan las graduadas de la cohorte.** Las graduadas están cerradas y solo las lee dirección, así que el número lo da `invertibles_de_cohorte`, solo a IWL.
+- **Los umbrales de antes** (score técnico y de preparación, runway, hallazgos críticos, bloqueantes) **se quedan como señales**, en `evaluarInvertible`, sin decidir nada. Sus pasos llevan «Recomendado»; los de un hito marcado, «Para invertible» (`paraInvertible`). Al elegir Graduada, dirección ve «Antes de graduar, revisa:» con esas señales, sin que bloqueen. Las cifras van con coma decimal.
+- **El reparto por bandas de preparación** se llamaba «Camino a invertible». Ahora es «Preparación de la cohorte», y dice que es una señal.
+- **Las instantáneas** guardan `investable` con la regla nueva (graduada). Lo que guardaron antes se queda como estaba: es histórico.
+- **`MarcoConMenu`**: el marco con la barra lateral, uno solo, que usan los grupos `(iwl)` y `(fundadora)`. Con `MarcoDeRol`, la guía y Mi cuenta se abren dentro del marco de quien mira. La candidata sigue con la barra de arriba. `/cambiar-contrasena` va sin marco a propósito: mientras no cambie la contraseña, el proxy no deja ir a otro sitio.

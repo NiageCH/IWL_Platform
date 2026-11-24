@@ -5468,6 +5468,9 @@ isOneToOne: false
 "instanciar_hoja_de_ruta":
 { Args: { "inicio"?: string,"target_annex"?: string,"target_company": string,"template": string }; Returns: number
                            },
+"invertibles_de_cohorte":
+{ Args: { "p_cohort": string }; Returns: number
+                           },
 "llevar_sesion_a_direccion":
 { Args: { "p_motivo": string,"p_sesion": string }; Returns: undefined
                            },

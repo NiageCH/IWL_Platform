@@ -103,6 +103,7 @@ export default async function ResumenCompania({ params, searchParams }: PageProp
               nombre={resumen.compania.name}
               sugerida={tramo4Cerrado && paraGraduar?.pendientes === 0 && paraGraduar.marcados > 0 ? "graduada" : null}
               paraGraduar={paraGraduar}
+              senales={resumen.invertible.siguientesPasos.filter((p) => !p.paraInvertible).map((p) => p.texto)}
               hoy={new Date().toISOString().slice(0, 10)}
             />
           </Bloque>

@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import { notFound, redirect } from "next/navigation";
-import { BarraLateral } from "@/components/barra-lateral";
-import { BarraSuperior } from "@/components/barra-superior";
-import { Marco } from "@/components/marco";
-import { PrimeraVez } from "@/components/vistas/primera-vez";
+import { MarcoConMenu } from "@/components/marco-con-menu";
 import { personaActual } from "@/lib/supabase/servidor";
 import { capacidades } from "@/lib/permisos";
 
@@ -42,19 +39,5 @@ export default async function LayoutProyecto({
   if (c.verCartera) redirect("/cartera");
   if (!c.tieneProyectoPropio) notFound();
 
-  return (
-    <Marco tema="claro">
-      <div className="flex min-h-screen w-full">
-        <BarraLateral />
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="md:hidden">
-            <BarraSuperior />
-          </div>
-          <PrimeraVez vista={Boolean(persona.guia_vista_at)} rol={persona.role} />
-          {children}
-        </div>
-      </div>
-    </Marco>
-  );
+  return <MarcoConMenu primeraVez>{children}</MarcoConMenu>;
 }

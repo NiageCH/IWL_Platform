@@ -9,7 +9,7 @@ import {
 import type { Banda } from "./cohorte";
 import { calcularScoreTecnico } from "@/lib/scoring/score-tecnico";
 import { calcularScorePreparacion } from "@/lib/scoring/score-preparacion";
-import { evaluarInvertible, calcularSemaforo } from "@/lib/scoring/invertible";
+import { estadoInvertible, evaluarInvertible, calcularSemaforo } from "@/lib/scoring/invertible";
 import type { ResumenCompania } from "./compania";
 
 const BANDAS: Banda[] = [
@@ -60,6 +60,7 @@ function compania(
     kpis: {} as never,
     semaforo: calcularSemaforo(entrada),
     invertible: evaluarInvertible(entrada),
+    estadoInvertible: estadoInvertible({ graduada: false, hitos: [] }),
   } as NonNullable<ResumenCompania>;
 }
 
@@ -154,11 +155,14 @@ describe("lecturaDeCohorte", () => {
       new Map([["a", { deltaPreparacion: 12.5 }]]),
       mapaIntervencion([a]),
       2,
+      1,
     );
 
     expect(frase).toContain("avanza 12,5 puntos");
     expect(frase).toContain("seguridad");
     expect(frase).toContain("objetivo de 2");
+    // Invertibles son las graduadas (REVISION, 24 nov)
+    expect(frase).toContain("una se ha graduado como invertible");
   });
 
   it("dice el retroceso sin suavizarlo", () => {
@@ -169,13 +173,15 @@ describe("lecturaDeCohorte", () => {
       new Map([["a", { deltaPreparacion: -6 }]]),
       [],
       null,
+      0,
     );
 
     expect(frase).toContain("retrocede 6 puntos");
+    expect(frase).toContain("ninguna se ha graduado todavía");
   });
 
   it("aguanta una cohorte vacía", () => {
-    expect(lecturaDeCohorte([], new Map(), [], null)).toContain("No hay compañías");
+    expect(lecturaDeCohorte([], new Map(), [], null, 0)).toContain("No hay compañías");
   });
 });
 
