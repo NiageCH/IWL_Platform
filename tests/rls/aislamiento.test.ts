@@ -216,20 +216,11 @@ describe("gobernanza de la ficha", () => {
     expect(error?.message).toContain("equipo de IWL");
   });
 
-  it("una fundadora no puede cambiar su fase del programa", async () => {
+  it("las fases antiguas ya no existen: ni la tabla ni la columna", async () => {
+    // Se retiraron con 20261129100000_fuera_fases (REVISION, 24 nov)
     const servicio = clienteServicio();
-    const { data: otraFase } = await servicio
-      .from("phases")
-      .select("id")
-      .eq("code", "fase_3")
-      .single();
-
-    const { error } = await fundadoraMarea
-      .from("companies")
-      .update({ phase_id: otraFase!.id })
-      .eq("id", COMPANIAS.marea);
-
-    expect(error).not.toBeNull();
+    expect((await servicio.from("phases" as never).select("id")).error).not.toBeNull();
+    expect((await servicio.from("companies").select("phase_id" as never)).error).not.toBeNull();
   });
 
   it("el equipo de IWL sí mueve la etapa", async () => {

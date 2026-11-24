@@ -410,3 +410,21 @@ test("en Programa ya no están las fases antiguas, y la cabecera sale del estadi
   await page.goto("/cartera/vega-predictiva");
   await expect(page.getByText("Diagnóstico").first()).toBeVisible();
 });
+
+test("el Resumen dice por dónde va en tramos, con las mismas cifras que la Hoja de ruta", async ({ page }) => {
+  // Antes eran las fases antiguas del programa (REVISION, 24 nov)
+  await entrarComo(page, USUARIOS.admin, "/cartera/raiz-sensorica/ruta");
+  const avanceRuta = await page.locator("#seguimiento p.text-titular").first().innerText();
+
+  await page.goto("/cartera/raiz-sensorica");
+  const corto = page.locator("[data-tramos-en-corto]");
+  await expect(corto.locator("ol[aria-label='Los tramos'] > li")).toHaveCount(4);
+  await expect(corto.locator("li[aria-current='step']")).toContainText("De facturación a invertible");
+  await expect(corto.locator("p.text-titular")).toHaveText(avanceRuta);
+  await expect(corto.getByText(/plazo máximo de 5 meses desde la firma/)).toBeVisible();
+
+  // Y en Administración → Compañías ya no hay campo «Fase»
+  await page.goto("/admin/companias");
+  await expect(page.getByText("Fase del programa")).toHaveCount(0);
+  await expect(page.locator("dt", { hasText: /^Fase$/ })).toHaveCount(0);
+});

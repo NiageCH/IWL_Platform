@@ -445,14 +445,12 @@ export function FirmarAcuerdo({
   id,
   nombre,
   plantillas,
-  fases,
   situacion,
   fundadoras,
 }: {
   id: string;
   nombre: string;
   plantillas: { id: string; name: string }[];
-  fases: { code: string; name: string }[];
   /** Lo que ya se dijo de la sociedad en la candidatura, para no volver a pedirlo */
   situacion?: Partial<DatosSocietarios>;
   /** Quién firmaría a título personal si no hay sociedad: la persona de contacto */
@@ -490,16 +488,6 @@ export function FirmarAcuerdo({
                   <option value="software">Software</option>
                   <option value="software_ia">Software con IA</option>
                   <option value="hardware">Hardware</option>
-                </Seleccion>
-              </Campo>
-              <Campo etiqueta="Fase del programa">
-                <Seleccion name="phase_code" defaultValue="">
-                  <option value="">Sin fase</option>
-                  {fases.map((f) => (
-                    <option key={f.code} value={f.code}>
-                      {f.name}
-                    </option>
-                  ))}
                 </Seleccion>
               </Campo>
               <Campo etiqueta="Recorrido">

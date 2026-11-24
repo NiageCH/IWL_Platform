@@ -1,6 +1,6 @@
 import type { ResumenCompania } from "@/lib/datos/compania";
-import { leerAvance } from "@/lib/datos/avance";
-import { AvanceDelProgramaVista } from "@/components/avance-programa";
+import { leerSeguimiento } from "@/lib/datos/hoja";
+import { TramosEnCorto } from "@/components/vistas/hoja";
 import { VistaQueFalta } from "./tareas";
 import { EnlacesInforme } from "@/components/informe/enlace";
 import {
@@ -33,7 +33,8 @@ export async function VistaResumen({
   resumen: NonNullable<ResumenCompania>;
 }) {
   const { compania, invertible, kpis, hallazgos, scoreTecnico, semaforo } = resumen;
-  const avance = await leerAvance(compania.id, compania.phase_id);
+  // Por dónde va, en tramos: lo mismo que el resumen de la Hoja de ruta (REVISION, 24 nov)
+  const seguimiento = await leerSeguimiento(compania.id);
 
   /* El mismo prefijo que usa la cabecera: la fundadora ve `/proyecto`, IWL
      la ficha de esa compañía dentro de la cartera */
@@ -49,9 +50,9 @@ export async function VistaResumen({
       {/*
         Por dónde va, lo primero.
 
-        Era la pregunta que la plataforma no contestaba de un vistazo: la
-        fase estaba en letra pequeña en la cabecera y no decía ni cuántas
-        hay, ni cuál viene después, ni cuánto queda.
+        En tramos de la hoja de ruta, con las mismas cifras que su pestaña.
+        Fueron las fases antiguas del programa, que no convivían con los
+        tramos (REVISION, 24 nov).
       */}
       <Bloque elevacion={2}>
         <TituloBloque>Por dónde va</TituloBloque>
@@ -109,7 +110,7 @@ export async function VistaResumen({
           )}
         </div>
 
-        <AvanceDelProgramaVista avance={avance} base={base} />
+        <TramosEnCorto seguimiento={seguimiento} hoy={new Date().toISOString().slice(0, 10)} ruta={`${base}/ruta`} />
       </Bloque>
 
       {/*

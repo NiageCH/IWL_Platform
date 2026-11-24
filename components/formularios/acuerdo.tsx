@@ -188,18 +188,16 @@ export function AceptarAnexo({ id, slug }: { id: string; slug: string }) {
 
 /**
  * Firmar el Acuerdo y su Anexo aceptado. Pasa la compañía a incubación:
- * fija etapa, perfil y fase, y crea sus KPI. La hoja de ruta ya se preparó
+ * fija etapa y perfil, y crea sus KPI. La hoja de ruta ya se preparó
  * con el Anexo (REVISION, 22 nov): al firmar queda viva y abre su primer
  * tramo.
  */
 export function FirmarAcuerdoCompania({
   companyId,
   slug,
-  fases,
 }: {
   companyId: string;
   slug: string;
-  fases: { code: string; name: string }[];
 }) {
   return (
     <Desplegable titulo="Firmar el Acuerdo y el Anexo">
@@ -225,16 +223,6 @@ export function FirmarAcuerdoCompania({
                   <option value="software">Software</option>
                   <option value="software_ia">Software con IA</option>
                   <option value="hardware">Hardware</option>
-                </Seleccion>
-              </Campo>
-              <Campo etiqueta="Fase del programa">
-                <Seleccion name="phase_code" defaultValue="">
-                  <option value="">Sin fase</option>
-                  {fases.map((f) => (
-                    <option key={f.code} value={f.code}>
-                      {f.name}
-                    </option>
-                  ))}
                 </Seleccion>
               </Campo>
               <Campo etiqueta="Firmado el" obligatorio error={r.ok ? undefined : r.campos?.firmado_on}>

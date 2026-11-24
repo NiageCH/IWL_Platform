@@ -2172,3 +2172,10 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **`.vercelignore` deja pasar `contenido/**/*.md`.**
 - **El generador para la compilación** si falta la carpeta o alguno de los ficheros que nombra `FICHERO_GUIA`. Una compilación rota se ve; una guía vacía en producción, no.
 - **`lib/vercelignore.test.ts` lee `.vercelignore`** con la semántica de `.gitignore` (la librería `ignore`, ya declarada como dependencia de desarrollo). Comprueba, fichero a fichero de los versionados, que no deja fuera nada de `contenido/`, `lib/fuentes/`, `app/`, `components/`, `lib/`, `public/` ni la configuración de la compilación. También comprueba que sigue dejando fuera las claves, la semilla local, la documentación y las pruebas.
+
+## 2026-11-24 · Fuera las fases antiguas del programa
+
+- **Las cuatro fases** (Acuerdo Marco, Due diligence conjunto, Incubación, Fin del programa) **no convivían con los cuatro tramos.** Ningún cálculo las usaba: ni los scores, ni los filtros de la cartera, ni la comparativa. Se elegían al dar de alta o al firmar y se enseñaban en la cabecera, la cartera, Programa, el Resumen y Administración → Compañías.
+- **Se retiran la tabla `phases` y las columnas `companies.phase_id` y `milestones.phase_id`** (`20261129100000_fuera_fases`). Se recrean sin ellas, desde su definición actual en la base, el alta (`crear_compania`), las dos firmas del Acuerdo (`firmar_acuerdo` y `firmar_candidatura`, sin el argumento `p_phase_code`), el guardián de lo que fija IWL y la vista `admin_companias`.
+- **«Por dónde va», en el Resumen, sale de los tramos** con `resumenDeTramos`, la misma función que el resumen de la pestaña Hoja de ruta: las cifras coinciden por construcción. Se borraron `lib/datos/avance.ts` y `components/avance-programa.tsx`.
+- **La etiqueta de etapa** (Diagnóstico, Due diligence, Incubación, Aceleración) sale del estadio y de si hay Acuerdo firmado (`etiquetaEtapa`, 23 nov).

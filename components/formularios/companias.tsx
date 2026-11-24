@@ -52,7 +52,6 @@ export interface FichaCompania {
   one_liner: string | null;
   stage: string;
   tech_profile: string;
-  phase_id: string | null;
   cohort_id: string | null;
   website: string | null;
   founded_on: string | null;
@@ -65,11 +64,9 @@ export interface FichaCompania {
 
 export function EditarCompania({
   compania,
-  fases,
   cohortes,
 }: {
   compania: FichaCompania;
-  fases: Array<{ id: string; name: string }>;
   cohortes: Array<{ id: string; name: string }>;
 }) {
   /*
@@ -144,21 +141,6 @@ export function EditarCompania({
                     {PERFILES.map((p) => (
                       <option key={p.valor} value={p.valor}>
                         {p.texto}
-                      </option>
-                    ))}
-                  </Seleccion>
-                </Campo>
-
-                <Campo etiqueta="Fase del programa">
-                  <Seleccion
-                    key={compania.phase_id ?? "sin"}
-                    name="phase_id"
-                    defaultValue={compania.phase_id ?? ""}
-                  >
-                    <option value="">Sin fase</option>
-                    {fases.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
                       </option>
                     ))}
                   </Seleccion>

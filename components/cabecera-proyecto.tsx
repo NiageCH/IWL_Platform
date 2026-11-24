@@ -21,7 +21,7 @@ import { DistintivoDemo } from "@/components/ui/distintivo-demo";
 import { describirSituacion } from "@/lib/societario";
 
 /**
- * Cabecera fija de todas las pantallas del proyecto (§4.1): fase, semáforo,
+ * Cabecera fija de todas las pantallas del proyecto (§4.1): etapa, semáforo,
  * score de preparación y score técnico.
  *
  * Los dos scores llevan siempre su lectura en texto, para que se entiendan sin
@@ -67,11 +67,11 @@ export function CabeceraProyecto({
     <header className="border-b border-filete bg-lienzo/60">
       <div className="mx-auto w-full max-w-6xl px-6 pt-5">
         {/*
-          Una línea, y en este orden: nombre · fase · semáforo · los dos
+          Una línea, y en este orden: nombre · etapa · semáforo · los dos
           scores. A la derecha, un único menú de acciones.
 
           Llevaba nombre, sector, dos enlaces de administración,
-          descripción, fase, etapa, perfil, semáforo y tres cifras con su
+          descripción, etapa, perfil, semáforo y tres cifras con su
           nota, y se repetía en las ocho pantallas de la compañía: la
           cabecera pesaba más que el contenido que encabezaba.
 

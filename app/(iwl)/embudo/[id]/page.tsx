@@ -70,9 +70,8 @@ export default async function FichaCandidatura({
   const estado = c.estado ?? "presentada";
 
   const supabase = await clienteServidor();
-  const [plantillas, fases, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos, filtro, mentores] = await Promise.all([
+  const [plantillas, alta, nda, reuniones, actas, personasIwl, comiteDefecto, correos, filtro, mentores] = await Promise.all([
     supabase.from("roadmap_templates").select("id, name").order("name"),
-    supabase.from("phases").select("code, name").order("order_index"),
     leerAltaCandidatura(id),
     leerNda(id),
     leerReuniones(id),
@@ -537,7 +536,6 @@ export default async function FichaCandidatura({
                 id={c.id!}
                 nombre={c.nombre ?? ""}
                 plantillas={plantillas.data ?? []}
-                fases={fases.data ?? []}
                 situacion={{
                   situacion_societaria: c.situacion_societaria,
                   constitucion_prevista: c.constitucion_prevista,

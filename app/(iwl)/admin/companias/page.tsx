@@ -53,9 +53,8 @@ interface Miembro {
 export default async function AdminCompanias() {
   const supabase = await clienteServidor();
 
-  const [companias, fases, cohortes, plantillas, asignables] = await Promise.all([
+  const [companias, cohortes, plantillas, asignables] = await Promise.all([
     supabase.from("admin_companias").select("*").order("name"),
-    supabase.from("phases").select("id, code, name, order_index").order("order_index"),
     supabase
       .from("cohorts")
       .select("id, name, start_date, end_date, investable_target")
@@ -118,7 +117,6 @@ export default async function AdminCompanias() {
     ),
   );
 
-  const listaFases = (fases.data ?? []).map((f) => ({ id: f.id, name: f.name }));
   const listaCohortes = (cohortes.data ?? []).map((c) => ({
     id: c.id,
     name: c.name,
@@ -132,7 +130,6 @@ export default async function AdminCompanias() {
     one_liner: c.one_liner,
     stage: c.stage!,
     tech_profile: c.tech_profile!,
-    phase_id: c.phase_id,
     cohort_id: c.cohort_id,
     website: c.website,
     founded_on: c.founded_on,
@@ -201,10 +198,6 @@ export default async function AdminCompanias() {
                       <dd>
                         <EstadoEntrada id={c.id!} valor={c.entry_state} />
                       </dd>
-                    </div>
-                    <div className="flex gap-2">
-                      <dt className="text-metadato">Fase</dt>
-                      <dd className="text-cuerpo">{c.phase_name ?? "—"}</dd>
                     </div>
                     <div className="flex gap-2">
                       <dt className="text-metadato">Cohorte</dt>
@@ -278,7 +271,6 @@ export default async function AdminCompanias() {
                   <div className="mt-2 flex flex-wrap items-center gap-4">
                     <EditarCompania
                       compania={ficha(c)}
-                      fases={listaFases}
                       cohortes={listaCohortes}
                     />
                     <ArchivarCompania compania={ficha(c)} />
@@ -294,7 +286,6 @@ export default async function AdminCompanias() {
         )}
 
         <FormularioCompania
-          fases={(fases.data ?? []).map((f) => ({ code: f.code, name: f.name }))}
           cohortes={listaCohortes}
           plantillas={plantillas.map((p) => ({
             id: p.id,

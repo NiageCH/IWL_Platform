@@ -471,14 +471,75 @@ export function ResumenTramos({ seguimiento }: { seguimiento: Seguimiento }) {
 }
 
 /**
- * El resumen de la hoja de ruta, uno solo (REVISION, 23 nov). Había dos —el
- * seguimiento y debajo «Hoja de ruta» con su recorrido, «tramo que toca por
- * calendario», cuadritos y barra— y se contradecían: en Vega uno decía
- * tramo 1 en curso y el otro «De MVP a piloto, por calendario». Queda este:
- * los cuatro tramos, una línea de avance, el plazo y las horas de IWL.
+ * Lo que dice el resumen de la hoja de ruta, calculado una vez (REVISION,
+ * 24 nov). Lo usan la pestaña Hoja de ruta y el «Por dónde va» del
+ * Resumen, para que las dos digan lo mismo con las mismas cifras.
  *
- * Antes de la firma es un borrador: ni retraso ni vencidos, y si la fecha
- * prevista de firma ya pasó, se dice que hay que actualizarla.
+ * Antes de la firma es un borrador: ni retraso ni vencidos, todo tramo
+ * abierto dice «Borrador», y si la fecha prevista de firma ya pasó, se dice.
+ */
+export function resumenDeTramos(seguimiento: Seguimiento, hoy: string) {
+  const { tramos, firma, estadio } = seguimiento;
+  const actual = tramos.find((t) => !t.cerrado) ?? null;
+  const p = firma && estadio ? plazo(firma, estadio, hoy) : null;
+  // Sin firma, las fechas son orientativas: no hay retraso que contar
+  const retraso = firma && actual ? retrasoTramo({ fin: actual.fin, cerrado: actual.cerrado }, hoy) : null;
+  const firmaPrevista = firma ? null : (tramos[0]?.inicio ?? null);
+  const tarjetas = ([1, 2, 3, 4] as NumeroTramo[]).map((n) => {
+    const t = tramos.find((x) => x.tramo === n) ?? null;
+    const valor: EstadoVisual = !t
+      ? "no_aplica"
+      : t.cerrado
+        ? "hecho"
+        : !firma
+          ? "pendiente"
+          : t === actual
+            ? "curso"
+            : "pendiente";
+    const rotulo = !t
+      ? "Antes de su entrada"
+      : t.cerrado
+        ? "Cerrado"
+        : !firma
+          ? "Borrador"
+          : t === actual
+            ? "En curso"
+            : "Por hacer";
+    const c = t ? cuentaTramo(t.hitos) : null;
+    return {
+      n,
+      id: t?.id ?? null,
+      nombre: TRAMOS[n].nombre,
+      valor,
+      rotulo,
+      actual: t !== null && t === actual,
+      hitos: c
+        ? `${c.hechos} de ${c.pendientes.length} hitos${c.alEntrar ? ` · ${c.alEntrar} al entrar` : ""}`
+        : "Entró después de este tramo",
+    };
+  });
+  return {
+    hay: tramos.length > 0,
+    firmado: Boolean(firma),
+    actual,
+    tarjetas,
+    avance: actual
+      ? `Tramo ${actual.tramo} · ${actual.nombre}. ${dondeEstamos(actual.hitos)}`
+      : "Hoja de ruta cumplida: los cuatro tramos cerrados.",
+    plazo: p
+      ? { texto: `${textoPlazo(p)}: plazo máximo de ${p.meses} meses desde la firma, hasta el ${fecha(p.vence)}.`, vencido: p.vencido }
+      : null,
+    firmaPasada: Boolean(firmaPrevista && firmaPrevista < hoy),
+    retraso,
+  };
+}
+
+const BORRADOR = "Borrador: las fechas son orientativas hasta la firma. El plazo empieza a contar con la firma del Acuerdo.";
+const FIRMA_PASADA = "La fecha prevista de firma ya ha pasado: actualízala.";
+
+/**
+ * El resumen de la hoja de ruta, uno solo (REVISION, 23 nov): los cuatro
+ * tramos, una línea de avance, el plazo y las horas de IWL.
  */
 export function SeguimientoTramos({
   seguimiento,
@@ -495,14 +556,8 @@ export function SeguimientoTramos({
   /** Dónde se cambia la fecha prevista de firma, para quien puede */
   actualizarFirma?: string | null;
 }) {
-  const { tramos, firma, estadio } = seguimiento;
-  if (!tramos.length) return null;
-  const actual = tramos.find((t) => !t.cerrado) ?? null;
-  const p = firma && estadio ? plazo(firma, estadio, hoy) : null;
-  // Sin firma, las fechas son orientativas: no hay retraso que contar
-  const retraso = firma && actual ? retrasoTramo({ fin: actual.fin, cerrado: actual.cerrado }, hoy) : null;
-  const firmaPrevista = firma ? null : (tramos[0]?.inicio ?? null);
-  const firmaPasada = Boolean(firmaPrevista && firmaPrevista < hoy);
+  const r = resumenDeTramos(seguimiento, hoy);
+  if (!r.hay) return null;
 
   return (
     <Bloque id="seguimiento" className="mb-6" elevacion={2}>
@@ -511,59 +566,30 @@ export function SeguimientoTramos({
           <span className="flex flex-wrap items-center justify-end gap-2">
             {entrada ? <span className="pastilla">Entró en {entrada}</span> : null}
             <Metadato>
-              {actual ? `Tramo ${actual.tramo} de 4` : "Todos los tramos cerrados"}
-              {firma ? "" : " · borrador, hasta la firma"}
+              {r.actual ? `Tramo ${r.actual.tramo} de 4` : "Todos los tramos cerrados"}
+              {r.firmado ? "" : " · borrador, hasta la firma"}
             </Metadato>
           </span>
         }
       >
         Hoja de ruta
       </TituloBloque>
-      {/*
-        Los cuatro tramos de un vistazo, como en Administración → Hoja de
-        ruta: número grande, nombre, estado e hitos. Pulsar uno baja a su
-        tarjeta.
-      */}
+      {/* Los cuatro tramos de un vistazo; pulsar uno baja a su tarjeta */}
       <ol className="grid grid-cols-2 gap-3 px-4 pt-4 lg:grid-cols-4" aria-label="Los tramos">
-        {([1, 2, 3, 4] as NumeroTramo[]).map((n) => {
-          const t = tramos.find((x) => x.tramo === n);
-          // Antes de la firma, todo tramo abierto es borrador: lo mismo que su cabecera (REVISION, 24 nov)
-          const valor: EstadoVisual = !t
-            ? "no_aplica"
-            : t.cerrado
-              ? "hecho"
-              : !firma
-                ? "pendiente"
-                : t === actual
-                  ? "curso"
-                  : "pendiente";
-          const rotulo = !t
-            ? "Antes de su entrada"
-            : t.cerrado
-              ? "Cerrado"
-              : !firma
-                ? "Borrador"
-                : t === actual
-                  ? "En curso"
-                  : "Por hacer";
-          const c = t ? cuentaTramo(t.hitos) : null;
+        {r.tarjetas.map((t) => {
           const contenido = (
             <>
               <span className="flex items-start justify-between gap-2">
-                <span className="text-3xl font-semibold leading-none tabular-nums text-titular">{n}</span>
-                <Estado valor={valor} rotulo={rotulo} />
+                <span className="text-3xl font-semibold leading-none tabular-nums text-titular">{t.n}</span>
+                <Estado valor={t.valor} rotulo={t.rotulo} />
               </span>
-              <span className="text-sm font-medium text-titular">{TRAMOS[n].nombre}</span>
-              <span className="text-xs tabular-nums text-secundario">
-                {c
-                  ? `${c.hechos} de ${c.pendientes.length} hitos${c.alEntrar ? ` · ${c.alEntrar} al entrar` : ""}`
-                  : "Entró después de este tramo"}
-              </span>
+              <span className="text-sm font-medium text-titular">{t.nombre}</span>
+              <span className="text-xs tabular-nums text-secundario">{t.hitos}</span>
             </>
           );
           return (
-            <li key={n} aria-current={t === actual ? "step" : undefined}>
-              {t ? (
+            <li key={t.n} aria-current={t.actual ? "step" : undefined}>
+              {t.id ? (
                 <a href={`#etapa-${t.id}`} className="tarjeta fila-enlace flex h-full flex-col gap-1.5 px-4 py-3">
                   {contenido}
                 </a>
@@ -577,49 +603,107 @@ export function SeguimientoTramos({
         })}
       </ol>
       <div className="flex flex-col gap-1 px-4 py-4 text-sm tabular-nums">
-        {actual ? (
-          <p className="text-titular">
-            Tramo {actual.tramo} · {actual.nombre}. {dondeEstamos(actual.hitos)}
-          </p>
-        ) : (
-          <p className="text-titular">Hoja de ruta cumplida: los cuatro tramos cerrados.</p>
-        )}
-        {p ? (
-          <p className={p.vencido ? "es-vencido texto-estado" : "text-secundario"}>
-            {textoPlazo(p)}: plazo máximo de {p.meses} meses desde la firma, hasta el {fecha(p.vence)}.
-          </p>
-        ) : (
-          <>
-            <p className="text-secundario">
-              Borrador: las fechas son orientativas hasta la firma. El plazo empieza a contar con la firma del Acuerdo.
-            </p>
-            {firmaPasada ? (
-              <p className="es-atencion texto-estado" role="status">
-                La fecha prevista de firma ya ha pasado: actualízala.
-                {actualizarFirma ? (
-                  <>
-                    {" "}
-                    <Link href={actualizarFirma} className="enlace">
-                      Cambiar la fecha prevista
-                    </Link>
-                  </>
-                ) : null}
-              </p>
-            ) : null}
-          </>
-        )}
+        <p className="text-titular">{r.avance}</p>
+        <LineasPlazo r={r} actualizarFirma={actualizarFirma} />
         {horas ? (
           <p className="text-secundario">
             Horas de IWL: {numero(horas.imputadas)}
             {horas.previstas > 0 ? ` de ${numero(horas.previstas)} previstas` : " imputadas, sin previsión por tramo"}.
           </p>
         ) : null}
-        {retraso ? (
+        {r.retraso ? (
           <p className="es-atencion texto-estado">
-            Este tramo va con {retraso === 1 ? "1 semana" : `${retraso} semanas`} de retraso sobre su duración.
+            Este tramo va con {r.retraso === 1 ? "1 semana" : `${r.retraso} semanas`} de retraso sobre su duración.
           </p>
         ) : null}
       </div>
     </Bloque>
+  );
+}
+
+function LineasPlazo({
+  r,
+  actualizarFirma,
+}: {
+  r: ReturnType<typeof resumenDeTramos>;
+  actualizarFirma?: string | null;
+}) {
+  if (r.plazo) {
+    return <p className={r.plazo.vencido ? "es-vencido texto-estado" : "text-secundario"}>{r.plazo.texto}</p>;
+  }
+  return (
+    <>
+      <p className="text-secundario">{BORRADOR}</p>
+      {r.firmaPasada ? (
+        <p className="es-atencion texto-estado" role="status">
+          {FIRMA_PASADA}
+          {actualizarFirma ? (
+            <>
+              {" "}
+              <Link href={actualizarFirma} className="enlace">
+                Cambiar la fecha prevista
+              </Link>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * «Por dónde va», en el Resumen (REVISION, 24 nov): lo mismo que el
+ * resumen de la Hoja de ruta, en corto. Las cuatro tarjetas pequeñas, el
+ * tramo actual con la siguiente fecha, y el plazo. Sustituye a las fases
+ * antiguas del programa.
+ */
+export function TramosEnCorto({
+  seguimiento,
+  hoy,
+  ruta,
+}: {
+  seguimiento: Seguimiento;
+  hoy: string;
+  /** La pestaña Hoja de ruta de esta compañía */
+  ruta: string;
+}) {
+  const r = resumenDeTramos(seguimiento, hoy);
+  if (!r.hay) {
+    return (
+      <p className="px-4 py-3 text-sm text-secundario">
+        Todavía no tiene hoja de ruta: se prepara con el Acuerdo.{" "}
+        <Link href={ruta} className="enlace text-acento-texto">
+          Ver la hoja de ruta
+        </Link>
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3 px-4 py-4" data-tramos-en-corto="">
+      <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Los tramos">
+        {r.tarjetas.map((t) => (
+          <li key={t.n} aria-current={t.actual ? "step" : undefined}>
+            <a
+              href={t.id ? `${ruta}#etapa-${t.id}` : ruta}
+              className={
+                t.id
+                  ? "tarjeta fila-enlace flex h-full flex-col gap-1 px-3 py-2"
+                  : "flex h-full flex-col gap-1 rounded-md border border-dashed border-filete px-3 py-2 opacity-70"
+              }
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-lg font-semibold leading-none tabular-nums text-titular">{t.n}</span>
+                <Estado valor={t.valor} rotulo={t.rotulo} />
+              </span>
+              <span className="text-xs text-secundario">{t.nombre}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-col gap-1 text-sm tabular-nums">
+        <p className="text-titular">{r.avance}</p>
+        <LineasPlazo r={r} />
+      </div>
+    </div>
   );
 }

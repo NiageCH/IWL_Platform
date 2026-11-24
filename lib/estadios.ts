@@ -4,7 +4,7 @@
  * sin base de datos.
  *
  * Del estadio sale todo lo que antes decidía la vía:
- *   · el programa de la Fase 3: Incubación para idea y MVP sin piloto;
+ *   · el programa: Incubación para idea y MVP sin piloto;
  *     Aceleración para MVP con piloto y facturando;
  *   · la revisión de entrada: diagnóstico en idea, due diligence en el resto.
  */

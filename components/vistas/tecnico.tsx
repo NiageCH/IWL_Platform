@@ -143,7 +143,7 @@ export async function VistaTecnico({
         <SinDatos>
           {permisos.puedeValidar
             ? "Todavía no hay evaluación. Ábrela y queda en borrador: puntúas las dimensiones, registras hallazgos y la publicas cuando esté. Hasta entonces no la ve la compañía."
-            : "Todavía no hay una evaluación técnica publicada. La primera la realiza la ingeniería de Niage durante la fase de due diligence conjunto."}
+            : "Todavía no hay una evaluación técnica publicada. La primera la hace la ingeniería de Niage en la revisión de entrada."}
         </SinDatos>
         {permisos.puedeValidar ? (
           <div className="px-4 pb-4">

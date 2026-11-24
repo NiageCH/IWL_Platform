@@ -39,7 +39,7 @@ import { direccionBase } from "@/lib/direccion";
 export const metadata = { title: "Cartera · Plataforma IWL" };
 
 /**
- * Dashboard de cohorte (§4.7): una fila por compañía con fase, semáforo,
+ * Dashboard de cohorte (§4.7): una fila por compañía con estadio, semáforo,
  * scores, último update, runway e hitos.
  *
  * Debajo, el embudo hacia invertible con el objetivo interno de la cohorte.

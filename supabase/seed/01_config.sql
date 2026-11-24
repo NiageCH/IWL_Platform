@@ -10,21 +10,6 @@
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- Fases del programa (§3)
--- -----------------------------------------------------------------------------
-
-insert into phases (code, name, description, order_index) values
-  ('fase_0', 'Acuerdo Marco',
-   'Incorporación formal a la cohorte.', 0),
-  ('fase_1', 'Due diligence conjunto',
-   'Máximo dos semanas. Diagnóstico y firma del Anexo de Programa.', 1),
-  ('fase_2', 'Incubación',
-   'De seis a dieciocho meses según Anexo. Plan a medida y seguimiento periódico.', 2),
-  ('fase_3', 'Fin del programa',
-   'Evaluación frente a hitos, demo day y relación post-programa.', 3)
-on conflict (code) do nothing;
-
--- -----------------------------------------------------------------------------
 -- Pilares (§3). Se activan por proyecto con intensidad distinta
 -- -----------------------------------------------------------------------------
 

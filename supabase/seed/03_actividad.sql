@@ -5,9 +5,9 @@
 -- técnica con puntuaciones y hallazgos, plan de trabajo y seis meses de KPI.
 --
 -- Las tres están en momentos distintos a propósito:
---   Marea Clínica  · semilla, fase 2. Casi invertible
---   Vega Predictiva· pre-semilla, fase 1. Empezando, con un hallazgo crítico
---   Raíz Sensórica · semilla, fase 2. Hardware, con un punto bloqueante
+--   Marea Clínica  · semilla, en incubación. Casi invertible
+--   Vega Predictiva· pre-semilla, en diagnóstico. Empezando, con un hallazgo crítico
+--   Raíz Sensórica · semilla, en aceleración. Hardware, con un punto bloqueante
 -- =============================================================================
 
 -- Los triggers de validación comprueban quién escribe. En la semilla no hay
@@ -47,7 +47,7 @@ update dd_items set status = 'entregado'
 where company_id = '00000000-0000-0000-0004-000000000001'
   and template_id = (select id from dd_item_templates where code = 'fin_extracto_caja');
 
--- Vega Predictiva: en fase 1, el due diligence está empezando
+-- Vega Predictiva: en diagnóstico, la revisión de entrada está empezando
 update dd_items set status = 'entregado'
 where company_id = '00000000-0000-0000-0004-000000000002'
   and template_id in (

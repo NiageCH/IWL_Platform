@@ -96,11 +96,9 @@ const PERFILES_TARIFA = [
  * compañía nace sin nada en lo que trabajar.
  */
 export function FormularioCompania({
-  fases,
   cohortes,
   plantillas,
 }: {
-  fases: Array<{ code: string; name: string }>;
   cohortes: Array<{ id: string; name: string }>;
   plantillas: Array<{
     id: string;
@@ -180,16 +178,6 @@ export function FormularioCompania({
                   {PERFILES.map((p) => (
                     <option key={p.valor} value={p.valor}>
                       {p.texto}
-                    </option>
-                  ))}
-                </Seleccion>
-              </Campo>
-
-              <Campo etiqueta="Fase del programa">
-                <Seleccion name="phase_code" required defaultValue="fase_0">
-                  {fases.map((f) => (
-                    <option key={f.code} value={f.code}>
-                      {f.name}
                     </option>
                   ))}
                 </Seleccion>

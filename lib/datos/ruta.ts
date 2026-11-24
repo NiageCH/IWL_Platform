@@ -7,9 +7,9 @@ import type { Database } from "@/lib/supabase/database.types";
  * La hoja de ruta de un proyecto.
  *
  * IWL es una incubadora boutique: el recorrido se diseña para cada proyecto
- * según el estado en que entra. Las fases del programa son iguales para todos
- * y dicen en qué momento del contrato está la compañía; la hoja de ruta es
- * suya y dice qué se está intentando conseguir ahora mismo y con qué medios.
+ * según el estado en que entra, en los cuatro tramos de la hoja de ruta IWL
+ * desde el de su estadio. Dice qué se está intentando conseguir ahora mismo
+ * y con qué medios.
  */
 
 export type EstadoEntrada = Database["public"]["Enums"]["estado_entrada"];

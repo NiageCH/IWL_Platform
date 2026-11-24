@@ -18,7 +18,7 @@ import { equity, euros, fecha, numero } from "@/lib/utils";
 import { tarifaAnexo } from "@/lib/anexo";
 
 /**
- * El programa visto desde dentro: en qué fase estamos, qué se acordó y qué
+ * El programa visto desde dentro: en qué estadio está, qué se acordó y qué
  * llevamos cumplido (§4.5).
  *
  * Es lo que contesta a «¿dónde estoy y qué me toca?», que es la pregunta que

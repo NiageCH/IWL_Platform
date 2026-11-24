@@ -66,7 +66,6 @@ const esquemaCompania = z.object({
   stage: z.enum(ETAPAS),
   tech_profile: z.enum(PERFILES),
   entry_state: z.enum(ESTADOS_ENTRADA_VALIDOS),
-  phase_code: textoObligatorio(),
   /*
    * La hoja de ruta es opcional en el alta.
    *
@@ -118,7 +117,6 @@ export async function crearCompania(formData: FormData): Promise<Resultado> {
     p_stage: datos.stage,
     p_tech_profile: datos.tech_profile,
     p_entry_state: datos.entry_state,
-    p_phase_code: datos.phase_code,
     p_roadmap_template: datos.roadmap_template ?? undefined,
     p_roadmap_start: datos.roadmap_start ?? undefined,
     p_cohort_id: datos.cohort_id ?? undefined,
@@ -172,7 +170,6 @@ const esquemaFicha = z.object({
    * campo.
    */
   entry_state: z.enum(ESTADOS_ENTRADA_VALIDOS).nullish(),
-  phase_id: idOpcional,
   cohort_id: idOpcional,
   /*
    * Los tres que faltaban.
@@ -206,7 +203,7 @@ const esquemaFicha = z.object({
   if (d.situacion_societaria) exigir({ ...d, situacion_societaria: d.situacion_societaria }, ctx);
 });
 
-/** La etapa y la fase las mueve IWL: deciden el nivel objetivo y el score */
+/** La etapa la mueve IWL: decide el nivel objetivo y el score */
 export async function editarCompania(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(esquemaFicha, formData);
   if (fallo) return fallo;

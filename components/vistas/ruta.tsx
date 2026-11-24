@@ -49,10 +49,9 @@ import { cn } from "@/lib/utils";
 /**
  * La hoja de ruta del proyecto.
  *
- * Las fases del programa son iguales para todos y dicen en qué punto del
- * contrato está la compañía. Esto es lo contrario: el recorrido que IWL
- * diseñó para este proyecto concreto, según el estado en que entró, con lo
- * que se persigue en cada tramo y lo que IWL pone en cada uno.
+ * El recorrido de este proyecto en los cuatro tramos de la hoja de ruta
+ * IWL, desde el de su estadio: lo que se persigue en cada tramo y lo que
+ * IWL pone en cada uno.
  *
  * Se lee de arriba abajo como una línea de tiempo, porque la pregunta que
  * contesta es «¿por dónde vamos?».

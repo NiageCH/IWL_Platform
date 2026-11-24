@@ -104,30 +104,29 @@ where email in ('revisor@niage.test', 'revisor2@niage.test');
 
 insert into companies (
   id, organization_id, cohort_id, name, slug, sector, one_liner,
-  phase_id, stage, tech_profile, female_leadership_pct, founded_on, website
+  stage, tech_profile, female_leadership_pct, founded_on, website
 )
 select
   v.id::uuid,
   '00000000-0000-0000-0001-000000000001',
   '00000000-0000-0000-0003-000000000001',
   v.name, v.slug, v.sector, v.one_liner,
-  p.id, v.stage::company_stage, v.tech_profile::company_tech_profile,
+  v.stage::company_stage, v.tech_profile::company_tech_profile,
   v.female_pct, v.founded_on::date, v.website
 from (values
   ('00000000-0000-0000-0004-000000000001',
    'Marea Clínica', 'marea-clinica', 'Salud digital',
    'Plataforma de seguimiento de pacientes crónicos para centros de atención primaria.',
-   'fase_2', 'semilla', 'software', 75.00, '2024-05-10', 'https://marea-clinica.test'),
+   'semilla', 'software', 75.00, '2024-05-10', 'https://marea-clinica.test'),
   ('00000000-0000-0000-0004-000000000002',
    'Vega Predictiva', 'vega-predictiva', 'Logística',
    'Predicción de demanda para distribuidoras de alimentación con modelos propios.',
-   'fase_1', 'pre_semilla', 'software_ia', 100.00, '2025-09-01', 'https://vega-predictiva.test'),
+   'pre_semilla', 'software_ia', 100.00, '2025-09-01', 'https://vega-predictiva.test'),
   ('00000000-0000-0000-0004-000000000003',
    'Raíz Sensórica', 'raiz-sensorica', 'Agrotecnología',
    'Sensores de suelo y plataforma de riego de precisión para cultivo extensivo.',
-   'fase_2', 'semilla', 'hardware', 60.00, '2023-11-20', 'https://raiz-sensorica.test')
-) as v(id, name, slug, sector, one_liner, phase_code, stage, tech_profile, female_pct, founded_on, website)
-join phases p on p.code = v.phase_code
+   'semilla', 'hardware', 60.00, '2023-11-20', 'https://raiz-sensorica.test')
+) as v(id, name, slug, sector, one_liner, stage, tech_profile, female_pct, founded_on, website)
 on conflict (id) do nothing;
 
 -- -----------------------------------------------------------------------------
