@@ -6,6 +6,7 @@ import {
   borrar,
   consultar,
   entrarComo,
+  insertar,
 } from "./entrada";
 
 /**
@@ -179,6 +180,60 @@ test("una compañía sin hoja de ruta lleva a prepararla, y se genera desde su t
   await expect(page.locator("li[data-fila-hito]").getByText("Vencido", { exact: true })).toHaveCount(0);
   // Un solo resumen: sin «tramo que toca por calendario»
   await expect(page.getByText(/Tramo que toca|Por calendario/)).toHaveCount(0);
+
+  // Y su tarjeta y su cabecera dicen lo mismo: «Borrador» (REVISION, 24 nov)
+  await expect(seguimiento.locator("li[aria-current='step']").getByText("Borrador", { exact: true })).toBeVisible();
+  const tramo1 = tramoDe(page, "Tramo 1 · De idea a MVP");
+  await expect(tramo1.locator("header").getByText("Borrador", { exact: true })).toBeVisible();
+  await expect(tramo1.locator("header").getByText("Planificada")).toHaveCount(0);
+});
+
+test("un hito cumplido se reabre desde su menú, con motivo, y vuelve a pendiente", async ({ page }) => {
+  // Un hito propio en el tramo 4 de Raíz, cumplido y con su evidencia; se borra al acabar
+  const [etapa] = await consultar<{ id: string }>(
+    "roadmap_stages",
+    { company_id: `eq.${COMPANIAS.raiz}`, tramo: "eq.4" },
+    "id",
+  );
+  const id = crypto.randomUUID();
+  const titulo = `Hito para reabrir ${Date.now()} ${test.info().project.name}`;
+  await insertar("evidence_links", {
+    company_id: COMPANIAS.raiz,
+    entity: "milestone",
+    entity_id: id,
+    kind: "enlace",
+    url: "https://ejemplo.test/reabrir",
+    label: "Entrega validada",
+  });
+  try {
+    await insertar("milestones", {
+      id,
+      company_id: COMPANIAS.raiz,
+      stage_id: etapa.id,
+      title: titulo,
+      success_criteria: "Algo que se puede comprobar sin opinar.",
+      status: "cumplido",
+    });
+    await entrarComo(page, USUARIOS.admin, "/cartera/raiz-sensorica/ruta");
+    const fila = page.locator(`li[data-fila-hito="${titulo}"]`);
+    await expect(fila.getByText("Cumplido", { exact: true })).toBeVisible();
+    await fila.getByRole("button", { name: `Acciones de «${titulo}»` }).click();
+    await page.getByRole("menuitem", { name: "Reabrir el hito" }).click();
+    const panel = page.getByRole("dialog", { name: "Reabrir el hito" });
+    await panel.getByLabel("Por qué se reabre").fill("El cliente ha cancelado: hay que volver a demostrarlo.");
+    await panel.getByRole("button", { name: "Reabrir el hito" }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(fila.getByText("Pendiente", { exact: true })).toBeVisible();
+
+    // El motivo, en su historial
+    await fila.getByRole("button", { name: `Acciones de «${titulo}»` }).click();
+    await page.getByRole("menuitem", { name: /Historial/ }).click();
+    await expect(page.getByRole("dialog").getByText("El cliente ha cancelado: hay que volver a demostrarlo.")).toBeVisible();
+  } finally {
+    await borrar("milestones", { id });
+    await borrar("evidence_links", { entity_id: id });
+    await borrar("activity_log", { entity_id: id });
+  }
 });
 
 test("lo cumplido al entrar va plegado al final de su tramo", async ({ page }) => {
@@ -344,3 +399,14 @@ test("un hito del plan sin cumplir bloquea el estado invertible", async ({
   }
 });
 
+
+test("en Programa ya no están las fases antiguas, y la cabecera sale del estadio", async ({ page }) => {
+  // Las fases (Due diligence conjunto, Incubación…) no conviven con los tramos (REVISION, 24 nov)
+  await entrarComo(page, USUARIOS.admin, "/cartera/raiz-sensorica/programa");
+  await expect(page.getByRole("heading", { name: "Fase del programa" })).toHaveCount(0);
+  await expect(page.getByText("Due diligence conjunto")).toHaveCount(0);
+  // Raíz factura y tiene el Acuerdo firmado: Aceleración. Vega, idea y sin firmar: Diagnóstico
+  await expect(page.getByText("Aceleración").first()).toBeVisible();
+  await page.goto("/cartera/vega-predictiva");
+  await expect(page.getByText("Diagnóstico").first()).toBeVisible();
+});

@@ -5,6 +5,8 @@ import { Plus } from "lucide-react";
 import { MenuAcciones, type AccionMenu } from "@/components/menu-acciones";
 import { PanelLateral } from "@/components/ui/panel-lateral";
 import { FechaHito, QuitarHito } from "@/components/formularios/lista-entrada";
+import { reabrirHito } from "@/lib/acciones/hitos";
+import { AreaTexto, Boton, Campo, Formulario } from "@/components/ui/formulario";
 import {
   FormularioBorrarEtapa,
   FormularioEtapa,
@@ -143,6 +145,7 @@ export function MenuHito({
   fecha,
   mover,
   quitar,
+  reabrir,
   ajustes,
 }: {
   slug: string;
@@ -150,6 +153,8 @@ export function MenuHito({
   fecha?: { finPlazo: string | null; esDireccion: boolean; pideMotivo: boolean };
   mover?: { stageId: string | null; etapas: Array<{ id: string; nombre: string }> };
   quitar?: boolean;
+  /** Solo en un hito cumplido, para el mentor principal o dirección */
+  reabrir?: boolean;
   /**
    * El historial y los ajustes del hito (nota, quién lo revisa, efecto
    * económico): iban plegados debajo de cada fila y ahora se abren en el
@@ -157,18 +162,21 @@ export function MenuHito({
    */
   ajustes?: { texto: string; contenido: ReactNode };
 }) {
-  const [panel, setPanel] = useState<"fecha" | "mover" | "quitar" | "ajustes" | null>(null);
+  const [panel, setPanel] = useState<"fecha" | "mover" | "quitar" | "ajustes" | "reabrir" | null>(null);
   const cerrar = useCallback(() => setPanel(null), []);
 
   const acciones: AccionMenu[] = [];
   if (ajustes) acciones.push({ texto: ajustes.texto, alPulsar: () => setPanel("ajustes") });
   if (fecha) acciones.push({ texto: "Cambiar la fecha", alPulsar: () => setPanel("fecha") });
   if (mover && mover.etapas.length > 1) acciones.push({ texto: "Mover a otro tramo", alPulsar: () => setPanel("mover") });
+  if (reabrir) acciones.push({ texto: "Reabrir el hito", alPulsar: () => setPanel("reabrir") });
   if (quitar) acciones.push({ texto: "Quitar", riesgo: true, alPulsar: () => setPanel("quitar") });
   if (!acciones.length) return null;
 
   const titulo =
-    panel === "ajustes"
+    panel === "reabrir"
+      ? "Reabrir el hito"
+      : panel === "ajustes"
       ? (ajustes?.texto ?? "")
       : panel === "fecha"
         ? "Cambiar la fecha"
@@ -181,7 +189,38 @@ export function MenuHito({
       <MenuAcciones rotulo={`Acciones de «${hito.titulo}»`} acciones={acciones} />
       <PanelLateral abierto={panel !== null} titulo={titulo} onCerrar={cerrar}>
         <p className="mb-4 text-sm font-medium text-titular">{hito.titulo}</p>
-        {panel === "ajustes" && ajustes ? (
+        {panel === "reabrir" ? (
+          <Formulario accion={reabrirHito} onOk={cerrar} className="gap-4">
+            {(r) => (
+              <>
+                <input type="hidden" name="slug" value={slug} />
+                <input type="hidden" name="id" value={hito.id} />
+                <p className="text-sm text-cuerpo">
+                  Vuelve a «Pendiente» y conserva su evidencia. Para darlo otra vez por cumplido, ella lo entrega y
+                  se valida.
+                </p>
+                <Campo
+                  etiqueta="Por qué se reabre"
+                  obligatorio
+                  ayuda="Queda en su historial y en el registro"
+                  error={r.ok ? undefined : r.campos?.motivo}
+                >
+                  <AreaTexto name="motivo" rows={3} required minLength={10} />
+                </Campo>
+                <div className="flex flex-wrap gap-2">
+                  <Boton>Reabrir el hito</Boton>
+                  <button
+                    type="button"
+                    className="rounded-full border border-filete bg-elevado px-4 py-2 text-sm font-medium text-titular hover:border-filete-fuerte"
+                    onClick={cerrar}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            )}
+          </Formulario>
+        ) : panel === "ajustes" && ajustes ? (
           <div className="flex flex-col gap-4 text-sm">{ajustes.contenido}</div>
         ) : panel === "fecha" && fecha ? (
           <FechaHito

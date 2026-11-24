@@ -527,8 +527,25 @@ export function SeguimientoTramos({
       <ol className="grid grid-cols-2 gap-3 px-4 pt-4 lg:grid-cols-4" aria-label="Los tramos">
         {([1, 2, 3, 4] as NumeroTramo[]).map((n) => {
           const t = tramos.find((x) => x.tramo === n);
-          const valor: EstadoVisual = !t ? "no_aplica" : t.cerrado ? "hecho" : t === actual ? "curso" : "pendiente";
-          const rotulo = !t ? "Antes de su entrada" : t.cerrado ? "Cerrado" : t === actual ? "En curso" : "Por hacer";
+          // Antes de la firma, todo tramo abierto es borrador: lo mismo que su cabecera (REVISION, 24 nov)
+          const valor: EstadoVisual = !t
+            ? "no_aplica"
+            : t.cerrado
+              ? "hecho"
+              : !firma
+                ? "pendiente"
+                : t === actual
+                  ? "curso"
+                  : "pendiente";
+          const rotulo = !t
+            ? "Antes de su entrada"
+            : t.cerrado
+              ? "Cerrado"
+              : !firma
+                ? "Borrador"
+                : t === actual
+                  ? "En curso"
+                  : "Por hacer";
           const c = t ? cuentaTramo(t.hitos) : null;
           const contenido = (
             <>

@@ -236,6 +236,7 @@ function TarjetaEtapa({
 }) {
   // Antes de la firma las fechas son orientativas: un tramo no vence
   const estado = estadoVisual("etapa", { estado: etapa.estado, fin: contexto.firmado ? etapa.fin : null });
+  const borrador = !contexto.firmado && etapa.estado !== "completada";
   // Primero lo que queda por hacer; lo cumplido al entrar, plegado al final
   const delTramo = etapa.hitos.filter((h) => !h.alEntrar);
   const alEntrar = etapa.hitos.filter((h) => h.alEntrar);
@@ -255,10 +256,11 @@ function TarjetaEtapa({
         <h2 className="text-sm font-semibold tracking-tight text-titular">
           {etapa.tramo ? `Tramo ${etapa.tramo} · ${etapa.nombre}` : `${etapa.orden + 1}. ${etapa.nombre}`}
         </h2>
+        {/* Antes de la firma, «Borrador»: lo mismo que su tarjeta del resumen */}
         <Estado
-          valor={estado}
-          rotulo={ESTADOS_ETAPA[etapa.estado]}
-          motivo={etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
+          valor={borrador ? "pendiente" : estado}
+          rotulo={borrador ? "Borrador" : ESTADOS_ETAPA[etapa.estado]}
+          motivo={!borrador && etapa.fin ? `Cierra el ${fecha(etapa.fin)}` : undefined}
         />
         <span className="flex flex-1 flex-wrap items-center justify-end gap-2">
           <span className="pastilla tabular-nums">
@@ -402,6 +404,7 @@ const TEXTO_REVISION: Record<RevisionHito["tipo"], string> = {
   validacion: "Validado",
   cambios: "Cambios pedidos",
   nota: "Nota",
+  reapertura: "Reabierto",
 };
 
 function Hito({
@@ -589,6 +592,8 @@ function Hito({
               }
               mover={permisos.esIwl ? { stageId, etapas } : undefined}
               quitar={ajusta && (!hito.fundamental || permisos.esAdmin)}
+              // Reabrir un cumplido: el mentor principal o dirección, con motivo (REVISION, 24 nov)
+              reabrir={hito.estado === "cumplido" && (permisos.esAdmin || (permisos.coordina && !permisos.esIwl))}
               ajustes={ajustes}
             />
           </div>

@@ -7,6 +7,12 @@
 -- deja de aceptarlo: con sesión, «cumplido» solo llega por el circuito
 -- (entregar → validar). Recreada desde su última definición
 -- (20261118110100_hitos_con_evidencia.sql), con esa condición añadida.
+--
+-- Y reabrir un hito cumplido (REVISION, 24 nov): solo el mentor principal de
+-- la compañía o dirección, con motivo, por `reabrir_hito`. Vuelve a
+-- pendiente y conserva su evidencia; el motivo queda en su historial y en el
+-- registro. Un hito que condiciona invertible de una compañía graduada no se
+-- reabre: antes hay que reabrir la compañía.
 -- =============================================================================
 
 create or replace function app.guard_hito_cumplido()
@@ -143,6 +149,11 @@ begin
         raise exception 'Un hito que ya devengó equity o liberó financiación no se reabre: es parte de lo pactado.'
           using errcode = '42501';
       end if;
+      -- Y lo demás, solo con «Reabrir el hito», que pide motivo y lo deja en el historial (REVISION, 24 nov)
+      if v_sesion and coalesce(current_setting('app.reabriendo_hito', true), '') <> 'on' then
+        raise exception 'Un hito cumplido se reabre con «Reabrir el hito», con su motivo.'
+          using errcode = 'P0001';
+      end if;
       if v_sesion and not app.coordina_company(new.company_id) then
         raise exception 'Reabrir un hito cumplido es de IWL o de quien coordina el proyecto.'
           using errcode = '42501';
@@ -238,3 +249,66 @@ begin
   return new;
 end;
 $$;
+
+-- -----------------------------------------------------------------------------
+-- Reabrir un hito cumplido
+-- -----------------------------------------------------------------------------
+
+alter table milestone_reviews drop constraint if exists milestone_reviews_kind_check;
+alter table milestone_reviews add constraint milestone_reviews_kind_check
+  check (kind in ('entrega', 'validacion', 'cambios', 'nota', 'reapertura'));
+
+alter table milestone_reviews drop constraint if exists milestone_reviews_con_comentario;
+alter table milestone_reviews add constraint milestone_reviews_con_comentario
+  check (kind not in ('cambios', 'nota', 'reapertura') or length(trim(coalesce(comment, ''))) > 0);
+
+create or replace function public.reabrir_hito(p_hito uuid, p_motivo text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  m milestones;
+  v_cierre text;
+begin
+  select * into m from milestones where id = p_hito;
+  if m.id is null then
+    raise exception 'Ese hito ya no está. Vuelve a cargar la página.' using errcode = 'P0001';
+  end if;
+  if not (
+    app.is_admin()
+    or exists (
+      select 1 from company_members
+      where company_id = m.company_id and profile_id = auth.uid() and member_role = 'mentor_principal'
+    )
+  ) then
+    raise exception 'Reabrir un hito es del mentor de la compañía o de dirección.' using errcode = '42501';
+  end if;
+  if m.status <> 'cumplido' then
+    raise exception 'Solo se reabre un hito cumplido. Vuelve a cargar la página.' using errcode = 'P0001';
+  end if;
+  if length(trim(coalesce(p_motivo, ''))) < 10 then
+    raise exception 'Escribe por qué se reabre: queda en su historial.' using errcode = 'P0001';
+  end if;
+  select cierre into v_cierre from companies where id = m.company_id;
+  if m.gates_investable and v_cierre = 'graduada' then
+    raise exception 'La compañía está graduada y este hito condiciona invertible: reabre antes la compañía, en Administración → Histórico.'
+      using errcode = 'P0001';
+  end if;
+
+  perform set_config('app.reabriendo_hito', 'on', true);
+  update milestones set status = 'pendiente' where id = p_hito;
+  perform set_config('app.reabriendo_hito', '', true);
+
+  insert into milestone_reviews (milestone_id, company_id, kind, comment, author_id, author_name)
+  values (p_hito, m.company_id, 'reapertura', trim(p_motivo), auth.uid(), app.nombre_de(auth.uid()));
+
+  insert into activity_log (company_id, actor_id, entity, entity_id, action, detail)
+  values (m.company_id, auth.uid(), 'milestone', p_hito, 'hito_reabierto',
+          jsonb_build_object('titulo', m.title, 'motivo', trim(p_motivo)));
+end;
+$$;
+
+revoke all on function public.reabrir_hito(uuid, text) from public, anon;
+grant execute on function public.reabrir_hito(uuid, text) to authenticated;

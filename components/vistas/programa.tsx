@@ -44,7 +44,7 @@ export async function VistaPrograma({
   // El mentor principal prepara la hoja de ruta en entrada (REVISION, 23 nov)
   const coordina = resumen.permisos.coordina;
 
-  const [anexo, hitos, fases, pilares, ajusteTarifa, versiones] = await Promise.all([
+  const [anexo, hitos, pilares, ajusteTarifa, versiones] = await Promise.all([
     supabase
       .from("annexes")
       .select("*")
@@ -57,7 +57,6 @@ export async function VistaPrograma({
       .select("*")
       .eq("company_id", companyId)
       .order("due_date", { nullsFirst: false }),
-    supabase.from("phases").select("id, code, name, description, order_index").order("order_index"),
     supabase
       .from("company_pillars")
       .select("intensity, cadence, is_active, pillars ( name, description, order_index )")
@@ -91,43 +90,14 @@ export async function VistaPrograma({
             </Metadato>
           }
         >
-          Fase del programa
+          Estadio
         </TituloBloque>
-
-        <ol className="flex flex-col gap-0 sm:flex-row">
-          {(fases.data ?? []).map((f) => {
-            const actual = f.id === compania.phase_id;
-            const pasada =
-              (compania.phases?.order_index ?? 0) > f.order_index;
-
-            return (
-              <li
-                key={f.id}
-                className={`relative flex-1 border-filete px-4 py-3 sm:border-l sm:first:border-l-0 ${
-                  actual ? "bg-elevado" : ""
-                }`}
-              >
-                {actual ? (
-                  <span className="filete-acento absolute inset-x-0 top-0 h-0.5" />
-                ) : null}
-                <p
-                  className={`text-sm ${
-                    actual
-                      ? "font-medium text-titular"
-                      : pasada
-                        ? "text-secundario"
-                        : "text-metadato"
-                  }`}
-                >
-                  {f.name}
-                </p>
-                <p className="mt-0.5 text-xs text-metadato">
-                  {pasada ? "Superada" : actual ? "En curso" : "Por delante"}
-                </p>
-              </li>
-            );
-          })}
-        </ol>
+        {/*
+          Aquí iban las fases antiguas del programa (Due diligence conjunto,
+          Incubación…) en una fila. No conviven con los cuatro tramos de la
+          hoja de ruta y se quitaron (REVISION, 24 nov). Queda el estadio,
+          que es de lo que salen el programa y los tramos.
+        */}
         <BloqueEstadio compania={compania} esAdmin={resumen.permisos.esAdmin} />
       </Bloque>
 

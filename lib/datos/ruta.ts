@@ -372,7 +372,7 @@ export function avancesDeEtapa(avances: Avance[], etapaId: string): Avance[] {
 // El circuito de los hitos: historial, quién revisa y lo que espera revisión
 // -----------------------------------------------------------------------------
 
-export type TipoRevision = "entrega" | "validacion" | "cambios" | "nota";
+export type TipoRevision = "entrega" | "validacion" | "cambios" | "nota" | "reapertura";
 
 export interface RevisionHito {
   id: string;

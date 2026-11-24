@@ -5550,6 +5550,9 @@ isOneToOne: false
 "reabrir_compania":
 { Args: { "p_company": string,"p_motivo": string }; Returns: undefined
                            },
+"reabrir_hito":
+{ Args: { "p_hito": string,"p_motivo": string }; Returns: undefined
+                           },
 "reabrir_update":
 { Args: { "target_update": string }; Returns: undefined
                            },

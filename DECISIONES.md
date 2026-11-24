@@ -2155,3 +2155,13 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **Los cuatro tramos son fijos**: ni «Añadir un tramo» (se quitaron `NuevaEtapa` y `crearEtapa`) ni «Borrar el tramo». Este último solo queda para una etapa antigua, sin número de tramo.
 - **La etiqueta de etapa sale del estadio** (`etiquetaEtapa`): hasta firmar, la revisión de entrada (Diagnóstico o Due diligence); firmado, el programa (Incubación o Aceleración). Así en la cabecera, en la cartera y en Programa. La tabla de fases antigua sigue moviendo el bloque «Fase del programa» de la pestaña Programa.
 - **Las casillas se dibujan como los radios**: vacías sin marcar y rellenas con la marca y un visto.
+
+## 2026-11-24 · Reabrir un hito, «Borrador» antes de firmar y fuera las fases en Programa
+
+- **Reabrir un hito cumplido** (`reabrir_hito`): el mentor principal de la compañía o dirección, con motivo de al menos diez caracteres. Vuelve a pendiente y conserva su evidencia. El motivo queda en su historial (un tipo nuevo, `reapertura`, que se lee «Reabierto») y en el registro (`hito_reabierto`).
+  - A mano ya no se reabre: el guardián de `cumplido` pide la marca que pone la función.
+  - Lo que devengó equity o liberó financiación sigue sin reabrirse.
+  - Un hito que condiciona invertible de una compañía graduada no se reabre: antes hay que reabrir la compañía. Además, una cerrada no la edita nadie.
+- **«El mentor de la compañía» es el principal.** Es quien coordina y valida; los secundarios acompañan. El equipo IWL sin ser dirección tampoco reabre.
+- **Antes de la firma, cada tramo abierto dice «Borrador»**, en su tarjeta del resumen y en su cabecera.
+- **En Programa se quitó la fila de fases antiguas.** Se queda el bloque del estadio, que es de donde salen el programa y los tramos. Esa fila no tenía fechas: solo los nombres de las fases y cuál estaba en curso.

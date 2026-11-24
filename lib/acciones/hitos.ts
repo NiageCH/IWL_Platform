@@ -98,6 +98,32 @@ export async function pedirCambiosHito(formData: FormData): Promise<Resultado> {
   return ok();
 }
 
+/**
+ * Reabrir un hito cumplido (REVISION, 24 nov): el mentor principal o
+ * dirección, con motivo. Lo decide `reabrir_hito`, que lo deja pendiente
+ * con su evidencia y apunta el motivo en su historial. El acuse es la fila
+ * cambiada: el panel se cierra.
+ */
+export async function reabrirHito(formData: FormData): Promise<Resultado> {
+  const { datos, fallo } = validar(
+    z.object({
+      slug: textoObligatorio(),
+      id: uuid,
+      motivo: textoObligatorio(10, "Escribe por qué se reabre: queda en su historial."),
+    }),
+    formData,
+  );
+  if (fallo) return fallo;
+  if (!(await personaActual())) return error("Tu sesión ha caducado. Vuelve a entrar.");
+
+  const supabase = await clienteServidor();
+  const { error: falloBase } = await supabase.rpc("reabrir_hito", { p_hito: datos.id, p_motivo: datos.motivo });
+  if (falloBase) return traducirError(falloBase);
+
+  refrescar(datos.slug);
+  return ok();
+}
+
 export async function comentarHito(formData: FormData): Promise<Resultado> {
   const { datos, fallo } = validar(
     z.object({ slug: textoObligatorio(), id: uuid, nota: textoObligatorio(2, "Escribe la nota.") }),
