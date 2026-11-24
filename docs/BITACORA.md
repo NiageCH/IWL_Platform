@@ -7,6 +7,32 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-24 · URGENTE: la guía no viajaba a Vercel por `.vercelignore` · commit 25c195c
+
+**Qué cambió**
+- `.vercelignore`: debajo de `!README.md`, `!contenido/**/*.md`, con un comentario de por qué.
+- `scripts/guia-generar.mjs` ya no genera vacío. Si falta `contenido/guia/`, o falta o está vacío alguno de los ficheros que nombra `FICHERO_GUIA`, sale con error, dice cuál y si lo puede estar excluyendo `.vercelignore`, y no toca el módulo.
+- Prueba nueva, `lib/vercelignore.test.ts`. Lee `.vercelignore` con la semántica de `.gitignore` y comprueba que no deja fuera nada de lo que la aplicación necesita: `contenido/`, las fuentes del PDF, `app/`, `components/`, `lib/` sin sus pruebas, `public/` y la configuración de la compilación. Comprueba también que sigue excluyendo las claves, la semilla local, la documentación y las pruebas.
+- `ignore`, la librería que hace esa lectura, pasa a dependencia de desarrollo en la versión que ya estaba instalada (5.3.2).
+
+**Qué decidí yo**
+- Lo comprobé reproduciendo la subida: copié a una carpeta aparte solo lo que deja pasar `.vercelignore` en ese commit (409 ficheros; 26 se quedan fuera) y compilé ahí, partiendo de un módulo de la guía vacío. Salió «Guía: 7 ficheros».
+- Con el `.vercelignore` de antes, la prueba nueva falla y nombra los siete `.md`. Con la carpeta vacía o sin ella, el generador para la compilación.
+- Revisé las otras lecturas del disco al compilar o en ejecución. Las fuentes del PDF (`lib/fuentes/*.ttf`) no estaban excluidas. Las plantillas del NDA y del Anexo viven en la base, no en ficheros. Los demás `readFile` están en scripts que no corren en Vercel. Ningún otro `.md` hace falta para la aplicación.
+- Al hacer el commit se coló el borrado de dos ficheros del encargo de las fases, que estaba preparado de antes. Lo vi en el resumen del commit y lo corregí antes de seguir: el commit final, 25c195c, lleva solo los cinco ficheros del arreglo.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Unit 343, en verde dos veces. El arreglo no toca la base ni las pantallas, así que no he repetido RLS ni e2e.
+- Sin `db push`. Despliegue: `git merge --ff-only 25c195c`, `git push`, `npx vercel --prod`. Después, en Guía tiene que salir «Tu guía · Dirección IWL».
+
+**Siguiente**
+- Seguir con las fases antiguas, que están a medias en la copia de trabajo, sin commit.
+
+---
+
 ## 2026-11-24 · Reabrir un hito, «Borrador» antes de firmar y fuera las fases en Programa · commit 80ed4b3
 
 **Qué cambió**

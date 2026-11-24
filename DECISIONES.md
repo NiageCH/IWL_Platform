@@ -2165,3 +2165,10 @@ Una Server Action no admite más de 1 MB, y Vercel corta en 4,5. Hasta ahora tod
 - **«El mentor de la compañía» es el principal.** Es quien coordina y valida; los secundarios acompañan. El equipo IWL sin ser dirección tampoco reabre.
 - **Antes de la firma, cada tramo abierto dice «Borrador»**, en su tarjeta del resumen y en su cabecera.
 - **En Programa se quitó la fila de fases antiguas.** Se queda el bloque del estadio, que es de donde salen el programa y los tramos. Esa fila no tenía fechas: solo los nombres de las fases y cuál estaba en curso.
+
+## 2026-11-24 · Lo que sube Vercel se prueba · completa a «La guía va dentro del código»
+
+- **La guía salió vacía en producción dos veces**, las dos con las suites en verde. La segunda, después de meterla en el código al compilar: `.vercelignore` excluía `*.md`, también `contenido/guia/`. Vercel compilaba sin ellos y el generador sobrescribía el módulo versionado con `{}`.
+- **`.vercelignore` deja pasar `contenido/**/*.md`.**
+- **El generador para la compilación** si falta la carpeta o alguno de los ficheros que nombra `FICHERO_GUIA`. Una compilación rota se ve; una guía vacía en producción, no.
+- **`lib/vercelignore.test.ts` lee `.vercelignore`** con la semántica de `.gitignore` (la librería `ignore`, ya declarada como dependencia de desarrollo). Comprueba, fichero a fichero de los versionados, que no deja fuera nada de `contenido/`, `lib/fuentes/`, `app/`, `components/`, `lib/`, `public/` ni la configuración de la compilación. También comprueba que sigue dejando fuera las claves, la semilla local, la documentación y las pruebas.
