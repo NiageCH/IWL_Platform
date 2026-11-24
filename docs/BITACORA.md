@@ -7,6 +7,50 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-24 · Fuera las fases antiguas del programa · commit 6e903a9
+
+**Qué cambió**
+- **Resumen → «Por dónde va»** sale de los tramos: las cuatro tarjetas pequeñas, que llevan a su tramo en la Hoja de ruta; el tramo actual con la siguiente fecha, y el plazo. En borrador, la línea del borrador. Usa `resumenDeTramos`, la misma función que el resumen de la pestaña Hoja de ruta; una prueba de interfaz comprueba que las dos líneas de avance son idénticas.
+- **Administración → Compañías:** fuera el campo «Fase» del formulario de editar, el dato «Fase» de cada ficha y el campo del alta de una compañía.
+- **La base:** se retiran la tabla `phases` y las columnas `companies.phase_id` y `milestones.phase_id`, con su migración, `20261129100000_fuera_fases.sql`.
+
+**Dónde quedaban las fases, y qué se ha hecho con cada sitio**
+1. Cabecera de la compañía: ya salía del estadio desde el 23 nov.
+2. Cartera, la línea bajo cada compañía: ya salía del estadio desde el 23 nov. Ahí se fue también la etapa de inversión, que estaba en la misma línea.
+3. Programa, la fila de fases: quitada el 24 nov.
+4. Resumen, «Por dónde va»: pasa a los tramos. Se borraron `lib/datos/avance.ts` y `components/avance-programa.tsx`.
+5. Administración → Compañías, ficha y formulario de editar: fuera.
+6. Alta de una compañía (Administración): fuera el campo, y `crear_compania` ya no recibe fase.
+7. Firmar el Acuerdo, desde la compañía en entrada: fuera el campo, y `firmar_acuerdo` ya no recibe fase.
+8. Firmar el Acuerdo desde el embudo (candidaturas sin NDA en la plataforma): fuera el campo, y `firmar_candidatura` ya no recibe fase.
+9. Vista `admin_companias`: recreada sin `phase_id` ni `phase_name`.
+10. Guardián de lo que fija IWL (`guard_company_governance`): ya no mira la fase. El mensaje dice «La etapa y la cohorte las fija el equipo de IWL».
+11. Due diligence técnico, texto sin evaluación: decía «durante la fase de due diligence conjunto»; ahora, «en la revisión de entrada».
+12. Semilla versionada: fuera las cuatro fases de `01_config.sql`, la fase de cada compañía de `02_companies.sql` y las menciones en los comentarios de `03_actividad.sql`. La semilla local, que no se versiona, también está cambiada en esta copia.
+13. Comentarios del código que hablaban de fases (cabecera, cartera, Programa, estadios, ruta): corregidos.
+14. Guía, PDF y correos: no las mencionaban.
+15. Prueba RLS que comprobaba que una fundadora no cambia su fase: sustituida por una que comprueba que la tabla y la columna ya no existen.
+
+**Qué decidí yo**
+- Ningún cálculo usaba la fase: ni los scores, ni los filtros de Cartera, ni la comparativa. Solo se elegía y se enseñaba. Por eso la he retirado de la base, como decía la entrada, y no solo de la pantalla.
+- Las funciones y la vista se recrearon desde su definición actual en la base, no buscándolas en las migraciones.
+- Las firmas cambian de argumentos, así que se quitaron las de antes para no dejar dos versiones. Los permisos quedan como estaban (solo con sesión). `firmar_candidatura` tenía además ejecución para cualquiera, por defecto; ahora la tiene solo quien ha entrado, como las otras dos. Dentro ya comprobaba que fuera IWL.
+- «Por dónde va» deja de enseñar el plazo del Anexo como barra aparte: el plazo que cuenta es el del programa desde la firma, el mismo de la Hoja de ruta.
+- La etapa de inversión (pre-semilla, semilla, serie A) no es una fase: decide el nivel objetivo del score técnico. Se queda.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Unit 343, en verde. RLS 366, en verde dos veces. E2e, dos pasadas de un tirón, 484 en verde en cada una (7,9 y 8,0 min).
+- Capturas del Resumen de Vega y Raíz, en escritorio y móvil: `docs/constancia/compania-resumen-*-despues-*.png`.
+- Sin desplegar. Lleva una migración: `20261129100000_fuera_fases.sql`.
+
+**Siguiente**
+- Con tu visto bueno a las capturas, desplegar con `db push`.
+
+---
+
 ## 2026-11-24 · URGENTE: la guía no viajaba a Vercel por `.vercelignore` · commit 25c195c
 
 **Qué cambió**
