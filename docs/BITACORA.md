@@ -7,6 +7,81 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-24 · Reabrir un hito, «Borrador» antes de firmar y fuera las fases en Programa · commit 80ed4b3
+
+**Qué cambió**
+- Punto 1: antes de la firma, la tarjeta del tramo en el resumen y su cabecera dicen las dos «Borrador». En Vega, una decía «En curso» y la otra «Planificada».
+- Punto 2, «Reabrir el hito»: está en el menú ⋯ de un hito cumplido y abre un panel con el motivo obligatorio.
+  - El hito vuelve a «Pendiente» y conserva su evidencia.
+  - El motivo queda en su historial («Reabierto») y en el registro.
+  - La base no deja reabrirlo a mano, ni siquiera a quien coordina: hay que pasar por `reabrir_hito`.
+  - Un hito «Condiciona invertible» de una compañía graduada no se reabre: dice que antes hay que reabrir la compañía.
+  - Lo que devengó equity o liberó financiación sigue sin poder reabrirse.
+- Punto 3: en Programa se quitó la fila de fases antiguas. El bloque pasa a llamarse «Estadio» y conserva el estadio y «Cambiar el estadio».
+- Pruebas RLS nuevas en `tests/rls/reabrir-hito.test.ts`: a mano no se reabre; solo el mentor principal o dirección; con motivo; vuelve a pendiente con su evidencia y deja historial y registro; en una graduada, no.
+- Pruebas de interfaz nuevas: reabrir desde el menú con el motivo en el historial, «Borrador» en la tarjeta y la cabecera, y Programa sin fases con la etiqueta del estadio en la cabecera.
+
+**Qué decidí yo**
+- «El mentor de la compañía» es el mentor principal, que es quien coordina y valida. Los secundarios y el equipo IWL sin ser dirección no reabren.
+- Para que el motivo se lea en el historial del hito añadí un tipo de revisión, `reapertura`.
+- La fila de fases no tenía fechas: solo los nombres y cuál estaba en curso. No se pierde nada que haga falta.
+- Reabrir un hito de un tramo ya cerrado no vuelve a abrir el tramo. El tramo se cierra solo cuando se cumplen todos sus hitos, y reabrirlo es otra decisión.
+
+**Qué necesito que decidas**
+1. La pestaña Resumen también enseña las fases antiguas, en «Por dónde va»: las cuatro fases, los hitos y el plazo del Anexo. ¿La paso a los tramos, como en Hoja de ruta?
+2. En Administración → Compañías, el formulario de cada compañía sigue teniendo el campo «Fase». ¿Lo quito?
+
+**Estado**
+- Unit 340, en verde.
+- RLS 366, en verde dos veces.
+- E2e, primera pasada: 482 en verde en 7,4 minutos.
+- E2e, segunda pasada: dos intentos con la máquina cargada por procesos de macOS (análisis de fotos y XProtect), con load average de hasta 15.
+  - El primero tardó 1,7 horas, con 7 fallos por tiempo.
+  - El segundo, ya solo, tardó 30,6 minutos: 478 en verde y 4 fallos.
+  - Los 4 fallos se cortaron por tiempo o con la página sin cargar. Corridos sueltos pasan los 4, y en esa misma pasada habían pasado en Safari.
+- Sin desplegar.
+
+**Siguiente**
+- Desplegar la rama entera, con `db push`: migraciones 20261127100000 y 20261128100000.
+
+---
+
+## 2026-11-23 · La hoja de ruta de la compañía: los ocho arreglos · commit f45e285
+
+**Qué cambió**
+- Un solo resumen arriba: los cuatro tramos, una línea de avance, el plazo y las horas de IWL.
+  - Fuera el bloque «Hoja de ruta» con su recorrido, el «tramo que toca por calendario», los cuadritos y la barra.
+  - El tramo que se abre solo es el que el resumen da por en curso.
+- Antes de la firma: ni retraso ni vencidos, y la línea «Borrador: las fechas son orientativas hasta la firma».
+  - Si la fecha prevista de firma ya pasó, sale «La fecha prevista de firma ya ha pasado: actualízala», con enlace al asistente para IWL.
+- Lo cumplido al entrar va plegado al final de su tramo («9 hitos cumplidos al entrar»). Lo pendiente va primero, con «del tramo N» en lo que viene de tramos anteriores.
+- Fuera el desplegable de estado de cada hito. Se avanza con las acciones de siempre: ella «Entregar»; quien revisa, «Validar» o «Pedir cambios».
+  - La base solo deja pasar a cumplido validando una entrega, o entregando un hito que no pide validación, tanto al editarlo como al crearlo.
+  - Quedan dos salvedades: lo cumplido al entrar, y el hito societario cuando la compañía ya consta constituida.
+  - Se quitaron `EstadoHito` y `cambiarEstadoHito`.
+- Fuera «Añadir un tramo», con `NuevaEtapa` y `crearEtapa`. «Borrar el tramo» solo queda para las etapas antiguas, sin número de tramo.
+- La etiqueta de la cabecera, la cartera y Programa sale del estadio. Raíz dice Aceleración y Vega, Diagnóstico.
+- Las casillas se dibujan como los radios: vacías sin marcar, rellenas con un visto al marcar. La de «Condiciona invertible» solo la ve dirección.
+- Un solo texto en el botón del tramo, «Hitos y diario del tramo». Fechas y horas en la letra normal con cifras tabulares.
+- Capturas nuevas de Vega y Raíz, en escritorio y móvil, más el menú y el panel. La de Vega usa una fecha de firma futura; la que ya pasó la cubre una prueba.
+
+**Qué decidí yo**
+- El desplegable no tenía otra razón de ser que mover el estado a mano: no la había para quedárselo. Con él se iba también la forma de reabrir un hito cumplido; la añadí en 80ed4b3, cuando la pediste.
+- El hito societario ya no se cumple marcándolo: ella entrega la escritura y quien revisa la valida. Al validarlo, la compañía pasa a constituida, como antes.
+- `components/linea-recorrido.tsx` se borró, porque ya no lo usaba nadie.
+- Cambié tres pruebas RLS que daban un hito por cumplido escribiendo el estado: ahora pasan por el circuito.
+
+**Qué necesito que decidas**
+- Nada (respondido en la entrada del 24 nov).
+
+**Estado**
+- Va en la misma verificación que 80ed4b3. Sin desplegar.
+
+**Siguiente**
+- Los tres puntos de tu aprobación (80ed4b3).
+
+---
+
 ## 2026-11-23 · La hoja de ruta de cada compañía, con el patrón de Administración · commit 64185ac
 
 **Qué cambió**
