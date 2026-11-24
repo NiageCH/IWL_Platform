@@ -7,6 +7,63 @@ resultó estar mal, se dice en la entrada siguiente.
 Complementa a `DECISIONES.md`: aquí **qué pasó**, allí **por qué algo es
 como es**.
 
+## 2026-11-24 · Un solo invertible, «Por dónde va» con el borrador y la guía dentro de su marco · commits 83c4192 y d37e5d5
+
+**Qué cambió**
+- **Arreglo 1, Vega.** Si hay borrador de hoja de ruta, «Por dónde va» enseña las mismas cuatro tarjetas en «Borrador», con la etiqueta «Borrador hasta la firma». La frase de «no tiene» queda para cuando no hay nada generado, y ahora dice «no tiene hoja de ruta generada».
+  - La contradicción venía de las capturas: la de Hoja de ruta generaba el borrador de Vega y la del Resumen no. Ahora las dos lo generan y lo quitan al acabar.
+  - Una prueba de interfaz comprueba que, con borrador, el Resumen de Vega enseña sus tarjetas y no dice «no tiene».
+- **Arreglo 2, un solo invertible.** Una función nueva en `lib/scoring`, `estadoInvertible`, con la regla del 23 nov: «Sí» solo graduada; si no, «N de M hitos» marcados validados, o «Sin hitos marcados».
+  - Resumen: «Invertible: 0 de 4 hitos» en Vega, «1 de 4 hitos» en Raíz.
+  - Cartera, cada fila: «Invertible: N de M hitos», o «Lista para graduar» con todos validados.
+  - Cartera, el contador «Invertibles», y la frase de la cohorte: las graduadas de la cohorte, con `invertibles_de_cohorte` (migración `20261130100000`), solo para IWL. Las graduadas están cerradas y solo las lee dirección; sin la función, la cartera del equipo diría siempre cero.
+  - Los pasos llevan «Para invertible» si son un hito marcado y «Recomendado» todo lo demás: scores, runway, hallazgos críticos y bloqueantes.
+  - Al elegir Graduada, dirección ve «Antes de graduar, revisa:» con las señales recomendadas. Son solo un aviso: no impiden graduarla.
+  - Las cifras van con coma: «26,7», «3,9».
+  - El reparto por bandas de preparación pasa de «Camino a invertible» a «Preparación de la cohorte», con «Señal, no decide».
+- **Arreglo 3, la guía dentro de su marco.** Hay un marco con menú, `MarcoConMenu`, que comparten los dos grupos. Antes cada uno montaba el suyo.
+  - Con él, la guía y Mi cuenta se abren dentro del marco de quien mira, con su menú y «Guía» marcada.
+  - La candidata sigue con la barra de arriba.
+- Pruebas nuevas: unitarias de `estadoInvertible` y de qué pasos son de invertible, con la coma; de interfaz, invertible en el Resumen, «Qué falta» y la Cartera, y la guía y Mi cuenta dentro del marco de dirección y de fundadora.
+- d37e5d5 corrige dos pruebas de interfaz que comprobaban la regla antigua: el hallazgo crítico ya no hace «No invertible», y el bloque de bandas se llama distinto.
+
+**Dónde se usaba el cálculo antiguo de invertible**
+1. Resumen, el dato «Invertible»: pasa a la regla nueva.
+2. Resumen, «Qué falta»: el chip de cada paso pasa a «Para invertible» o «Recomendado».
+3. Cartera, el contador «Invertibles»: pasa a las graduadas de la cohorte.
+4. Cartera, la etiqueta de cada fila («Invertible», «N pasos»): pasa a «Invertible: N de M hitos» o «Lista para graduar». Los pasos de debajo, primero los de invertible, y los demás con «Recomendado».
+5. La frase de la cohorte, arriba de la Cartera: graduadas.
+6. El reparto por bandas («Camino a invertible»): se queda, como señal de preparación.
+7. El informe técnico en PDF, la sección «Estado invertible»: la regla nueva y los pasos marcados como «para invertible» o «recomendado».
+8. Las instantáneas mensuales (`scripts/snapshots.mts`, columna `investable`): la regla nueva. Las ya guardadas no se tocan.
+9. La comparativa no lo usaba.
+
+**Pantallas sueltas, fuera de los grupos**
+- `/guia`: ahora dentro del marco del rol.
+- `/perfil` (Mi cuenta, desde el nombre en el menú): ahora dentro del marco del rol.
+- `/cambiar-contrasena`: se queda sin marco a propósito. Con la contraseña puesta por otra persona, el proxy no deja ir a ningún otro sitio hasta cambiarla.
+- `/sin-compania`: se queda como está. Es la de una fundadora sin compañía, que no tiene nada en el menú.
+- `/anexo/<id>`: no es una pantalla, es la descarga del PDF.
+
+**Qué decidí yo**
+- El dato de invertible de las compañías en seguimiento nunca dirá «Sí»: graduada es cerrada y sale de la cartera. Por eso la fila dice los hitos y el contador cuenta las graduadas.
+- «Lista para graduar» cuando todos los marcados están validados: es el momento en que dirección puede confirmarlo.
+- «Antes de graduar, revisa:» solo aparece al elegir Graduada, y Graduada solo se puede elegir con los hitos validados.
+- `evaluarInvertible` se queda con su nombre: es la lista de pasos que lee toda la interfaz. Su comentario dice que ya no decide.
+
+**Qué necesito que decidas**
+- Nada.
+
+**Estado**
+- Unit 348, en verde. RLS 366, en verde dos veces. E2e, dos pasadas de un tirón, 488 en verde en cada una (7,8 y 7,9 min).
+- Capturas en `docs/constancia/`: `compania-resumen-*-despues-*` (Vega y Raíz, escritorio y móvil) y `guia-direccion-despues-*` y `guia-fundadora-despues-*` (escritorio y móvil).
+- Sin desplegar. Lleva `db push` con dos migraciones: `20261129100000_fuera_fases.sql` y `20261130100000_invertibles_de_cohorte.sql`.
+
+**Siguiente**
+- Con tu visto bueno a las capturas, desplegar el paquete entero: las fases, esto y la guía urgente si no ha salido ya.
+
+---
+
 ## 2026-11-24 · Fuera las fases antiguas del programa · commit 6e903a9
 
 **Qué cambió**
