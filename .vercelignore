@@ -33,5 +33,11 @@ vitest.config.mts
 vitest.rls.config.mts
 
 # Documentación del proyecto
+#
+# Pero no el contenido de la aplicación: la guía son Markdown y se mete en
+# el código al compilar (`scripts/guia-generar.mjs`, en `prebuild`). Sin esta
+# excepción Vercel compilaba sin ellos y la guía salía vacía en producción
+# (REVISION, 24 nov · urgente). Lo comprueba `lib/vercelignore.test.ts`.
 *.md
 !README.md
+!contenido/**/*.md
